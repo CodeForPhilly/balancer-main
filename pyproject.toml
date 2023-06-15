@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "balancer"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+license = "GNU Affero General Public License v3.0"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+Django = "^4.2.2"
+pytest = "^7.3.2"
+pytest-django = "^4.5.2"
+
+[tool.poetry.group.dev.dependencies]
+
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

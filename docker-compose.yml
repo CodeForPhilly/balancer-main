@@ -1,0 +1,22 @@
+version: '3.7'
+services:
+  db:
+    image: postgres:15-alpine
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_PASSWORD=password
+  backend:
+    build:
+      context: ./backend
+      dockerfile: dev-dockerfile
+    image: app-backend:dev
+    command: ["wait-for-it.sh", "db:5432", "--", "python", "/balancer/backend/backend/manage.py", "runserver", "0.0.0.0:8000"]
+    environment:
+      - DJANGO_SETTINGS_MODULE=backend.settings
+    volumes:
+      - .:/balancer
+    ports:
+      - 8000:8000
+    depends_on:
+      - db

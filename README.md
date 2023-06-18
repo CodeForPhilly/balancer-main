@@ -4,10 +4,10 @@ Django driven backend for the CodeForPhilly balancer project (https://opencollec
 ## Environment setup instructions
 This project makes use of Python-Docker in order to
     1. Rapidly initialize and update packages (using Python poetry)
-    2. Build project (with requirements) for local and production environments.
+    2. Build project (backend) image (with requirements) for local environment.
     3. Launch and teardown docker containers.
 
-### Build project
+### To build backend
 1. Run 
 ```make build-base-image```
 in order to install poetry atop the Python base image.

@@ -1,3 +1,5 @@
+# Env files can be used to override any variable defaults
+# (e.g., DOCKER_SPECIFIC_ENV_PATH=config/docker/env/base.env DOCKER_SPECIFIC_ENV_PATH=config/docker/env/local.env make do-something)
 ifdef DOCKER_COMMON_ENV_PATH
 include $(DOCKER_COMMON_ENV_PATH)
 DOCKER_COMMON_ENV_PATH_FROM_PYTHON_DOCKER=$(DOCKER_CTX_FROM_PYTHON_DOCKER)/$(DOCKER_COMMON_ENV_PATH)
@@ -29,6 +31,7 @@ DOCKER_REGISTRY ?= docker.fakecodeforphillydomain.com
 DOCKER_TAG_VERSION ?= latest
 DOCKER_WATCH ?= # Define with any value to display background deployment
 
+# These are built dyanimcally and used below?
 DOCKER_APP_SOURCE_FROM_COMPOSE ?= $(DOCKER_CTX_FROM_COMPOSE)/$(DOCKER_PROJECT_ROOT_FROM_CTX)
 DOCKER_COMPOSE_FILE ?= $(DOCKER_CTX_FROM_PYTHON_DOCKER)/$(DOCKER_PROJECT_ROOT_FROM_CTX)/config/docker/compose/docker-compose.$(NAMESPACE).yaml
 DOCKER_CONFIG_FOLDER_PATH ?= /root/.$(DOCKER_PROJECT_SERVICE_NAME)/config
@@ -36,7 +39,7 @@ DOCKER_ENTRYPOINT_SOURCE_FROM_CTX ?= $(DOCKER_PROJECT_ROOT_FROM_CTX)/config/dock
 DOCKER_USER_CONFIG_PATH_FROM_CTX ?= $(DOCKER_PROJECT_ROOT_FROM_CTX)/config
 DOCKER_USER_LOCAL_LOG_PATH_FROM_CTX ?= $(DOCKER_PROJECT_ROOT_FROM_CTX)/logs
 
-# Docker
+# No need to do this manually
 pull-python-docker:
 	if ! [ -d Python-Docker ]; then\
 		git clone https://github.com/jusjayson/Python-Docker.git;\

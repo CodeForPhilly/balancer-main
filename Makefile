@@ -68,6 +68,7 @@ build-project: pull-python-docker
 		DOCKER_USER_CONFIG_PATH_FROM_CTX=$(DOCKER_USER_CONFIG_PATH_FROM_CTX) \
 		NAMESPACE=$(NAMESPACE) \
 		PROJECT_NAME=$(PROJECT_NAME) \
+		DONT_PASS_SSH_KEYS=1 \
 		make build-project
 
 deploy-project: pull-python-docker

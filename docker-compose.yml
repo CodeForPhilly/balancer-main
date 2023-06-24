@@ -1,8 +1,11 @@
 version: "3.8"
 services:
   react-app:
-    image: test5
-    stdin_open: true
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - IMAGE_NAME=balancer-frontend
     ports:
       - "3000:3000"
     environment:

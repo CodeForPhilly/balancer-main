@@ -21,3 +21,7 @@ EXPOSE 3000
 
 # Start the application
 CMD [ "npm", "run", "dev-exposed" ]
+
+# Set the image name
+ARG IMAGE_NAME
+ENV IMAGE_NAME $IMAGE_NAME

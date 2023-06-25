@@ -5,6 +5,7 @@ const Header = () => {
     <header className="w-full flex justify-center items-center flex-col">
       <nav className="flex justify-between items-center w-full pt-3">
         <img src={logo} alt="logo" className="w-28 object-contain" />
+        <a href="/login">Login</a>
         <button
           type="button"
           onClick={() => window.open("https://codeforphilly.org/")}

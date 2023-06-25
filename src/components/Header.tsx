@@ -6,11 +6,11 @@ const Header = () => {
       <nav className="flex justify-between items-center w-full pt-3">
         <img src={logo} alt="logo" className="w-28 object-contain" />
         <a href="/login">Login</a>
+        <a href="/register">Register</a>
         <button
           type="button"
           onClick={() => window.open("https://codeforphilly.org/")}
-          className="black_btn"
-        >
+          className="black_btn">
           Code for Philly
         </button>
       </nav>

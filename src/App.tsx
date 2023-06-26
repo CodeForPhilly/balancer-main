@@ -1,20 +1,12 @@
 import "./App.css";
-import Header from "./components/Header";
 import Summary from "./components/Summary";
+import Layout from "./components/Layout/Layout";
 
 const App = () => {
   return (
-    <>
-      <main>
-        <div className="main">
-          <div className="gradient" />
-        </div>
-        <div className="container">
-          <Header />
-          <Summary />
-        </div>
-      </main>
-    </>
+    <Layout>
+      <Summary />
+    </Layout>
   );
 };
 

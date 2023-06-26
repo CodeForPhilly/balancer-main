@@ -1,5 +1,5 @@
 import { useFormik } from "formik";
-import Layout from "../Layout/Layout";
+import Layout from "../Layout/Layout.tsx";
 import { Link } from "react-router-dom";
 
 const LoginForm = () => {
@@ -17,7 +17,7 @@ const LoginForm = () => {
     <Layout>
       <section className="mt-12 mx-auto w-full max-w-xs">
         <h2 className="font-satoshi font-bold text-gray-600 text-xl blue_gradient mb-6">
-          Login
+          Register
         </h2>
         <form
           onSubmit={formik.handleSubmit}
@@ -53,25 +53,17 @@ const LoginForm = () => {
             />
           </div>
 
-          <div className="flex items-center justify-between">
-            <a
-              className="inline-block align-baseline font-bold text-sm hover:text-blue-600"
-              href="register">
-              Forgot Password?
-            </a>
-            <button className="black_btn" type="submit">
-              Sign In
-            </button>
-          </div>
+          <button className="black_btn ml-auto block" type="submit">
+            Register
+          </button>
         </form>
       </section>
       <p>
-        Don't have an account?{" "}
-        <Link to="/register" className="font-bold hover:text-blue-600">
+        Already have an account?{" "}
+        <Link to="/login" className="font-bold hover:text-blue-600">
           {" "}
-          Register here
+          Login here.
         </Link>
-        .
       </p>
     </Layout>
   );

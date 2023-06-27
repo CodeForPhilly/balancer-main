@@ -1,13 +1,13 @@
 import App from "../App";
-import ErrorPage from "../components/ErrorPage";
-import LoginForm from "../components/LoginForm/LoginForm";
-import RegistrationForm from "../components/RegistrationForm/RegistrationForm";
+import RouteError from "../pages/404/404.tsx";
+import LoginForm from "../pages/Login/Login.tsx";
+import RegistrationForm from "../pages/Register/Register.tsx";
 
 const routes = [
   {
     path: "/",
     element: <App />,
-    errorElement: <ErrorPage />,
+    errorElement: <RouteError />,
   },
   {
     path: "login",

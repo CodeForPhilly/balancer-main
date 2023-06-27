@@ -4,7 +4,7 @@ import { Provider } from "react-redux";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import routes from "./routes/routes.tsx";
 
-import { store } from "./services/store";
+import { store } from "./services/store.tsx";
 
 const router = createBrowserRouter(routes);
 

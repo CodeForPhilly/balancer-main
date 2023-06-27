@@ -2,8 +2,7 @@ import { ReactNode } from "react";
 import Header from "../Header";
 
 interface LayoutProps {
-  children?: ReactNode;
-  // any props that come into the component
+  children: ReactNode;
 }
 
 function Layout({ children }: LayoutProps) {

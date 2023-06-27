@@ -1,19 +1,13 @@
-import React, { FormEvent, ChangeEvent, useEffect } from "react";
-// import PatientIDInput from "./PatientID.tsx";
+import { FormEvent, ChangeEvent, useEffect } from "react";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { loader } from "../../assets";
 import { v4 as uuidv4 } from "uuid";
+import { PatientInfo } from "./PatientTypes";
 
-interface PatientInfo {
-  ID: string;
-  Diagnosis: string;
-  OtherDiagnosis: string;
-  Description: string;
-  Age: number;
-}
+// TODO: refactor with Formik
 
-interface NewPatientFormData {
+export interface NewPatientFormProps {
   patientInfo: PatientInfo;
   setPatientInfo: React.Dispatch<React.SetStateAction<PatientInfo>>;
   allPatientInfo: PatientInfo[];
@@ -27,13 +21,14 @@ const NewPatientForm = ({
   allPatientInfo,
   setAllPatientInfo,
   getMedicationInfo,
-}: NewPatientFormData) => {
+}: NewPatientFormProps) => {
   useEffect(() => {
     const patientInfoFromLocalStorage = JSON.parse(
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       localStorage.getItem("patientInfos")
     );
+
     if (patientInfoFromLocalStorage) {
       setAllPatientInfo(patientInfoFromLocalStorage);
     }
@@ -95,13 +90,13 @@ const NewPatientForm = ({
           </h2>
         </div>
 
-        <form className="" onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit}>
           {/* <img
             src={linkIcon}
             alt="link-icon"
             className="absolute left-0 my-2 ml-3 w-5"
           /> */}
-          <div className="">
+          <div>
             <label htmlFor="name" className="block font-latoBold text-sm pb-2">
               Patient ID:{" "}
             </label>
@@ -116,16 +111,14 @@ const NewPatientForm = ({
           <div className=" mt-5">
             <label
               htmlFor="ageInput"
-              className="block font-latoBold text-sm pb-2"
-            >
+              className="block font-latoBold text-sm pb-2">
               Diagnosis:
             </label>
             <select
               value={patientInfo.Diagnosis}
               onChange={handleDiagnosisChange}
               required
-              className="url_input peer"
-            >
+              className="url_input peer">
               <option value="">Select a diagnosis</option>
               <option value="Bipolar I">Bipolar I</option>
               <option value="Bipolar II">Bipolar II</option>
@@ -151,8 +144,7 @@ const NewPatientForm = ({
           <div className="items-center mt-5">
             <label
               htmlFor="ageInput"
-              className="block font-latoBold text-sm pb-2"
-            >
+              className="block font-latoBold text-sm pb-2">
               Age:
             </label>
             <input
@@ -170,8 +162,7 @@ const NewPatientForm = ({
           <div className="flex justify-center mt-5">
             <button
               type="submit"
-              className="black_btn peer-focus:border-gray-700 peer-focus:text-gray-700 "
-            >
+              className="black_btn peer-focus:border-gray-700 peer-focus:text-gray-700">
               <p>Submit</p>
             </button>
           </div>

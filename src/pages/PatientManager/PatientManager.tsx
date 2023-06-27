@@ -1,21 +1,14 @@
-import NewPatientForm from "./form_components/NewPatientForm.tsx";
-import PatientHistory from "./form_components/PatientHistory.tsx";
 import { useState } from "react";
-import { useLazyGetMedicationInfoQuery } from "../services/medicationsApi.tsx";
+import NewPatientForm from "./NewPatientForm.tsx";
+import PatientHistory from "./PatientHistory.tsx";
+import { useLazyGetMedicationInfoQuery } from "../../services/medicationsApi.tsx";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import { copy, loader } from "../assets";
-import PatientSummary from "./form_components/PatientSummary.tsx";
+import { copy, loader } from "../../assets/index.js";
+import PatientSummary from "./PatientSummary.tsx";
+import { PatientInfo } from "./PatientTypes.ts";
 
-const Summary = () => {
-  interface PatientInfo {
-    ID: string;
-    Diagnosis: string;
-    OtherDiagnosis: string;
-    Description: string;
-    Age: number;
-  }
-
+const PatientManager = () => {
   const [patientInfo, setPatientInfo] = useState({
     ID: "",
     Diagnosis: "",
@@ -30,6 +23,8 @@ const Summary = () => {
   // @ts-ignore
   const [getMedicationInfo, { error, isFetching }] =
     useLazyGetMedicationInfoQuery();
+
+  // TODO: add error and loading state guards
 
   return (
     <div className="mt-16 w-full max-w-xl">
@@ -56,4 +51,4 @@ const Summary = () => {
   );
 };
 
-export default Summary;
+export default PatientManager;

@@ -1,13 +1,6 @@
 import React, { useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
-
-interface PatientInfo {
-  ID: string;
-  Diagnosis: string;
-  OtherDiagnosis: string;
-  Description: string;
-  Age: number;
-}
+import { PatientInfo } from "./PatientTypes";
 
 interface PatientIDInputProps {
   patientInfo: PatientInfo;

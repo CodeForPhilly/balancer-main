@@ -1,4 +1,4 @@
-import logo from "../assets/balancer.png";
+import logo from "../../assets/balancer.png";
 import { Link } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 

@@ -1,20 +1,16 @@
-import React from "react";
+import { PatientInfo } from "./PatientTypes";
 
-interface PatientInfo {
-    ID: string;
-    Diagnosis: string;
-    OtherDiagnosis: string;
-    Description: string;
-    Age: number;
+export interface PatientHistoryProps {
+  allPatientInfo: PatientInfo[];
+  setPatientInfo: React.Dispatch<React.SetStateAction<PatientInfo>>;
+  copy: string;
 }
 
-interface PatientHistoryData {
-    allPatientInfo: PatientInfo[];
-    setPatientInfo: React.Dispatch<React.SetStateAction<PatientInfo>>
-    copy: string
-}
-
-const PatientHistory = ({ allPatientInfo, setPatientInfo, copy }: PatientHistoryData) => {
+const PatientHistory = ({
+  allPatientInfo,
+  setPatientInfo,
+  copy,
+}: PatientHistoryProps) => {
   return (
     <div className="flex flex-col gap-2 max-h-100 overflow-y-auto mb-12">
       <br />
@@ -25,8 +21,7 @@ const PatientHistory = ({ allPatientInfo, setPatientInfo, copy }: PatientHistory
         <div
           key={`link-${index}`}
           onClick={() => setPatientInfo(item)}
-          className="link_card"
-        >
+          className="link_card">
           <div className="copy_btn">
             <img
               src={copy}

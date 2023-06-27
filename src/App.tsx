@@ -1,6 +1,6 @@
 import "./App.css";
-import Summary from "./components/Summary";
-import Layout from "./components/Layout/Layout";
+import Summary from "./pages/PatientManager/PatientManager";
+import Layout from "./pages/Layout/Layout";
 
 const App = () => {
   return (

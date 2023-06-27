@@ -1,19 +1,13 @@
-import React, { FormEvent, ChangeEvent, useEffect } from "react";
-// import PatientIDInput from "./PatientID.tsx";
+import { FormEvent, ChangeEvent, useEffect } from "react";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { loader } from "../../assets";
 import { v4 as uuidv4 } from "uuid";
+import { PatientInfo } from "./PatientTypes";
 
-interface PatientInfo {
-  ID: string;
-  Diagnosis: string;
-  OtherDiagnosis: string;
-  Description: string;
-  Age: number;
-}
+// TODO: refactor with Formik
 
-interface NewPatientFormData {
+export interface NewPatientFormProps {
   patientInfo: PatientInfo;
   setPatientInfo: React.Dispatch<React.SetStateAction<PatientInfo>>;
   allPatientInfo: PatientInfo[];
@@ -27,13 +21,14 @@ const NewPatientForm = ({
   allPatientInfo,
   setAllPatientInfo,
   getMedicationInfo,
-}: NewPatientFormData) => {
+}: NewPatientFormProps) => {
   useEffect(() => {
     const patientInfoFromLocalStorage = JSON.parse(
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       localStorage.getItem("patientInfos")
     );
+
     if (patientInfoFromLocalStorage) {
       setAllPatientInfo(patientInfoFromLocalStorage);
     }

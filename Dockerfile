@@ -20,7 +20,7 @@ RUN npm run build
 EXPOSE 3000
 
 # Start the application
-CMD [ "npm", "run", "dev-exposed" ]
+CMD [ "npm", "run", "dev" ]
 
 # Set the image name
 ARG IMAGE_NAME

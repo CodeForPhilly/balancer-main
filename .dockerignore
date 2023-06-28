@@ -1,0 +1,2 @@
+# Don't include project creation utilities in testing/staging/production builds!
+Python-Docker

@@ -11,10 +11,12 @@ python = "^3.10"
 Django = "^4.2.2"
 pytest = "^7.3.2"
 pytest-django = "^4.5.2"
-
-[tool.poetry.group.dev.dependencies]
-
-
+beautifulsoup4 = "^4.12.2"
+openai = "^0.27.8"
+requests = "^2.31.0"
+tiktoken = "^0.4.0"
+nltk = "^3.8.1"
+python-dotenv = "^1.0.0"
 
 [build-system]
 requires = ["poetry-core"]

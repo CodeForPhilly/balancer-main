@@ -16,7 +16,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from balancer.controllers import chatgpt
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('extract_webpage/', chatgpt.extract_webpage, name='post_web_extraction')
 ]

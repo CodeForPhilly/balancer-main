@@ -20,5 +20,6 @@ from balancer.controllers import chatgpt
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('extract_webpage/', chatgpt.extract_webpage, name='post_web_extraction')
+    path('extract_webpage/', chatgpt.extract_webpage, name='post_web_extraction'),
+    path('diagnosis/', chatgpt.diagnosis, name='post_diagnosis'),
 ]

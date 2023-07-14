@@ -111,14 +111,16 @@ const NewPatientForm = ({
           <div className=" mt-5">
             <label
               htmlFor="ageInput"
-              className="block font-latoBold text-sm pb-2">
+              className="block font-latoBold text-sm pb-2"
+            >
               Diagnosis:
             </label>
             <select
               value={patientInfo.Diagnosis}
               onChange={handleDiagnosisChange}
               required
-              className="url_input peer">
+              className="url_input peer"
+            >
               <option value="">Select a diagnosis</option>
               <option value="Bipolar I">Bipolar I</option>
               <option value="Bipolar II">Bipolar II</option>
@@ -144,7 +146,8 @@ const NewPatientForm = ({
           <div className="items-center mt-5">
             <label
               htmlFor="ageInput"
-              className="block font-latoBold text-sm pb-2">
+              className="block font-latoBold text-sm pb-2"
+            >
               Age:
             </label>
             <input
@@ -162,7 +165,8 @@ const NewPatientForm = ({
           <div className="flex justify-center mt-5">
             <button
               type="submit"
-              className="black_btn peer-focus:border-gray-700 peer-focus:text-gray-700">
+              className="black_btn peer-focus:border-gray-700 peer-focus:text-gray-700"
+            >
               <p>Submit</p>
             </button>
           </div>

@@ -6,6 +6,7 @@ export default {
       fontFamily: {
         satoshi: ["Satoshi", "sans-serif"],
         inter: ["Inter", "sans-serif"],
+        lora: "'Lora', serif",
       },
     },
   },

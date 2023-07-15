@@ -151,13 +151,11 @@ const Header = () => {
                 Support
               </Link>
               <div onClick={handleLoginMenu}>
-                <Link to="/">
-                  <img
-                    src={accountLogo}
-                    alt="logo"
-                    className="object-contain hover:bg-gray-100 hover:border-blue-600 hover:border-b-2"
-                  />
-                </Link>
+                <img
+                  src={accountLogo}
+                  alt="logo"
+                  className="object-contain hover:bg-gray-100 hover:border-blue-600 hover:border-b-2"
+                />
               </div>
               <LoginMenuDropDown
                 showLoginMenu={showLoginMenu}

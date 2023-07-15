@@ -12,11 +12,16 @@ const Header = () => {
   const { pathname } = useLocation();
   const [nav, setNav] = useState(true);
   const [showFeaturesMenu, setShowFeaturesMenu] = useState(false);
+  const [showLoginMenu, setShowLoginMenu] = useState(false);
   const dropdownRef = useRef(null);
   let delayTimeout: number | null = null;
 
   const handleNav = () => {
     setNav(!nav);
+  };
+
+  const handleLoginMenu = () => {
+    setShowLoginMenu(!showLoginMenu);
   };
 
   const handleMouseEnter = () => {
@@ -51,7 +56,7 @@ const Header = () => {
           "hidden lg:flex items-center border-b border-gray-300 h-20 mx-auto bg-white justify-between  px-4 sm:px-6 md:px-8 lg:px-8 xl:px-50 2xl:px-56"
         }
       >
-        <nav className="w-full flex font-satoshi items-center">
+        <nav className="w-full flex font-satoshi items-center text-sm">
           <Link to="/">
             <img src={logo} alt="logo" className="object-contain w-28 mr-9  " />
           </Link>
@@ -133,7 +138,7 @@ const Header = () => {
           )}
         </nav>
 
-        <nav className=" flex font-satoshi justify-end w-full items-center">
+        <nav className=" flex font-satoshi justify-end w-full items-center text-sm">
           {pathname === "/" && (
             <>
               <Link
@@ -148,13 +153,41 @@ const Header = () => {
               >
                 Support
               </Link>
-              <Link to="/">
-                <img
-                  src={accountLogo}
-                  alt="logo"
-                  className="object-contain  hover:border-b-2 hover:border-blue-600"
-                />
-              </Link>
+              <div onClick={handleLoginMenu}>
+                <Link to="/">
+                  <img
+                    src={accountLogo}
+                    alt="logo"
+                    className="object-contain hover:bg-gray-100 hover:border-blue-600 hover:border-b-2"
+                  />
+                </Link>
+              </div>
+              {!showLoginMenu && (
+                <div
+                  className="fixed inset-0 bg-gray-900 opacity-50 z-5"
+                  onClick={handleLoginMenu}
+                ></div>
+              )}
+              <div
+                className={
+                  !showLoginMenu
+                    ? "fixed right-0 top-0 w-[35%] border-l bg-white border-l-gray-900 h-full ease-in-out duration-1000 z20"
+                    : "ease-in-out duration-500 fixed right-[-100%]"
+                }
+              >
+                <div
+                  onClick={handleLoginMenu}
+                  className="mt-10 mr-6 flex justify-end"
+                >
+                  {!showLoginMenu && (
+                    <img
+                      src={closeLogo}
+                      alt="logo"
+                      className="w-7 h-8 md:w-7 md:h-8 mt-4 mr-4"
+                    />
+                  )}
+                </div>
+              </div>
             </>
           )}
         </nav>
@@ -182,21 +215,15 @@ const Header = () => {
           className={
             !nav
               ? "fixed left-0 top-0 w-[100%] border-r bg-white border-r-gray-900 h-full ease-in-out duration-500"
-              : "fixed left-[-100%] ease-out-in duration-300"
+              : "fixed left-[-100%] ease-out-in duration-1000"
           }
         >
           <div onClick={handleNav} className="flex justify-end">
-            {!nav ? (
+            {!nav && (
               <img
                 src={closeLogo}
                 alt="logo"
                 className="w-7 h-8 md:w-7 md:h-8 mt-4 mr-4"
-              />
-            ) : (
-              <img
-                src={hamburgerLogo}
-                alt="logo"
-                className="w-7 h-8 md:w-7 md:h-8 "
               />
             )}
           </div>

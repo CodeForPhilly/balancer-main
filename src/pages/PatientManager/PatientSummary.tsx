@@ -57,7 +57,7 @@ const PatientSummary = ({
                   htmlFor="ageInput"
                   className="block font-latoBold text-sm pb-2"
                 >
-                  <b>{patientInfo.Description} sdfsdf</b>
+                  <b>{patientInfo.Description}</b>
                 </label>
               </p>
             </div>

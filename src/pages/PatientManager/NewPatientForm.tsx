@@ -4,6 +4,7 @@ import { FormEvent, ChangeEvent, useEffect } from "react";
 import { loader } from "../../assets";
 import { v4 as uuidv4 } from "uuid";
 import { PatientInfo } from "./PatientTypes";
+import axios from "axios";
 
 // TODO: refactor with Formik
 
@@ -36,17 +37,28 @@ const NewPatientForm = ({
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const { data } = await getMedicationInfo("");
+
+    const payload = {
+      diagnosis: patientInfo.Diagnosis,
+    };
+    // const { data } = await getMedicationInfo("");
+    const { data } = await axios.post(
+      "http://localhost:5000/diagnosis",
+      payload
+    );
+    console.log(data);
     const generatedGuid = uuidv4();
 
     setPatientInfo({ ...patientInfo, ID: generatedGuid });
-    if (data?.description) {
+    if (data) {
+      const description = data.message.choices[0].message.content;
+
       const newDescription = {
         ...patientInfo,
-        Description: data.description,
+        Description: description,
         ID: generatedGuid,
       };
-
+      console.log(data);
       const updatedAllPatientInfo = [newDescription, ...allPatientInfo];
       setPatientInfo(newDescription);
 
@@ -122,10 +134,16 @@ const NewPatientForm = ({
               className="url_input peer"
             >
               <option value="">Select a diagnosis</option>
-              <option value="Bipolar I">Bipolar I</option>
-              <option value="Bipolar II">Bipolar II</option>
-              <option value="Cyclothymic">Cyclothymic</option>
-              <option value="Other">Other</option>
+              <option value="Bipolar I mania">Bipolar I mania</option>
+              <option value="Bipolar I depression">Bipolar I depression</option>
+              <option value="Bipolar II hypomania">Bipolar II hypomania</option>
+              <option value="Bipolar II depression">
+                Bipolar II depression
+              </option>
+              <option value="Bipolar mixed episodes">
+                Bipolar mixed episodes
+              </option>
+              <option value="Cyclothymic disorder">Cyclothymic disorder</option>
             </select>
             {patientInfo.Diagnosis === "Other" && (
               <input

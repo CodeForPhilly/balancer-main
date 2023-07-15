@@ -9,11 +9,15 @@ import Typed from "react-typed";
 import React, { useState, useRef, useEffect } from "react";
 import MdNavBar from "./MdNavBar";
 import LoginMenuDropDown from "./LoginMenuDropDown";
+import { FeatureMenuDropDown } from "./FeatureMenuDropDown";
+import { ResearchMenuDropDown } from "../ResearchMenuDropDown";
 
 const Header = () => {
   const { pathname } = useLocation();
   const [showFeaturesMenu, setShowFeaturesMenu] = useState(false);
+  const [showResearchMenu, setShowResearchMenu] = useState(false);
   const dropdownRef = useRef(null);
+  const dropdownResearchRef = useRef(null);
   let delayTimeout: number | null = null;
   const [showLoginMenu, setShowLoginMenu] = useState(false);
 
@@ -26,11 +30,26 @@ const Header = () => {
       clearTimeout(delayTimeout);
     }
     setShowFeaturesMenu(true);
+    setShowResearchMenu(false);
   };
 
   const handleMouseLeave = () => {
     delayTimeout = setTimeout(() => {
       setShowFeaturesMenu(false);
+    }, 300); // Adjust the delay time as needed
+  };
+
+  const handleMouseEnterResearch = () => {
+    if (delayTimeout !== null) {
+      clearTimeout(delayTimeout);
+    }
+    setShowResearchMenu(true);
+    setShowFeaturesMenu(false);
+  };
+
+  const handleMouseLeaveResearch = () => {
+    delayTimeout = setTimeout(() => {
+      setShowResearchMenu(false);
     }, 300); // Adjust the delay time as needed
   };
 
@@ -57,112 +76,89 @@ const Header = () => {
           <Link to="/">
             <img src={logo} alt="logo" className="object-contain w-28 mr-9  " />
           </Link>
-          {pathname === "/" && (
-            <>
-              <div
-                onMouseEnter={handleMouseEnter}
-                onMouseLeave={handleMouseLeave}
-                ref={dropdownRef}
-                className=""
+          <>
+            <div
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+              ref={dropdownRef}
+              className=""
+            >
+              <span
+                className={` mr-9 text-black ${
+                  showFeaturesMenu
+                    ? "border-b-2 border-blue-600 hover:no-underline hover:border-b-2 hover:border-blue-600 cursor-pointer"
+                    : "hover:text-black hover:no-underline hover:border-b-2 hover:border-blue-600 cursor-pointer"
+                }`}
               >
+                Features
                 <span
-                  className={` mr-9 text-black ${
+                  className={` ${
                     showFeaturesMenu
-                      ? "border-b-2 border-blue-600 hover:no-underline hover:border-b-2 hover:border-blue-600 cursor-pointer"
-                      : "hover:text-black hover:no-underline hover:border-b-2 hover:border-blue-600 cursor-pointer"
+                      ? "absolute ml-1.5 transition-transform duration-300 rotate-180"
+                      : "absolute ml-1.5 "
                   }`}
                 >
-                  Features
-                  <span
-                    className={` ${
-                      showFeaturesMenu
-                        ? "absolute ml-1.5 transition-transform duration-300 rotate-180"
-                        : "absolute ml-1.5 "
-                    }`}
-                  >
-                    &#8593;
-                  </span>
-                </span>
-                {showFeaturesMenu && (
-                  <div className="font-inter absolute flex flex-row bg-white mt-0 py-2 left-0 right-0 w-full h-72 top-full shadow-lg rounded px-4 sm:px-6 md:px-8 lg:px-8 xl:px-50 2xl:px-56">
-                    <div className="  w-28 mr-9 "> </div>
-                    <div className="">
-                      <ul className=" mt-8 mb-8">
-                        <Link
-                          to="/login"
-                          className=" text-black hover:text-black hover:no-underline hover:border-b-2 hover:border-blue-600"
-                        >
-                          Diagnosis
-                        </Link>
-                      </ul>
-                      <ul className=" mb-8">
-                        <Link
-                          to="/login"
-                          className=" mr-9 text-black hover:text-black hover:no-underline hover:border-b-2 hover:border-blue-600"
-                        >
-                          Drug Summary and Comparison
-                          {/* <span className="absolute ml-1.5 transition-transform duration-300 hover:rotate-180">
-                            &#8593;
-                          </span> */}
-                        </Link>
-                      </ul>
-                      <ul className=" mb-8">
-                        <Link
-                          to="/login"
-                          className="mr-9 text-black hover:text-black hover:no-underline hover:border-b-2 hover:border-blue-600"
-                        >
-                          Drug Review Lookup
-                          {/* <span className="absolute ml-1.5 transition-transform duration-300 hover:rotate-180">
-                            &#8593;
-                          </span> */}
-                        </Link>
-                      </ul>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <Link
-                to="/register"
-                className="mr-9 text-black hover:text-black hover:no-underline hover:border-b-2 hover:border-blue-600"
-              >
-                Information
-                {/* <span className="absolute ml-1.5 transition-transform duration-300 hover:rotate-180">
                   &#8593;
-                </span> */}
-              </Link>
-            </>
-          )}
+                </span>
+              </span>
+              {showFeaturesMenu && <FeatureMenuDropDown />}
+            </div>
+
+            <div
+              onMouseEnter={handleMouseEnterResearch}
+              onMouseLeave={handleMouseLeaveResearch}
+              ref={dropdownResearchRef}
+              className=""
+            >
+              <span
+                className={` mr-9 text-black ${
+                  showResearchMenu
+                    ? "border-b-2 border-blue-600 hover:no-underline hover:border-b-2 hover:border-blue-600 cursor-pointer"
+                    : "hover:text-black hover:no-underline hover:border-b-2 hover:border-blue-600 cursor-pointer"
+                }`}
+              >
+                Research Information
+                <span
+                  className={` ${
+                    showResearchMenu
+                      ? "absolute ml-1.5 transition-transform duration-300 rotate-180"
+                      : "absolute ml-1.5 "
+                  }`}
+                >
+                  &#8593;
+                </span>
+                {showResearchMenu && <ResearchMenuDropDown />}
+              </span>
+            </div>
+          </>
         </nav>
 
         <nav className=" flex font-satoshi justify-end w-full items-center text-sm">
-          {pathname === "/" && (
-            <>
-              <Link
-                to="/login"
-                className="mr-9  text-black hover:text-black hover:no-underline hover:border-b-2 hover:border-blue-600"
-              >
-                About Balancer
-              </Link>
-              <Link
-                to="/register"
-                className="mr-9  text-black hover:text-black hover:no-underline hover:border-b-2 hover:border-blue-600"
-              >
-                Support
-              </Link>
-              <div onClick={handleLoginMenu}>
-                <img
-                  src={accountLogo}
-                  alt="logo"
-                  className="object-contain hover:bg-gray-100 hover:border-blue-600 hover:border-b-2"
-                />
-              </div>
-              <LoginMenuDropDown
-                showLoginMenu={showLoginMenu}
-                handleLoginMenu={handleLoginMenu}
+          <>
+            <Link
+              to="/login"
+              className="mr-9  text-black hover:text-black hover:no-underline hover:border-b-2 hover:border-blue-600"
+            >
+              About Balancer
+            </Link>
+            <Link
+              to="/register"
+              className="mr-9  text-black hover:text-black hover:no-underline hover:border-b-2 hover:border-blue-600"
+            >
+              Support
+            </Link>
+            <div onClick={handleLoginMenu}>
+              <img
+                src={accountLogo}
+                alt="logo"
+                className="object-contain hover:bg-gray-100 hover:border-blue-600 hover:border-b-2"
               />
-            </>
-          )}
+            </div>
+            <LoginMenuDropDown
+              showLoginMenu={showLoginMenu}
+              handleLoginMenu={handleLoginMenu}
+            />
+          </>
         </nav>
       </div>
       <MdNavBar />

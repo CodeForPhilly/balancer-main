@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import closeLogo from "../../assets/close.svg";
 import logo from "../../assets/balancer.png";
+import { Link } from "react-router-dom";
 
 interface LoginMenuDropDownProps {
   showLoginMenu: boolean;
@@ -13,7 +14,7 @@ const LoginMenuDropDown: React.FC<LoginMenuDropDownProps> = ({
 }) => {
   return (
     <>
-      {!showLoginMenu && (
+      {showLoginMenu && (
         <div
           className="fixed inset-0 bg-gray-900 opacity-50 z-5"
           onClick={handleLoginMenu}
@@ -21,7 +22,7 @@ const LoginMenuDropDown: React.FC<LoginMenuDropDownProps> = ({
       )}
       <div
         className={
-          !showLoginMenu
+          showLoginMenu
             ? "fixed right-0 top-0 p-16 w-[35%] border-l bg-white border-l-gray-900 h-full ease-in-out duration-1000 z20"
             : "ease-in-out duration-500 fixed right-[-100%]"
         }
@@ -31,8 +32,12 @@ const LoginMenuDropDown: React.FC<LoginMenuDropDownProps> = ({
             <h1>Balance account</h1>
           </div>
           <div onClick={handleLoginMenu}>
-            {!showLoginMenu && (
-              <img src={closeLogo} alt="logo" className="md:w-7 md:h-7" />
+            {showLoginMenu && (
+              <img
+                src={closeLogo}
+                alt="logo"
+                className="md:w-7 md:h-7 hover:border-blue-600 hover:border-b-2"
+              />
             )}
           </div>
         </div>
@@ -42,7 +47,7 @@ const LoginMenuDropDown: React.FC<LoginMenuDropDownProps> = ({
             <img
               src={logo}
               alt="logo"
-              className=" w-28 object-contain hover:bg-gray-100 hover:border-blue-600 hover:border-b-2"
+              className=" w-28 object-contain hover:bg-gray-100"
             />
           </div>
         </div>
@@ -63,18 +68,22 @@ const LoginMenuDropDown: React.FC<LoginMenuDropDownProps> = ({
         </div>
         <div className="h-32 flex flex-col justify-center items-center text-center">
           {" "}
-          <button
-            type="submit"
-            className="mt-12 bg-blue-500 rounded-xl text-white py-2 px-24 hover:bg-blue-600"
-          >
-            <p>Login</p>
-          </button>
-          <button
-            type="submit"
-            className="mt-1 bg-blue-500 rounded-xl text-white py-2 px-8 hover:bg-blue-600"
-          >
-            <p>Sign up for a new account</p>
-          </button>
+          <Link to="/login">
+            <button
+              type="submit"
+              className="mt-12 bg-blue-500 rounded-xl text-white py-2 px-24 hover:bg-blue-600"
+            >
+              <p>Login</p>
+            </button>
+          </Link>
+          <Link to="/register">
+            <button
+              type="submit"
+              className="mt-1 bg-blue-500 rounded-xl text-white py-2 px-8 hover:bg-blue-600"
+            >
+              <p>Sign up for a new account</p>
+            </button>
+          </Link>
         </div>
       </div>
     </>

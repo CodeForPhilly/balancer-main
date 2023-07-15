@@ -14,7 +14,7 @@ const PatientManager = () => {
     Diagnosis: "",
     OtherDiagnosis: "",
     Description: "",
-    Age: 18,
+    CurrentMedications: "",
   });
 
   const [allPatientInfo, setAllPatientInfo] = useState<PatientInfo[]>([]);

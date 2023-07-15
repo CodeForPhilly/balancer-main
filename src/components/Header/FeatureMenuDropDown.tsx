@@ -1,4 +1,3 @@
-import React from "react";
 import { Link } from "react-router-dom";
 
 export const FeatureMenuDropDown = () => {
@@ -8,7 +7,7 @@ export const FeatureMenuDropDown = () => {
       <div className="">
         <ul className=" mt-8 mb-8">
           <Link
-            to="/login"
+            to="/"
             className=" text-black hover:text-black hover:no-underline hover:border-b-2 hover:border-blue-600"
           >
             Diagnosis

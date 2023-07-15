@@ -1,7 +1,7 @@
 import { FormEvent, ChangeEvent, useEffect } from "react";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import { loader } from "../../assets";
+// import { loader } from "../../assets";
 import { v4 as uuidv4 } from "uuid";
 import { PatientInfo } from "./PatientTypes";
 import axios from "axios";
@@ -21,7 +21,6 @@ const NewPatientForm = ({
   setPatientInfo,
   allPatientInfo,
   setAllPatientInfo,
-  getMedicationInfo,
 }: NewPatientFormProps) => {
   useEffect(() => {
     const patientInfoFromLocalStorage = JSON.parse(
@@ -43,7 +42,7 @@ const NewPatientForm = ({
     };
     // const { data } = await getMedicationInfo("");
     const { data } = await axios.post(
-      "http://localhost:5000/diagnosis",
+      "http://localhost:3001/diagnosis",
       payload
     );
     console.log(data);
@@ -133,7 +132,7 @@ const NewPatientForm = ({
               required
               className="url_input peer"
             >
-              <option value="">Select a diagnosis</option>
+              <option value="Other">Select a diagnosis</option>
               <option value="Bipolar I mania">Bipolar I mania</option>
               <option value="Bipolar I depression">Bipolar I depression</option>
               <option value="Bipolar II hypomania">Bipolar II hypomania</option>
@@ -166,14 +165,17 @@ const NewPatientForm = ({
               htmlFor="ageInput"
               className="block font-latoBold text-sm pb-2"
             >
-              Age:
+              Current Medications:
             </label>
             <input
               id="ageInput"
-              type="number"
-              value={patientInfo.Age}
+              type="string"
+              value={patientInfo.CurrentMedications}
               onChange={(e) =>
-                setPatientInfo({ ...patientInfo, Age: Number(e.target.value) })
+                setPatientInfo({
+                  ...patientInfo,
+                  CurrentMedications: String(e.target.value),
+                })
               }
               required
               className="url_input peer"

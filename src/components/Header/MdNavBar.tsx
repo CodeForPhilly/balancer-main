@@ -2,7 +2,7 @@ import closeLogo from "../../assets/close.svg";
 import hamburgerLogo from "../../assets/hamburger.svg";
 import { Link } from "react-router-dom";
 import logo from "../../assets/balancer.png";
-import React, { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { useLocation } from "react-router-dom";
 
 const MdNavBar = () => {

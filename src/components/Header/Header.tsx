@@ -1,19 +1,17 @@
 import logo from "../../assets/balancer.png";
 import { Link } from "react-router-dom";
-import { useLocation } from "react-router-dom";
+// import { useLocation } from "react-router-dom";
 import accountLogo from "../../assets/account.svg";
-import closeLogo from "../../assets/close.svg";
-import hamburgerLogo from "../../assets/hamburger.svg";
 import "../../components/Header/header.css";
-import Typed from "react-typed";
-import React, { useState, useRef, useEffect } from "react";
+// import Typed from "react-typed";
+import { useState, useRef, useEffect } from "react";
 import MdNavBar from "./MdNavBar";
 import LoginMenuDropDown from "./LoginMenuDropDown";
 import { FeatureMenuDropDown } from "./FeatureMenuDropDown";
 import { ResearchMenuDropDown } from "../ResearchMenuDropDown";
 
 const Header = () => {
-  const { pathname } = useLocation();
+  // const { pathname } = useLocation();
   const [showFeaturesMenu, setShowFeaturesMenu] = useState(false);
   const [showResearchMenu, setShowResearchMenu] = useState(false);
   const dropdownRef = useRef(null);

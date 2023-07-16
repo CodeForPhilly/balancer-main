@@ -3,7 +3,5 @@ export interface PatientInfo {
   Diagnosis: string;
   OtherDiagnosis: string;
   Description: string;
-  Age: number;
+  CurrentMedications: string;
 }
-
-

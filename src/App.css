@@ -101,7 +101,7 @@
 }
 
 .black_btn {
-  @apply rounded-full border border-black bg-blue-600 py-2.5 px-6 text-sm text-white transition-all hover:bg-white hover:text-black;
+  @apply rounded-full border border-black bg-blue-500 py-2.5 px-6 text-sm text-white transition-all hover:bg-white hover:text-black;
 }
 
 .head_text {
@@ -127,6 +127,10 @@
 
 .url_input {
   @apply block w-full rounded-md border border-gray-300 bg-white py-2.5 pl-5 pr-5 text-sm shadow-lg font-satoshi font-medium focus:border-black focus:outline-none focus:ring-0;
+}
+
+.url_input_loading {
+  @apply block w-full rounded-md border border-gray-300 bg-white py-2.5 pl-5 pr-5 text-sm shadow-lg font-satoshi font-medium focus:border-black focus:outline-none focus:ring-0 bg-gray-300 bg-opacity-50;
 }
 
 .submit_btn {

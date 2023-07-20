@@ -1,6 +1,6 @@
 [[package]]
 name = "aiohttp"
-version = "3.8.4"
+version = "3.8.5"
 description = "Async http client/server framework (asyncio)"
 category = "main"
 optional = false
@@ -99,7 +99,7 @@ python-versions = ">=3.7.0"
 
 [[package]]
 name = "click"
-version = "8.1.5"
+version = "8.1.6"
 description = "Composable command line interface toolkit"
 category = "main"
 optional = false
@@ -137,7 +137,7 @@ bcrypt = ["bcrypt"]
 name = "exceptiongroup"
 version = "1.1.2"
 description = "Backport of PEP 654 (exception groups)"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 
@@ -164,7 +164,7 @@ python-versions = ">=3.5"
 name = "iniconfig"
 version = "2.0.0"
 description = "brain-dead simple config-ini parsing"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 
@@ -229,7 +229,7 @@ wandb = ["wandb", "numpy", "pandas (>=1.2.3)", "pandas-stubs (>=1.1.0.11)", "ope
 name = "packaging"
 version = "23.1"
 description = "Core utilities for Python packages"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 
@@ -237,7 +237,7 @@ python-versions = ">=3.7"
 name = "pluggy"
 version = "1.2.0"
 description = "plugin and hook calling mechanisms for python"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 
@@ -249,7 +249,7 @@ testing = ["pytest", "pytest-benchmark"]
 name = "pytest"
 version = "7.4.0"
 description = "pytest: simple powerful testing with Python"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 
@@ -268,7 +268,7 @@ testing = ["argcomplete", "attrs (>=19.2.0)", "hypothesis (>=3.56)", "mock", "no
 name = "pytest-django"
 version = "4.5.2"
 description = "A Django plugin for pytest."
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.5"
 
@@ -278,17 +278,6 @@ pytest = ">=5.4.0"
 [package.extras]
 docs = ["sphinx", "sphinx-rtd-theme"]
 testing = ["django", "django-configurations (>=2.0)"]
-
-[[package]]
-name = "python-dotenv"
-version = "1.0.0"
-description = "Read key-value pairs from a .env file and set them as environment variables"
-category = "main"
-optional = false
-python-versions = ">=3.8"
-
-[package.extras]
-cli = ["click (>=5.0)"]
 
 [[package]]
 name = "regex"
@@ -356,7 +345,7 @@ blobfile = ["blobfile (>=2)"]
 name = "tomli"
 version = "2.0.1"
 description = "A lil' TOML parser"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 
@@ -395,7 +384,7 @@ python-versions = ">=2"
 
 [[package]]
 name = "urllib3"
-version = "2.0.3"
+version = "2.0.4"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
 category = "main"
 optional = false
@@ -422,7 +411,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "fb8279b3dd71a3767817f35d25fcdabc2490fa1fb4b0a9a9f50aa314ce9e6389"
+content-hash = "ebf9ec188179e84af9d74841c88e01aee825fa753ba6023559ffb02b9143b605"
 
 [metadata.files]
 aiohttp = []
@@ -448,7 +437,6 @@ packaging = []
 pluggy = []
 pytest = []
 pytest-django = []
-python-dotenv = []
 regex = []
 requests = []
 soupsieve = []

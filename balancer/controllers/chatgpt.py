@@ -16,7 +16,7 @@ def extract_webpage(request: str) -> JsonResponse:
     """Takes a URL and returns a summary of page's text content.
 
     Currently only uses the first 3500 tokens."""
-    openai.api_key = os.getenv("OPENAI_API_KEY")
+    openai.api_key = os.environ.get("OPENAI_API_KEY")
     data = json.loads(request.body)
     webpage_url = data["webpage_url"]
 
@@ -59,7 +59,7 @@ def get_tokens(string: str, encoding_name: str) -> str:
 @csrf_exempt
 def diagnosis(request: str) -> JsonResponse:
     """Takes a diagnosis and returns a table of the most commonly prescribed medications for that diagnosis."""
-    openai.api_key = os.getenv("OPENAI_API_KEY")
+    openai.api_key = os.environ.get("OPENAI_API_KEY")
     data = json.loads(request.body)
 
     if data is not None:

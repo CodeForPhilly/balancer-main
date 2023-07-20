@@ -12,7 +12,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 
 @csrf_exempt
-def extract_webpage(request: str) -> JsonResponse:
+def extract_text(request: str) -> JsonResponse:
     """Takes a URL and returns a summary of page's text content.
 
     Currently only uses the first 3500 tokens."""

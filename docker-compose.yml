@@ -8,7 +8,7 @@ services:
       - POSTGRES_PASSWORD=password
   backend:
     image: docker.fakecodeforphillydomain.com/balancer_backend/local
-    command: ["/app/tools/wait-for-it.sh", "db:5432", "--", "python", "/app/manage.py", "runserver", "0.0.0.0:8000"]
+    command: ["/app/tools/wait-for-it.sh", "db:5432", "--", "python", "/app/backend/manage.py", "runserver", "0.0.0.0:8000"]
     environment:
       - DJANGO_SETTINGS_MODULE=balancer.settings
     volumes:

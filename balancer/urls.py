@@ -16,7 +16,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from balancer.controllers import chatgpt
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path("admin/", admin.site.urls),
+    path("extract_text/", chatgpt.extract_text, name="post_web_text"),
+    path("diagnosis/", chatgpt.diagnosis, name="post_diagnosis"),
 ]

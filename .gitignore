@@ -162,3 +162,7 @@ cython_debug/
 
 # Custom script
 *git-via-*
+
+# test env
+balancer-test-env/
+.vscode

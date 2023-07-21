@@ -13,9 +13,11 @@ from django.views.decorators.csrf import csrf_exempt
 
 @csrf_exempt
 def extract_text(request: str) -> JsonResponse:
-    """Takes a URL and returns a summary of page's text content.
+    """
+    Takes a URL and returns a summary of page's text content.
 
-    Currently only uses the first 3500 tokens."""
+    Currently only uses the first 3500 tokens.
+    """
     openai.api_key = os.environ.get("OPENAI_API_KEY")
     data = json.loads(request.body)
     webpage_url = data["webpage_url"]

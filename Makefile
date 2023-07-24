@@ -108,6 +108,12 @@ migrations: pull-python-docker set-app-vars
 		-f config/docker/compose/docker-compose.local.yaml \
 		run -it ${DOCKER_PROJECT_SERVICE_NAME} bash -c "cd app && DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_BASE} ./manage.py makemigrations"
 	
+run-tests: pull-python-docker set-app-vars
+	NAMESPACE=$(NAMESPACE) \
+	docker compose \
+		-f config/docker/compose/docker-compose.local.yaml \
+		run -it ${DOCKER_PROJECT_SERVICE_NAME} bash -c "cd app/balancer && pytest ${TESTS_ROOT}"
+
 init-project:
 	cd $(DOCKER_CTX_FROM_PROJECT_ROOT)/$(DOCKER_PYTHON_DOCKER_FROM_CTX) && \
 		DOCKER_ABSOLUTE_APP_SOURCE=$(shell realpath ".") \

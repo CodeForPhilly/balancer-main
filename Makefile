@@ -95,6 +95,7 @@ launch-local-project: pull-python-docker set-app-vars
 		-f config/docker/compose/docker-compose.local.yaml \
 		run -it ${DOCKER_PROJECT_SERVICE_NAME} $(DOCKER_LOCAL_CMD)
 
+launch-shell-plus: pull-python-docker set-app-vars
 	NAMESPACE=$(NAMESPACE) \
 	PROJECT_NAME=$(PROJECT_NAME) \
 	docker compose \

@@ -15,6 +15,7 @@ export
 NAMESPACE ?= local
 PROJECT_NAME ?= balancer_backend
 PYTHON_VERSION ?= 3.10
+VENV=source ${HOME}/.virtualenvs/balancer-backend/bin/activate
 
 DOCKER_APP_DEST ?= /app
 DOCKER_CTX_FROM_COMPOSE ?= ../../..
@@ -76,6 +77,22 @@ build-project: pull-python-docker set-app-vars
 		DONT_PASS_SSH_KEYS=1 \
 		make build-project
 
+build-venv:
+	echo "Checking for 'balancer_backend' virtualenv in ${HOME}/.virtualenvs"
+	@if ! [ -d ${HOME}/.virtualenvs/balancer-backend ]; then\
+		echo "No venv. Attempting to create.";\
+		mkdir -p ${HOME}/.virtualenvs;\
+		python3.10 -m venv ${HOME}/.virtualenvs/balancer-backend;\
+		chmod u+x ${HOME}/.virtualenvs/balancer-backend/bin/activate;\
+		echo "Venv successfully created!";\
+	else\
+		echo "Venv found!";\
+	fi
+
+	${VENV} && activate && pip install pytest-playwright;
+
+install-playwright-browsers: build-venv
+	${VENV} && playwright install chromium
 deploy-project: pull-python-docker set-app-vars
 	cd $(DOCKER_CTX_FROM_PROJECT_ROOT)/$(DOCKER_PYTHON_DOCKER_FROM_CTX) && \
 		DOCKER_COMPOSE_FILE=$(DOCKER_COMPOSE_FILE) \

@@ -166,3 +166,6 @@ cython_debug/
 # test env
 balancer-test-env/
 .vscode
+
+# playwright
+config/docker/compose/browsers

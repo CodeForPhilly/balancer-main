@@ -39,6 +39,8 @@ DOCKER_ENTRYPOINT_SOURCE_FROM_CTX ?= $(DOCKER_PROJECT_ROOT_FROM_CTX)/config/dock
 DOCKER_USER_CONFIG_PATH_FROM_CTX ?= $(DOCKER_PROJECT_ROOT_FROM_CTX)/config
 DOCKER_USER_LOCAL_LOG_PATH_FROM_CTX ?= $(DOCKER_PROJECT_ROOT_FROM_CTX)/logs
 
+all: pull-python-docker build-base-image build-project
+
 # No need to do this manually
 pull-python-docker:
 	if ! [ -d Python-Docker ]; then\
@@ -117,4 +119,3 @@ init-project:
 		DOCKER_TAG_VERSION=$(DOCKER_TAG_VERSION) \
 		PYTHON_VERSION=$(PYTHON_VERSION) \
 		make init-project
-

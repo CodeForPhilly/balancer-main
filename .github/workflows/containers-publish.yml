@@ -1,0 +1,66 @@
+name: 'Containers: Publish'
+
+on:
+  workflow_dispatch
+#  push:
+#    tags: [ 'v*' ]
+
+
+jobs:
+  release-containers:
+    name: Build and Push
+    runs-on: ubuntu-latest
+    steps:
+
+    - uses: actions/checkout@v3
+
+    - name: Login to ghcr.io Docker registry
+      uses: docker/login-action@v2
+      with:
+        registry: ghcr.io
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Compute Docker container image addresses
+      run: |
+        DOCKER_REPOSITORY="ghcr.io/${GITHUB_REPOSITORY,,}"
+        DOCKER_TAG="${GITHUB_REF:11}"
+
+        echo "DOCKER_REPOSITORY=${DOCKER_REPOSITORY}" >> $GITHUB_ENV
+        echo "DOCKER_TAG=${DOCKER_TAG}" >> $GITHUB_ENV
+
+        echo "Using: ${DOCKER_REPOSITORY}/*:${DOCKER_TAG}"
+
+    # - name: 'Pull previous Docker container image: :latest'
+    #   run: docker pull "${DOCKER_REPOSITORY}:latest" || true
+
+    - name: 'Pull previous Docker container image: frontend:latest'
+      run: docker pull "${DOCKER_REPOSITORY}/frontend:latest" || true
+
+    # - name: 'Build Docker container image: :latest'
+    #   run: |
+    #     docker build \
+    #         --cache-from "${DOCKER_REPOSITORY}:latest" \
+    #         --tag "${DOCKER_REPOSITORY}:latest" \
+    #         --tag "${DOCKER_REPOSITORY}:${DOCKER_TAG}" \
+    #         src/django
+
+    - name: 'Build Docker container image: frontend:latest'
+      run: |
+        docker build \
+            --cache-from "${DOCKER_REPOSITORY}/frontend:latest" \
+            --tag "${DOCKER_REPOSITORY}/frontend:latest" \
+            --tag "${DOCKER_REPOSITORY}/frontend:${DOCKER_TAG}" \
+            frontend
+
+    # - name: Push Docker container image frontend:latest"
+    #   run: docker push "${DOCKER_REPOSITORY}/frontend:latest"
+
+    # - name: Push Docker container image frontend:v*"
+    #   run: docker push "${DOCKER_REPOSITORY}/frontend:${DOCKER_TAG}"
+
+    # - name: Push Docker container image :latest"
+    #   run: docker push "${DOCKER_REPOSITORY}:latest"
+
+    # - name: Push Docker container image :v*"
+    #   run: docker push "${DOCKER_REPOSITORY}:${DOCKER_TAG}"

@@ -53,11 +53,11 @@ jobs:
             --tag "${DOCKER_REPOSITORY}/frontend:${DOCKER_TAG}" \
             frontend
 
-    # - name: Push Docker container image frontend:latest"
-    #   run: docker push "${DOCKER_REPOSITORY}/frontend:latest"
+    - name: Push Docker container image frontend:latest"
+      run: docker push "${DOCKER_REPOSITORY}/frontend:latest"
 
-    # - name: Push Docker container image frontend:v*"
-    #   run: docker push "${DOCKER_REPOSITORY}/frontend:${DOCKER_TAG}"
+    - name: Push Docker container image frontend:v*"
+      run: docker push "${DOCKER_REPOSITORY}/frontend:${DOCKER_TAG}"
 
     # - name: Push Docker container image :latest"
     #   run: docker push "${DOCKER_REPOSITORY}:latest"

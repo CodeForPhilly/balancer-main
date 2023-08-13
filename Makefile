@@ -79,6 +79,15 @@ build-project: pull-python-docker set-app-vars
 		DONT_PASS_SSH_KEYS=1 \
 		make build-project
 
+create-superuser: pull-python-docker set-app-vars
+	NAMESPACE=$(NAMESPACE) \
+	docker compose \
+		-f config/docker/compose/docker-compose.local.yaml \
+		run \
+			-it \
+			-e DJANGO_SETTINGS_MODULE=${DJANGO_LOCAL_SETTINGS} \
+		${DOCKER_PROJECT_SERVICE_NAME} bash -c "cd app && ./manage.py createsuperuser"
+
 deploy-project: pull-python-docker set-app-vars
 	cd $(DOCKER_CTX_FROM_PROJECT_ROOT)/$(DOCKER_PYTHON_DOCKER_FROM_CTX) && \
 		DOCKER_COMPOSE_FILE=$(DOCKER_COMPOSE_FILE) \
@@ -101,7 +110,7 @@ launch-local-project: pull-python-docker set-app-vars
 			 -it \
 			 --rm \
 			 --name=balancer-local \
-			 -e DJANGO_SETTINGS_MODULE=$(DJANGO_LOCAL_SETTINGS)
+			 -e DJANGO_SETTINGS_MODULE=$(DJANGO_LOCAL_SETTINGS) \
 		${DOCKER_PROJECT_SERVICE_NAME} $(DOCKER_LOCAL_CMD)
 
 
@@ -116,13 +125,34 @@ migrations: pull-python-docker set-app-vars
 	NAMESPACE=$(NAMESPACE) \
 	docker compose \
 		-f config/docker/compose/docker-compose.local.yaml \
-		run -it ${DOCKER_PROJECT_SERVICE_NAME} bash -c "cd app && DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE} ./manage.py makemigrations"
+		run \
+			-it \
+			-e DJANGO_SETTINGS_MODULE=${DJANGO_LOCAL_SETTINGS} \
+		${DOCKER_PROJECT_SERVICE_NAME} bash -c "cd app && ./manage.py makemigrations"
+
+migrate: pull-python-docker set-app-vars
+	docker compose \
+		-f config/docker/compose/docker-compose.local.yaml \
+		run \
+			-it \
+			-e DJANGO_SETTINGS_MODULE=${DJANGO_LOCAL_SETTINGS} \
+		${DOCKER_PROJECT_SERVICE_NAME} bash -c "cd app && ./manage.py migrate"
 
 run-tests: pull-python-docker set-app-vars
 	NAMESPACE=$(NAMESPACE) \
 	docker compose \
 		-f config/docker/compose/docker-compose.local.yaml \
 		run -it ${DOCKER_PROJECT_SERVICE_NAME} bash -c "cd app/balancer && pytest ${TESTS_ROOT}"
+
+launch-local-server: pull-python-docker set-app-vars
+	NAMESPACE=local \
+	docker compose \
+		-f config/docker/compose/docker-compose.local.yaml \
+		run \
+			--service-ports \
+			-it \
+			-e DJANGO_SETTINGS_MODULE=${DJANGO_LOCAL_SETTINGS} \
+		${DOCKER_PROJECT_SERVICE_NAME} bash -c "cd app && ./manage.py runserver 0.0.0.0:8000"
 
 init-project:
 	cd $(DOCKER_CTX_FROM_PROJECT_ROOT)/$(DOCKER_PYTHON_DOCKER_FROM_CTX) && \

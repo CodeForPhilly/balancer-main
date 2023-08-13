@@ -5,5 +5,6 @@ services:
     environment:
       PROJECT_NAME: ${PROJECT_NAME}
 
+      DJANGO_SETTINGS_MODULE: config.settings.local
     volumes:
       - "${DOCKER_APP_SOURCE_FROM_COMPOSE}:${DOCKER_APP_DEST}"

@@ -14,7 +14,6 @@ export
 
 
 DJANGO_SETTINGS_MODULE=config.settings.base
-DJANGO_LOCAL_SETTINGS=config.settings.local
 NAMESPACE ?= local
 PROJECT_NAME ?= balancer_backend
 PYTHON_VERSION ?= 3.10
@@ -85,7 +84,6 @@ create-superuser: pull-python-docker set-app-vars
 		-f config/docker/compose/docker-compose.local.yaml \
 		run \
 			-it \
-			-e DJANGO_SETTINGS_MODULE=${DJANGO_LOCAL_SETTINGS} \
 		${DOCKER_PROJECT_SERVICE_NAME} bash -c "cd app && ./manage.py createsuperuser"
 
 deploy-project: pull-python-docker set-app-vars
@@ -110,7 +108,6 @@ launch-local-project: pull-python-docker set-app-vars
 			 -it \
 			 --rm \
 			 --name=balancer-local \
-			 -e DJANGO_SETTINGS_MODULE=$(DJANGO_LOCAL_SETTINGS) \
 		${DOCKER_PROJECT_SERVICE_NAME} $(DOCKER_LOCAL_CMD)
 
 
@@ -127,7 +124,6 @@ migrations: pull-python-docker set-app-vars
 		-f config/docker/compose/docker-compose.local.yaml \
 		run \
 			-it \
-			-e DJANGO_SETTINGS_MODULE=${DJANGO_LOCAL_SETTINGS} \
 		${DOCKER_PROJECT_SERVICE_NAME} bash -c "cd app && ./manage.py makemigrations"
 
 migrate: pull-python-docker set-app-vars
@@ -135,7 +131,6 @@ migrate: pull-python-docker set-app-vars
 		-f config/docker/compose/docker-compose.local.yaml \
 		run \
 			-it \
-			-e DJANGO_SETTINGS_MODULE=${DJANGO_LOCAL_SETTINGS} \
 		${DOCKER_PROJECT_SERVICE_NAME} bash -c "cd app && ./manage.py migrate"
 
 run-tests: pull-python-docker set-app-vars
@@ -151,7 +146,6 @@ launch-local-server: pull-python-docker set-app-vars
 		run \
 			--service-ports \
 			-it \
-			-e DJANGO_SETTINGS_MODULE=${DJANGO_LOCAL_SETTINGS} \
 		${DOCKER_PROJECT_SERVICE_NAME} bash -c "cd app && ./manage.py runserver 0.0.0.0:8000"
 
 init-project:

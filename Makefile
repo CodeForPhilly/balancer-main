@@ -12,6 +12,9 @@ endif
 
 export
 
+
+DJANGO_SETTINGS_MODULE=config.settings.base
+DJANGO_LOCAL_SETTINGS=config.settings.local
 NAMESPACE ?= local
 PROJECT_NAME ?= balancer_backend
 PYTHON_VERSION ?= 3.10
@@ -93,7 +96,14 @@ launch-local-project: pull-python-docker set-app-vars
 	NAMESPACE=$(NAMESPACE) \
 	docker compose \
 		-f config/docker/compose/docker-compose.local.yaml \
-		run -it ${DOCKER_PROJECT_SERVICE_NAME} $(DOCKER_LOCAL_CMD)
+		run \
+			 --service-ports \
+			 -it \
+			 --rm \
+			 --name=balancer-local \
+			 -e DJANGO_SETTINGS_MODULE=$(DJANGO_LOCAL_SETTINGS)
+		${DOCKER_PROJECT_SERVICE_NAME} $(DOCKER_LOCAL_CMD)
+
 
 launch-shell-plus: pull-python-docker set-app-vars
 	NAMESPACE=$(NAMESPACE) \
@@ -106,8 +116,8 @@ migrations: pull-python-docker set-app-vars
 	NAMESPACE=$(NAMESPACE) \
 	docker compose \
 		-f config/docker/compose/docker-compose.local.yaml \
-		run -it ${DOCKER_PROJECT_SERVICE_NAME} bash -c "cd app && DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_BASE} ./manage.py makemigrations"
-	
+		run -it ${DOCKER_PROJECT_SERVICE_NAME} bash -c "cd app && DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE} ./manage.py makemigrations"
+
 run-tests: pull-python-docker set-app-vars
 	NAMESPACE=$(NAMESPACE) \
 	docker compose \

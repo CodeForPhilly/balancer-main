@@ -56,20 +56,21 @@ set-app-vars:
 		PROJECT_NAME=$(PROJECT_NAME) \
 		DOCKER_APP_SOURCE_FROM_COMPOSE=$(DOCKER_APP_SOURCE_FROM_COMPOSE) \
 
-# No need to do this manually
+# Used for builds and launches.
 pull-python-docker:
 	if ! [ -d Python-Docker ]; then\
 		git clone https://github.com/jusjayson/Python-Docker.git;\
 	fi
 	cd Python-Docker && git pull;
 
+# Builds base python/poetry image of given version
 build-base-image: pull-python-docker set-app-vars
 	cd $(DOCKER_BACKEND_CTX_FROM_PROJECT_ROOT)/$(DOCKER_PYTHON_DOCKER_FROM_CTX) && \
 		DOCKER_REGISTRY=$(DOCKER_REGISTRY) \
 		PYTHON_VERSION=$(PYTHON_VERSION) \
 		make build-base-image
 
-build-project: pull-python-docker set-app-vars
+# Installs projects and requirements (per pyproject.toml)
 build-project: set-app-vars
 	cd $(DOCKER_BACKEND_CTX_FROM_PROJECT_ROOT)/$(DOCKER_PYTHON_DOCKER_FROM_CTX) && \
 		DOCKER_BACKEND_CTX_FROM_PYTHON_DOCKER=$(DOCKER_BACKEND_CTX_FROM_PYTHON_DOCKER) \
@@ -81,7 +82,7 @@ build-project: set-app-vars
 		DONT_PASS_SSH_KEYS=1 \
 		make build-project
 
-create-superuser: pull-python-docker set-app-vars migrations migrate
+# Create django superuser
 create-superuser: set-app-vars migrations migrate
 	NAMESPACE=$(NAMESPACE) \
 	docker compose \
@@ -90,7 +91,7 @@ create-superuser: set-app-vars migrations migrate
 			-it \
 		${DOCKER_PROJECT_SERVICE_NAME} bash -c "cd app && ./manage.py createsuperuser"
 
-deploy-project: pull-python-docker set-app-vars
+# Initialize poetry project in order to generate pyproject.toml and poetry.lock
 init-project:
 	cd $(DOCKER_BACKEND_CTX_FROM_PROJECT_ROOT)/$(DOCKER_PYTHON_DOCKER_FROM_CTX) && \
 		DOCKER_ABSOLUTE_APP_SOURCE=$(shell realpath ".") \
@@ -99,7 +100,7 @@ init-project:
 		PYTHON_VERSION=$(PYTHON_VERSION) \
 		make init-project
 
-launch-local-project: pull-python-docker set-app-vars
+# Run any command $(DOCKER_LOCAL_CMD) in local container
 launch-local-project: set-app-vars
 	NAMESPACE=$(NAMESPACE) \
 	docker compose \
@@ -111,7 +112,7 @@ launch-local-project: set-app-vars
 			 --name=balancer-local \
 		${DOCKER_PROJECT_SERVICE_NAME} $(DOCKER_LOCAL_CMD)
 
-launch-local-server: pull-python-docker set-app-vars
+# Launch django runserver in local container
 launch-local-server: set-app-vars
 	NAMESPACE=local \
 	docker compose \
@@ -121,7 +122,7 @@ launch-local-server: set-app-vars
 			-it \
 		${DOCKER_PROJECT_SERVICE_NAME} bash -c "cd app && ./manage.py runserver 0.0.0.0:8000"
 
-launch-shell-plus: pull-python-docker set-app-vars
+# Launch django shell-plus in local container
 launch-shell-plus: set-app-vars
 	NAMESPACE=$(NAMESPACE) \
 	PROJECT_NAME=$(PROJECT_NAME) \
@@ -129,7 +130,7 @@ launch-shell-plus: set-app-vars
 		-f config/docker/compose/docker-compose.local.yaml \
 		run -it ${DOCKER_PROJECT_SERVICE_NAME} $(DOCKER_LOCAL_CMD)
 
-migrations: pull-python-docker set-app-vars
+# Run django makemigrations in local container
 migrations: set-app-vars
 	NAMESPACE=$(NAMESPACE) \
 	docker compose \
@@ -138,7 +139,7 @@ migrations: set-app-vars
 			-it \
 		${DOCKER_PROJECT_SERVICE_NAME} bash -c "cd app && ./manage.py makemigrations"
 
-migrate: pull-python-docker set-app-vars
+# Run django migrate in local container
 migrate: set-app-vars
 	docker compose \
 		-f config/docker/compose/docker-compose.local.yaml \
@@ -146,7 +147,7 @@ migrate: set-app-vars
 			-it \
 		${DOCKER_PROJECT_SERVICE_NAME} bash -c "cd app && ./manage.py migrate"
 
-run-tests: pull-python-docker set-app-vars
+# Run django tests (from ${TESTS_ROOT}) in local container
 run-tests: set-app-vars
 	NAMESPACE=$(NAMESPACE) \
 	docker compose \

@@ -70,6 +70,7 @@ build-base-image: pull-python-docker set-app-vars
 		make build-base-image
 
 build-project: pull-python-docker set-app-vars
+build-project: set-app-vars
 	cd $(DOCKER_BACKEND_CTX_FROM_PROJECT_ROOT)/$(DOCKER_PYTHON_DOCKER_FROM_CTX) && \
 		DOCKER_BACKEND_CTX_FROM_PYTHON_DOCKER=$(DOCKER_BACKEND_CTX_FROM_PYTHON_DOCKER) \
 		DOCKER_ENTRYPOINT_DEST=$(DOCKER_ENTRYPOINT_DEST) \
@@ -81,6 +82,7 @@ build-project: pull-python-docker set-app-vars
 		make build-project
 
 create-superuser: pull-python-docker set-app-vars migrations migrate
+create-superuser: set-app-vars migrations migrate
 	NAMESPACE=$(NAMESPACE) \
 	docker compose \
 		-f config/docker/compose/docker-compose.local.yaml \
@@ -89,13 +91,6 @@ create-superuser: pull-python-docker set-app-vars migrations migrate
 		${DOCKER_PROJECT_SERVICE_NAME} bash -c "cd app && ./manage.py createsuperuser"
 
 deploy-project: pull-python-docker set-app-vars
-	cd $(DOCKER_BACKEND_CTX_FROM_PROJECT_ROOT)/$(DOCKER_PYTHON_DOCKER_FROM_CTX) && \
-		DOCKER_COMPOSE_FILE=$(DOCKER_COMPOSE_FILE) \
-		DOCKER_PROJECT_SERVICE_NAME=$(DOCKER_PROJECT_SERVICE_NAME) \
-		DOCKER_WATCH=$(DOCKER_WATCH) \
-		NAMESPACE=$(NAMESPACE) \
-	make deploy-project
-
 init-project:
 	cd $(DOCKER_BACKEND_CTX_FROM_PROJECT_ROOT)/$(DOCKER_PYTHON_DOCKER_FROM_CTX) && \
 		DOCKER_ABSOLUTE_APP_SOURCE=$(shell realpath ".") \
@@ -105,6 +100,7 @@ init-project:
 		make init-project
 
 launch-local-project: pull-python-docker set-app-vars
+launch-local-project: set-app-vars
 	NAMESPACE=$(NAMESPACE) \
 	docker compose \
 		-f config/docker/compose/docker-compose.local.yaml \
@@ -116,6 +112,7 @@ launch-local-project: pull-python-docker set-app-vars
 		${DOCKER_PROJECT_SERVICE_NAME} $(DOCKER_LOCAL_CMD)
 
 launch-local-server: pull-python-docker set-app-vars
+launch-local-server: set-app-vars
 	NAMESPACE=local \
 	docker compose \
 		-f config/docker/compose/docker-compose.local.yaml \
@@ -125,6 +122,7 @@ launch-local-server: pull-python-docker set-app-vars
 		${DOCKER_PROJECT_SERVICE_NAME} bash -c "cd app && ./manage.py runserver 0.0.0.0:8000"
 
 launch-shell-plus: pull-python-docker set-app-vars
+launch-shell-plus: set-app-vars
 	NAMESPACE=$(NAMESPACE) \
 	PROJECT_NAME=$(PROJECT_NAME) \
 	docker compose \
@@ -132,6 +130,7 @@ launch-shell-plus: pull-python-docker set-app-vars
 		run -it ${DOCKER_PROJECT_SERVICE_NAME} $(DOCKER_LOCAL_CMD)
 
 migrations: pull-python-docker set-app-vars
+migrations: set-app-vars
 	NAMESPACE=$(NAMESPACE) \
 	docker compose \
 		-f config/docker/compose/docker-compose.local.yaml \
@@ -140,6 +139,7 @@ migrations: pull-python-docker set-app-vars
 		${DOCKER_PROJECT_SERVICE_NAME} bash -c "cd app && ./manage.py makemigrations"
 
 migrate: pull-python-docker set-app-vars
+migrate: set-app-vars
 	docker compose \
 		-f config/docker/compose/docker-compose.local.yaml \
 		run \
@@ -147,6 +147,7 @@ migrate: pull-python-docker set-app-vars
 		${DOCKER_PROJECT_SERVICE_NAME} bash -c "cd app && ./manage.py migrate"
 
 run-tests: pull-python-docker set-app-vars
+run-tests: set-app-vars
 	NAMESPACE=$(NAMESPACE) \
 	docker compose \
 		-f config/docker/compose/docker-compose.local.yaml \

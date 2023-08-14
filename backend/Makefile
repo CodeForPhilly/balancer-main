@@ -154,10 +154,9 @@ run-tests: set-app-vars
 		-f config/docker/compose/docker-compose.local.yaml \
 		run -it ${DOCKER_PROJECT_SERVICE_NAME} bash -c "cd app/balancer && pytest ${TESTS_ROOT}"
 
+# Teardown containers (as defined by compose file)
 teardown-project: pull-python-docker
-	cd $(DOCKER_BACKEND_CTX_FROM_PROJECT_ROOT)/$(DOCKER_PYTHON_DOCKER_FROM_CTX) && \
-		DOCKER_COMPOSE_FILE=$(DOCKER_COMPOSE_FILE) \
-		make teardown-project
+	docker compose -f $(DOCKER_COMPOSE_FILE) down --remove-orphans
 
 
 

@@ -166,5 +166,3 @@ cython_debug/
 # test env
 balancer-test-env/
 .vscode
-
-backend/Python-Docker/

@@ -4,6 +4,8 @@ services:
     image: ${DOCKER_REGISTRY}/${PROJECT_NAME}/${NAMESPACE}:${DOCKER_TAG_VERSION}
     environment:
       PROJECT_NAME: ${PROJECT_NAME}
-
+      DJANGO_SETTINGS_MODULE: config.settings.local
+    ports:
+      - "8000:8000"
     volumes:
       - "${DOCKER_APP_SOURCE_FROM_COMPOSE}:${DOCKER_APP_DEST}"

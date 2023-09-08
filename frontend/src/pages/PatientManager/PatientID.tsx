@@ -1,5 +1,7 @@
 import React, { useEffect } from "react";
+
 import { v4 as uuidv4 } from "uuid";
+
 import { PatientInfo } from "./PatientTypes";
 
 interface PatientIDInputProps {
@@ -17,7 +19,7 @@ function PatientIDInput({ patientInfo, setPatientInfo }: PatientIDInputProps) {
 
   return (
     <div className="">
-      <label htmlFor="name" className="block font-latoBold text-sm pb-2">
+      <label htmlFor="name" className="font-latoBold block pb-2 text-sm">
         Patient ID:{" "}
       </label>
       <input

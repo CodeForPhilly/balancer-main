@@ -1,19 +1,19 @@
-import { NavLink } from "react-router-dom";
+interface WelcomeProps {
+  subHeader?: string;
+  descriptionText?: string;
+}
 
-export type MenuItemProps = { url: string; title: string };
-
-function MenuItem({ url, title }: MenuItemProps) {
-  // TODO: add active class to menu links
+function Welcome({
+  subHeader = "Designed to assist prescribers",
+  descriptionText,
+}: WelcomeProps) {
   return (
-    <li className="mb-8">
-      <NavLink
-        to={url}
-        className=" text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
-      >
-        {title}
-      </NavLink>
-    </li>
+    <div className="mt-10">
+      <h1 className="head_text"></h1>
+      {subHeader && <h2 className="desc">{subHeader}</h2>}
+      {descriptionText && <p className="desc1">{descriptionText}</p>}
+    </div>
   );
 }
 
-export default MenuItem;
+export default Welcome;

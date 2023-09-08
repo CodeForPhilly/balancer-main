@@ -1,59 +1,97 @@
 import { useState } from "react";
+
 import NewPatientForm from "./NewPatientForm.tsx";
 import PatientHistory from "./PatientHistory.tsx";
-import { useLazyGetMedicationInfoQuery } from "../../services/medicationsApi.tsx";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import { copy, loader } from "../../assets/index.js";
 import PatientSummary from "./PatientSummary.tsx";
 import { PatientInfo } from "./PatientTypes.ts";
+import { copy } from "../../assets/index.js";
+import Welcome from "../../components/Welcome/Welcome.tsx";
 
 const PatientManager = () => {
-  const [patientInfo, setPatientInfo] = useState({
+  const [isPatientDeleted, setIsPatientDeleted] = useState<boolean>(false);
+
+  const [patientInfo, setPatientInfo] = useState<PatientInfo>({
     ID: "",
     Diagnosis: "",
     OtherDiagnosis: "",
     Description: "",
     CurrentMedications: "",
+    PriorMedications: "",
+    PossibleMedications: { drugs: [] },
+    Depression: "",
+    Hypomania: "",
+    Mania: "",
+    Psychotic: "",
+    Suicide: "",
+    Kidney: "",
+    Liver: "",
+    blood_pressure: "",
+    weight_gain: "",
+    Reproductive: "",
+    risk_pregnancy: "",
   });
+
+  const handlePatientDeleted = (deletedId: string) => {
+    if (patientInfo.ID === deletedId) {
+      setPatientInfo({
+        ID: "",
+        Diagnosis: "",
+        OtherDiagnosis: "",
+        Description: "",
+        CurrentMedications: "",
+        PriorMedications: "",
+        PossibleMedications: { drugs: [] },
+        Depression: "",
+        Hypomania: "",
+        Mania: "",
+        Psychotic: "",
+        Suicide: "",
+        Kidney: "",
+        Liver: "",
+        blood_pressure: "",
+        weight_gain: "",
+        Reproductive: "",
+        risk_pregnancy: "",
+      });
+
+      setIsPatientDeleted(true);
+    }
+  };
 
   const [allPatientInfo, setAllPatientInfo] = useState<PatientInfo[]>([]);
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
-  const [getMedicationInfo, { error, isFetching }] =
-    useLazyGetMedicationInfoQuery();
 
   // TODO: add error and loading state guards
 
   return (
-    <div className="mt-16 w-full max-w-2xl">
-      <h1 className="head_text">
-        {/* AI-powered Bipolar Medication: <br className="max-md:hidden" /> */}
-        <span className="orange_gradient">Balancer</span>
-      </h1>
-      <h2 className="desc">Designed to assist prescribers</h2>
-      <h2 className="desc1">
-        Balancer is an AI-powered tool for selecting bipolar medication for
-        patients. We are open-source and available for free use.
-      </h2>
-      <div className="mt-16 flex flex-col w-full gap-2">
+    <div className="mt-20 flex w-full max-w-6xl flex-col items-center justify-center md:mt-28">
+      <Welcome
+        subHeader="Designed to assist prescribers"
+        descriptionText="Balancer is a free and open-source tool for helping prescribers narrow
+        down suitable bipolar medications based on patient characteristics."
+      />
+      <div className="mt-0 flex w-[75%] flex-col md:mt-12 ">
         <PatientSummary
           patientInfo={patientInfo}
-          getMedicationInfo={getMedicationInfo}
-          loader={loader}
+          isPatientDeleted={isPatientDeleted}
+          setPatientInfo={setPatientInfo}
         />
         <NewPatientForm
           patientInfo={patientInfo}
           setPatientInfo={setPatientInfo}
           allPatientInfo={allPatientInfo}
           setAllPatientInfo={setAllPatientInfo}
-          getMedicationInfo={getMedicationInfo}
         />
         <PatientHistory
           allPatientInfo={allPatientInfo}
+          setAllPatientInfo={setAllPatientInfo}
           setPatientInfo={setPatientInfo}
           copy={copy}
+          onPatientDeleted={handlePatientDeleted}
         />
       </div>
     </div>

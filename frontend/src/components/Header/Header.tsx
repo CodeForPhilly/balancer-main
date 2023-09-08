@@ -1,54 +1,30 @@
-import logo from "../../assets/balancer.png";
-import { Link } from "react-router-dom";
-// import { useLocation } from "react-router-dom";
-import accountLogo from "../../assets/account.svg";
-import "../../components/Header/header.css";
-// import Typed from "react-typed";
 import { useState, useRef, useEffect } from "react";
-import MdNavBar from "./MdNavBar";
-import LoginMenuDropDown from "./LoginMenuDropDown";
+
+import { Link } from "react-router-dom";
+
+import "../../components/Header/header.css";
+import Chat from "./Chat";
 import { FeatureMenuDropDown } from "./FeatureMenuDropDown";
-import { ResearchMenuDropDown } from "./ResearchMenuDropDown";
+import MdNavBar from "./MdNavBar";
 
 const Header = () => {
-  // const { pathname } = useLocation();
   const [showFeaturesMenu, setShowFeaturesMenu] = useState(false);
-  const [showResearchMenu, setShowResearchMenu] = useState(false);
   const dropdownRef = useRef(null);
-  const dropdownResearchRef = useRef(null);
   let delayTimeout: number | null = null;
-  const [showLoginMenu, setShowLoginMenu] = useState(false);
-
-  const handleLoginMenu = () => {
-    setShowLoginMenu(!showLoginMenu);
-  };
+  const [showChat, setShowChat] = useState(false);
 
   const handleMouseEnter = () => {
     if (delayTimeout !== null) {
       clearTimeout(delayTimeout);
     }
     setShowFeaturesMenu(true);
-    setShowResearchMenu(false);
+    // setShowResearchMenu(false);
   };
 
   const handleMouseLeave = () => {
     delayTimeout = setTimeout(() => {
       setShowFeaturesMenu(false);
-    }, 300); // Adjust the delay time as needed
-  };
-
-  const handleMouseEnterResearch = () => {
-    if (delayTimeout !== null) {
-      clearTimeout(delayTimeout);
-    }
-    setShowResearchMenu(true);
-    setShowFeaturesMenu(false);
-  };
-
-  const handleMouseLeaveResearch = () => {
-    delayTimeout = setTimeout(() => {
-      setShowResearchMenu(false);
-    }, 300); // Adjust the delay time as needed
+    }, 300) as unknown as number; // Adjust the delay time as needed
   };
 
   useEffect(() => {
@@ -60,21 +36,36 @@ const Header = () => {
   }, []);
 
   return (
-    <header className="w-full items-center fixed">
-      {/* <div className="flex bg-blue-500 text-center font-light text-white w-full h-8 items-center justify-center text-sm">
-        WELCOME! STAY TUNE FOR OUR FIRST RELEASE! -
-        <Typed strings={["  JULY 30th"]} typeSpeed={200} backSpeed={200} loop />
-      </div> */}
+    <header className="fixed w-full items-center">
+      <div className="hidden h-10 w-full items-center justify-center border-b border-gray-300 bg-blue-100 text-center text-sm font-light text-gray-500 md:flex">
+        This app is currently in its beta testing phase. The information and
+        tools provided herein are intended for general informational purposes
+        only and should NOT be construed as medical advice, diagnosis, or
+        treatment.
+      </div>
+      <div className="flex h-10 w-full items-center justify-center border-b border-gray-300 bg-blue-100 text-center text-sm font-light text-gray-500 md:hidden ">
+        This app is currently in its beta testing phase. The information should
+        NOT be construed as medical advice.
+      </div>
       <div
         className={
-          "hidden lg:flex items-center border-b border-gray-300 h-20 mx-auto bg-white justify-between  px-4 sm:px-6 md:px-8 lg:px-8 xl:px-50 2xl:px-56"
+          "xl:px-50 mx-auto hidden h-20 items-center justify-between border-b border-gray-300 bg-white  px-4 sm:px-6 md:px-8 lg:flex lg:px-8 2xl:px-56"
         }
       >
-        <nav className="w-full flex font-satoshi items-center text-sm">
+        <nav className="flex w-full items-center justify-center font-satoshi text-sm">
           <Link to="/">
-            <img src={logo} alt="logo" className="object-contain w-28 mr-9  " />
+            <span className="header_logo  mr-8 text-xl font-bold">
+              Balancer
+            </span>
           </Link>
+
           <>
+            <Link
+              to="/login"
+              className="mr-5  text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
+            >
+              About
+            </Link>
             <div
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
@@ -84,15 +75,15 @@ const Header = () => {
               <span
                 className={` mr-9 text-black ${
                   showFeaturesMenu
-                    ? "border-b-2 border-blue-600 hover:no-underline hover:border-b-2 hover:border-blue-600 cursor-pointer"
-                    : "hover:text-black hover:no-underline hover:border-b-2 hover:border-blue-600 cursor-pointer"
+                    ? "cursor-pointer border-b-2 border-blue-600 hover:border-b-2 hover:border-blue-600 hover:no-underline"
+                    : "cursor-pointer hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
                 }`}
               >
                 Features
                 <span
                   className={` ${
                     showFeaturesMenu
-                      ? "absolute ml-1.5 transition-transform duration-300 rotate-180"
+                      ? "absolute ml-1.5 rotate-180 transition-transform duration-300"
                       : "absolute ml-1.5 "
                   }`}
                 >
@@ -102,60 +93,7 @@ const Header = () => {
               {showFeaturesMenu && <FeatureMenuDropDown />}
             </div>
 
-            <div
-              onMouseEnter={handleMouseEnterResearch}
-              onMouseLeave={handleMouseLeaveResearch}
-              ref={dropdownResearchRef}
-              className=""
-            >
-              <span
-                className={` mr-9 text-black ${
-                  showResearchMenu
-                    ? "border-b-2 border-blue-600 hover:no-underline hover:border-b-2 hover:border-blue-600 cursor-pointer"
-                    : "hover:text-black hover:no-underline hover:border-b-2 hover:border-blue-600 cursor-pointer"
-                }`}
-              >
-                Research Information
-                <span
-                  className={` ${
-                    showResearchMenu
-                      ? "absolute ml-1.5 transition-transform duration-300 rotate-180"
-                      : "absolute ml-1.5 "
-                  }`}
-                >
-                  &#8593;
-                </span>
-                {showResearchMenu && <ResearchMenuDropDown />}
-              </span>
-            </div>
-          </>
-        </nav>
-
-        <nav className=" flex font-satoshi justify-end w-full items-center text-sm">
-          <>
-            <Link
-              to="/login"
-              className="mr-9  text-black hover:text-black hover:no-underline hover:border-b-2 hover:border-blue-600"
-            >
-              About Balancer
-            </Link>
-            <Link
-              to="/register"
-              className="mr-9  text-black hover:text-black hover:no-underline hover:border-b-2 hover:border-blue-600"
-            >
-              Support
-            </Link>
-            <div onClick={handleLoginMenu}>
-              <img
-                src={accountLogo}
-                alt="logo"
-                className="object-contain hover:bg-gray-100 hover:border-blue-600 hover:border-b-2"
-              />
-            </div>
-            <LoginMenuDropDown
-              showLoginMenu={showLoginMenu}
-              handleLoginMenu={handleLoginMenu}
-            />
+            <Chat showChat={showChat} setShowChat={setShowChat} />
           </>
         </nav>
       </div>

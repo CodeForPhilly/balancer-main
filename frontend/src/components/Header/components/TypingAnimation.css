@@ -1,0 +1,23 @@
+.typing-animation {
+  display: flex;
+  background-color: white;
+}
+
+.dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 0%;
+  background-color: black;
+  margin: 0 3px;
+  animation: typing 1s infinite;
+}
+
+@keyframes typing {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+}

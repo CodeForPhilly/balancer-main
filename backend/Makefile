@@ -118,6 +118,7 @@ launch-local-server: set-app-vars
 	docker compose \
 		-f config/docker/compose/docker-compose.local.yaml \
 		run \
+			--rm \
 			--service-ports \
 			-it \
 		${DOCKER_PROJECT_SERVICE_NAME} bash -c "cd app && ./manage.py runserver 0.0.0.0:8000"
@@ -128,7 +129,10 @@ launch-shell-plus: set-app-vars
 	PROJECT_NAME=$(PROJECT_NAME) \
 	docker compose \
 		-f config/docker/compose/docker-compose.local.yaml \
-		run -it ${DOCKER_PROJECT_SERVICE_NAME} $(DOCKER_LOCAL_CMD)
+		run \
+			--rm \
+			-it \
+		${DOCKER_PROJECT_SERVICE_NAME} bash -c "cd app && ./manage.py shell_plus"
 
 # Run django makemigrations in local container
 migrations: set-app-vars
@@ -136,6 +140,7 @@ migrations: set-app-vars
 	docker compose \
 		-f config/docker/compose/docker-compose.local.yaml \
 		run \
+			--rm \
 			-it \
 		${DOCKER_PROJECT_SERVICE_NAME} bash -c "cd app && ./manage.py makemigrations"
 
@@ -144,6 +149,7 @@ migrate: set-app-vars
 	docker compose \
 		-f config/docker/compose/docker-compose.local.yaml \
 		run \
+			--rm \
 			-it \
 		${DOCKER_PROJECT_SERVICE_NAME} bash -c "cd app && ./manage.py migrate"
 
@@ -152,7 +158,10 @@ run-unit-tests: set-app-vars
 	NAMESPACE=$(NAMESPACE) \
 	docker compose \
 		-f config/docker/compose/docker-compose.local.yaml \
-		run -it ${DOCKER_PROJECT_SERVICE_NAME} bash -c "cd app/balancer && pytest ${TESTS_ROOT}"
+		run \
+			--rm \
+			-it \
+		${DOCKER_PROJECT_SERVICE_NAME} bash -c "cd app/balancer && pytest ${TESTS_ROOT}"
 
 # Teardown containers (as defined by compose file)
 teardown-project: pull-python-docker

@@ -1,12 +1,10 @@
 import { FormEvent, ChangeEvent, useEffect, useState } from "react";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import { loader } from "../../assets";
-import { v4 as uuidv4 } from "uuid";
-import { PatientInfo } from "./PatientTypes";
+
 import axios from "axios";
-import minLogo from "../../assets/min.svg";
-import maxLogo from "../../assets/max.svg";
+import { v4 as uuidv4 } from "uuid";
+
+import { PatientInfo } from "./PatientTypes";
+import Tooltip from "./Tooltip";
 
 // TODO: refactor with Formik
 
@@ -15,17 +13,36 @@ export interface NewPatientFormProps {
   setPatientInfo: React.Dispatch<React.SetStateAction<PatientInfo>>;
   allPatientInfo: PatientInfo[];
   setAllPatientInfo: React.Dispatch<React.SetStateAction<PatientInfo[]>>;
-  getMedicationInfo: any;
 }
 
 const NewPatientForm = ({
-  patientInfo,
   setPatientInfo,
   allPatientInfo,
   setAllPatientInfo,
 }: NewPatientFormProps) => {
   const [isPressed, setIsPressed] = useState(false);
   const [isLoading, setIsLoading] = useState(false); // Added loading state
+
+  const [newPatientInfo, setNewPatientInfo] = useState<PatientInfo>({
+    ID: "",
+    Diagnosis: "Manic",
+    OtherDiagnosis: "",
+    Description: "",
+    CurrentMedications: "",
+    PriorMedications: "",
+    PossibleMedications: { drugs: [] },
+    Mania: "False",
+    Depression: "False",
+    Hypomania: "False",
+    Psychotic: "No",
+    Suicide: "No",
+    Kidney: "No",
+    Liver: "No",
+    weight_gain: "No",
+    blood_pressure: "No",
+    Reproductive: "No",
+    risk_pregnancy: "No",
+  });
 
   const handleMouseDown = () => {
     setIsPressed(true);
@@ -35,6 +52,7 @@ const NewPatientForm = ({
     setIsPressed(false);
   };
   const [enterNewPatient, setEnterNewPatient] = useState(true);
+
   useEffect(() => {
     const patientInfoFromLocalStorage = JSON.parse(
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -53,27 +71,42 @@ const NewPatientForm = ({
     setIsLoading(true); // Start loading
 
     const payload = {
-      diagnosis: patientInfo.Diagnosis,
+      diagnosis:
+        newPatientInfo.Diagnosis !== null ? newPatientInfo.Diagnosis : "manic",
     };
-
     try {
-      const { data } = await axios.post(
-        "http://localhost:3001/diagnosis",
-        payload
-      );
+      const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
+      const { data } = await axios.post(`${baseUrl}/diagnosis`, payload);
+
+      const drugsResponse = await axios.post(`${baseUrl}/listDrugs`, payload);
+
+      const possibleMedicationsData = drugsResponse.data;
+
+      if (possibleMedicationsData && Array.isArray(possibleMedicationsData)) {
+        // Extract drugs property from each object and flatten it into a single array
+        const possibleMedicationNames = possibleMedicationsData
+          .map((medication: { drugs: string[] }) => medication.drugs)
+          .flat();
+
+        setPatientInfo((prev) => ({
+          ...prev,
+          PossibleMedications: { drugs: possibleMedicationNames },
+        }));
+      }
       const generatedGuid = uuidv4();
       const firstFiveCharacters = generatedGuid.substring(0, 5);
 
-      setPatientInfo({ ...patientInfo, ID: firstFiveCharacters });
+      setPatientInfo({ ...newPatientInfo, ID: firstFiveCharacters });
 
       if (data) {
         const description = data.message.choices[0].message.content;
 
         const newDescription = {
-          ...patientInfo,
+          ...newPatientInfo,
           Description: description,
           ID: firstFiveCharacters,
+          PossibleMedications: possibleMedicationsData,
         };
 
         const updatedAllPatientInfo = [newDescription, ...allPatientInfo];
@@ -90,202 +123,673 @@ const NewPatientForm = ({
     } catch (error) {
       console.log("Error occurred:", error);
     } finally {
+      setEnterNewPatient(false);
       setIsLoading(false); // Stop loading
+      handleClickNewPatient();
     }
   };
 
   const handleDiagnosisChange = (e: ChangeEvent<HTMLSelectElement>) => {
     const selectedValue = e.target.value;
-    if (selectedValue === "Other") {
-      setPatientInfo({
-        ...patientInfo,
-        Diagnosis: selectedValue,
-      });
-    } else {
-      setPatientInfo({
-        ...patientInfo,
-        Diagnosis: selectedValue,
-        OtherDiagnosis: "", // Reset the OtherDiagnosis value
-      });
-    }
+
+    setNewPatientInfo({
+      ...newPatientInfo,
+      Diagnosis: selectedValue,
+      OtherDiagnosis: "", // Reset the OtherDiagnosis value
+    });
   };
 
   const handleClickSummary = () => {
+    setNewPatientInfo((prevPatientInfo) => ({
+      ...prevPatientInfo,
+      ID: "",
+      Diagnosis: "Manic",
+      OtherDiagnosis: "",
+      Description: "",
+      CurrentMedications: "",
+      PriorMedications: "",
+      PossibleMedications: { drugs: [] },
+      Mania: "False",
+      Depression: "False",
+      Hypomania: "False",
+      Psychotic: "No",
+      Suicide: "No",
+      Kidney: "No",
+      Liver: "No",
+      weight_gain: "No",
+      blood_pressure: "No",
+      Reproductive: "No",
+      risk_pregnancy: "No",
+    }));
     setEnterNewPatient(!enterNewPatient);
   };
 
+  const handleClickNewPatient = () => {
+    setNewPatientInfo((prevPatientInfo) => ({
+      ...prevPatientInfo,
+      ID: "",
+      Diagnosis: "Manic",
+      OtherDiagnosis: "",
+      Description: "",
+      CurrentMedications: "",
+      PriorMedications: "",
+      PossibleMedications: { drugs: [] },
+      Mania: "False",
+      Depression: "False",
+      Hypomania: "False",
+      Psychotic: "No",
+      Suicide: "No",
+      Kidney: "No",
+      Liver: "No",
+      weight_gain: "No",
+      blood_pressure: "No",
+      Reproductive: "No",
+      risk_pregnancy: "No",
+    }));
+  };
+
+  const handleCheckboxChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    checkboxName: string
+  ) => {
+    const isChecked = e.target.checked;
+    setNewPatientInfo((prevInfo) => ({
+      ...prevInfo,
+      [checkboxName]: isChecked ? "True" : "False", // Update for both checked and unchecked
+    }));
+  };
+
+  const handleRadioChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    radioName: string
+  ) => {
+    const selectedValue = e.target.value;
+    setNewPatientInfo((prevInfo) => ({
+      ...prevInfo,
+      [radioName]: selectedValue,
+    }));
+  };
+
   return (
-    <section>
+    <section className="flex items-center justify-center">
       {/* {search} */}
-      <div>
+      <div className="mx-3 md:mx-0 md:p-0">
         <br />
-        <div className="flex justify-between">
+        <div className="flex w-[870px] justify-between">
           {enterNewPatient ? (
-            <div>
-              <h2 className="font-satoshi font-bold text-gray-600 text-xl">
-                Enter New <span className="blue_gradient">Patient</span>
+            <div onClick={handleClickNewPatient}>
+              <h2 className="header_logo cursor-pointer font-satoshi text-xl font-bold text-gray-600  hover:text-blue-600 ">
+                Enter Patient Details
+                {/* <span className="blue_gradient">Details</span> */}
               </h2>
             </div>
           ) : (
             <div onClick={handleClickSummary}>
-              <h2 className="font-satoshi font-bold text-gray-600 text-xl hover:border-blue-600 hover:border-b-2">
-                Click To Enter New
-                <span className="blue_gradient"> Patient</span>
+              <h2 className="header_logo cursor-pointer font-satoshi text-xl font-bold text-gray-600  hover:text-blue-600  ">
+                Click To Enter New Patient
               </h2>
             </div>
           )}
-          <div onClick={handleClickSummary}>
+          <div
+            onClick={handleClickSummary}
+            className=" cursor-pointer items-center"
+          >
             {enterNewPatient ? (
-              <img
-                src={minLogo}
-                alt="logo"
-                className="md:w-7 md:h-7 hover:border-blue-600 hover:border-b-2"
-              />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M6 12h12"
+                />
+              </svg>
             ) : (
-              <img
-                src={maxLogo}
-                alt="logo"
-                className="md:w-7 md:h-7 hover:border-blue-600 hover:border-b-2"
-              />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                />
+              </svg>
             )}
           </div>
         </div>
         {enterNewPatient && (
-          <form onSubmit={handleSubmit}>
-            <div>
-              <label
-                htmlFor="name"
-                className="block font-latoBold text-sm pb-2"
-              >
-                Patient ID:{" "}
-              </label>
-              <input
-                type="text"
-                placeholder="Patient ID will be created on submit"
-                value={patientInfo.ID}
-                readOnly
-                className={
-                  isLoading
-                    ? " url_input_loading peer w-1/2"
-                    : "url_input peer w-1/2"
-                }
-              />
-            </div>
-            <div className="mt-5">
-              <label
-                htmlFor="diagnosis"
-                className="block font-latoBold text-sm pb-2"
-              >
-                Diagnosis:
-              </label>
-              <select
-                value={patientInfo.Diagnosis}
-                onChange={handleDiagnosisChange}
-                required
-                className={
-                  isLoading
-                    ? " url_input_loading peer w-1/2"
-                    : "url_input peer w-1/2"
-                }
-              >
-                <option value="Other">Select a diagnosis</option>
-                <option value="Bipolar I mania">Bipolar I mania</option>
-                <option value="Bipolar I depression">
-                  Bipolar I depression
-                </option>
-                <option value="Bipolar II hypomania">
-                  Bipolar II hypomania
-                </option>
-                <option value="Bipolar II depression">
-                  Bipolar II depression
-                </option>
-                <option value="Bipolar mixed episodes">
-                  Bipolar mixed episodes
-                </option>
-                <option value="Cyclothymic disorder">
-                  Cyclothymic disorder
-                </option>
-              </select>
-              {/* {patientInfo.Diagnosis === "Other" && (
-                <input
-                  type="text"
-                  placeholder="Please specify"
-                  value={patientInfo.OtherDiagnosis}
-                  onChange={(e) =>
-                    setPatientInfo({
-                      ...patientInfo,
-                      OtherDiagnosis: e.target.value,
-                    })
-                  }
-                  required
-                  className="url_input peer"
-                />
-              )} */}
-            </div>
-            <div className="items-center mt-5">
-              <label
-                htmlFor="currentMedications"
-                className="block font-latoBold text-sm pb-2"
-              >
-                Current Medications:
-              </label>
-              <input
-                id="currentMedications"
-                type="string"
-                value={patientInfo.CurrentMedications}
-                onChange={(e) =>
-                  setPatientInfo({
-                    ...patientInfo,
-                    CurrentMedications: String(e.target.value),
-                  })
-                }
-                required
-                className={
-                  isLoading
-                    ? " url_input_loading peer w-1/2"
-                    : "url_input peer w-1/2"
-                }
-              />
-            </div>
+          <form onSubmit={handleSubmit} className="mt-2 ">
+            <div className="summary_box  ">
+              <div className=" flex items-center border-b border-gray-900/10 py-6  ">
+                <div className="w-[300px]">
+                  <label
+                    htmlFor="current-state"
+                    className="block text-sm font-medium leading-6 text-gray-900"
+                  >
+                    Current state
+                  </label>
+                </div>
+                <div className="w-[500px] pl-16">
+                  <select
+                    value={newPatientInfo.Diagnosis}
+                    onChange={handleDiagnosisChange}
+                    required
+                    autoComplete="current-state"
+                    className={isLoading ? " url_input_loading" : "dropdown"}
+                  >
+                    <option value="Manic"> Manic </option>
+                    <option value="Depressed">Depressed</option>
+                    <option value="Hypomanic">Hypomanic</option>
+                    <option value="Euthymic">Euthymic</option>
+                    <option value="Mixed">Mixed</option>
+                  </select>
+                </div>
+              </div>
 
-            <div className="flex justify-center mt-5">
-              <button
-                type="submit"
-                className={`black_btn peer-focus:border-gray-700 peer-focus:text-gray-700 ${
-                  isPressed
-                    ? ""
-                    : "transition-transform hover:scale-105 focus:outline-none focus:ring focus:ring-blue-500"
-                }${
-                  isLoading
-                    ? "transition-transform bg-white-600 scale-105 focus:outline-none focus:ring focus:ring-blue-500"
-                    : ""
-                }`}
-                onMouseDown={handleMouseDown}
-                onMouseUp={handleMouseUp}
-                disabled={isLoading} // Disable the button while loading
-              >
-                {isLoading ? ( // Render loading icon if loading
-                  <div className="flex items-center">
-                    <div className="w-4 h-4 rounded-full bg-white animate-ping mr-2"></div>
-                    <p>Loading...</p>
+              <div className="border-b border-gray-900/10 py-6  sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                <div>
+                  <legend className="text-sm font-semibold leading-6 text-gray-900">
+                    Bipolar history
+                  </legend>
+                </div>
+                <div className="pl-24">
+                  <div className="justify-left  flex gap-x-3">
+                    <div className="flex h-6 items-center ">
+                      <input
+                        id="Mania"
+                        name="Mania"
+                        type="checkbox"
+                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                        onChange={(e) => handleCheckboxChange(e, "Mania")}
+                      />
+                    </div>
+                    <div className="text-sm leading-6">
+                      <label
+                        htmlFor="Mania"
+                        className="font-medium text-gray-900"
+                      >
+                        Mania
+                      </label>
+                    </div>
                   </div>
-                ) : (
-                  <p>Submit</p>
-                )}
-              </button>
+                  <div className=" flex gap-x-3">
+                    <div className="flex h-6 items-center">
+                      <input
+                        id="Depression"
+                        name="Depression"
+                        type="checkbox"
+                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                        onChange={(e) => handleCheckboxChange(e, "Depression")}
+                      />
+                    </div>
+                    <div className="text-sm leading-6">
+                      <label
+                        htmlFor="Depression"
+                        className="font-medium text-gray-900"
+                      >
+                        Depression
+                      </label>
+                    </div>
+                  </div>
+                  <div className=" flex gap-x-3">
+                    <div className="flex h-6 items-center">
+                      <input
+                        id="Hypomania"
+                        name="Hypomania"
+                        type="checkbox"
+                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                        onChange={(e) => handleCheckboxChange(e, "Hypomania")}
+                      />
+                    </div>
+                    <div className="text-sm leading-6">
+                      <label
+                        htmlFor="Hypomania"
+                        className="font-medium text-gray-900"
+                      >
+                        Hypomania
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="border-b border-gray-900/10 py-6 ">
+                <p className=" text-sm leading-6 text-gray-600">
+                  Select patient characteristics
+                </p>
+                <fieldset className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                  <dt className="flex text-sm font-medium leading-6 text-gray-900">
+                    Currently psychotic
+                  </dt>
+
+                  <dd className="mt-2 pl-24 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+                    <div className="flex items-center gap-x-3 pr-16">
+                      <input
+                        id="psychotic"
+                        name="psychotic"
+                        type="radio"
+                        value="Yes"
+                        onChange={(e) => handleRadioChange(e, "Psychotic")}
+                        className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                      />
+                      <label
+                        htmlFor="push-everything"
+                        className="block text-sm font-medium leading-6 text-gray-900"
+                      >
+                        Yes
+                      </label>
+
+                      <input
+                        id="psychotic"
+                        name="psychotic"
+                        type="radio"
+                        value="No"
+                        onChange={(e) => handleRadioChange(e, "Psychotic")}
+                        className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                      />
+                      <label
+                        htmlFor="push-email"
+                        className="block text-sm font-medium leading-6 text-gray-900"
+                      >
+                        No
+                      </label>
+                    </div>
+                  </dd>
+                </fieldset>
+                <fieldset className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                  <dt className="flex text-sm font-medium leading-6 text-gray-900">
+                    History of suicide attempt(s)
+                    <Tooltip text="Lithium is the only medication on the market that has been proven to reduce suicidality in patients with bipolar disorder, so it will be shown at the top of the suggested medications list.">
+                      <span className="material-symbols-outlined  ml-1">
+                        info
+                      </span>
+                    </Tooltip>
+                  </dt>
+
+                  <dd className="mt-2 pl-24 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+                    <div className="flex items-center gap-x-3 pr-16">
+                      <input
+                        id="suicide"
+                        name="suicide"
+                        type="radio"
+                        value="Yes"
+                        onChange={(e) => handleRadioChange(e, "Suicide")}
+                        className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                      />
+                      <label
+                        htmlFor="push-everything"
+                        className="block text-sm font-medium leading-6 text-gray-900"
+                      >
+                        Yes
+                      </label>
+
+                      <input
+                        id="suicide"
+                        name="suicide"
+                        type="radio"
+                        value="No"
+                        onChange={(e) => handleRadioChange(e, "Suicide")}
+                        className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                      />
+                      <label
+                        htmlFor="push-email"
+                        className="block text-sm font-medium leading-6 text-gray-900"
+                      >
+                        No
+                      </label>
+                    </div>
+                  </dd>
+                </fieldset>
+                <fieldset className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                  <dt className="flex text-sm font-medium leading-6 text-gray-900">
+                    History or risk of kidney disease
+                    <Tooltip text="Lithium can affect kidney function, so it will not be included in the suggested medication list for patients with a risk or history of kidney disease.">
+                      <span className="material-symbols-outlined  ml-1">
+                        info
+                      </span>
+                    </Tooltip>
+                  </dt>
+                  <dd className="mt-2 pl-24 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+                    <div className="flex items-center gap-x-3 pr-16">
+                      <input
+                        id="Kidney"
+                        name="Kidney"
+                        type="radio"
+                        value="Yes"
+                        onChange={(e) => handleRadioChange(e, "Kidney")}
+                        className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                      />
+                      <label
+                        htmlFor="push-everything"
+                        className="block text-sm font-medium leading-6 text-gray-900"
+                      >
+                        Yes
+                      </label>
+
+                      <input
+                        id="Kidney"
+                        name="Kidney"
+                        type="radio"
+                        value="No"
+                        onChange={(e) => handleRadioChange(e, "Kidney")}
+                        className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                      />
+                      <label
+                        htmlFor="push-email"
+                        className="block text-sm font-medium leading-6 text-gray-900"
+                      >
+                        No
+                      </label>
+                    </div>
+                  </dd>
+                </fieldset>
+                <fieldset className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                  <dt className="flex text-sm font-medium leading-6 text-gray-900">
+                    History or risk of liver disease
+                    <Tooltip text="Depakote is processed through the liver, so it will not be included in the suggested medication list for patients with a risk or history of liver disease.">
+                      <span className="material-symbols-outlined  ml-1">
+                        info
+                      </span>
+                    </Tooltip>
+                  </dt>
+                  <dd className="mt-2 pl-24 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+                    <div className="flex items-center gap-x-3 pr-16">
+                      <input
+                        id="Liver"
+                        name="Liver"
+                        type="radio"
+                        value="Yes"
+                        onChange={(e) => handleRadioChange(e, "Liver")}
+                        className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                      />
+                      <label
+                        htmlFor="push-everything"
+                        className="block text-sm font-medium leading-6 text-gray-900"
+                      >
+                        Yes
+                      </label>
+
+                      <input
+                        id="Liver"
+                        name="Liver"
+                        type="radio"
+                        value="No"
+                        onChange={(e) => handleRadioChange(e, "Liver")}
+                        className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                      />
+                      <label
+                        htmlFor="push-email"
+                        className="block text-sm font-medium leading-6 text-gray-900"
+                      >
+                        No
+                      </label>
+                    </div>
+                  </dd>
+                </fieldset>
+
+                <fieldset className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                  <dt className="flex text-sm font-medium leading-6 text-gray-900">
+                    <Tooltip text="Second-generation antipsychotics can cause low blood pressure upon standing, putting the patient at risk of passing out and hitting their head, so they will not be included in suggested medication list for patients with a risk or history of low blood pressure.">
+                      History or risk of low blood pressure, or concern for
+                      falls
+                      <span className="material-symbols-outlined  ml-1">
+                        info
+                      </span>
+                    </Tooltip>
+                  </dt>
+
+                  <dd className="mt-2 pl-24 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+                    <div className="flex items-center gap-x-3 pr-16">
+                      <input
+                        id="blood_pressure"
+                        name="blood_pressure"
+                        type="radio"
+                        value="Yes"
+                        onChange={(e) => handleRadioChange(e, "blood_pressure")}
+                        className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                      />
+                      <label
+                        htmlFor="blood_pressure"
+                        className="block text-sm font-medium leading-6 text-gray-900"
+                      >
+                        Yes
+                      </label>
+
+                      <input
+                        id="blood_pressure"
+                        name="blood_pressure"
+                        type="radio"
+                        value="No"
+                        onChange={(e) => handleRadioChange(e, "blood_pressure")}
+                        className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                      />
+                      <label
+                        htmlFor="blood_pressure"
+                        className="block text-sm font-medium leading-6 text-gray-900"
+                      >
+                        No
+                      </label>
+                    </div>
+                  </dd>
+                </fieldset>
+                <fieldset className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                  <dt className="flex text-sm font-medium leading-6 text-gray-900">
+                    Has weight gain concerns
+                    <Tooltip text="Seroquel, Risperdal, Abilify, and Zyprexa are known for causing weight gain, so they will not be included in the suggested medications list for patients with concerns about weight gain.">
+                      <span className="material-symbols-outlined  ml-1">
+                        info
+                      </span>
+                    </Tooltip>
+                  </dt>
+
+                  <dd className="mt-2 pl-24 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+                    <div className="flex items-center gap-x-3 pr-16">
+                      <input
+                        id="weight_gain"
+                        name="weight_gain"
+                        type="radio"
+                        value="Yes"
+                        onChange={(e) => handleRadioChange(e, "weight_gain")}
+                        className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                      />
+                      <label
+                        htmlFor="weight_gain"
+                        className="block text-sm font-medium leading-6 text-gray-900"
+                      >
+                        Yes
+                      </label>
+
+                      <input
+                        id="weight_gain"
+                        name="weight_gain"
+                        type="radio"
+                        value="No"
+                        onChange={(e) => handleRadioChange(e, "weight_gain")}
+                        className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                      />
+                      <label
+                        htmlFor="weight_gain"
+                        className="block text-sm font-medium leading-6 text-gray-900"
+                      >
+                        No
+                      </label>
+                    </div>
+                  </dd>
+                </fieldset>
+              </div>
+              <div className="flex border-b border-gray-900/10 py-6 ">
+                <div className="w-[300px]">
+                  <legend className="flex text-sm font-medium leading-6 text-gray-900">
+                    Reproductive status
+                  </legend>
+                </div>
+                <div className="w-[500px] pl-16">
+                  <div className="  flex gap-x-3">
+                    <div className="flex h-6 items-center ">
+                      <input
+                        id="Reproductive"
+                        name="Reproductive"
+                        type="checkbox"
+                        value="Yes"
+                        onChange={(e) => handleRadioChange(e, "Reproductive")}
+                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                      />
+                    </div>
+                    <div className="text-sm leading-6">
+                      <label
+                        htmlFor="comments"
+                        className="font-medium text-gray-900"
+                      >
+                        <Tooltip text="Depakote is known for causing birth defects and will not be included in the suggested medications list for patients at risk of pregnancy. Note: If the patient is on birth control, taking Depakote is less of a risk.">
+                          Any risk of pregnancy
+                          <span className="material-symbols-outlined ml-1">
+                            info
+                          </span>
+                        </Tooltip>
+                      </label>
+                    </div>
+                  </div>
+                  <div className=" mt-2 hidden gap-x-3 sm:flex">
+                    <div className="flex h-6 items-center">
+                      <input
+                        id="risk_pregnancy"
+                        name="risk_pregnancy"
+                        type="checkbox"
+                        value="Yes"
+                        onChange={(e) => handleRadioChange(e, "risk_pregnancy")}
+                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                      />
+                    </div>
+                    <div className="text-sm leading-6">
+                      <label
+                        htmlFor="candidates"
+                        className="font-medium text-gray-900"
+                      >
+                        <Tooltip text="Depakote is known for causing birth defects and will not be included in the suggested medications list for patients interested in becoming pregnant.">
+                          Wants to conceive in next 2 years
+                          <span className="material-symbols-outlined ml-1">
+                            info
+                          </span>
+                        </Tooltip>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-5 flex  items-center">
+                <div className="w-[300px]">
+                  <label
+                    htmlFor="current-state"
+                    className="block text-sm font-medium leading-6 text-gray-900"
+                  >
+                    Current medications
+                  </label>
+                </div>
+                <div className="w-[500px]  pl-16">
+                  <input
+                    id="currentMedications"
+                    type="ani_input"
+                    value={newPatientInfo.CurrentMedications}
+                    onChange={(e) =>
+                      setNewPatientInfo({
+                        ...newPatientInfo,
+                        CurrentMedications: String(e.target.value),
+                      })
+                    }
+                    required
+                    placeholder="Separate multiple medications with commas"
+                    className={
+                      isLoading
+                        ? " url_input_loading peer w-1/2"
+                        : "ani_input peer mt-2 w-1/2"
+                    }
+                  />
+                </div>
+              </div>
+              <div className="mt-5 flex items-center ">
+                <div className=" w-[300px]">
+                  <label
+                    htmlFor="current-state"
+                    className="block flex text-sm font-medium leading-6 text-gray-900"
+                  >
+                    Prior medications
+                    <Tooltip text="Any bipolar medications entered here will not appear in the list of suggested medications, as they have already been tried without success.">
+                      <span className="material-symbols-outlined  ml-1">
+                        info
+                      </span>
+                    </Tooltip>
+                  </label>
+                </div>
+                <div className="w-[500px]  pl-16">
+                  <input
+                    id="priorMedications"
+                    type="ani_input"
+                    value={newPatientInfo.PriorMedications}
+                    onChange={(e) =>
+                      setNewPatientInfo({
+                        ...newPatientInfo,
+                        PriorMedications: String(e.target.value),
+                      })
+                    }
+                    required
+                    placeholder="Separate multiple medications with commas"
+                    className={
+                      isLoading
+                        ? " url_input_loading peer w-1/2"
+                        : "ani_input peer mt-2 w-1/2"
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="mt-7 flex justify-end">
+                <div className="flex w-full justify-end">
+                  <button
+                    type="button"
+                    className="btnCancel mr-5"
+                    onClick={handleClickNewPatient}
+                  >
+                    Clear Form
+                  </button>
+                </div>
+                <button
+                  type="submit"
+                  className={`btn  ${
+                    isPressed &&
+                    "transition-transform focus:outline-none focus:ring focus:ring-blue-200"
+                  }${
+                    isLoading
+                      ? "bg-white-600 transition-transform focus:outline-none focus:ring focus:ring-blue-500"
+                      : ""
+                  }`}
+                  onMouseDown={handleMouseDown}
+                  onMouseUp={handleMouseUp}
+                  disabled={isLoading} // Disable the button while loading
+                >
+                  {isLoading ? ( // Render loading icon if loading
+                    <div className="flex items-center  justify-center">
+                      <div className="mr-2 h-4 w-4 animate-ping rounded-full bg-white"></div>
+                      <p>Loading...</p>
+                    </div>
+                  ) : (
+                    <p>Submit</p>
+                  )}
+                </button>
+              </div>
             </div>
           </form>
         )}
         <br />
       </div>
-
-      {/* {patientInfo.ID && (
-        <div>
-          <p>ID: {patientInfo.ID}</p>
-          <p>Diagnosis: {patientInfo.Diagnosis}</p>
-          <p>Description: {patientInfo.Description}</p>
-        </div>
-      )} */}
     </section>
   );
 };

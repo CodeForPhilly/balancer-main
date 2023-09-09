@@ -29,3 +29,12 @@ class TestAccountCreation:
         assert self.email == data["email"]
         assert (user_id := data["id"])
         assert User.objects.filter(id=user_id).exists()
+
+    def test_email_only_autocreates_username(self, transactional_db, client):
+        """
+        A username should be autocreated with the same value as email if none is provided.
+        """
+        response = client.post(
+            self.account_creation_endpoint, {**self.account_creation_headers}
+        )
+        assert User.objects.get(id=response.json()["id"]).username == self.email

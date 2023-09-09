@@ -163,6 +163,15 @@ run-unit-tests: set-app-vars
 			-it \
 		${DOCKER_PROJECT_SERVICE_NAME} bash -c "cd app/balancer && pytest ${TESTS_ROOT}"
 
+run-functional-tests: set-app-vars
+	NAMESPACE=$(NAMESPACE) \
+	docker compose \
+		-f config/docker/compose/docker-compose.local.yaml \
+		run \
+			--rm \
+			-it \
+		${DOCKER_PROJECT_SERVICE_NAME} bash -c "cd app/functional_tests && pytest ${TESTS_ROOT}"
+
 # Teardown containers (as defined by compose file)
 teardown-project: pull-python-docker
 	cd $(DOCKER_BACKEND_CTX_FROM_PROJECT_ROOT)/$(DOCKER_PYTHON_DOCKER_FROM_CTX) && \

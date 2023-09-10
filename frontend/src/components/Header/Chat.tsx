@@ -143,14 +143,20 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
             </div>
             <div className="mt-6 flex flex-grow flex-col space-y-2 p-5 pb-44">
               {chatLog.length === 0 ? (
-                <div className="text-gray-500">
-                  Want to know more about a medication or have a question? Ask
-                  Balancer in this chat, and information will be pulled from all
-                  over the internet to assist you <br />
-                  <br />
-                  {/* <br />
-                  <br /> Balancer is an assistive tool and cannot be used as a replacement for a real human prescriber. */}
-                </div>
+                <>
+                  {/* <div className="text-gray-500">
+                    Want to know more about a medication or have a question? Ask
+                    Balancer in this chat, and information will be pulled from
+                    all over the internet to assist you <br />
+                    <br />
+                  </div> */}
+                  <div className="max-h-[100%] max-w-[310px] rounded-lg border-2 bg-gray-200 p-2 text-black">
+                    You can ask about the content on this page.
+                  </div>
+                  <div className="max-h-[100%] max-w-[190px] rounded-lg border-2 bg-gray-200 p-2 text-black">
+                    Or questions in general.
+                  </div>
+                </>
               ) : (
                 chatLog.map((message, index) => (
                   <div

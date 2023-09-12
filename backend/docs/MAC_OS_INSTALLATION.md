@@ -76,8 +76,9 @@ Since there is an execution order (and potential need to reboot) between steps, 
 
 5. Restart your computer.
    We'll most likely get our intended results running docker after a reboot.
+   Make sure you are in the "23-add-mac-installation-flow" branch and at "/backend/config/scripts/mac" directory
 
-6. Run the third installation script.
+7. Run the third installation script `./install_all_p3.sh "$(pwd)"`
 
    #### Side effects
 

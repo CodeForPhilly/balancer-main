@@ -18,7 +18,6 @@ const Header = () => {
       clearTimeout(delayTimeout);
     }
     setShowFeaturesMenu(true);
-    // setShowResearchMenu(false);
   };
 
   const handleMouseLeave = () => {

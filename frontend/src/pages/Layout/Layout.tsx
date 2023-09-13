@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
 import Header from "../../components/Header/Header";
+import Footer from "../../components/Footer/Footer";
 
 interface LayoutProps {
   children: ReactNode;
@@ -14,6 +15,7 @@ function Layout({ children }: LayoutProps) {
       <div className="container">
         <Header />
         {children}
+        <Footer />
       </div>
     </main>
   );

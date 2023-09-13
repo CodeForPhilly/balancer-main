@@ -18,7 +18,6 @@ const Header = () => {
       clearTimeout(delayTimeout);
     }
     setShowFeaturesMenu(true);
-    // setShowResearchMenu(false);
   };
 
   const handleMouseLeave = () => {
@@ -58,7 +57,32 @@ const Header = () => {
               Balancer
             </span>
           </Link>
-
+          <div
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+            ref={dropdownRef}
+            className=""
+          >
+            <span
+              className={` mr-9 text-black ${
+                showFeaturesMenu
+                  ? "cursor-pointer border-b-2 border-blue-600 hover:border-b-2 hover:border-blue-600 hover:no-underline"
+                  : "cursor-pointer hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
+              }`}
+            >
+              Features
+              <span
+                className={` ${
+                  showFeaturesMenu
+                    ? "absolute ml-1.5 rotate-180 transition-transform duration-300"
+                    : "absolute ml-1.5 "
+                }`}
+              >
+                &#8593;
+              </span>
+            </span>
+            {showFeaturesMenu && <FeatureMenuDropDown />}
+          </div>
           <>
             <Link
               to="/login"
@@ -66,32 +90,18 @@ const Header = () => {
             >
               About
             </Link>
-            <div
-              onMouseEnter={handleMouseEnter}
-              onMouseLeave={handleMouseLeave}
-              ref={dropdownRef}
-              className=""
+            <Link
+              to="/login"
+              className="mr-5  text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
             >
-              <span
-                className={` mr-9 text-black ${
-                  showFeaturesMenu
-                    ? "cursor-pointer border-b-2 border-blue-600 hover:border-b-2 hover:border-blue-600 hover:no-underline"
-                    : "cursor-pointer hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
-                }`}
-              >
-                Features
-                <span
-                  className={` ${
-                    showFeaturesMenu
-                      ? "absolute ml-1.5 rotate-180 transition-transform duration-300"
-                      : "absolute ml-1.5 "
-                  }`}
-                >
-                  &#8593;
-                </span>
-              </span>
-              {showFeaturesMenu && <FeatureMenuDropDown />}
-            </div>
+              Help
+            </Link>
+            <Link
+              to="/login"
+              className="mr-5  text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
+            >
+              Leave Feedback
+            </Link>
 
             <Chat showChat={showChat} setShowChat={setShowChat} />
           </>

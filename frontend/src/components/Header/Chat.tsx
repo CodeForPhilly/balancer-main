@@ -107,7 +107,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
       )} */}
       <div
         className={`fixed bottom-0 right-0 rounded md:bottom-3 md:right-4 ${
-          showChat ? "show_chat border-1bg-white ring-slate-1000/10" : "h-12 "
+          showChat ? "show_chat border-1bg-white ring-slate-1000/10" : "h-8 "
         } shadow transition-all `}
       >
         {showChat ? (
@@ -143,14 +143,20 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
             </div>
             <div className="mt-6 flex flex-grow flex-col space-y-2 p-5 pb-44">
               {chatLog.length === 0 ? (
-                <div className="text-gray-500">
-                  Want to know more about a medication or have a question? Ask
-                  Balancer in this chat, and information will be pulled from all
-                  over the internet to assist you <br />
-                  <br />
-                  {/* <br />
-                  <br /> Balancer is an assistive tool and cannot be used as a replacement for a real human prescriber. */}
-                </div>
+                <>
+                  {/* <div className="text-gray-500">
+                    Want to know more about a medication or have a question? Ask
+                    Balancer in this chat, and information will be pulled from
+                    all over the internet to assist you <br />
+                    <br />
+                  </div> */}
+                  <div className="max-h-[100%] max-w-[310px] rounded-lg border-2 bg-gray-200 p-2 text-black">
+                    You can ask about the content on this page.
+                  </div>
+                  <div className="max-h-[100%] max-w-[190px] rounded-lg border-2 bg-gray-200 p-2 text-black">
+                    Or questions in general.
+                  </div>
+                </>
               ) : (
                 chatLog.map((message, index) => (
                   <div
@@ -214,9 +220,9 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
         ) : (
           <div
             onClick={() => setShowChat(true)}
-            className="  absolute bottom-9 right-5 flex h-10 w-10  cursor-pointer items-center justify-center rounded-full border border-blue-600 bg-blue-100 object-contain hover:cursor-pointer hover:border-blue-600 hover:bg-blue-300 md:bottom-20 md:right-20 "
+            className="  absolute bottom-9 right-5 flex h-16 w-16  cursor-pointer items-center justify-center rounded-full border  object-contain hover:cursor-pointer hover:border-blue-600 hover:bg-blue-300 md:bottom-20 md:right-20 "
           >
-            <img src={chatBubble} alt="logo" className="h-6 w-6 " />
+            <img src={chatBubble} alt="logo" className="h-10 w-10 " />
           </div>
         )}
       </div>

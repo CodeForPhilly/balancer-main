@@ -25,7 +25,7 @@ const NewPatientForm = ({
 
   const [newPatientInfo, setNewPatientInfo] = useState<PatientInfo>({
     ID: "",
-    Diagnosis: "Manic",
+    Diagnosis: "Null",
     OtherDiagnosis: "",
     Description: "",
     CurrentMedications: "",
@@ -72,7 +72,7 @@ const NewPatientForm = ({
 
     const payload = {
       diagnosis:
-        newPatientInfo.Diagnosis !== null ? newPatientInfo.Diagnosis : "manic",
+        newPatientInfo.Diagnosis !== null ? newPatientInfo.Diagnosis : "Null",
     };
     try {
       const baseUrl = import.meta.env.VITE_API_BASE_URL;
@@ -143,7 +143,7 @@ const NewPatientForm = ({
     setNewPatientInfo((prevPatientInfo) => ({
       ...prevPatientInfo,
       ID: "",
-      Diagnosis: "Manic",
+      Diagnosis: "Null",
       OtherDiagnosis: "",
       Description: "",
       CurrentMedications: "",
@@ -168,7 +168,7 @@ const NewPatientForm = ({
     setNewPatientInfo((prevPatientInfo) => ({
       ...prevPatientInfo,
       ID: "",
-      Diagnosis: "Manic",
+      Diagnosis: "Null",
       OtherDiagnosis: "",
       Description: "",
       CurrentMedications: "",
@@ -287,6 +287,7 @@ const NewPatientForm = ({
                     autoComplete="current-state"
                     className={isLoading ? " url_input_loading" : "dropdown"}
                   >
+                    <option value="Null"> Null </option>
                     <option value="Manic"> Manic </option>
                     <option value="Depressed">Depressed</option>
                     <option value="Hypomanic">Hypomanic</option>
@@ -357,6 +358,25 @@ const NewPatientForm = ({
                         className="font-medium text-gray-900"
                       >
                         Hypomania
+                      </label>
+                    </div>
+                  </div>
+                  <div className=" flex gap-x-3">
+                    <div className="flex h-6 items-center">
+                      <input
+                        id="Mixed"
+                        name="Mixed"
+                        type="checkbox"
+                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                        onChange={(e) => handleCheckboxChange(e, "Mixed")}
+                      />
+                    </div>
+                    <div className="text-sm leading-6">
+                      <label
+                        htmlFor="Mixed"
+                        className="font-medium text-gray-900"
+                      >
+                        Mixed
                       </label>
                     </div>
                   </div>
@@ -650,7 +670,7 @@ const NewPatientForm = ({
                         className="font-medium text-gray-900"
                       >
                         <Tooltip text="Depakote is known for causing birth defects and will not be included in the suggested medications list for patients at risk of pregnancy. Note: If the patient is on birth control, taking Depakote is less of a risk.">
-                          Any risk of pregnancy
+                          Any possibility of becoming pregnant 
                           <span className="material-symbols-outlined ml-1">
                             info
                           </span>
@@ -721,7 +741,7 @@ const NewPatientForm = ({
                     htmlFor="current-state"
                     className="block flex text-sm font-medium leading-6 text-gray-900"
                   >
-                    Prior medications
+                    Prior medications to exclude
                     <Tooltip text="Any bipolar medications entered here will not appear in the list of suggested medications, as they have already been tried without success.">
                       <span className="material-symbols-outlined  ml-1">
                         info

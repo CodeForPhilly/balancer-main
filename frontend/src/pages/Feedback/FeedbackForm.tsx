@@ -3,22 +3,22 @@ import { useFormik } from 'formik';
 import * as Yup from 'yup';
 
 const validationSchema = Yup.object().shape({
-  name: Yup.string().required('Name is required'),
-  email: Yup.string().email('Invalid email').required('Email is required'),
-  message: Yup.string().required('Message is required'),
+    name: Yup.string().required('Name is a required field'),
+    email: Yup.string().email('You have entered an invalid email').required('Email is a required field'),
+    message: Yup.string().required('Message is a required field'),
 });
 
 const FeedbackForm = () => {
   const formik = useFormik({
     initialValues: {
-      name: '',
-      email: '',
-      message: '',
+        name: '',
+        email: '',
+        message: '',
     },
-    validationSchema,
+    validationSchema: validationSchema,
     onSubmit: (values) => {
-      // Handle form submission logic here
-      console.log('Submitted data:', values);
+        //submission logic
+        console.log('Submitted data:', values);
     },
   });
 
@@ -30,14 +30,41 @@ const FeedbackForm = () => {
           type="text"
           id="name"
           name="name"
-          {...formik.getFieldProps('name')}
+          onChange={formik.handleChange}
+          value={formik.values.name}
         />
         {formik.touched.name && formik.errors.name ? (
           <div>{formik.errors.name}</div>
         ) : null}
       </div>
 
-      {/* Similar code for email and message fields */}
+      <div>
+        <label htmlFor="email">E-Mail</label>
+        <input
+          type="text"
+          id="email"
+          name="email"
+          onChange={formik.handleChange}
+          value={formik.values.email}
+        />
+        {formik.touched.email && formik.errors.email ? (
+          <div>{formik.errors.email}</div>
+        ) : null}
+      </div>
+
+      <div>
+        <label htmlFor="message">Message</label>
+        <input
+          type="text"
+          id="message"
+          name="message"
+          onChange={formik.handleChange}
+          value={formik.values.message}
+        />
+        {formik.touched.message && formik.errors.message ? (
+          <div>{formik.errors.message}</div>
+        ) : null}
+      </div>
       
       <button type="submit">Submit</button>
     </form>

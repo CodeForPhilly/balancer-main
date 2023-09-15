@@ -97,7 +97,7 @@ const Header = () => {
               Help
             </Link>
             <Link
-              to="/login"
+              to="/feedback"
               className="mr-5  text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
             >
               Leave Feedback

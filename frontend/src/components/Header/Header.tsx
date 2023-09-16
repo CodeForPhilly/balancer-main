@@ -52,7 +52,7 @@ const Header = () => {
         }
       >
           <Link to="/">
-            <span className="header_logo  ml-56 text-xl font-bold">
+            <span className="header_logo  ml-72 text-xl font-bold">
               Balancer
             </span>
           </Link>
@@ -107,7 +107,7 @@ const Header = () => {
           </>
         </nav>
         
-            <span className="text-white   mr-56 text-xl font-bold">
+            <span className="text-white   mr-72 text-xl font-bold">
               Balancer
             </span>
      

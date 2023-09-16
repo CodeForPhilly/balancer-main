@@ -130,12 +130,12 @@ const FeedbackForm = () => {
                     >
                         Message
                     </label>
-                    <input
-                    type="text"
-                    id="name"
+                    <textarea
+                    id="message"
                     name="message"
                     onChange={handleChange}
                     value={values.message}
+                    rows={8} 
                     className={` focus:shadow-outline w-full appearance-none rounded border px-3 py-2 leading-tight text-gray-700 shadow focus:outline-none disabled:bg-gray-200`}
                     />
                     <div className="form-error-container">

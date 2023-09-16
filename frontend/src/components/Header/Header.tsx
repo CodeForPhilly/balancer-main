@@ -56,7 +56,7 @@ const Header = () => {
               Balancer
             </span>
           </Link>
-        <nav className="flex w-full items-center justify-center font-satoshi text-sm">
+        <nav className="flex w-full items-center justify-center font-satoshi text-base">
           <div
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
@@ -66,8 +66,8 @@ const Header = () => {
             <span
               className={` mr-9 text-black ${
                 showFeaturesMenu
-                  ? "cursor-pointer border-b-2 border-blue-600 hover:border-b-2 hover:border-blue-600 hover:no-underline"
-                  : "cursor-pointer hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
+                  ? "cursor-pointer mx-4 border-b-2 border-blue-600 hover:border-b-2 hover:border-blue-600 hover:no-underline"
+                  : "cursor-pointer mx-4 hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
               }`}
             >
               Features

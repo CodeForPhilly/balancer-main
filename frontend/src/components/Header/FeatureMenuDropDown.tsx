@@ -2,10 +2,10 @@ import { Link } from "react-router-dom";
 
 export const FeatureMenuDropDown = () => {
   return (
-    <div className="xl:px-50 absolute   justify-center top-full mt-0 flex h-72 w-[50%] flex-row rounded bg-white px-4 py-2 font-inter shadow-lg sm:px-6 md:px-8 lg:px-8 2xl:px-56">
+    <div className="absolute text-sm items-center top-full mt-0 flex h-40 w-90 flex-row rounded-lg bg-white font-inter shadow-xl shadow-blue-300/40 sm:px-6 md:px-8 lg:px-8 xl:px-6 ">
 
-      <div className="">
-        <ul className=" mb-8 mt-8">
+      <div className="mx-5">
+        <ul className=" mb-2 mt-2">
           <Link
             to="/"
             className=" text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
@@ -13,7 +13,7 @@ export const FeatureMenuDropDown = () => {
             Medication Suggester
           </Link>
         </ul>
-        <ul className=" mb-8">
+        <ul className=" mb-2">
           <Link
             to="/drugSummary"
             className=" mr-9 text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"

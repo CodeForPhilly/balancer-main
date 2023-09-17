@@ -15,7 +15,7 @@ const ErrorMessage: React.FC<{ errors: Errors }> = ({ errors }) => {
           <div className='  '>
 
             <span className='text-red-800 font-bold'>
-              There were {errors.length} {errors.length === 1 ? 'error' : 'errors'} with your submission
+              There {errors.length === 1 ? 'was' : 'were'} {errors.length} {errors.length === 1 ? 'error' : 'errors'} with your submission
             </span>
             <li key={error} className="list-disc ml-5  text-red-700 ">
 

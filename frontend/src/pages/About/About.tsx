@@ -8,7 +8,7 @@ function About() {
         {/* Top section */}
         <div className="mt-10 top-section flex w-full max-w-6xl flex-row items-center justify-center md:mt-28">
           <div className="flex flex-col items-center justify-center">
-            <div className="text-6xl">[Placeholder] We are helping bipolar patients to manage their medication.</div>
+            <div className="text-5xl">[Placeholder] We are helping bipolar patients to manage their medication.</div>
             <div className="text-lg mt-5 text-gray-500">[Placeholder] paragrah of what we do</div>
           </div>
           <div>

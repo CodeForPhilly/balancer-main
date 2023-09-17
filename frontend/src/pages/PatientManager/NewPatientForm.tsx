@@ -4,7 +4,8 @@ import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
 
 import { PatientInfo } from "./PatientTypes";
-import Tooltip from "./Tooltip";
+import Tooltip from "../../components/Tooltip";
+import ErrorMessage from '../../components/ErrorMessage';
 
 // TODO: refactor with Formik
 
@@ -21,11 +22,13 @@ const NewPatientForm = ({
   setAllPatientInfo,
 }: NewPatientFormProps) => {
   const [isPressed, setIsPressed] = useState(false);
-  const [isLoading, setIsLoading] = useState(false); // Added loading state
+  const [isLoading, setIsLoading] = useState(false);
+
+  const [errors, setErrors] = useState<string[]>([]);
 
   const [newPatientInfo, setNewPatientInfo] = useState<PatientInfo>({
     ID: "",
-    Diagnosis: "Manic",
+    Diagnosis: "Null",
     OtherDiagnosis: "",
     Description: "",
     CurrentMedications: "",
@@ -68,12 +71,24 @@ const NewPatientForm = ({
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    setIsLoading(true); // Start loading
-
+    
     const payload = {
       diagnosis:
-        newPatientInfo.Diagnosis !== null ? newPatientInfo.Diagnosis : "manic",
+      newPatientInfo.Diagnosis !== null ? newPatientInfo.Diagnosis : "Null",
     };
+    
+    // Check if Diagnosis is "Null"
+    if (newPatientInfo.Diagnosis === 'Null') {
+
+      setErrors([
+        'Please select a valid diagnosis.'
+      ]);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return; // Prevent form submission
+    }
+    
+    setIsLoading(true); // Start loading
+
     try {
       const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
@@ -126,6 +141,7 @@ const NewPatientForm = ({
       setEnterNewPatient(false);
       setIsLoading(false); // Stop loading
       handleClickNewPatient();
+      window.scrollTo({ top: 0 });
     }
   };
 
@@ -143,7 +159,7 @@ const NewPatientForm = ({
     setNewPatientInfo((prevPatientInfo) => ({
       ...prevPatientInfo,
       ID: "",
-      Diagnosis: "Manic",
+      Diagnosis: "Null",
       OtherDiagnosis: "",
       Description: "",
       CurrentMedications: "",
@@ -161,6 +177,7 @@ const NewPatientForm = ({
       Reproductive: "No",
       risk_pregnancy: "No",
     }));
+
     setEnterNewPatient(!enterNewPatient);
   };
 
@@ -168,7 +185,7 @@ const NewPatientForm = ({
     setNewPatientInfo((prevPatientInfo) => ({
       ...prevPatientInfo,
       ID: "",
-      Diagnosis: "Manic",
+      Diagnosis: "Null",
       OtherDiagnosis: "",
       Description: "",
       CurrentMedications: "",
@@ -186,6 +203,7 @@ const NewPatientForm = ({
       Reproductive: "No",
       risk_pregnancy: "No",
     }));
+
   };
 
   const handleCheckboxChange = (
@@ -270,6 +288,7 @@ const NewPatientForm = ({
         {enterNewPatient && (
           <form onSubmit={handleSubmit} className="mt-2 ">
             <div className="summary_box  ">
+              <ErrorMessage errors={errors} />
               <div className=" flex items-center border-b border-gray-900/10 py-6  ">
                 <div className="w-[300px]">
                   <label
@@ -287,6 +306,7 @@ const NewPatientForm = ({
                     autoComplete="current-state"
                     className={isLoading ? " url_input_loading" : "dropdown"}
                   >
+                    <option value="Null"> Null </option>
                     <option value="Manic"> Manic </option>
                     <option value="Depressed">Depressed</option>
                     <option value="Hypomanic">Hypomanic</option>
@@ -294,6 +314,9 @@ const NewPatientForm = ({
                     <option value="Mixed">Mixed</option>
                   </select>
                 </div>
+                {/* {errorMessage && (
+                  <div className="text-red-500">{errorMessage}</div>
+                )} */}
               </div>
 
               <div className="border-b border-gray-900/10 py-6  sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
@@ -357,6 +380,25 @@ const NewPatientForm = ({
                         className="font-medium text-gray-900"
                       >
                         Hypomania
+                      </label>
+                    </div>
+                  </div>
+                  <div className=" flex gap-x-3">
+                    <div className="flex h-6 items-center">
+                      <input
+                        id="Mixed"
+                        name="Mixed"
+                        type="checkbox"
+                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                        onChange={(e) => handleCheckboxChange(e, "Mixed")}
+                      />
+                    </div>
+                    <div className="text-sm leading-6">
+                      <label
+                        htmlFor="Mixed"
+                        className="font-medium text-gray-900"
+                      >
+                        Mixed
                       </label>
                     </div>
                   </div>
@@ -650,7 +692,7 @@ const NewPatientForm = ({
                         className="font-medium text-gray-900"
                       >
                         <Tooltip text="Depakote is known for causing birth defects and will not be included in the suggested medications list for patients at risk of pregnancy. Note: If the patient is on birth control, taking Depakote is less of a risk.">
-                          Any risk of pregnancy
+                          Any possibility of becoming pregnant
                           <span className="material-symbols-outlined ml-1">
                             info
                           </span>
@@ -721,7 +763,7 @@ const NewPatientForm = ({
                     htmlFor="current-state"
                     className="block flex text-sm font-medium leading-6 text-gray-900"
                   >
-                    Prior medications
+                    Prior medications to exclude
                     <Tooltip text="Any bipolar medications entered here will not appear in the list of suggested medications, as they have already been tried without success.">
                       <span className="material-symbols-outlined  ml-1">
                         info
@@ -763,14 +805,12 @@ const NewPatientForm = ({
                 </div>
                 <button
                   type="submit"
-                  className={`btn  ${
-                    isPressed &&
+                  className={`btn  ${isPressed &&
                     "transition-transform focus:outline-none focus:ring focus:ring-blue-200"
-                  }${
-                    isLoading
+                    }${isLoading
                       ? "bg-white-600 transition-transform focus:outline-none focus:ring focus:ring-blue-500"
                       : ""
-                  }`}
+                    }`}
                   onMouseDown={handleMouseDown}
                   onMouseUp={handleMouseUp}
                   disabled={isLoading} // Disable the button while loading

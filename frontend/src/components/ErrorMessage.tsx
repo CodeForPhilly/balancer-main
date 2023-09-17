@@ -8,24 +8,24 @@ const ErrorMessage: React.FC<{ errors: Errors }> = ({ errors }) => {
   }
 
   return (
-<div className="error-message  bg-red-100">
+    <div className="error-message  bg-red-100">
 
-<ul className="flex flex-col gap-2 error-messages bg-red-100 p-2 rounded">
-  {errors.map((error) => (
-      <div className='  '>
+      <ul className="flex flex-col gap-2 error-messages bg-red-100 p-2 rounded">
+        {errors.map((error) => (
+          <div className='  '>
 
-<span className='text-red-800 font-bold'>
-            There were {errors.length} {errors.length === 1 ? 'error' : 'errors'} with your submission
-          </span>
-      <li key={error} className="list-disc ml-5  text-red-700 ">
-       
-          {error}
-       
-    </li>
-      </div>
-  ))}
-</ul>
-  </div>
+            <span className='text-red-800 font-bold'>
+              There were {errors.length} {errors.length === 1 ? 'error' : 'errors'} with your submission
+            </span>
+            <li key={error} className="list-disc ml-5  text-red-700 ">
+
+              {error}
+
+            </li>
+          </div>
+        ))}
+      </ul>
+    </div>
   );
 };
 

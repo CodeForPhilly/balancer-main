@@ -81,7 +81,7 @@ const NewPatientForm = ({
     if (newPatientInfo.Diagnosis === 'Null') {
 
       setErrors([
-        'Please select a valid diagnosis.'
+        'Please select a current state.'
       ]);
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return; // Prevent form submission

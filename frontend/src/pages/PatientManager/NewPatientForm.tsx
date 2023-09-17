@@ -4,7 +4,8 @@ import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
 
 import { PatientInfo } from "./PatientTypes";
-import Tooltip from "./Tooltip";
+import Tooltip from "../../components/Tooltip";
+import ErrorMessage from '../../components/ErrorMessage';
 
 // TODO: refactor with Formik
 
@@ -21,7 +22,9 @@ const NewPatientForm = ({
   setAllPatientInfo,
 }: NewPatientFormProps) => {
   const [isPressed, setIsPressed] = useState(false);
-  const [isLoading, setIsLoading] = useState(false); // Added loading state
+  const [isLoading, setIsLoading] = useState(false);
+
+  const [errors, setErrors] = useState<string[]>([]);
 
   const [newPatientInfo, setNewPatientInfo] = useState<PatientInfo>({
     ID: "",
@@ -68,12 +71,24 @@ const NewPatientForm = ({
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    setIsLoading(true); // Start loading
-
+    
     const payload = {
       diagnosis:
-        newPatientInfo.Diagnosis !== null ? newPatientInfo.Diagnosis : "Null",
+      newPatientInfo.Diagnosis !== null ? newPatientInfo.Diagnosis : "Null",
     };
+    
+    // Check if Diagnosis is "Null"
+    if (newPatientInfo.Diagnosis === 'Null') {
+
+      setErrors([
+        'Please select a valid diagnosis.'
+      ]);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return; // Prevent form submission
+    }
+    
+    setIsLoading(true); // Start loading
+
     try {
       const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
@@ -126,6 +141,7 @@ const NewPatientForm = ({
       setEnterNewPatient(false);
       setIsLoading(false); // Stop loading
       handleClickNewPatient();
+      window.scrollTo({ top: 0 });
     }
   };
 
@@ -161,6 +177,7 @@ const NewPatientForm = ({
       Reproductive: "No",
       risk_pregnancy: "No",
     }));
+
     setEnterNewPatient(!enterNewPatient);
   };
 
@@ -186,6 +203,7 @@ const NewPatientForm = ({
       Reproductive: "No",
       risk_pregnancy: "No",
     }));
+
   };
 
   const handleCheckboxChange = (
@@ -270,6 +288,7 @@ const NewPatientForm = ({
         {enterNewPatient && (
           <form onSubmit={handleSubmit} className="mt-2 ">
             <div className="summary_box  ">
+              <ErrorMessage errors={errors} />
               <div className=" flex items-center border-b border-gray-900/10 py-6  ">
                 <div className="w-[300px]">
                   <label
@@ -295,6 +314,9 @@ const NewPatientForm = ({
                     <option value="Mixed">Mixed</option>
                   </select>
                 </div>
+                {/* {errorMessage && (
+                  <div className="text-red-500">{errorMessage}</div>
+                )} */}
               </div>
 
               <div className="border-b border-gray-900/10 py-6  sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
@@ -670,7 +692,7 @@ const NewPatientForm = ({
                         className="font-medium text-gray-900"
                       >
                         <Tooltip text="Depakote is known for causing birth defects and will not be included in the suggested medications list for patients at risk of pregnancy. Note: If the patient is on birth control, taking Depakote is less of a risk.">
-                          Any possibility of becoming pregnant 
+                          Any possibility of becoming pregnant
                           <span className="material-symbols-outlined ml-1">
                             info
                           </span>
@@ -783,14 +805,12 @@ const NewPatientForm = ({
                 </div>
                 <button
                   type="submit"
-                  className={`btn  ${
-                    isPressed &&
+                  className={`btn  ${isPressed &&
                     "transition-transform focus:outline-none focus:ring focus:ring-blue-200"
-                  }${
-                    isLoading
+                    }${isLoading
                       ? "bg-white-600 transition-transform focus:outline-none focus:ring focus:ring-blue-500"
                       : ""
-                  }`}
+                    }`}
                   onMouseDown={handleMouseDown}
                   onMouseUp={handleMouseUp}
                   disabled={isLoading} // Disable the button while loading

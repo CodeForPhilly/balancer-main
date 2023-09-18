@@ -7,6 +7,7 @@ import axios from "axios";
 
 import TypingAnimation from "./components/typinganimation";
 import chatBubble from "../../assets/chatbubble.svg";
+import { extractContentFromDOM } from "../../services/domExtraction.tsx";
 
 interface ChatLogItem {
   type: string;
@@ -33,6 +34,22 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
     role: "system",
     content: "You are a bot please keep conversation going.",
   };
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      const content = extractContentFromDOM();
+      setPageContent(content);
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      characterData: true
+    });
+
+    const extractedContent = extractContentFromDOM();
+    setPageContent(extractedContent);
+  }, []);
 
   useEffect(() => {
     const chatContainer = document.getElementById("chat_container");

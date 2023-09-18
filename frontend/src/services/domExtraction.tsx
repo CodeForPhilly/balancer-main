@@ -1,4 +1,4 @@
-function extractTextFromElement(element) {
+function extractTextFromElement(element: ChildNode) : string {
     let text = '';
     if (element.nodeType === Node.TEXT_NODE) {
         text += element.textContent;

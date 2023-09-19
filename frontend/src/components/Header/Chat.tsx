@@ -92,7 +92,6 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
 
     systemMessage.content += `If applicable, please use the following content to ask questions. If not applicable,
       please answer to the best of your ability: ${pageContent}`;
-    console.log(systemMessage);
 
     const apiRequestBody = {
       prompt: [systemMessage, ...apiMessages],

@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 
 import axios from "axios";
 
-import TypingAnimation from "./components/typinganimation";
+import TypingAnimation from "./components/TypingAnimation.tsx";
 import chatBubble from "../../assets/chatbubble.svg";
 import { extractContentFromDOM } from "../../services/domExtraction.tsx";
 
@@ -30,7 +30,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
   ];
   const [pageContent, setPageContent] = useState("");
 
-  const systemMessage = {
+  let systemMessage = {
     role: "system",
     content: "You are a bot please keep conversation going.",
   };
@@ -48,6 +48,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
     });
 
     const extractedContent = extractContentFromDOM();
+    console.log(extractedContent);
     setPageContent(extractedContent);
   }, []);
 
@@ -88,6 +89,10 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
       }
       return { role: role, content: messageObject.message };
     });
+
+    systemMessage.content += `If applicable, please use the following content to ask questions. If not applicable,
+      please answer to the best of your ability: ${pageContent}`;
+    console.log(systemMessage);
 
     const apiRequestBody = {
       prompt: [systemMessage, ...apiMessages],

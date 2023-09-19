@@ -3,8 +3,8 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 
 import { PatientInfo } from "./PatientTypes";
-import Tooltip from "./Tooltip";
-import TypingAnimation from "../../components/Header/components/typinganimation";
+import Tooltip from "../../components/Tooltip";
+import TypingAnimation from "../../components/Header/components/TypingAnimation.tsx";
 
 interface PatientSummaryProps {
   patientInfo: PatientInfo;

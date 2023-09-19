@@ -32,7 +32,7 @@ const Header = () => {
         clearTimeout(delayTimeout);
       }
     };
-  }, []);
+  }, [delayTimeout]);
 
   return (
     <header className="fixed w-full items-center">

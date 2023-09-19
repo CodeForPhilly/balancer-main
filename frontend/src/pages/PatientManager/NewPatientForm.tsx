@@ -81,7 +81,7 @@ const NewPatientForm = ({
     if (newPatientInfo.Diagnosis === 'Null') {
 
       setErrors([
-        'Please select a valid diagnosis.'
+        'Please select a current state.'
       ]);
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return; // Prevent form submission
@@ -306,7 +306,7 @@ const NewPatientForm = ({
                     autoComplete="current-state"
                     className={isLoading ? " url_input_loading" : "dropdown"}
                   >
-                    <option value="Null"> Null </option>
+                    <option value="Null">  </option>
                     <option value="Manic"> Manic </option>
                     <option value="Depressed">Depressed</option>
                     <option value="Hypomanic">Hypomanic</option>

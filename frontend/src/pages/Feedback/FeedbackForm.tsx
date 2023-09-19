@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useFormik } from 'formik';
 import { useMutation } from "react-query";
-import { object, string, mixed } from 'yup';
-import axios, { AxiosError } from 'axios';
+import { object, string } from 'yup';
+import axios from 'axios';
 
 interface FormValues {
     name: string;
@@ -21,7 +21,7 @@ const FeedbackForm = () => {
     const [errorMessage, setErrorMessage] = useState("");
 
     const { isLoading, mutate } = useMutation(
-        async ({ string }: FormValues) => {
+        async (FormValues) => {
             const formData = new FormData();
 
             try {

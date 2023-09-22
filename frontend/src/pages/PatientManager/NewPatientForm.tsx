@@ -751,8 +751,8 @@ const NewPatientForm = ({
                     placeholder="Separate multiple medications with commas"
                     className={
                       isLoading
-                        ? " url_input_loading peer w-1/2"
-                        : "ani_input peer mt-2 w-1/2"
+                        ? "input_loading peer w-1/2"
+                        : "input  w-full mt-2"
                     }
                   />
                 </div>
@@ -786,8 +786,8 @@ const NewPatientForm = ({
                     placeholder="Separate multiple medications with commas"
                     className={
                       isLoading
-                        ? " url_input_loading peer w-1/2"
-                        : "ani_input peer mt-2 w-1/2"
+                        ? "input_loading peer w-1/2"
+                        : "input w-full mt-2"
                     }
                   />
                 </div>

@@ -287,13 +287,13 @@ const NewPatientForm = ({
         </div>
         {enterNewPatient && (
           <form onSubmit={handleSubmit} className="mt-2 ">
-            <div className="summary_box  ">
+            <div className="summary_box font_body">
               <ErrorMessage errors={errors} />
               <div className=" flex items-center border-b border-gray-900/10 py-6  ">
                 <div className="w-[300px]">
                   <label
                     htmlFor="current-state"
-                    className="block text-sm font-medium leading-6 text-gray-900"
+                    className="block text-sm font-medium leading-6  text-gray-900"
                   >
                     Current state
                   </label>

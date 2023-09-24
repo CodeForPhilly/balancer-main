@@ -293,7 +293,7 @@ const NewPatientForm = ({
                 <div className="w-[300px]">
                   <label
                     htmlFor="current-state"
-                    className="block text-sm font-medium leading-6  text-gray-900"
+                    className="block text-sm font-semibold leading-6  text-gray-900"
                   >
                     Current state
                   </label>
@@ -409,7 +409,7 @@ const NewPatientForm = ({
                   Select patient characteristics
                 </p>
                 <fieldset className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                  <dt className="flex text-sm font-medium leading-6 text-gray-900">
+                  <dt className="flex text-sm font-semibold leading-6 text-gray-900">
                     Currently psychotic
                   </dt>
 
@@ -448,7 +448,7 @@ const NewPatientForm = ({
                   </dd>
                 </fieldset>
                 <fieldset className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                  <dt className="flex text-sm font-medium leading-6 text-gray-900">
+                  <dt className="flex text-sm font-semibold leading-6 text-gray-900">
                     History of suicide attempt(s)
                     <Tooltip text="Lithium is the only medication on the market that has been proven to reduce suicidality in patients with bipolar disorder, so it will be shown at the top of the suggested medications list.">
                       <span className="material-symbols-outlined  ml-1">
@@ -492,7 +492,7 @@ const NewPatientForm = ({
                   </dd>
                 </fieldset>
                 <fieldset className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                  <dt className="flex text-sm font-medium leading-6 text-gray-900">
+                  <dt className="flex text-sm font-semibold leading-6 text-gray-900">
                     History or risk of kidney disease
                     <Tooltip text="Lithium can affect kidney function, so it will not be included in the suggested medication list for patients with a risk or history of kidney disease.">
                       <span className="material-symbols-outlined  ml-1">
@@ -535,7 +535,7 @@ const NewPatientForm = ({
                   </dd>
                 </fieldset>
                 <fieldset className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                  <dt className="flex text-sm font-medium leading-6 text-gray-900">
+                  <dt className="flex text-sm font-semibold leading-6 text-gray-900">
                     History or risk of liver disease
                     <Tooltip text="Depakote is processed through the liver, so it will not be included in the suggested medication list for patients with a risk or history of liver disease.">
                       <span className="material-symbols-outlined  ml-1">
@@ -579,7 +579,7 @@ const NewPatientForm = ({
                 </fieldset>
 
                 <fieldset className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                  <dt className="flex text-sm font-medium leading-6 text-gray-900">
+                  <dt className="flex text-sm font-semibold leading-6 text-gray-900">
                     <Tooltip text="Second-generation antipsychotics can cause low blood pressure upon standing, putting the patient at risk of passing out and hitting their head, so they will not be included in suggested medication list for patients with a risk or history of low blood pressure.">
                       History or risk of low blood pressure, or concern for
                       falls
@@ -624,7 +624,7 @@ const NewPatientForm = ({
                   </dd>
                 </fieldset>
                 <fieldset className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                  <dt className="flex text-sm font-medium leading-6 text-gray-900">
+                  <dt className="flex text-sm font-semibold leading-6 text-gray-900">
                     Has weight gain concerns
                     <Tooltip text="Seroquel, Risperdal, Abilify, and Zyprexa are known for causing weight gain, so they will not be included in the suggested medications list for patients with concerns about weight gain.">
                       <span className="material-symbols-outlined  ml-1">
@@ -670,7 +670,7 @@ const NewPatientForm = ({
               </div>
               <div className="flex border-b border-gray-900/10 py-6 ">
                 <div className="w-[300px]">
-                  <legend className="flex text-sm font-medium leading-6 text-gray-900">
+                  <legend className="flex text-sm font-semibold leading-6 text-gray-900">
                     Reproductive status
                   </legend>
                 </div>
@@ -731,7 +731,7 @@ const NewPatientForm = ({
                 <div className="w-[300px]">
                   <label
                     htmlFor="current-state"
-                    className="block text-sm font-medium leading-6 text-gray-900"
+                    className="block text-sm font-semibold leading-6 text-gray-900"
                   >
                     Current medications
                   </label>
@@ -761,7 +761,7 @@ const NewPatientForm = ({
                 <div className=" w-[300px]">
                   <label
                     htmlFor="current-state"
-                    className="block flex text-sm font-medium leading-6 text-gray-900"
+                    className="block flex text-sm font-semibold leading-6 text-gray-900"
                   >
                     Prior medications to exclude
                     <Tooltip text="Any bipolar medications entered here will not appear in the list of suggested medications, as they have already been tried without success.">

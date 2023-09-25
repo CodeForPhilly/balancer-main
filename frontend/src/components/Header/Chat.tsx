@@ -23,11 +23,11 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
   const [inputValue, setInputValue] = useState("");
   const [chatLog, setChatLog] = useState<ChatLogItem[]>([]); // Specify the type as ChatLogItem[]
   const [isLoading, setIsLoading] = useState(false);
-  const suggestionPrompts = [
-    "Tell me about treatment options.",
-    "What are the common side effects?",
-    "How to manage medication schedule?",
-  ];
+  // const suggestionPrompts = [
+  //   "Tell me about treatment options.",
+  //   "What are the common side effects?",
+  //   "How to manage medication schedule?",
+  // ];
   const [pageContent, setPageContent] = useState("");
 
   let systemMessage = {
@@ -44,7 +44,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
     observer.observe(document.body, {
       childList: true,
       subtree: true,
-      characterData: true
+      characterData: true,
     });
 
     const extractedContent = extractContentFromDOM();
@@ -133,14 +133,14 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
       >
         {showChat ? (
           <div
-            id="chat_container"
+            id="chat_container "
             className=" mx-auto flex h-full  flex-col overflow-auto rounded "
           >
             <div
               className="absolute mt-0 flex h-8 w-full flex-row items-center justify-between rounded-t-lg border-b bg-white p-1  "
               style={{ borderBottomColor: "#abcdef" }}
             >
-              <div className=" ml-4 text-black">
+              <div className=" ml-4  text-black">
                 Questions for me? <br />
               </div>
               <div
@@ -162,7 +162,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
                 </svg>
               </div>
             </div>
-            <div className="mt-6 flex flex-grow flex-col space-y-2 p-5 pb-44">
+            <div className="font_body mt-6 flex flex-grow flex-col space-y-2 p-5 pb-44">
               {chatLog.length === 0 ? (
                 <>
                   {/* <div className="text-gray-500">
@@ -223,15 +223,15 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
               <form onSubmit={handleSubmit} className="mb-1 flex">
                 <div className="ml-2 flex-grow">
                   <input
-                    type="text"
-                    className="input_chat ring-slate-1000/10 dark:highlight-white/5 text-sm"
+                    type="ani_input"
+                    className="input dark:highlight-white/5  w-full"
                     placeholder="Talk to me..."
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                   />
                 </div>
                 <div className="ml-5">
-                  <button type="submit" className="btn">
+                  <button type="submit" className="btnBlue">
                     Send
                   </button>
                 </div>

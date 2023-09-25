@@ -797,7 +797,7 @@ const NewPatientForm = ({
                 <div className="flex w-full justify-end">
                   <button
                     type="button"
-                    className="btnCancel mr-5"
+                    className="btnGray mr-5"
                     onClick={handleClickNewPatient}
                   >
                     Clear Form
@@ -805,7 +805,7 @@ const NewPatientForm = ({
                 </div>
                 <button
                   type="submit"
-                  className={`btn  ${isPressed &&
+                  className={`btnBlue  ${isPressed &&
                     "transition-transform focus:outline-none focus:ring focus:ring-blue-200"
                     }${isLoading
                       ? "bg-white-600 transition-transform focus:outline-none focus:ring focus:ring-blue-500"

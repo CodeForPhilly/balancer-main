@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 
 import { PatientInfo } from "./PatientTypes";
 import Tooltip from "../../components/Tooltip";
-import ErrorMessage from '../../components/ErrorMessage';
+import ErrorMessage from "../../components/ErrorMessage";
 
 // TODO: refactor with Formik
 
@@ -71,22 +71,18 @@ const NewPatientForm = ({
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    
     const payload = {
       diagnosis:
-      newPatientInfo.Diagnosis !== null ? newPatientInfo.Diagnosis : "Null",
+        newPatientInfo.Diagnosis !== null ? newPatientInfo.Diagnosis : "Null",
     };
-    
-    // Check if Diagnosis is "Null"
-    if (newPatientInfo.Diagnosis === 'Null') {
 
-      setErrors([
-        'Please select a current state.'
-      ]);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Check if Diagnosis is "Null"
+    if (newPatientInfo.Diagnosis === "Null") {
+      setErrors(["Please select a current state."]);
+      window.scrollTo({ top: 0, behavior: "smooth" });
       return; // Prevent form submission
     }
-    
+
     setIsLoading(true); // Start loading
 
     try {
@@ -203,7 +199,6 @@ const NewPatientForm = ({
       Reproductive: "No",
       risk_pregnancy: "No",
     }));
-
   };
 
   const handleCheckboxChange = (
@@ -306,7 +301,7 @@ const NewPatientForm = ({
                     autoComplete="current-state"
                     className={isLoading ? " url_input_loading" : "dropdown"}
                   >
-                    <option value="Null">  </option>
+                    <option value="Null"> </option>
                     <option value="Manic"> Manic </option>
                     <option value="Depressed">Depressed</option>
                     <option value="Hypomanic">Hypomanic</option>
@@ -752,7 +747,7 @@ const NewPatientForm = ({
                     className={
                       isLoading
                         ? "input_loading peer w-1/2"
-                        : "input  w-full mt-2"
+                        : "input  mt-2 w-full"
                     }
                   />
                 </div>
@@ -787,7 +782,7 @@ const NewPatientForm = ({
                     className={
                       isLoading
                         ? "input_loading peer w-1/2"
-                        : "input w-full mt-2"
+                        : "input mt-2 w-full"
                     }
                   />
                 </div>
@@ -805,12 +800,14 @@ const NewPatientForm = ({
                 </div>
                 <button
                   type="submit"
-                  className={`btnBlue  ${isPressed &&
+                  className={`btnBlue  ${
+                    isPressed &&
                     "transition-transform focus:outline-none focus:ring focus:ring-blue-200"
-                    }${isLoading
+                  }${
+                    isLoading
                       ? "bg-white-600 transition-transform focus:outline-none focus:ring focus:ring-blue-500"
                       : ""
-                    }`}
+                  }`}
                   onMouseDown={handleMouseDown}
                   onMouseUp={handleMouseUp}
                   disabled={isLoading} // Disable the button while loading

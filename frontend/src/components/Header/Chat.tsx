@@ -48,7 +48,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
     });
 
     const extractedContent = extractContentFromDOM();
-    console.log(extractedContent);
+    // console.log(extractedContent);
     setPageContent(extractedContent);
   }, []);
 
@@ -102,7 +102,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
     axios
       .post(url, apiRequestBody)
       .then((response) => {
-        console.log(response);
+        // console.log(response);
         setChatLog((prevChatLog) => [
           ...prevChatLog,
           {
@@ -133,7 +133,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
       >
         {showChat ? (
           <div
-            id="chat_container "
+            id="chat_container"
             className=" mx-auto flex h-full  flex-col overflow-auto rounded "
           >
             <div

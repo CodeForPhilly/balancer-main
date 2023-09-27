@@ -29,8 +29,8 @@ const NewPatientForm = ({
   const [newPatientInfo, setNewPatientInfo] = useState<PatientInfo>({
     ID: "",
     Diagnosis: "Null",
-    OtherDiagnosis: "",
-    Description: "",
+    // OtherDiagnosis: "",
+    // Description: "",
     CurrentMedications: "",
     PriorMedications: "",
     PossibleMedications: { drugs: [] },
@@ -75,7 +75,7 @@ const NewPatientForm = ({
       diagnosis:
         newPatientInfo.Diagnosis !== null ? newPatientInfo.Diagnosis : "Null",
     };
-
+    console.log(newPatientInfo.Diagnosis);
     // Check if Diagnosis is "Null"
     if (newPatientInfo.Diagnosis === "Null") {
       setErrors(["Please select a current state."]);
@@ -88,7 +88,9 @@ const NewPatientForm = ({
     try {
       const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
-      const { data } = await axios.post(`${baseUrl}/diagnosis`, payload);
+      // const { data } = await axios.post(`${baseUrl}/diagnosis`, payload);
+
+      console.log(payload);
 
       const drugsResponse = await axios.post(`${baseUrl}/listDrugs`, payload);
 
@@ -110,12 +112,12 @@ const NewPatientForm = ({
 
       setPatientInfo({ ...newPatientInfo, ID: firstFiveCharacters });
 
-      if (data) {
-        const description = data.message.choices[0].message.content;
+      if (drugsResponse) {
+        // const description = data.message.choices[0].message.content;
 
         const newDescription = {
           ...newPatientInfo,
-          Description: description,
+          // Description: description,
           ID: firstFiveCharacters,
           PossibleMedications: possibleMedicationsData,
         };

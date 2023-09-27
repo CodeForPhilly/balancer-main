@@ -74,7 +74,7 @@ const PatientSummary = ({
   return (
     <div className="flex items-center justify-center">
       <div className="mx-3 md:mx-0 md:p-0">
-        {patientInfo.Description && (
+        {patientInfo.ID && (
           <div className=" w-[870px] justify-between">
             <div className="flex justify-between">
               <div>
@@ -121,7 +121,7 @@ const PatientSummary = ({
               </div>
             </div>
             {showSummary && (
-              <div className="summary_box w-[870px] mt-2">
+              <div className="summary_box mt-2 w-[870px]">
                 <div className="border-b border-gray-900/10 px-4 py-6 sm:px-0">
                   <h3 className="text-base  leading-7 text-gray-900">
                     <label className="font-semibold">Patient ID:</label>{" "}

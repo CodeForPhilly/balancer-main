@@ -4,7 +4,8 @@ import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
 
 import { PatientInfo } from "./PatientTypes";
-import Tooltip from "./Tooltip";
+import Tooltip from "../../components/Tooltip";
+import ErrorMessage from '../../components/ErrorMessage';
 
 // TODO: refactor with Formik
 
@@ -21,11 +22,13 @@ const NewPatientForm = ({
   setAllPatientInfo,
 }: NewPatientFormProps) => {
   const [isPressed, setIsPressed] = useState(false);
-  const [isLoading, setIsLoading] = useState(false); // Added loading state
+  const [isLoading, setIsLoading] = useState(false);
+
+  const [errors, setErrors] = useState<string[]>([]);
 
   const [newPatientInfo, setNewPatientInfo] = useState<PatientInfo>({
     ID: "",
-    Diagnosis: "Manic",
+    Diagnosis: "Null",
     OtherDiagnosis: "",
     Description: "",
     CurrentMedications: "",
@@ -68,12 +71,24 @@ const NewPatientForm = ({
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    setIsLoading(true); // Start loading
-
+    
     const payload = {
       diagnosis:
-        newPatientInfo.Diagnosis !== null ? newPatientInfo.Diagnosis : "manic",
+      newPatientInfo.Diagnosis !== null ? newPatientInfo.Diagnosis : "Null",
     };
+    
+    // Check if Diagnosis is "Null"
+    if (newPatientInfo.Diagnosis === 'Null') {
+
+      setErrors([
+        'Please select a current state.'
+      ]);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return; // Prevent form submission
+    }
+    
+    setIsLoading(true); // Start loading
+
     try {
       const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
@@ -126,6 +141,7 @@ const NewPatientForm = ({
       setEnterNewPatient(false);
       setIsLoading(false); // Stop loading
       handleClickNewPatient();
+      window.scrollTo({ top: 0 });
     }
   };
 
@@ -143,7 +159,7 @@ const NewPatientForm = ({
     setNewPatientInfo((prevPatientInfo) => ({
       ...prevPatientInfo,
       ID: "",
-      Diagnosis: "Manic",
+      Diagnosis: "Null",
       OtherDiagnosis: "",
       Description: "",
       CurrentMedications: "",
@@ -161,6 +177,7 @@ const NewPatientForm = ({
       Reproductive: "No",
       risk_pregnancy: "No",
     }));
+
     setEnterNewPatient(!enterNewPatient);
   };
 
@@ -168,7 +185,7 @@ const NewPatientForm = ({
     setNewPatientInfo((prevPatientInfo) => ({
       ...prevPatientInfo,
       ID: "",
-      Diagnosis: "Manic",
+      Diagnosis: "Null",
       OtherDiagnosis: "",
       Description: "",
       CurrentMedications: "",
@@ -186,6 +203,7 @@ const NewPatientForm = ({
       Reproductive: "No",
       risk_pregnancy: "No",
     }));
+
   };
 
   const handleCheckboxChange = (
@@ -269,12 +287,13 @@ const NewPatientForm = ({
         </div>
         {enterNewPatient && (
           <form onSubmit={handleSubmit} className="mt-2 ">
-            <div className="summary_box  ">
+            <div className="summary_box font_body">
+              <ErrorMessage errors={errors} />
               <div className=" flex items-center border-b border-gray-900/10 py-6  ">
                 <div className="w-[300px]">
                   <label
                     htmlFor="current-state"
-                    className="block text-sm font-medium leading-6 text-gray-900"
+                    className="block text-sm font-semibold leading-6  text-gray-900"
                   >
                     Current state
                   </label>
@@ -287,6 +306,7 @@ const NewPatientForm = ({
                     autoComplete="current-state"
                     className={isLoading ? " url_input_loading" : "dropdown"}
                   >
+                    <option value="Null">  </option>
                     <option value="Manic"> Manic </option>
                     <option value="Depressed">Depressed</option>
                     <option value="Hypomanic">Hypomanic</option>
@@ -294,6 +314,9 @@ const NewPatientForm = ({
                     <option value="Mixed">Mixed</option>
                   </select>
                 </div>
+                {/* {errorMessage && (
+                  <div className="text-red-500">{errorMessage}</div>
+                )} */}
               </div>
 
               <div className="border-b border-gray-900/10 py-6  sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
@@ -360,6 +383,25 @@ const NewPatientForm = ({
                       </label>
                     </div>
                   </div>
+                  <div className=" flex gap-x-3">
+                    <div className="flex h-6 items-center">
+                      <input
+                        id="Mixed"
+                        name="Mixed"
+                        type="checkbox"
+                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                        onChange={(e) => handleCheckboxChange(e, "Mixed")}
+                      />
+                    </div>
+                    <div className="text-sm leading-6">
+                      <label
+                        htmlFor="Mixed"
+                        className="font-medium text-gray-900"
+                      >
+                        Mixed
+                      </label>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div className="border-b border-gray-900/10 py-6 ">
@@ -367,7 +409,7 @@ const NewPatientForm = ({
                   Select patient characteristics
                 </p>
                 <fieldset className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                  <dt className="flex text-sm font-medium leading-6 text-gray-900">
+                  <dt className="flex text-sm font-semibold leading-6 text-gray-900">
                     Currently psychotic
                   </dt>
 
@@ -406,7 +448,7 @@ const NewPatientForm = ({
                   </dd>
                 </fieldset>
                 <fieldset className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                  <dt className="flex text-sm font-medium leading-6 text-gray-900">
+                  <dt className="flex text-sm font-semibold leading-6 text-gray-900">
                     History of suicide attempt(s)
                     <Tooltip text="Lithium is the only medication on the market that has been proven to reduce suicidality in patients with bipolar disorder, so it will be shown at the top of the suggested medications list.">
                       <span className="material-symbols-outlined  ml-1">
@@ -450,7 +492,7 @@ const NewPatientForm = ({
                   </dd>
                 </fieldset>
                 <fieldset className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                  <dt className="flex text-sm font-medium leading-6 text-gray-900">
+                  <dt className="flex text-sm font-semibold leading-6 text-gray-900">
                     History or risk of kidney disease
                     <Tooltip text="Lithium can affect kidney function, so it will not be included in the suggested medication list for patients with a risk or history of kidney disease.">
                       <span className="material-symbols-outlined  ml-1">
@@ -493,7 +535,7 @@ const NewPatientForm = ({
                   </dd>
                 </fieldset>
                 <fieldset className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                  <dt className="flex text-sm font-medium leading-6 text-gray-900">
+                  <dt className="flex text-sm font-semibold leading-6 text-gray-900">
                     History or risk of liver disease
                     <Tooltip text="Depakote is processed through the liver, so it will not be included in the suggested medication list for patients with a risk or history of liver disease.">
                       <span className="material-symbols-outlined  ml-1">
@@ -537,7 +579,7 @@ const NewPatientForm = ({
                 </fieldset>
 
                 <fieldset className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                  <dt className="flex text-sm font-medium leading-6 text-gray-900">
+                  <dt className="flex text-sm font-semibold leading-6 text-gray-900">
                     <Tooltip text="Second-generation antipsychotics can cause low blood pressure upon standing, putting the patient at risk of passing out and hitting their head, so they will not be included in suggested medication list for patients with a risk or history of low blood pressure.">
                       History or risk of low blood pressure, or concern for
                       falls
@@ -582,7 +624,7 @@ const NewPatientForm = ({
                   </dd>
                 </fieldset>
                 <fieldset className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                  <dt className="flex text-sm font-medium leading-6 text-gray-900">
+                  <dt className="flex text-sm font-semibold leading-6 text-gray-900">
                     Has weight gain concerns
                     <Tooltip text="Seroquel, Risperdal, Abilify, and Zyprexa are known for causing weight gain, so they will not be included in the suggested medications list for patients with concerns about weight gain.">
                       <span className="material-symbols-outlined  ml-1">
@@ -628,7 +670,7 @@ const NewPatientForm = ({
               </div>
               <div className="flex border-b border-gray-900/10 py-6 ">
                 <div className="w-[300px]">
-                  <legend className="flex text-sm font-medium leading-6 text-gray-900">
+                  <legend className="flex text-sm font-semibold leading-6 text-gray-900">
                     Reproductive status
                   </legend>
                 </div>
@@ -650,7 +692,7 @@ const NewPatientForm = ({
                         className="font-medium text-gray-900"
                       >
                         <Tooltip text="Depakote is known for causing birth defects and will not be included in the suggested medications list for patients at risk of pregnancy. Note: If the patient is on birth control, taking Depakote is less of a risk.">
-                          Any risk of pregnancy
+                          Any possibility of becoming pregnant
                           <span className="material-symbols-outlined ml-1">
                             info
                           </span>
@@ -689,7 +731,7 @@ const NewPatientForm = ({
                 <div className="w-[300px]">
                   <label
                     htmlFor="current-state"
-                    className="block text-sm font-medium leading-6 text-gray-900"
+                    className="block text-sm font-semibold leading-6 text-gray-900"
                   >
                     Current medications
                   </label>
@@ -709,8 +751,8 @@ const NewPatientForm = ({
                     placeholder="Separate multiple medications with commas"
                     className={
                       isLoading
-                        ? " url_input_loading peer w-1/2"
-                        : "ani_input peer mt-2 w-1/2"
+                        ? "input_loading peer w-1/2"
+                        : "input  w-full mt-2"
                     }
                   />
                 </div>
@@ -719,9 +761,9 @@ const NewPatientForm = ({
                 <div className=" w-[300px]">
                   <label
                     htmlFor="current-state"
-                    className="block flex text-sm font-medium leading-6 text-gray-900"
+                    className="block flex text-sm font-semibold leading-6 text-gray-900"
                   >
-                    Prior medications
+                    Prior medications to exclude
                     <Tooltip text="Any bipolar medications entered here will not appear in the list of suggested medications, as they have already been tried without success.">
                       <span className="material-symbols-outlined  ml-1">
                         info
@@ -744,8 +786,8 @@ const NewPatientForm = ({
                     placeholder="Separate multiple medications with commas"
                     className={
                       isLoading
-                        ? " url_input_loading peer w-1/2"
-                        : "ani_input peer mt-2 w-1/2"
+                        ? "input_loading peer w-1/2"
+                        : "input w-full mt-2"
                     }
                   />
                 </div>
@@ -755,7 +797,7 @@ const NewPatientForm = ({
                 <div className="flex w-full justify-end">
                   <button
                     type="button"
-                    className="btnCancel mr-5"
+                    className="btnGray mr-5"
                     onClick={handleClickNewPatient}
                   >
                     Clear Form
@@ -763,14 +805,12 @@ const NewPatientForm = ({
                 </div>
                 <button
                   type="submit"
-                  className={`btn  ${
-                    isPressed &&
+                  className={`btnBlue  ${isPressed &&
                     "transition-transform focus:outline-none focus:ring focus:ring-blue-200"
-                  }${
-                    isLoading
+                    }${isLoading
                       ? "bg-white-600 transition-transform focus:outline-none focus:ring focus:ring-blue-500"
                       : ""
-                  }`}
+                    }`}
                   onMouseDown={handleMouseDown}
                   onMouseUp={handleMouseUp}
                   disabled={isLoading} // Disable the button while loading

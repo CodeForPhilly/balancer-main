@@ -5,7 +5,7 @@ export interface PatientHistoryProps {
   allPatientInfo: PatientInfo[];
   setPatientInfo: React.Dispatch<React.SetStateAction<PatientInfo>>;
   setAllPatientInfo: React.Dispatch<React.SetStateAction<PatientInfo[]>>;
-  copy: string;
+  copy: any;
   onPatientDeleted: (patientId: string) => void; // New prop
 }
 const PatientHistory = ({

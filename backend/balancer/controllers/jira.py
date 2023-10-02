@@ -1,4 +1,5 @@
 from django.http import JsonResponse
+from django import forms
 import requests
 import json
 import os
@@ -37,20 +38,57 @@ def create_new_feedback(request: str) -> JsonResponse:
     response: requests.Response = requests.request("POST", url, data=payload, headers=headers)
     match response.status_code:
         case 201:
-            return JsonResponse({"status": 201,"message": "feedback submitted"})
+            response_body: dict[str, str] = json.loads(response.text)
+            issue_key: str = response_body["issueKey"]
+            return JsonResponse({"status": 201,"message": "feedback submitted", "issueKey": issue_key})
         case 400:
             return JsonResponse({"status": 400,"message": "Invalid request"})
         case 401 | 403:
             return JsonResponse({"status": 401,"message": "Unauthorized request"})
         case _:
             return JsonResponse({"status": 500,"message": "Internal server error"})
+        
+
+class UploadAttachmentForm(forms.Form):
+    issueKey: forms.CharField = forms.CharField(max_length=50)
+    attachment = forms.FileField()
+        
+
+@csrf_exempt
+def upload_servicedesk_attachment(request: str) -> JsonResponse:
+
+    token: str = os.environ.get("JIRA_API_KEY")
+    form: UploadAttachmentForm = UploadAttachmentForm(request.POST, request.FILES)
+    if form.is_valid():
+        url: str = f"https://balancer.atlassian.net/rest/servicedeskapi/servicedesk/2/attachTemporaryFile"
+
+        headers: dict[str, str] = {
+            "Accept": "application/json",
+            "X-Atlassian-Token": "no-check",
+            "Authorization": f"Basic {token}"
+        }
+
+        response: requests.Response = requests.request(
+            "POST",
+            url,
+            files={"file": request.FILES["attachment"]},
+            headers=headers
+        )
+        match response.status_code:
+            case 201:
+                response_body: dict[str, str] = json.loads(response.text)
+                temp_attachment_id: str = response_body["temporaryAttachments"][0]["temporaryAttachmentId"]
+                issue_key: str = request.POST.get("issueKey")
+                return JsonResponse({"status": 200, "message": "attachment uploaded", "tempAttachmentId": temp_attachment_id, "issueKey": issue_key})
+            case 400:
+                return JsonResponse({"status": 400,"message": "Invalid request"})
+            case 401 | 403:
+                return JsonResponse({"status": 401,"message": "Unauthorized request"})
+            case _:
+                return JsonResponse({"status": 500,"message": "Internal server error"})
+        
 
 
-
-    # if response.status_code == 201:
-    #     return JsonResponse({"message": "feedback submitted"})
-    # elif (response.status_code >= 400) and (response.status_code < 500):
-    #     return JsonResponse({"message": "Unauthorized or invalid request"})
     
 
 

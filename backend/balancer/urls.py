@@ -16,10 +16,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from balancer.controllers import chatgpt
+from balancer.controllers import chatgpt, jira
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("extract_text/", chatgpt.extract_text, name="post_web_text"),
     path("diagnosis/", chatgpt.diagnosis, name="post_diagnosis"),
+    path("create_new_jira_feedback/", jira.create_new_jira_feedback, name="create_new_jira_feedback")
 ]

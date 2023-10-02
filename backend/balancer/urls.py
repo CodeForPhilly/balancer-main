@@ -22,5 +22,5 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("extract_text/", chatgpt.extract_text, name="post_web_text"),
     path("diagnosis/", chatgpt.diagnosis, name="post_diagnosis"),
-    path("create_new_jira_feedback/", jira.create_new_jira_feedback, name="create_new_jira_feedback")
+    path("api/jira/create_new_feedback/", jira.create_new_feedback, name="create_new_feedback")
 ]

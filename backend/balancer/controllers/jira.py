@@ -7,7 +7,7 @@ import os
 from django.views.decorators.csrf import csrf_exempt
 
 @csrf_exempt
-def create_new_jira_feedback(request: str) -> JsonResponse:
+def create_new_feedback(request: str) -> JsonResponse:
 
     token: str = os.environ.get("JIRA_API_KEY")
 

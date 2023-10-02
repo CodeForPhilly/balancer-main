@@ -1,4 +1,4 @@
-// import { useState } from "react";
+import { useState } from "react";
 import { useFormik } from "formik";
 import { useMutation } from "react-query";
 import { object, string } from "yup";
@@ -18,15 +18,29 @@ const feedbackValidation = object().shape({
   message: string().required("Message is a required field"),
 });
 
+
+
+
 const FeedbackForm = () => {
   // const [feedback, setFeedback] = useState("");
   // const [errorMessage, setErrorMessage] = useState("");
+  const [isPressed, setIsPressed] = useState(false);
+
+
+  const handleMouseDown = () => {
+    setIsPressed(true);
+  };
+  
+  const handleMouseUp = () => {
+    setIsPressed(false);
+  };
 
   const { isLoading, mutate } = useMutation(async (values: FormValues) => {
     const formData = new FormData();
     formData.append("name", values.name);
     formData.append("email", values.email);
     formData.append("message", values.message);
+
 
     try {
       const res = await axios.post(
@@ -72,9 +86,10 @@ const FeedbackForm = () => {
       validationSchema: feedbackValidation,
     });
 
+    
+
   return (
     <>
-    <div className="mt-20 flex w-full max-w-6xl flex-col items-center justify-center md:mt-28">
       <section className="mx-auto mt-12 w-full max-w-xs">
         <form onSubmit={handleSubmit}>
           <div className="summary_box">
@@ -142,18 +157,31 @@ const FeedbackForm = () => {
               </div>
             </div>
             <div className="flex items-center justify-end">
-              <button
-                className="black_btn disabled:border-gray-300 disabled:bg-gray-300 disabled:text-gray-600"
-                type="submit"
-                disabled={isLoading}
-              >
-                Submit
-              </button>
+            <button
+                  type="submit"
+                  className={`btnBlue  ${isPressed &&
+                    "transition-transform focus:outline-none focus:ring focus:ring-blue-200"
+                    }${isLoading
+                      ? "bg-white-600 transition-transform focus:outline-none focus:ring focus:ring-blue-500"
+                      : ""
+                    }`}
+                  onMouseDown={handleMouseDown}
+                  onMouseUp={handleMouseUp}
+                  disabled={isLoading} // Disable the button while loading
+                >
+                  {isLoading ? ( // Render loading icon if loading
+                    <div className="flex items-center  justify-center">
+                      <div className="mr-2 h-4 w-4 animate-ping rounded-full bg-white"></div>
+                      <p>Loading...</p>
+                    </div>
+                  ) : (
+                    <p>Submit</p>
+                  )}
+                </button>
             </div>
           </div>
         </form>
       </section>
-      </div>
     </>
   );
 };

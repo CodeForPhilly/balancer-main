@@ -7,9 +7,9 @@ import os
 # XXX: remove csrf_exempt usage before production
 from django.views.decorators.csrf import csrf_exempt
 
+
 @csrf_exempt
 def create_new_feedback(request: str) -> JsonResponse:
-
     token: str = os.environ.get("JIRA_API_KEY")
 
     data: dict[str, str] = json.loads(request.body)
@@ -22,41 +22,46 @@ def create_new_feedback(request: str) -> JsonResponse:
     headers: dict[str, str] = {
         "Accept": "application/json",
         "Content-Type": "application/json",
-        "Authorization": f"Basic {token}"
+        "Authorization": f"Basic {token}",
     }
 
-    payload: str = json.dumps({
-        "requestFieldValues": {
-            "summary": f"{name} - Feedback",
-            "customfield_10061": email,
-            "description": message
-        },
-        "requestTypeId": "33",
-        "serviceDeskId": "2",
-    })
+    payload: str = json.dumps(
+        {
+            "requestFieldValues": {
+                "summary": f"{name} - Feedback",
+                "customfield_10061": email,
+                "description": message,
+            },
+            "requestTypeId": "33",
+            "serviceDeskId": "2",
+        }
+    )
 
-    response: requests.Response = requests.request("POST", url, data=payload, headers=headers)
+    response: requests.Response = requests.request(
+        "POST", url, data=payload, headers=headers
+    )
     match response.status_code:
         case 201:
             response_body: dict[str, str] = json.loads(response.text)
             issue_key: str = response_body["issueKey"]
-            return JsonResponse({"status": 201,"message": "feedback submitted", "issueKey": issue_key})
+            return JsonResponse(
+                {"status": 201, "message": "feedback submitted", "issueKey": issue_key}
+            )
         case 400:
-            return JsonResponse({"status": 400,"message": "Invalid request"})
+            return JsonResponse({"status": 400, "message": "Invalid request"})
         case 401 | 403:
-            return JsonResponse({"status": 401,"message": "Unauthorized request"})
+            return JsonResponse({"status": 401, "message": "Unauthorized request"})
         case _:
-            return JsonResponse({"status": 500,"message": "Internal server error"})
-        
+            return JsonResponse({"status": 500, "message": "Internal server error"})
+
 
 class UploadAttachmentForm(forms.Form):
     issueKey: forms.CharField = forms.CharField(max_length=50)
     attachment = forms.FileField()
-        
+
 
 @csrf_exempt
 def upload_servicedesk_attachment(request: str) -> JsonResponse:
-
     token: str = os.environ.get("JIRA_API_KEY")
     form: UploadAttachmentForm = UploadAttachmentForm(request.POST, request.FILES)
     if form.is_valid():
@@ -65,31 +70,68 @@ def upload_servicedesk_attachment(request: str) -> JsonResponse:
         headers: dict[str, str] = {
             "Accept": "application/json",
             "X-Atlassian-Token": "no-check",
-            "Authorization": f"Basic {token}"
+            "Authorization": f"Basic {token}",
         }
 
         response: requests.Response = requests.request(
-            "POST",
-            url,
-            files={"file": request.FILES["attachment"]},
-            headers=headers
+            "POST", url, files={"file": request.FILES["attachment"]}, headers=headers
         )
         match response.status_code:
             case 201:
                 response_body: dict[str, str] = json.loads(response.text)
-                temp_attachment_id: str = response_body["temporaryAttachments"][0]["temporaryAttachmentId"]
+                temp_attachment_id: str = response_body["temporaryAttachments"][0][
+                    "temporaryAttachmentId"
+                ]
                 issue_key: str = request.POST.get("issueKey")
-                return JsonResponse({"status": 200, "message": "attachment uploaded", "tempAttachmentId": temp_attachment_id, "issueKey": issue_key})
+                return JsonResponse(
+                    {
+                        "status": 200,
+                        "message": "attachment uploaded",
+                        "tempAttachmentId": temp_attachment_id,
+                        "issueKey": issue_key,
+                    }
+                )
             case 400:
-                return JsonResponse({"status": 400,"message": "Invalid request"})
+                return JsonResponse({"status": 400, "message": "Invalid request"})
             case 401 | 403:
-                return JsonResponse({"status": 401,"message": "Unauthorized request"})
+                return JsonResponse({"status": 401, "message": "Unauthorized request"})
             case _:
-                return JsonResponse({"status": 500,"message": "Internal server error"})
-        
+                return JsonResponse({"status": 500, "message": "Internal server error"})
+    return JsonResponse({"status": 400, "message": "Invalid form object"})
 
 
-    
+@csrf_exempt
+def attach_feedback_attachment(request: str) -> JsonResponse:
+    token: str = os.environ.get("JIRA_API_KEY")
+    data: dict[str, str] = json.loads(request.body)
+    issue_key: str = data["issueKey"]
+    temp_attachment_id: str = data["tempAttachmentId"]
+    print(issue_key)
+
+    url: str = f"https://balancer.atlassian.net/rest/servicedeskapi/request/{issue_key}/attachment"
+
+    headers = {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "Authorization": f"Basic {token}",
+    }
+
+    payload: str = json.dumps(
+        {"public": True, "temporaryAttachmentIds": [temp_attachment_id]}
+    )
+
+    response: requests.Response = requests.request(
+        "POST", url, data=payload, headers=headers
+    )
+    match response.status_code:
+        case 201:
+            return JsonResponse({"status": 201, "message": "attachment attached"})
+        case 400:
+            return JsonResponse({"status": 400, "message": "Invalid request"})
+        case 401 | 403:
+            return JsonResponse({"status": 401, "message": "Unauthorized request"})
+        case _:
+            return JsonResponse({"status": 500, "message": "Internal server error"})
 
 
 # These functions are used to get Jira data, but shouldn't be enabled in production.

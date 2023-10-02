@@ -37,13 +37,13 @@ def create_new_feedback(request: str) -> JsonResponse:
     response: requests.Response = requests.request("POST", url, data=payload, headers=headers)
     match response.status_code:
         case 201:
-            return JsonResponse({"message": "feedback submitted"})
+            return JsonResponse({"status": 201,"message": "feedback submitted"})
         case 400:
-            return JsonResponse({"message": "Invalid request"})
+            return JsonResponse({"status": 400,"message": "Invalid request"})
         case 401 | 403:
-            return JsonResponse({"message": "Unauthorized request"})
+            return JsonResponse({"status": 401,"message": "Unauthorized request"})
         case _:
-            return JsonResponse({"message": "Internal server error"})
+            return JsonResponse({"status": 500,"message": "Internal server error"})
 
 
 

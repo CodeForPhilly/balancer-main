@@ -35,10 +35,22 @@ def create_new_jira_feedback(request: str) -> JsonResponse:
     })
 
     response: requests.Response = requests.request("POST", url, data=payload, headers=headers)
-    if response.status_code == 201:
-        return JsonResponse({"message": "feedback submitted"})
-    else:
-        return JsonResponse({"error": response.text})
+    match response.status_code:
+        case 201:
+            return JsonResponse({"message": "feedback submitted"})
+        case 400:
+            return JsonResponse({"message": "Invalid request"})
+        case 401 | 403:
+            return JsonResponse({"message": "Unauthorized request"})
+        case _:
+            return JsonResponse({"message": "Internal server error"})
+
+
+
+    # if response.status_code == 201:
+    #     return JsonResponse({"message": "feedback submitted"})
+    # elif (response.status_code >= 400) and (response.status_code < 500):
+    #     return JsonResponse({"message": "Unauthorized or invalid request"})
     
 
 

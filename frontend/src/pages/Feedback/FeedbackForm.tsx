@@ -74,6 +74,7 @@ const FeedbackForm = () => {
 
   return (
     <>
+    <div className="mt-20 flex w-full max-w-6xl flex-col items-center justify-center md:mt-28">
       <section className="mx-auto mt-12 w-full max-w-xs">
         <form onSubmit={handleSubmit}>
           <div className="summary_box">
@@ -152,6 +153,7 @@ const FeedbackForm = () => {
           </div>
         </form>
       </section>
+      </div>
     </>
   );
 };

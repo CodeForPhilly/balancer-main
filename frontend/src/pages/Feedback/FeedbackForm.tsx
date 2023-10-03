@@ -91,8 +91,27 @@ const FeedbackForm = () => {
   return (
     <>
       <section className="mx-auto mt-12 w-full max-w-xs">
-        <form onSubmit={handleSubmit}>
-          <div className="summary_box">
+        <form onSubmit={handleSubmit} className="mt-2">
+          <div className="summary_box font_body">
+          <fieldset className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+            <dt className="flex text-sm font-semibold leading-6 text-gray-900">Feedback Type:</dt>
+            <dd className="mt-2 pl-24 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+              <div className="flex items-center gap-x-3 pr-16">
+                <input id="feature-request" name="feedback-type" type="radio" className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600" value="Yes" />
+                <label className="block text-sm font-medium leading-6 text-gray-900" htmlFor="psychotic-yes">
+                  Feature Request
+                </label>
+                <input id="bug" name="feedback-type" type="radio" className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600" value="No" />
+                <label className="block text-sm font-medium leading-6 text-gray-900" htmlFor="psychotic-no">
+                  Bug
+                </label>
+                <input id="general-improvements" name="feedback-type" type="radio" className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600" value="No" />
+                <label className="block text-sm font-medium leading-6 text-gray-900" htmlFor="psychotic-no">
+                  General Improvements
+                </label>
+              </div>
+            </dd>
+          </fieldset>
             <div className="mb-4">
               <label
                 htmlFor="name"

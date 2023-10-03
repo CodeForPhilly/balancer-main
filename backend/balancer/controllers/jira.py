@@ -10,6 +10,9 @@ from django.views.decorators.csrf import csrf_exempt
 
 @csrf_exempt
 def create_new_feedback(request: str) -> JsonResponse:
+    """
+    Create a new feedback request in Jira Service Desk.
+    """
     token: str = os.environ.get("JIRA_API_KEY")
 
     data: dict[str, str] = json.loads(request.body)
@@ -45,7 +48,7 @@ def create_new_feedback(request: str) -> JsonResponse:
             response_body: dict[str, str] = json.loads(response.text)
             issue_key: str = response_body["issueKey"]
             return JsonResponse(
-                {"status": 201, "message": "feedback submitted", "issueKey": issue_key}
+                {"status": 201, "message": "Feedback submitted", "issueKey": issue_key}
             )
         case 400:
             return JsonResponse({"status": 400, "message": "Invalid request"})
@@ -62,6 +65,9 @@ class UploadAttachmentForm(forms.Form):
 
 @csrf_exempt
 def upload_servicedesk_attachment(request: str) -> JsonResponse:
+    """
+    Upload file to temporary files in Jira Service Desk.
+    """
     token: str = os.environ.get("JIRA_API_KEY")
     form: UploadAttachmentForm = UploadAttachmentForm(request.POST, request.FILES)
     if form.is_valid():
@@ -86,7 +92,7 @@ def upload_servicedesk_attachment(request: str) -> JsonResponse:
                 return JsonResponse(
                     {
                         "status": 200,
-                        "message": "attachment uploaded",
+                        "message": "Attachment uploaded to temporary files",
                         "tempAttachmentId": temp_attachment_id,
                         "issueKey": issue_key,
                     }
@@ -102,6 +108,9 @@ def upload_servicedesk_attachment(request: str) -> JsonResponse:
 
 @csrf_exempt
 def attach_feedback_attachment(request: str) -> JsonResponse:
+    """
+    Attach a temporary file to a Jira Service Desk issue.
+    """
     token: str = os.environ.get("JIRA_API_KEY")
     data: dict[str, str] = json.loads(request.body)
     issue_key: str = data["issueKey"]
@@ -125,7 +134,7 @@ def attach_feedback_attachment(request: str) -> JsonResponse:
     )
     match response.status_code:
         case 201:
-            return JsonResponse({"status": 201, "message": "attachment attached"})
+            return JsonResponse({"status": 201, "message": f"File attached to issue {issue_key}"})
         case 400:
             return JsonResponse({"status": 400, "message": "Invalid request"})
         case 401 | 403:

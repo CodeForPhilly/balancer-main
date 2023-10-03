@@ -18,6 +18,10 @@ const feedbackValidation = object().shape({
   message: string().required("Message is a required field"),
 });
 
+const handleCancel =() => {
+  //handle logic for cancelling form
+}
+
 
 
 
@@ -199,6 +203,15 @@ const FeedbackForm = () => {
               </fieldset>
             </div>
             <div className="flex items-center justify-end">
+            <div className="flex w-full justify-end">
+              <button
+                type="button"
+                className="btnGray mr-5"
+                onClick={handleCancel}
+              >
+                Cancel
+              </button>
+            </div>
             <button
                   type="submit"
                   className={`btnBlue  ${isPressed &&

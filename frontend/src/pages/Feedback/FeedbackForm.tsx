@@ -113,67 +113,85 @@ const FeedbackForm = () => {
             </dd>
           </fieldset>
             <div className="mb-4">
-              <label
-                htmlFor="name"
-                className="mb-2 block text-sm font-bold text-gray-700"
-              >
-                Name
-              </label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                onChange={handleChange}
-                value={values.name}
-                className={` focus:shadow-outline w-full appearance-none rounded border px-3 py-2 leading-tight text-gray-700 shadow focus:outline-none disabled:bg-gray-200`}
-              />
-              <div className="form-error-container">
-                {touched.name && errors.name && (
-                  <p className="text-sm text-red-500">{errors.name}</p>
-                )}
-              </div>
+              <fieldset className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                <dt className="flex text-sm font-semibold leading-6 text-gray-900">
+                  <label
+                    htmlFor="name"
+                    className="mb-2 block text-sm font-bold text-gray-700"
+                  >
+                    Name
+                  </label>
+                </dt>
+                <dd className="mt-2 pl-24 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    onChange={handleChange}
+                    value={values.name}
+                    className={` focus:shadow-outline w-full appearance-none rounded border px-3 py-2 leading-tight text-gray-700 shadow focus:outline-none disabled:bg-gray-200`}
+                  />
+                  <div className="form-error-container">
+                    {touched.name && errors.name && (
+                      <p className="text-sm text-red-500">{errors.name}</p>
+                    )}
+                  </div>
+                </dd>
+              </fieldset>
             </div>
             <div className="mb-4">
-              <label
-                htmlFor="email"
-                className="mb-2 block text-sm font-bold text-gray-700"
-              >
-                Email
-              </label>
-              <input
-                type="text"
-                id="email"
-                name="email"
-                onChange={handleChange}
-                value={values.email}
-                className={` focus:shadow-outline w-full appearance-none rounded border px-3 py-2 leading-tight text-gray-700 shadow focus:outline-none disabled:bg-gray-200`}
-              />
-              <div className="form-error-container">
-                {touched.email && errors.email && (
-                  <p className="text-sm text-red-500">{errors.email}</p>
-                )}
-              </div>
+              <fieldset className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                <dt className="flex text-sm font-semibold leading-6 text-gray-900">
+                  <label
+                    htmlFor="email"
+                    className="mb-2 block text-sm font-bold text-gray-700"
+                  >
+                    Email
+                  </label>
+                </dt>
+                <dd className="mt-2 pl-24 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+                  <input
+                    type="text"
+                    id="email"
+                    name="email"
+                    onChange={handleChange}
+                    value={values.email}
+                    className={` focus:shadow-outline w-full appearance-none rounded border px-3 py-2 leading-tight text-gray-700 shadow focus:outline-none disabled:bg-gray-200`}
+                  />
+                  <div className="form-error-container">
+                    {touched.email && errors.email && (
+                      <p className="text-sm text-red-500">{errors.email}</p>
+                    )}
+                  </div>
+                </dd>
+              </fieldset>
             </div>
             <div className="mb-4">
-              <label
-                htmlFor="message"
-                className="mb-2 block text-sm font-bold text-gray-700"
-              >
-                Message
-              </label>
-              <textarea
-                id="message"
-                name="message"
-                onChange={handleChange}
-                value={values.message}
-                rows={8}
-                className={` focus:shadow-outline w-full appearance-none rounded border px-3 py-2 leading-tight text-gray-700 shadow focus:outline-none disabled:bg-gray-200`}
-              />
-              <div className="form-error-container">
-                {touched.message && errors.message && (
-                  <p className="text-sm text-red-500">{errors.message}</p>
-                )}
-              </div>
+              <fieldset className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                <dt className="flex text-sm font-semibold leading-6 text-gray-900">
+                  <label
+                    htmlFor="message"
+                    className="mb-2 block text-sm font-bold text-gray-700"
+                  >
+                    Message
+                  </label>
+                </dt>
+                <dd className="mt-2 pl-24 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+                  <textarea
+                    id="message"
+                    name="message"
+                    onChange={handleChange}
+                    value={values.message}
+                    rows={8}
+                    className={` focus:shadow-outline w-full appearance-none rounded border px-3 py-2 leading-tight text-gray-700 shadow focus:outline-none disabled:bg-gray-200`}
+                  />
+                  <div className="form-error-container">
+                    {touched.message && errors.message && (
+                      <p className="text-sm text-red-500">{errors.message}</p>
+                    )}
+                  </div>
+                </dd>
+              </fieldset>
             </div>
             <div className="flex items-center justify-end">
             <button

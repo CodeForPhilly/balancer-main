@@ -136,7 +136,7 @@ const NewPatientForm = ({
         console.log("No description came back");
       }
     } catch (error) {
-      console.log("Error occurred:", error);
+      console.log("Error5 occurred:", error);
     } finally {
       setEnterNewPatient(false);
       setIsLoading(false); // Stop loading

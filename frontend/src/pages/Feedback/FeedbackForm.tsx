@@ -90,18 +90,12 @@ const FeedbackForm = () => {
 
   return (
     <>
-    <div className="flex w-[870px] justify-between"><div>
+    <div className="flex w-[870px] justify-between">
       <h2 className="header_logo cursor-pointer font-satoshi text-xl font-bold text-gray-600  hover:text-blue-600 ">
         Leave Us Feedback!
-        </h2>
-        </div>
-          <div className=" cursor-pointer items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M6 12h12"></path>
-            </svg>
-          </div>
-        </div>
-      <section className="mx-auto mt-12 w-full">
+      </h2>
+    </div>
+      <section className="mx-auto w-full">
         <form onSubmit={handleSubmit} className="mt-2">
           <div className="summary_box font_body">
           <fieldset className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">

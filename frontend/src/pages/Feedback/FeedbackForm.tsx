@@ -215,34 +215,42 @@ const FeedbackForm = () => {
                   </label>
                 </dt>
                 <dd className="mt-2 pl-24 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                  <input
-                    type="file"
-                    id="image"
-                    name="image"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        // Handle the selected file here, you can set it in your form values
-                        // You might want to upload the file to the backend using the 'axios' library
-                        handleChange({
-                          target: {
-                            name: "image",
-                            value: file,
-                          },
-                        });
-                      }
-                    }}
-                    className="focus:shadow-outline w-full appearance-none rounded border px-3 py-2 leading-tight text-gray-700 shadow focus:outline-none disabled:bg-gray-200"
-                  />
-                  <div className="form-error-container">
-                    {touched.image && errors.image && (
-                      <p className="text-sm text-red-500">{errors.image}</p>
-                    )}
+                  <div className="relative rounded-xl border-dashed border-2 border-gray-500 p-4 bg-gray-100">
+                    <label
+                      htmlFor="image"
+                      className="cursor-pointer block"
+                    >
+                      <div className="w-32 h-32 mx-auto mb-2">
+                        <img
+                          src="../src/assets/upload-image-icon.png" 
+                          alt="Upload Image"
+                          className="h-full w-full object-cover rounded-lg"
+                        />
+                      </div>
+                    </label>
+                    <input
+                      type="file"
+                      id="image"
+                      name="image"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]; 
+                        if (file) {
+                          // Handle the selected file here, you can set it in your form values
+                          // You might want to upload the file to the backend using the 'axios' library
+                          handleChange({
+                            target: {
+                              name: "image",
+                              value: file,
+                            },
+                          });
+                        }
+                      }}
+                      className="hidden" 
+                    />
                   </div>
                 </dd>
               </fieldset>
             </div>
-
             <div className="flex items-center justify-end">
             <div className="flex w-full justify-end">
               <button

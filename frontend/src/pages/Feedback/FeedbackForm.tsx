@@ -8,6 +8,7 @@ interface FormValues {
   name: string;
   email: string;
   message: string;
+  image: string,
 }
 
 const feedbackValidation = object().shape({
@@ -68,6 +69,7 @@ const FeedbackForm = () => {
         name: "",
         email: "",
         message: "",
+        image: "",
       },
       onSubmit: (values) => {
         // setFeedback("");
@@ -202,6 +204,45 @@ const FeedbackForm = () => {
                 </dd>
               </fieldset>
             </div>
+            <div className="mb-4">
+              <fieldset className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                <dt className="flex text-sm font-semibold leading-6 text-gray-900">
+                  <label
+                    htmlFor="image"
+                    className="mb-2 block text-sm font-bold text-gray-700"
+                  >
+                    Upload Image:
+                  </label>
+                </dt>
+                <dd className="mt-2 pl-24 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+                  <input
+                    type="file"
+                    id="image"
+                    name="image"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        // Handle the selected file here, you can set it in your form values
+                        // You might want to upload the file to the backend using the 'axios' library
+                        handleChange({
+                          target: {
+                            name: "image",
+                            value: file,
+                          },
+                        });
+                      }
+                    }}
+                    className="focus:shadow-outline w-full appearance-none rounded border px-3 py-2 leading-tight text-gray-700 shadow focus:outline-none disabled:bg-gray-200"
+                  />
+                  <div className="form-error-container">
+                    {touched.image && errors.image && (
+                      <p className="text-sm text-red-500">{errors.image}</p>
+                    )}
+                  </div>
+                </dd>
+              </fieldset>
+            </div>
+
             <div className="flex items-center justify-end">
             <div className="flex w-full justify-end">
               <button

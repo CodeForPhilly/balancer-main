@@ -20,8 +20,8 @@ from balancer.controllers import chatgpt, jira, listDrugs, risk
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("extract_text/", chatgpt.extract_text, name="post_web_text"),
-    path("diagnosis/", chatgpt.diagnosis, name="post_diagnosis"),
+    path("api/chatgpt/extract_text/", chatgpt.extract_text, name="post_web_text"),
+    path("api/chatgpt/diagnosis/", chatgpt.diagnosis, name="post_diagnosis"),
     path("api/chatgpt/chat", chatgpt.chatgpt, name="chatgpt"),
     path("api/chatgpt/listDrugs", listDrugs.listDrugs, name="listDrugs"),
     path("api/chatgpt/risk", risk.risk, name="risk"),

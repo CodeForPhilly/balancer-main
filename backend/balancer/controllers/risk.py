@@ -16,7 +16,7 @@ def medication(request):
     else:
         return JsonResponse({"error": "Diagnosis not found. Request must include diagnosis."})
     
-    ai_response = openai.Completion.create(
+    ai_response = openai.ChatCompletion.create(
         model = "gpt-3.5-turbo",
         messages = [
             {

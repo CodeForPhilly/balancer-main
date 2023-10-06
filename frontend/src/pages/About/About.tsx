@@ -45,16 +45,20 @@ function About() {
           </div>
 
           <div className="flex flex-row flex-wrap mt-5 mb-20">
-            <button
-              className="btnBlue transition-transform focus:outline-none focus:ring focus:ring-blue-200 mr-5"
-            >
-              Donate Here
-            </button>
-            <button
-              className="btnBlue transition-transform focus:outline-none focus:ring focus:ring-blue-200"
-            >
-              Contact Us
-            </button>
+            <a href="https://opencollective.com/code-for-philly/projects/balancer" target="_blank">
+              <button
+                className="btnBlue transition-transform focus:outline-none focus:ring focus:ring-blue-200 mr-5"
+              >
+                Donate Here
+              </button>
+            </a>
+            <a href="mailto:balancerteam@codeforphilly.org">
+              <button
+                className="btnBlue transition-transform focus:outline-none focus:ring focus:ring-blue-200"
+              >
+                Contact Us
+              </button>
+            </a>
           </div>
         </div>
       </div>

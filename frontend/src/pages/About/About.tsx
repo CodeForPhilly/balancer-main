@@ -46,12 +46,12 @@ function About() {
 
           <div className="flex flex-row flex-wrap mt-5 mb-20">
             <button
-              className="btn transition-transform focus:outline-none focus:ring focus:ring-blue-200 mr-5"
+              className="btnBlue transition-transform focus:outline-none focus:ring focus:ring-blue-200 mr-5"
             >
               Donate Here
             </button>
             <button
-              className="btn transition-transform focus:outline-none focus:ring focus:ring-blue-200"
+              className="btnBlue transition-transform focus:outline-none focus:ring focus:ring-blue-200"
             >
               Contact Us
             </button>

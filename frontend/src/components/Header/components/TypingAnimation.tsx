@@ -1,4 +1,4 @@
-import "./typingAnimation.css";
+import "./TypingAnimation.css";
 
 const TypingAnimation = () => {
   return (

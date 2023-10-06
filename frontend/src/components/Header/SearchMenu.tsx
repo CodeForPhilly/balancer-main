@@ -5,7 +5,7 @@ import axios from "axios";
 // import closeLogo from "../../assets/close.svg";
 // import logo from "../../assets/balancer.png";
 // import { Link } from "react-router-dom";
-import TypingAnimation from "./components/typinganimation";
+import TypingAnimation from "./components/TypingAnimation.tsx";
 
 interface SearchMenuProps {
   showSearchMenu: boolean;

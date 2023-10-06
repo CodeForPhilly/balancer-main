@@ -32,7 +32,7 @@ const Header = () => {
         clearTimeout(delayTimeout);
       }
     };
-  }, []);
+  }, [delayTimeout]);
 
   return (
     <header className="fixed w-full items-center">
@@ -51,12 +51,12 @@ const Header = () => {
           "xl:px-50 mx-auto hidden h-20 items-center justify-between border-b border-gray-300 bg-white  px-4 sm:px-6 md:px-8 lg:flex lg:px-8 2xl:px-56"
         }
       >
-        <nav className="flex w-full items-center justify-center font-satoshi text-sm">
           <Link to="/">
-            <span className="header_logo  mr-8 text-xl font-bold">
+            <span className="header_logo  ml-72 text-xl font-bold">
               Balancer
             </span>
           </Link>
+        <nav className="flex w-full items-center justify-center font-satoshi text-base">
           <div
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
@@ -66,8 +66,8 @@ const Header = () => {
             <span
               className={` mr-9 text-black ${
                 showFeaturesMenu
-                  ? "cursor-pointer border-b-2 border-blue-600 hover:border-b-2 hover:border-blue-600 hover:no-underline"
-                  : "cursor-pointer hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
+                  ? "cursor-pointer mx-4 border-b-2 border-blue-600 hover:border-b-2 hover:border-blue-600 hover:no-underline"
+                  : "cursor-pointer mx-4 hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
               }`}
             >
               Features
@@ -97,7 +97,7 @@ const Header = () => {
               Help
             </Link>
             <Link
-              to="/login"
+              to="/feedback"
               className="mr-5  text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
             >
               Leave Feedback
@@ -106,6 +106,11 @@ const Header = () => {
             <Chat showChat={showChat} setShowChat={setShowChat} />
           </>
         </nav>
+        
+            <span className="text-white   mr-72 text-xl font-bold">
+              Balancer
+            </span>
+     
       </div>
       <MdNavBar />
     </header>

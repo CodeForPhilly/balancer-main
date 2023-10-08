@@ -1,30 +1,29 @@
 .arrow {
-    display: inline-block;
-    width: 10px;
-    height: 10px;
-    background-color: blue;
-    animation: arrowMove 1s infinite;
-  }
-  
-  .arrow:hover {
-    animation: none;
-  }
+  display: inline-block;
+  width: 4px;
+  height: 10px;
+  background-color: blue;
+  animation: arrowMove 1s infinite;
+}
 
-  .footer-form {
-    display: flex;
-    margin-bottom: 10px;
+.arrow:hover {
+  animation: none;
+}
+
+.footer-form {
+  display: flex;
+  margin-bottom: 10px;
 }
 
 .footer-form input {
-    flex: 1;
-    padding: 8px;
+width: 150px;
 }
 
+
 .footer-form button {
-    background-color: blue;
-    color: #fff;
-    border: none;
-    padding: 8px 16px;
-    cursor: pointer;
+  background-color: blue;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  cursor: pointer;
 }
-  

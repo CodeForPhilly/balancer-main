@@ -1,5 +1,4 @@
 import FeedbackForm from "./FeedbackForm.tsx";
-import Welcome from "../../components/Welcome/Welcome.tsx";
 import Layout from "../Layout/Layout";
 
 function Feedback() {

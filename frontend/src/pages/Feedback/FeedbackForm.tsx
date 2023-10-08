@@ -23,14 +23,10 @@ const handleCancel =() => {
   //handle logic for cancelling form
 }
 
-
-
-
 const FeedbackForm = () => {
   // const [feedback, setFeedback] = useState("");
   // const [errorMessage, setErrorMessage] = useState("");
   const [isPressed, setIsPressed] = useState(false);
-
 
   const handleMouseDown = () => {
     setIsPressed(true);
@@ -96,7 +92,7 @@ const FeedbackForm = () => {
 
   return (
     <>
-    <div className="flex w-[870px] justify-between">
+    <div className="flex w-[100%] justify-between">
       <h2 className="header_logo cursor-pointer font-satoshi text-xl font-bold text-gray-600  hover:text-blue-600 ">
         Leave Us Feedback!
       </h2>

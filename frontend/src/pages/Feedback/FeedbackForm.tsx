@@ -11,22 +11,22 @@ interface FormValues {
   image: string,
 }
 
-const feedbackValidation = object().shape({
-  name: string().required("Name is a required field"),
-  email: string()
-    .email("You have entered an invalid email")
-    .required("Email is a required field"),
-  message: string().required("Message is a required field"),
-});
-
-const handleCancel =() => {
-  //handle logic for cancelling form
-}
-
 const FeedbackForm = () => {
   const [feedback, setFeedback] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [isPressed, setIsPressed] = useState(false);
+
+  const feedbackValidation = object().shape({
+    name: string().required("Name is a required field"),
+    email: string()
+      .email("You have entered an invalid email")
+      .required("Email is a required field"),
+    message: string().required("Message is a required field"),
+  });
+
+  const handleCancel =() => {
+    //handle logic for cancelling form
+  }
 
   const handleMouseDown = () => {
     setIsPressed(true);
@@ -36,14 +36,12 @@ const FeedbackForm = () => {
     setIsPressed(false);
   };
 
-  const { isLoading, mutate } = useMutation(async (values: FormValues) => {
+  const { isLoading } = useMutation(async (values: FormValues) => {
     const formData = new FormData();
     formData.append("name", values.name);
     formData.append("email", values.email);
     formData.append("message", values.message);
     formData.append("image", values.image);
-
-
 
     try {
       const res = await axios.post(
@@ -56,8 +54,6 @@ const FeedbackForm = () => {
       return res;
     } catch (e: unknown) {
       console.error(e);
-      // const defaultErrorMessage =
-      //     "Something went wrong. Please try again later.";
     }
   });
 
@@ -99,7 +95,7 @@ const FeedbackForm = () => {
             );
 
             // Check if attachment upload was successful
-            if (response2.status ===200) {
+            if (response2.status === 201) {
               const attachmentId = response2.data.tempAttachmentId;
 
               // Step 3: Attach upload image to feedback request
@@ -112,7 +108,7 @@ const FeedbackForm = () => {
               );
 
               // Check if the attachment was successfully attached
-              if (response3 === 201) {
+              if (response3.status === 201) {
                 setFeedback("Feedback submitted successfully!");
               } else {
                 setErrorMessage("Error attaching image");
@@ -274,8 +270,7 @@ const FeedbackForm = () => {
                       onChange={(e) => {
                         const file = e.target.files?.[0]; 
                         if (file) {
-                          // Handle the selected file here, you can set it in your form values
-                          // You might want to upload the file to the backend using the 'axios' library
+                          // Handle the selected file 
                           handleChange({
                             target: {
                               name: "image",
@@ -310,9 +305,9 @@ const FeedbackForm = () => {
                     }`}
                   onMouseDown={handleMouseDown}
                   onMouseUp={handleMouseUp}
-                  disabled={isLoading} // Disable the button while loading
+                  disabled={isLoading} 
                 >
-                  {isLoading ? ( // Render loading icon if loading
+                  {isLoading ? ( 
                     <div className="flex items-center  justify-center">
                       <div className="mr-2 h-4 w-4 animate-ping rounded-full bg-white"></div>
                       <p>Loading...</p>

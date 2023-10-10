@@ -18,7 +18,6 @@ const Header = () => {
       clearTimeout(delayTimeout);
     }
     setShowFeaturesMenu(true);
-    // setShowResearchMenu(false);
   };
 
   const handleMouseLeave = () => {
@@ -33,7 +32,7 @@ const Header = () => {
         clearTimeout(delayTimeout);
       }
     };
-  }, []);
+  }, [delayTimeout]);
 
   return (
     <header className="fixed w-full items-center">
@@ -52,13 +51,38 @@ const Header = () => {
           "xl:px-50 mx-auto hidden h-20 items-center justify-between border-b border-gray-300 bg-white  px-4 sm:px-6 md:px-8 lg:flex lg:px-8 2xl:px-56"
         }
       >
-        <nav className="flex w-full items-center justify-center font-satoshi text-sm">
           <Link to="/">
-            <span className="header_logo  mr-8 text-xl font-bold">
+            <span className="header_logo  ml-72 text-xl font-bold">
               Balancer
             </span>
           </Link>
-
+        <nav className="flex w-full items-center justify-center font-satoshi text-base">
+          <div
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+            ref={dropdownRef}
+            className=""
+          >
+            <span
+              className={` mr-9 text-black ${
+                showFeaturesMenu
+                  ? "cursor-pointer mx-4 border-b-2 border-blue-600 hover:border-b-2 hover:border-blue-600 hover:no-underline"
+                  : "cursor-pointer mx-4 hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
+              }`}
+            >
+              Features
+              <span
+                className={` ${
+                  showFeaturesMenu
+                    ? "absolute ml-1.5 rotate-180 transition-transform duration-300"
+                    : "absolute ml-1.5 "
+                }`}
+              >
+                &#8593;
+              </span>
+            </span>
+            {showFeaturesMenu && <FeatureMenuDropDown />}
+          </div>
           <>
             <Link
               to="/login"
@@ -66,36 +90,27 @@ const Header = () => {
             >
               About
             </Link>
-            <div
-              onMouseEnter={handleMouseEnter}
-              onMouseLeave={handleMouseLeave}
-              ref={dropdownRef}
-              className=""
+            <Link
+              to="/login"
+              className="mr-5  text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
             >
-              <span
-                className={` mr-9 text-black ${
-                  showFeaturesMenu
-                    ? "cursor-pointer border-b-2 border-blue-600 hover:border-b-2 hover:border-blue-600 hover:no-underline"
-                    : "cursor-pointer hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
-                }`}
-              >
-                Features
-                <span
-                  className={` ${
-                    showFeaturesMenu
-                      ? "absolute ml-1.5 rotate-180 transition-transform duration-300"
-                      : "absolute ml-1.5 "
-                  }`}
-                >
-                  &#8593;
-                </span>
-              </span>
-              {showFeaturesMenu && <FeatureMenuDropDown />}
-            </div>
+              Help
+            </Link>
+            <Link
+              to="/login"
+              className="mr-5  text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
+            >
+              Leave Feedback
+            </Link>
 
             <Chat showChat={showChat} setShowChat={setShowChat} />
           </>
         </nav>
+        
+            <span className="text-white   mr-72 text-xl font-bold">
+              Balancer
+            </span>
+     
       </div>
       <MdNavBar />
     </header>

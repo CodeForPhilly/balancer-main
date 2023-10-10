@@ -2,39 +2,46 @@ import { Link } from "react-router-dom";
 
 export const FeatureMenuDropDown = () => {
   return (
-    <div className="xl:px-50 absolute left-0 right-0 top-full mt-0 flex h-72 w-full flex-row rounded bg-white px-4 py-2 font-inter shadow-lg sm:px-6 md:px-8 lg:px-8 2xl:px-56">
-      <div className="  mr-26 w-28 "> </div>
-      <div className="">
-        <ul className=" mb-8 mt-8">
+    <div className="absolute text-sm items-center mt-2 mb-2 top-full  flex h-50 flex-row rounded-lg bg-white font-inter border-2 sm:px-6 md:px-8 lg:px-8 xl:px-6 ">
+
+      <div className="mx-3 my-5 ">
+      <ul  className=" cursor-pointer  hover:bg-gray-100 p-3 rounded-lg transition duration-300">
           <Link
             to="/"
-            className=" text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
+          
           >
+              <span  className=" text-black font-bold  ">
             Medication Suggester
+              </span>
+                
+          <div className="text-sm font-satoshi mt-1 text-gray-400">Medication recommendations based on symptoms and medical history.</div>
           </Link>
         </ul>
-        <ul className=" mb-8">
+
+
+        <ul  className=" cursor-pointer hover:bg-gray-100 p-3 rounded-lg transition duration-300">
           <Link
-            to="/login"
-            className=" mr-9 text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
-          >
+            to="/drugSummary"
+           
+            >
+              <span  className=" text-black font-bold ">
+
             Medication Summary and Comparison
-            {/* <span className="absolute ml-1.5 transition-transform duration-300 hover:rotate-180">
-            &#8593;
-          </span> */}
+              </span>
+           <div className="text-sm font-satoshi mt-1  text-gray-400">Streamline drug documentation analysis.</div>
           </Link>
         </ul>
-        <ul className=" mb-8">
-          <Link
-            to="/login"
-            className="mr-9 text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
-          >
-            Review Lookup
-            {/* <span className="absolute ml-1.5 transition-transform duration-300 hover:rotate-180">
-            &#8593;
-          </span> */}
-          </Link>
-        </ul>
+
+        {/* <div
+          className="mr-9 text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
+          onClick={handleSearchMenu}
+        >
+          <span className="flex-auto"> Review Lookup</span>
+        </div>
+        <SearchMenu
+          showSearchMenu={showSearchMenu}
+          handleSearchMenu={handleSearchMenu}
+        /> */}
       </div>
     </div>
   );

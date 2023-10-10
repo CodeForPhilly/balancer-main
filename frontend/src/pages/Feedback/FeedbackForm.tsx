@@ -148,7 +148,6 @@ const FeedbackForm = () => {
             } 
           } else {
               setErrorMessage("Error creating a new feedback request.");
-              console.log(response.data.status);
             }
           } catch (error) {
             setErrorMessage("An error occurred while submitting the form");

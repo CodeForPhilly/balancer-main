@@ -91,15 +91,6 @@ create-superuser: set-app-vars migrations migrate
 			-it \
 		${DOCKER_PROJECT_SERVICE_NAME} bash -c "cd app && ./manage.py createsuperuser"
 
-# Initialize poetry project in order to generate pyproject.toml and poetry.lock
-init-project:
-	cd $(DOCKER_BACKEND_CTX_FROM_PROJECT_ROOT)/$(DOCKER_PYTHON_DOCKER_FROM_CTX) && \
-		DOCKER_ABSOLUTE_APP_SOURCE=$(shell realpath ".") \
-		DOCKER_REGISTRY=$(DOCKER_REGISTRY) \
-		DOCKER_TAG_VERSION=$(DOCKER_TAG_VERSION) \
-		PYTHON_VERSION=$(PYTHON_VERSION) \
-		make init-project
-
 # Run any command $(DOCKER_LOCAL_CMD) in local container
 launch-local-project: set-app-vars
 	NAMESPACE=$(NAMESPACE) \

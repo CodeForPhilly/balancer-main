@@ -1,6 +1,10 @@
 ## Environment setup instructions
 
-This project makes use of Python-Docker in order to 1. Rapidly initialize and update packages (using Python poetry) 2. Build project (backend) image (with requirements) for local environment. 3. Launch and teardown docker containers.
+This project makes use of Python-Docker in order to
+
+1. Rapidly initialize and update packages (using Python poetry)
+2. Build project (backend) image (with requirements) for local environment.
+3. Launch and teardown docker containers.
 
 ### To build backend
 

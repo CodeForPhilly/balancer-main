@@ -11,22 +11,24 @@ interface FormValues {
   image: string,
 }
 
-const feedbackValidation = object().shape({
-  name: string().required("Name is a required field"),
-  email: string()
-    .email("You have entered an invalid email")
-    .required("Email is a required field"),
-  message: string().required("Message is a required field"),
-});
-
-const handleCancel =() => {
-  //handle logic for cancelling form
-}
-
 const FeedbackForm = () => {
-  // const [feedback, setFeedback] = useState("");
-  // const [errorMessage, setErrorMessage] = useState("");
+  const [feedback, setFeedback] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const [isPressed, setIsPressed] = useState(false);
+
+  const feedbackValidation = object().shape({
+    name: string().required("Name is a required field"),
+    email: string()
+      .email("You have entered an invalid email")
+      .required("Email is a required field"),
+    message: string().required("Message is a required field"),
+  });
+
+  const handleCancel =() => {
+    resetForm();
+    setFeedback("");
+    setErrorMessage("");
+  };
 
   const handleMouseDown = () => {
     setIsPressed(true);
@@ -36,12 +38,12 @@ const FeedbackForm = () => {
     setIsPressed(false);
   };
 
-  const { isLoading, mutate } = useMutation(async (values: FormValues) => {
+  const { isLoading } = useMutation(async (values: FormValues) => {
     const formData = new FormData();
     formData.append("name", values.name);
     formData.append("email", values.email);
     formData.append("message", values.message);
-
+    formData.append("image", values.image);
 
     try {
       const res = await axios.post(
@@ -54,8 +56,6 @@ const FeedbackForm = () => {
       return res;
     } catch (e: unknown) {
       console.error(e);
-      // const defaultErrorMessage =
-      //     "Something went wrong. Please try again later.";
     }
   });
 
@@ -67,23 +67,71 @@ const FeedbackForm = () => {
         message: "",
         image: "",
       },
-      onSubmit: (values) => {
-        // setFeedback("");
-        mutate(values, {
-          onSuccess: (response) => {
-            const message =
-              response?.data?.message?.choices?.[0]?.message?.content;
-            if (message) {
-              //   setFeedback(message);
+      onSubmit: async (values) => {
+        setFeedback("");
+        try {
+          // Call 1: Create Feedback request
+          const response = await axios.post("api/jira/create_new_feedback/", {
+            name: values.name,
+            email: values.email,
+            message: values.message,
+          });
+        
+          // check to see if request was successful and get the issue key
+          if (response.status === 201) {
+            const issueKey = response.data.issueKey;
+
+            if (values.image) {
+              // Call 2: Upload Image
+              const formData = new FormData();
+              formData.append("issueKey", issueKey);
+              formData.append("attachment", values.image);
+
+              const response2 = await axios.post(
+                "/api/jira/upload_servicedesk_attachment/",
+                formData,
+                {
+                  headers: {
+                    "Content-Type": "multipart/form-data",
+                  },
+                }
+              );
+
+              // Check if attachment upload was successful
+              if (response2.status === 201) {
+                const attachmentId = response2.data.tempAttachmentId;
+
+                // Step 3: Attach upload image to feedback request
+                const response3 = await axios.post(
+                  "/api/jira/attach_feedback_attachment/",
+                  {
+                    issueKey: issueKey,
+                    tempAttachmentId: attachmentId,
+                  }
+                );
+
+                // Check if the attachment was successfully attached
+                if (response3.status === 201) {
+                  setFeedback("Feedback submitted successfully!");
+                } else {
+                  setErrorMessage("Error attaching image");
+                  console.error(errorMessage);
+                }
+              } else {
+                setErrorMessage("Error uploading the image.");
+                console.error(errorMessage);
+              } 
+            } else {
+              setFeedback("Feedback submitted successfully!");
+            } 
+          } else {
+              setErrorMessage("Error creating a new feedback request.");
+              console.error(errorMessage);
             }
-          },
-          onError: () => {
-            // setErrorMessage("An error occured while submitting the form");
-          },
-          onSettled: () => {
-            resetForm();
-          },
-        });
+          } catch (error ) {
+            setErrorMessage("An error occurred while submitting the form");
+            console.error(errorMessage);
+        }
       },
       validationSchema: feedbackValidation,
     });
@@ -231,8 +279,7 @@ const FeedbackForm = () => {
                       onChange={(e) => {
                         const file = e.target.files?.[0]; 
                         if (file) {
-                          // Handle the selected file here, you can set it in your form values
-                          // You might want to upload the file to the backend using the 'axios' library
+                          // Handle the selected file 
                           handleChange({
                             target: {
                               name: "image",
@@ -267,9 +314,9 @@ const FeedbackForm = () => {
                     }`}
                   onMouseDown={handleMouseDown}
                   onMouseUp={handleMouseUp}
-                  disabled={isLoading} // Disable the button while loading
+                  disabled={isLoading} 
                 >
-                  {isLoading ? ( // Render loading icon if loading
+                  {isLoading ? ( 
                     <div className="flex items-center  justify-center">
                       <div className="mr-2 h-4 w-4 animate-ping rounded-full bg-white"></div>
                       <p>Loading...</p>
@@ -279,6 +326,11 @@ const FeedbackForm = () => {
                   )}
                 </button>
             </div>
+            {feedback && (
+              <div>
+                {feedback}
+              </div>
+            )}
           </div>
         </form>
       </section>

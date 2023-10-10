@@ -5,8 +5,9 @@ import { useState, useEffect } from "react";
 
 import axios from "axios";
 
-import TypingAnimation from "./components/typinganimation";
+import TypingAnimation from "./components/TypingAnimation.tsx";
 import chatBubble from "../../assets/chatbubble.svg";
+import { extractContentFromDOM } from "../../services/domExtraction.tsx";
 
 interface ChatLogItem {
   type: string;
@@ -22,17 +23,34 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
   const [inputValue, setInputValue] = useState("");
   const [chatLog, setChatLog] = useState<ChatLogItem[]>([]); // Specify the type as ChatLogItem[]
   const [isLoading, setIsLoading] = useState(false);
-  const suggestionPrompts = [
-    "Tell me about treatment options.",
-    "What are the common side effects?",
-    "How to manage medication schedule?",
-  ];
+  // const suggestionPrompts = [
+  //   "Tell me about treatment options.",
+  //   "What are the common side effects?",
+  //   "How to manage medication schedule?",
+  // ];
   const [pageContent, setPageContent] = useState("");
 
-  const systemMessage = {
+  let systemMessage = {
     role: "system",
     content: "You are a bot please keep conversation going.",
   };
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      const content = extractContentFromDOM();
+      setPageContent(content);
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+    });
+
+    const extractedContent = extractContentFromDOM();
+    console.log(extractedContent);
+    setPageContent(extractedContent);
+  }, []);
 
   useEffect(() => {
     const chatContainer = document.getElementById("chat_container");
@@ -72,6 +90,9 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
       return { role: role, content: messageObject.message };
     });
 
+    systemMessage.content += `If applicable, please use the following content to ask questions. If not applicable,
+      please answer to the best of your ability: ${pageContent}`;
+
     const apiRequestBody = {
       prompt: [systemMessage, ...apiMessages],
     };
@@ -107,19 +128,19 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
       )} */}
       <div
         className={`fixed bottom-0 right-0 rounded md:bottom-3 md:right-4 ${
-          showChat ? "show_chat border-1bg-white ring-slate-1000/10" : "h-12 "
+          showChat ? "show_chat border-1bg-white ring-slate-1000/10" : "h-8 "
         } shadow transition-all `}
       >
         {showChat ? (
           <div
-            id="chat_container"
+            id="chat_container "
             className=" mx-auto flex h-full  flex-col overflow-auto rounded "
           >
             <div
               className="absolute mt-0 flex h-8 w-full flex-row items-center justify-between rounded-t-lg border-b bg-white p-1  "
               style={{ borderBottomColor: "#abcdef" }}
             >
-              <div className=" ml-4 text-black">
+              <div className=" ml-4  text-black">
                 Questions for me? <br />
               </div>
               <div
@@ -141,16 +162,22 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
                 </svg>
               </div>
             </div>
-            <div className="mt-6 flex flex-grow flex-col space-y-2 p-5 pb-44">
+            <div className="font_body mt-6 flex flex-grow flex-col space-y-2 p-5 pb-44">
               {chatLog.length === 0 ? (
-                <div className="text-gray-500">
-                  Want to know more about a medication or have a question? Ask
-                  Balancer in this chat, and information will be pulled from all
-                  over the internet to assist you <br />
-                  <br />
-                  {/* <br />
-                  <br /> Balancer is an assistive tool and cannot be used as a replacement for a real human prescriber. */}
-                </div>
+                <>
+                  {/* <div className="text-gray-500">
+                    Want to know more about a medication or have a question? Ask
+                    Balancer in this chat, and information will be pulled from
+                    all over the internet to assist you <br />
+                    <br />
+                  </div> */}
+                  <div className="max-h-[100%] max-w-[310px] rounded-lg border-2 bg-gray-200 p-2 text-black">
+                    You can ask about the content on this page.
+                  </div>
+                  <div className="max-h-[100%] max-w-[190px] rounded-lg border-2 bg-gray-200 p-2 text-black">
+                    Or questions in general.
+                  </div>
+                </>
               ) : (
                 chatLog.map((message, index) => (
                   <div
@@ -196,15 +223,15 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
               <form onSubmit={handleSubmit} className="mb-1 flex">
                 <div className="ml-2 flex-grow">
                   <input
-                    type="text"
-                    className="input_chat ring-slate-1000/10 dark:highlight-white/5 text-sm"
+                    type="ani_input"
+                    className="input dark:highlight-white/5  w-full"
                     placeholder="Talk to me..."
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                   />
                 </div>
                 <div className="ml-5">
-                  <button type="submit" className="btn">
+                  <button type="submit" className="btnBlue">
                     Send
                   </button>
                 </div>
@@ -214,9 +241,9 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
         ) : (
           <div
             onClick={() => setShowChat(true)}
-            className="  absolute bottom-9 right-5 flex h-10 w-10  cursor-pointer items-center justify-center rounded-full border border-blue-600 bg-blue-100 object-contain hover:cursor-pointer hover:border-blue-600 hover:bg-blue-300 md:bottom-20 md:right-20 "
+            className="  absolute bottom-9 right-5 flex h-16 w-16  cursor-pointer items-center justify-center rounded-full   object-contain hover:cursor-pointer hover:border-blue-600 hover:bg-blue-300 md:bottom-20 md:right-20 "
           >
-            <img src={chatBubble} alt="logo" className="h-6 w-6 " />
+            <img src={chatBubble} alt="logo" className="h-10 w-10 " />
           </div>
         )}
       </div>

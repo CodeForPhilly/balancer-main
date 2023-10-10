@@ -3,8 +3,8 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 
 import { PatientInfo } from "./PatientTypes";
-import Tooltip from "./Tooltip";
-import TypingAnimation from "../../components/Header/components/typinganimation";
+import Tooltip from "../../components/Tooltip";
+import TypingAnimation from "../../components/Header/components/TypingAnimation.tsx";
 
 interface PatientSummaryProps {
   patientInfo: PatientInfo;
@@ -121,7 +121,7 @@ const PatientSummary = ({
               </div>
             </div>
             {showSummary && (
-              <div className="summary_box mt-2">
+              <div className="summary_box w-[870px] mt-2">
                 <div className="border-b border-gray-900/10 px-4 py-6 sm:px-0">
                   <h3 className="text-base  leading-7 text-gray-900">
                     <label className="font-semibold">Patient ID:</label>{" "}

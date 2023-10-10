@@ -13,10 +13,6 @@
   }
 }
 
-.read-the-docs {
-  color: #888;
-}
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -109,26 +105,65 @@
   }
 }
 
-/* Tailwind Styles */
+/* 
+  Note: This is layout for the whole site. 
+*/
+
+/* Layout For Whole Site */
 
 .container {
   @apply relative z-10 mx-auto flex w-full flex-col items-center;
 }
 
-.btnCancel {
-  @apply h-10 rounded-xl border bg-gray-400 px-3 py-1.5 font-satoshi text-sm  text-white  hover:bg-blue-400;
-}
-
-.btn {
-  @apply h-10 rounded-xl border bg-blue-500 px-3 py-1.5 font-satoshi text-sm  text-white  hover:bg-blue-400;
-}
-
-.head_text {
-  @apply mt-16 text-center text-5xl font-extrabold leading-[1.15] text-black sm:text-6xl;
-}
+/* 
+This is the wording logo in the nav bar 
+*/
 
 .header_logo {
   @apply bg-gradient-to-r from-blue-600 via-blue-700 to-blue-600 bg-clip-text text-transparent;
+}
+
+/* Tailwind Styles */
+
+/* 
+Font for body
+*/
+
+.font_body {
+  @apply  font-satoshi text-sm;
+}
+
+/*
+The border style of the container
+*/
+
+.summary_box {
+  @apply rounded-md border  bg-white p-4 px-8 ring-1 hover:ring-slate-300 ;
+}
+
+/*
+Button
+*/
+
+.btnBlue {
+  @apply h-10 rounded-xl border bg-blue-500 px-3 py-1.5 font-satoshi text-sm  text-white  hover:bg-blue-400;
+}
+
+.btnGray {
+  @apply h-10 rounded-xl border bg-gray-400 px-3 py-1.5 font-satoshi text-sm  text-white  hover:bg-blue-400;
+}  
+
+.btnRed {
+  @apply h-10 rounded-xl border bg-red-700 px-3 py-1.5 font-satoshi text-sm  text-white  hover:bg-blue-400;
+}  
+
+
+/* 
+The heading directly under the nav bar. 
+*/
+
+.head_text {
+  @apply mt-16 text-center text-5xl font-extrabold leading-[1.15] text-black sm:text-6xl;
 }
 
 .desc {
@@ -140,49 +175,50 @@
   letter-spacing: 0.03em;
 }
 
-.url_input {
-  @apply block w-full rounded-md border-0  bg-white py-2 pl-5 pr-5 font-satoshi text-sm font-medium  shadow-sm  ring-1 ring-slate-300  hover:border-0 hover:ring-1 hover:ring-sky-500  focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40;
+/* 
+Input field. 
+*/
+
+.input {
+  @apply block  rounded-md border-0 bg-white py-2 pl-5 pr-5 font-satoshi text-sm ring-1 transition duration-200  hover:border-0 hover:ring-1 hover:ring-sky-500   focus:outline-none focus:ring-2  focus:ring-sky-500;
 }
 
-.ani_input {
-  @apply block  w-full rounded-md border-0 bg-white py-2  pl-5 pr-5 font-satoshi text-sm font-medium shadow-sm ring-1  ring-slate-300  transition duration-200  hover:border-0 hover:ring-1 hover:ring-sky-500  focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40;
-}
+/* 
+This is for when the input field is loading
+*/
 
-input[type="ani_input"]:focus ~ .input-text,
-input[type="ani_input"]:not(:placeholder-shown) ~ .input-text {
-  @apply -translate-x-2 -translate-y-5 scale-75 transform text-blue-500;
-}
-
-.url_input_loading {
+.input_loading {
   @apply block w-full rounded-md border border-gray-300  bg-gray-300 bg-opacity-50 py-2 pl-5 pr-5 font-satoshi text-sm font-medium shadow-lg focus:border-black focus:outline-none focus:ring-0;
 }
-.dropdown {
-  @apply block w-64  rounded-md border-0 p-3 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40 sm:text-sm sm:leading-6;
-}
 
-.submit_btn {
-  @apply absolute inset-y-0 right-0 my-1.5 mr-1.5 flex w-10 items-center justify-center rounded border border-gray-200 font-sans text-sm font-medium text-gray-400 hover:border-gray-700 hover:text-gray-700;
+/* 
+Dropdown field. 
+*/
+
+.dropdown {
+  @apply block w-64 font-satoshi cursor-pointer rounded-md border-0 p-3 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset  sm:text-sm sm:leading-6   focus:outline-none focus:ring-2  focus:ring-sky-500 hover:border-0 hover:ring-1 hover:ring-sky-500 ;
 }
 
 .link_card {
   @apply flex cursor-pointer items-center justify-between rounded-md border  bg-white p-3 py-2.5 pl-5   ring-1 hover:bg-indigo-100;
 }
 
+/* 
+Circle background for logos
+*/
+
 .copy_btn {
   @apply flex h-7 w-7 cursor-pointer items-center justify-center  rounded-full bg-white/10 shadow-[inset_10px_-50px_94px_0_rgb(199,199,199,0.2)] md:mr-10;
 }
 
-.blue_gradient {
-  @apply bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text font-black text-transparent;
-}
+/*
+Tooltip. Please see Tooltip.tsx under components folder
+*/
 
-.summary_box {
-  @apply w-[870px] rounded-md border  bg-white p-4 px-8 ring-1 hover:ring-slate-300 hover:ring-slate-300;
-  /* backdrop-blur */
-}
 .tooltip-container {
   @apply cursor-pointer;
 }
+
 .tooltip {
   @apply border;
   position: absolute;
@@ -198,5 +234,25 @@ input[type="ani_input"]:not(:placeholder-shown) ~ .input-text {
 }
 
 .material-symbols-outlined {
-  font-size: 18px; /* Adjust the value as needed */
+  font-size: 18px; 
+}
+
+/*
+Error message. Please see ErrorMessages.tsx under components folder
+*/
+
+.error-message::before {
+  top: 0;
+  left: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: pink;
+}
+
+.error-message {
+  color: #FFFFFF;
+  padding: 10px;
+  margin: 5px 0;
+  border-radius: 5px;
 }

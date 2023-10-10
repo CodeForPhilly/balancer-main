@@ -71,10 +71,15 @@ const FeedbackForm = () => {
         setFeedback("");
         try {
           // Call 1: Create Feedback request
-          const response = await axios.post("api/jira/create_new_feedback/", {
+          const response = await axios.post("http://localhost:8000/api/jira/create_new_feedback/", {
             name: values.name,
             email: values.email,
             message: values.message,
+          }, 
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
           });
         
           // check to see if request was successful and get the issue key
@@ -88,7 +93,7 @@ const FeedbackForm = () => {
               formData.append("attachment", values.image);
 
               const response2 = await axios.post(
-                "/api/jira/upload_servicedesk_attachment/",
+                "http://localhost:8000/api/jira/upload_servicedesk_attachment/",
                 formData,
                 {
                   headers: {
@@ -103,7 +108,7 @@ const FeedbackForm = () => {
 
                 // Step 3: Attach upload image to feedback request
                 const response3 = await axios.post(
-                  "/api/jira/attach_feedback_attachment/",
+                  "http://localhost:8000/api/jira/attach_feedback_attachment/",
                   {
                     issueKey: issueKey,
                     tempAttachmentId: attachmentId,
@@ -113,6 +118,8 @@ const FeedbackForm = () => {
                 // Check if the attachment was successfully attached
                 if (response3.status === 201) {
                   setFeedback("Feedback submitted successfully!");
+                  console.log(feedback);
+                  resetForm();
                 } else {
                   setErrorMessage("Error attaching image");
                   console.error(errorMessage);
@@ -123,6 +130,8 @@ const FeedbackForm = () => {
               } 
             } else {
               setFeedback("Feedback submitted successfully!");
+              console.log(feedback);
+              resetForm();
             } 
           } else {
               setErrorMessage("Error creating a new feedback request.");
@@ -135,8 +144,6 @@ const FeedbackForm = () => {
       },
       validationSchema: feedbackValidation,
     });
-
-    
 
   return (
     <>

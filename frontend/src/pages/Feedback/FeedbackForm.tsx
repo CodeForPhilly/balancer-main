@@ -24,6 +24,7 @@ const FeedbackForm = () => {
     message: string().required("Message is a required field"),
   });
 
+  // implement useEffect to ensure that submit button causes changes in state
   useEffect(() => {
 
     // Update a feedback message div to render after Submit 
@@ -39,6 +40,7 @@ const FeedbackForm = () => {
     }
   }, [feedback, errorMessage]);
 
+  //reset the form fields and states when clicking cancel
   const handleCancel =() => {
     resetForm();
     setFeedback("");

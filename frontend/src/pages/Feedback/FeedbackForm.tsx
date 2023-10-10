@@ -25,8 +25,10 @@ const FeedbackForm = () => {
   });
 
   const handleCancel =() => {
-    //handle logic for cancelling form
-  }
+    resetForm();
+    setFeedback("");
+    setErrorMessage("");
+  };
 
   const handleMouseDown = () => {
     setIsPressed(true);
@@ -79,49 +81,56 @@ const FeedbackForm = () => {
           if (response.status === 201) {
             const issueKey = response.data.issueKey;
 
-            // Call 2: Upload Image
-            const formData = new FormData();
-            formData.append("issueKey", issueKey);
-            formData.append("attachment", values.image);
+            if (values.image) {
+              // Call 2: Upload Image
+              const formData = new FormData();
+              formData.append("issueKey", issueKey);
+              formData.append("attachment", values.image);
 
-            const response2 = await axios.post(
-              "/api/jira/upload_servicedesk_attachment/",
-              formData,
-              {
-                headers: {
-                  "Content-Type": "multipart/form-data",
-                },
-              }
-            );
-
-            // Check if attachment upload was successful
-            if (response2.status === 201) {
-              const attachmentId = response2.data.tempAttachmentId;
-
-              // Step 3: Attach upload image to feedback request
-              const response3 = await axios.post(
-                "/api/jira/attach_feedback_attachment/",
+              const response2 = await axios.post(
+                "/api/jira/upload_servicedesk_attachment/",
+                formData,
                 {
-                  issueKey: issueKey,
-                  tempAttachmentId: attachmentId,
+                  headers: {
+                    "Content-Type": "multipart/form-data",
+                  },
                 }
               );
 
-              // Check if the attachment was successfully attached
-              if (response3.status === 201) {
-                setFeedback("Feedback submitted successfully!");
+              // Check if attachment upload was successful
+              if (response2.status === 201) {
+                const attachmentId = response2.data.tempAttachmentId;
+
+                // Step 3: Attach upload image to feedback request
+                const response3 = await axios.post(
+                  "/api/jira/attach_feedback_attachment/",
+                  {
+                    issueKey: issueKey,
+                    tempAttachmentId: attachmentId,
+                  }
+                );
+
+                // Check if the attachment was successfully attached
+                if (response3.status === 201) {
+                  setFeedback("Feedback submitted successfully!");
+                } else {
+                  setErrorMessage("Error attaching image");
+                  console.error(errorMessage);
+                }
               } else {
-                setErrorMessage("Error attaching image");
-              }
+                setErrorMessage("Error uploading the image.");
+                console.error(errorMessage);
+              } 
             } else {
-              setErrorMessage("Error uploading the image.");
+              setFeedback("Feedback submitted successfully!");
             } 
           } else {
               setErrorMessage("Error creating a new feedback request.");
+              console.error(errorMessage);
             }
-        } catch (error ) {
-          setErrorMessage("An error occurred while submitting the form");
-          console.error(error);
+          } catch (error ) {
+            setErrorMessage("An error occurred while submitting the form");
+            console.error(errorMessage);
         }
       },
       validationSchema: feedbackValidation,
@@ -317,6 +326,11 @@ const FeedbackForm = () => {
                   )}
                 </button>
             </div>
+            {feedback && (
+              <div>
+                {feedback}
+              </div>
+            )}
           </div>
         </form>
       </section>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useFormik } from "formik";
 import { useMutation } from "react-query";
 import { object, string } from "yup";
@@ -23,6 +23,21 @@ const FeedbackForm = () => {
       .required("Email is a required field"),
     message: string().required("Message is a required field"),
   });
+
+  useEffect(() => {
+
+    // Update a feedback message div to render after Submit 
+    const feedbackMessage = document.getElementById("feedback-message");
+    if (feedbackMessage) {
+      feedbackMessage.innerText = feedback;
+    }
+    
+    // Update an error message div after Submit
+    const errorMessageDiv = document.getElementById("error-message");
+    if (errorMessageDiv) {
+      errorMessageDiv.innerText = errorMessage;
+    }
+  }, [feedback, errorMessage]);
 
   const handleCancel =() => {
     resetForm();
@@ -83,7 +98,7 @@ const FeedbackForm = () => {
           });
         
           // check to see if request was successful and get the issue key
-          if (response.status === 201) {
+          if (response.data.status === 201) {
             const issueKey = response.data.issueKey;
 
             if (values.image) {
@@ -103,7 +118,7 @@ const FeedbackForm = () => {
               );
 
               // Check if attachment upload was successful
-              if (response2.status === 201) {
+              if (response2.data.status === 201) {
                 const attachmentId = response2.data.tempAttachmentId;
 
                 // Step 3: Attach upload image to feedback request
@@ -116,30 +131,25 @@ const FeedbackForm = () => {
                 );
 
                 // Check if the attachment was successfully attached
-                if (response3.status === 201) {
+                if (response3.data.status === 201) {
                   setFeedback("Feedback submitted successfully!");
-                  console.log(feedback);
                   resetForm();
                 } else {
                   setErrorMessage("Error attaching image");
-                  console.error(errorMessage);
                 }
               } else {
                 setErrorMessage("Error uploading the image.");
-                console.error(errorMessage);
               } 
             } else {
               setFeedback("Feedback submitted successfully!");
-              console.log(feedback);
               resetForm();
             } 
           } else {
               setErrorMessage("Error creating a new feedback request.");
-              console.error(errorMessage);
+              console.log(response.data.status);
             }
-          } catch (error ) {
+          } catch (error) {
             setErrorMessage("An error occurred while submitting the form");
-            console.error(errorMessage);
         }
       },
       validationSchema: feedbackValidation,
@@ -333,11 +343,8 @@ const FeedbackForm = () => {
                   )}
                 </button>
             </div>
-            {feedback && (
-              <div>
-                {feedback}
-              </div>
-            )}
+            <div id="feedback-message">{feedback}</div>
+            <div id="error-message">{errorMessage}</div>
           </div>
         </form>
       </section>

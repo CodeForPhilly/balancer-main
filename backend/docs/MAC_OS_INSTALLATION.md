@@ -16,7 +16,7 @@ We utilize Apple's community maintained package manager ([homebrew](https://brew
 
 ### Docker
 
-To make setup as operating system/environment agnostic and to prevent conflicts with non-balancer related work you may do on the same machine, we use [docker](https://www.docker.com/) to containerize the balancer project.
+To make setup operating system/environment agnostic and to prevent conflicts with non-balancer related work you may do on the same machine, we use [docker](https://www.docker.com/) to containerize the balancer project.
 
 ## Pre-requisites
 
@@ -38,7 +38,7 @@ The installation scripts make a few assumptions in order to isolate the balancer
 
 ### Note: This script is idempotent ...
 
-meaning you can run it as many times as necessary (and then some) without getting a different result as the first time you ran it. If a package is already installed (via homebrew) or a file/directory is already present, the scripts won't try to re-install or re-create them.
+meaning you can run it as many times as necessary (and then some) without getting a different result. If a package is already installed (via homebrew) or a file/directory is already present, the scripts won't try to re-install or re-create them. If the package is installed outside of homebrew, the script will install the homebrew version.
 
 ### Order matters
 
@@ -59,13 +59,14 @@ Since there is an execution order (and potential need to reboot) between steps, 
    2. Add an ssh key (if one named id_rsa doesn't already exist) at /Users/$CURRENT_USER/.ssh.
 
 3. Register your ssh key to github
-   Before running any other commands in your terminal, you'll need to [register your ssh key to github](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account?tool=webui) (if you haven't already).
+
+   _Before_ running any other commands in your terminal, you'll need to [register your ssh key to github](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account?tool=webui) (if you haven't already).
 
    Your public ssh key can be found by opening a new terminal and running
    `cat /Users/$(whoami)/.ssh/id_rsa.pub`
 
 4. Run the second installation script.
-   Returning the initial terminal you opened (steps 1 and 2), you'll now run
+   In the initial terminal you opened (steps 1 and 2), or a new one in the aforementioned scripts/mac dir, you'll now run
    `./install_all_p2.sh`
 
    #### Side effects
@@ -76,8 +77,8 @@ Since there is an execution order (and potential need to reboot) between steps, 
 
 5. Restart your computer.
    We'll most likely get our intended results running docker after a reboot.
-
-6. Run the third installation script.
+6. Start docker(.app) in your application launcher.
+7. Run the third installation script (`./install_all_p3.sh`).
 
    #### Side effects
 

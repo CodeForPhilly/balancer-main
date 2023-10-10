@@ -120,7 +120,7 @@ const FeedbackForm = () => {
               );
 
               // Check if attachment upload was successful
-              if (response2.data.status === 201) {
+              if (response2.data.status === 200) {
                 const attachmentId = response2.data.tempAttachmentId;
 
                 // Step 3: Attach upload image to feedback request
@@ -133,14 +133,15 @@ const FeedbackForm = () => {
                 );
 
                 // Check if the attachment was successfully attached
-                if (response3.data.status === 201) {
-                  setFeedback("Feedback submitted successfully!");
+                if (response3.status === 200) {
+                  setFeedback("Feedback and image submitted successfully!");
                   resetForm();
                 } else {
                   setErrorMessage("Error attaching image");
                 }
               } else {
                 setErrorMessage("Error uploading the image.");
+                console.log(response2);
               } 
             } else {
               setFeedback("Feedback submitted successfully!");

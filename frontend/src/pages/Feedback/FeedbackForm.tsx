@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useFormik } from "formik";
 import { useMutation } from "react-query";
 import { object, string } from "yup";
@@ -24,6 +24,23 @@ const FeedbackForm = () => {
     message: string().required("Message is a required field"),
   });
 
+  // implement useEffect to ensure that submit button causes changes in state
+  useEffect(() => {
+
+    // Update a feedback message div to render after Submit 
+    const feedbackMessage = document.getElementById("feedback-message");
+    if (feedbackMessage) {
+      feedbackMessage.innerText = feedback;
+    }
+    
+    // Update an error message div after Submit
+    const errorMessageDiv = document.getElementById("error-message");
+    if (errorMessageDiv) {
+      errorMessageDiv.innerText = errorMessage;
+    }
+  }, [feedback, errorMessage]);
+
+  //reset the form fields and states when clicking cancel
   const handleCancel =() => {
     resetForm();
     setFeedback("");
@@ -71,14 +88,19 @@ const FeedbackForm = () => {
         setFeedback("");
         try {
           // Call 1: Create Feedback request
-          const response = await axios.post("api/jira/create_new_feedback/", {
+          const response = await axios.post("http://localhost:8000/api/jira/create_new_feedback/", {
             name: values.name,
             email: values.email,
             message: values.message,
+          }, 
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
           });
         
           // check to see if request was successful and get the issue key
-          if (response.status === 201) {
+          if (response.data.status === 201) {
             const issueKey = response.data.issueKey;
 
             if (values.image) {
@@ -88,7 +110,7 @@ const FeedbackForm = () => {
               formData.append("attachment", values.image);
 
               const response2 = await axios.post(
-                "/api/jira/upload_servicedesk_attachment/",
+                "http://localhost:8000/api/jira/upload_servicedesk_attachment/",
                 formData,
                 {
                   headers: {
@@ -98,12 +120,12 @@ const FeedbackForm = () => {
               );
 
               // Check if attachment upload was successful
-              if (response2.status === 201) {
+              if (response2.data.status === 200) {
                 const attachmentId = response2.data.tempAttachmentId;
 
                 // Step 3: Attach upload image to feedback request
                 const response3 = await axios.post(
-                  "/api/jira/attach_feedback_attachment/",
+                  "http://localhost:8000/api/jira/attach_feedback_attachment/",
                   {
                     issueKey: issueKey,
                     tempAttachmentId: attachmentId,
@@ -111,32 +133,29 @@ const FeedbackForm = () => {
                 );
 
                 // Check if the attachment was successfully attached
-                if (response3.status === 201) {
-                  setFeedback("Feedback submitted successfully!");
+                if (response3.status === 200) {
+                  setFeedback("Feedback and image submitted successfully!");
+                  resetForm();
                 } else {
                   setErrorMessage("Error attaching image");
-                  console.error(errorMessage);
                 }
               } else {
                 setErrorMessage("Error uploading the image.");
-                console.error(errorMessage);
+                console.log(response2);
               } 
             } else {
               setFeedback("Feedback submitted successfully!");
+              resetForm();
             } 
           } else {
               setErrorMessage("Error creating a new feedback request.");
-              console.error(errorMessage);
             }
-          } catch (error ) {
+          } catch (error) {
             setErrorMessage("An error occurred while submitting the form");
-            console.error(errorMessage);
         }
       },
       validationSchema: feedbackValidation,
     });
-
-    
 
   return (
     <>
@@ -326,11 +345,8 @@ const FeedbackForm = () => {
                   )}
                 </button>
             </div>
-            {feedback && (
-              <div>
-                {feedback}
-              </div>
-            )}
+            <div id="feedback-message">{feedback}</div>
+            <div id="error-message">{errorMessage}</div>
           </div>
         </form>
       </section>

@@ -24,4 +24,4 @@ in order to launch a development container with interactive shell.
 ### Teardown project
 1. Run
 ```make teardown-project```
-in order to tear down any exisiting development containers.
+in order to tear down any existing development containers.

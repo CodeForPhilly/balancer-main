@@ -15,6 +15,7 @@ const FeedbackForm = () => {
   const [feedback, setFeedback] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [isPressed, setIsPressed] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
 
   const feedbackValidation = object().shape({
     name: string().required("Name is a required field"),
@@ -284,11 +285,35 @@ const FeedbackForm = () => {
                       className="cursor-pointer block"
                     >
                       <div className="w-32 h-32 mx-auto mb-2">
-                        <img
-                          src="../src/assets/upload-image-icon.png" 
-                          alt="Upload Image"
-                          className="h-full w-full object-cover rounded-lg"
-                        />
+                        {selectedImage ? (
+                          <>
+                            <img 
+                              src={URL.createObjectURL(selectedImage)}
+                              alt="Selected Image"
+                              className="h-full w-full object-cover rounded-lg"
+                            />
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setSelectedImage(null);
+                                const fileInput = document.getElementById("image");
+                                if (fileInput) {
+                                  fileInput.value = "";
+                                }
+                              }}
+                              className="absolute top-2 right-2 bg-white rounded-full p-1.5 cursor-pointer"
+                            >
+                              X
+                            </button>
+                          </>
+                        ) : (
+                          <img
+                            src="../src/assets/upload-image-icon.png" 
+                            alt="Upload Image"
+                            className="h-full w-full object-cover rounded-lg"
+                          />
+                        )}
                       </div>
                     </label>
                     <input
@@ -299,6 +324,7 @@ const FeedbackForm = () => {
                         const file = e.target.files?.[0]; 
                         if (file) {
                           // Handle the selected file 
+                          setSelectedImage(file);
                           handleChange({
                             target: {
                               name: "image",

@@ -11,7 +11,7 @@ services:
     volumes:
       - "./backend:/app"
     entrypoint:
-      ["/bin/bash", "-c", "cd /app && ./manage.py migrate && ./manage.py runserver 0.0.0.0:8000"]
+      ["/bin/bash", "-c", "python"]
   frontend:
     image: balancer-frontend
     build:

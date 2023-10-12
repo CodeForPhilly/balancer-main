@@ -1,22 +1,17 @@
-version: '3.8'
+version: "3"
 services:
-  db:
-    image: postgres:15-alpine
-    volumes:
-      - ./pgdata:/var/lib/postgresql/data/
-    environment:
-      - POSTGRES_PASSWORD=password
   backend:
-    image: docker.fakecodeforphillydomain.com/balancer_backend/local
-    command: ["/app/tools/wait-for-it.sh", "db:5432", "--", "python", "/app/backend/manage.py", "runserver", "0.0.0.0:8000"]
+    image: docker.fakecodeforphillydomain.com/balancer_backend/local:latest
+    container_name: balancer-backend
     environment:
-      - DJANGO_SETTINGS_MODULE=balancer.settings
-    volumes:
-      - .:/app
+      PROJECT_NAME: balancer_backend
+      DJANGO_SETTINGS_MODULE: config.settings.local
     ports:
-      - 8000:8000
-    depends_on:
-      - db
+      - "8000:8000"
+    volumes:
+      - "./backend:/app"
+    entrypoint:
+      ["/bin/bash", "-c", "cd /app && ./manage.py migrate && ./manage.py runserver 0.0.0.0:8000"]
   frontend:
     image: balancer-frontend
     build:

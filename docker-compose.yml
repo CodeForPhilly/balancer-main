@@ -11,7 +11,7 @@ services:
     volumes:
       - "./backend:/app"
     entrypoint:
-      ["/bin/bash", "-c", "python"]
+      /app/config/docker/scripts/run-server-entrypoint.sh
   frontend:
     image: balancer-frontend
     build:

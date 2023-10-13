@@ -13,7 +13,7 @@ endif
 export
 
 NAMESPACE ?= local
-PROJECT_NAME ?= balancer_backend
+PROJECT_NAME ?= backend
 PYTHON_VERSION ?= 3.10
 
 DOCKER_APP_DEST ?= /app
@@ -25,9 +25,9 @@ DOCKER_LOCAL_CMD ?= /bin/bash
 DOCKER_LOG_FOLDER_PATH ?= /root/.$(PROJECT_NAME)/logs
 DOCKER_NO_CACHE ?=  # Define with any value to disable caching on build
 DOCKER_PROJECT_ROOT_FROM_CTX ?= .
-DOCKER_PROJECT_SERVICE_NAME ?= balancer-backend
+DOCKER_PROJECT_SERVICE_NAME ?= backend
 DOCKER_PYTHON_DOCKER_FROM_CTX ?= Python-Docker
-DOCKER_REGISTRY ?= docker.fakecodeforphillydomain.com
+DOCKER_REGISTRY ?= ghcr.io/codeforphilly/balancer-main
 DOCKER_TAG_VERSION ?= latest
 DOCKER_WATCH ?= # Define with any value to display background deployment
 

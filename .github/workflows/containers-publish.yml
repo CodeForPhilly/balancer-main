@@ -53,14 +53,29 @@ jobs:
             --tag "${DOCKER_REPOSITORY}/frontend:${DOCKER_TAG}" \
             frontend
 
-    - name: Push Docker container image frontend:latest"
+    - name: 'Push Docker container image frontend:latest'
       run: docker push "${DOCKER_REPOSITORY}/frontend:latest"
 
-    - name: Push Docker container image frontend:v*"
+    - name: 'Push Docker container image frontend:v*'
       run: docker push "${DOCKER_REPOSITORY}/frontend:${DOCKER_TAG}"
 
-    # - name: Push Docker container image :latest"
-    #   run: docker push "${DOCKER_REPOSITORY}:latest"
+    - name: 'Pull previous Docker container image: backend:latest'
+      run: docker pull "${DOCKER_REPOSITORY}/backend:latest" || true
 
+    - name: 'Build Docker container image: backend:latest'
+      run: cd backend && make
+        
+
+    - name: 'Push Docker container image backend:latest'
+      run: |
+        docker image tag "${DOCKER_REPOSITORY}/backend/local:latest" "${DOCKER_REPOSITORY}/backend:latest" && \
+        docker push "${DOCKER_REPOSITORY}/backend:latest"
+
+    - name: 'Push Docker container image backend:v*'
+      run: |
+        docker image tag "${DOCKER_REPOSITORY}/backend/local:latest" "${DOCKER_REPOSITORY}/backend:${DOCKER_TAG}" && \
+        docker push "${DOCKER_REPOSITORY}/backend:${DOCKER_TAG}"
+      
     # - name: Push Docker container image :v*"
     #   run: docker push "${DOCKER_REPOSITORY}:${DOCKER_TAG}"
+    

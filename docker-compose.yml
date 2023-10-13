@@ -4,10 +4,12 @@ services:
     image: postgres:15-alpine
     volumes:
       - ./pgdata:/var/lib/postgresql/data/
+    ports:
+      - 5432:5432
     environment:
       - POSTGRES_PASSWORD=password
   backend:
-    image: docker.fakecodeforphillydomain.com/balancer_backend/local
+    image: ghcr.io/codeforphilly/balancer-main/backend:latest
     command: ["/app/tools/wait-for-it.sh", "db:5432", "--", "python", "/app/backend/manage.py", "runserver", "0.0.0.0:8000"]
     environment:
       - DJANGO_SETTINGS_MODULE=balancer.settings
@@ -18,7 +20,7 @@ services:
     depends_on:
       - db
   frontend:
-    image: balancer-frontend
+    image: ghcr.io/codeforphilly/balancer-main/frontend:latest
     build:
       context: frontend
       dockerfile: Dockerfile

@@ -1,3 +1,11 @@
+# TLDR
+
+Much of the work of understanding complex commands to run docker containers has been automated into make commands.
+
+- Two of these commands are currently necessary to build our project (build-base-image and build-project), but will eventually only be useful for image managers (once the images are in a centralized repo).
+
+After building the project, the easiest way to get the backend and frontend up and running is to use `docker compose up` from the project root directory.
+
 # Docker is hard, but we can pretend it isn't 😏
 
 ## Purpose
@@ -68,7 +76,26 @@ in order to build the balancer backend develompent environment.
 
 ### Deployment commands
 
-#### Launching django server
+The development image must be instantiated as a container before use. Think of the image as a class defining the development environment, and the container as an actual
+instance of that class.
+
+After building the development image, you can use
+`make launch-local-project`
+to launch an instance of the backend and shell into it.
+
+Note: You may launch multiple instances of the backend at once in different terminals.
+
+#### Change the launch command
+
+By default, `make launch-local-project` results in a shell within the backend instance, due to the default value (/bin/bash) for the launch command variable (DOCKER_LOCAL_CMD). You can override this variable (`DOCKER_LOCAL_CMD=pytest .` or `DOCKER_LOCAL_CMD=make migrations`) for different behavior.
+
+#### Tearing down lingering containers
+
+All project-related containers can be torn down using `make teardown-project`.
+
+#### Convience commands
+
+##### Launching django server
 
 We use Django for serving our API endpoints to the balancer frontend. In other words, Django's web-server must be running in order to use our app. To do so, in its own termainal, run
 
@@ -78,9 +105,7 @@ make launch-local-server
 
 #### NOTE
 
-The local server does not run as a background process, so you'll need to give it its own terminal to run in!
-
-### Test utilities
+The local server does not (by default) run as a background process, so you'll need to give it its own terminal to run in!
 
 #### Launching shell-plus
 
@@ -93,3 +118,15 @@ The local server does not run as a background process, so you'll need to give it
 #### API Calls
 
 Pending ...
+
+#### create-superuser
+
+For swift generation of a user account (with username and password), Django comes with the [createsuperuser management command ](https://docs.djangoproject.com/en/4.2/intro/tutorial02/). For convenience, this can be quickly accessed using `make create-superuser`.
+
+#### migrations
+
+For convenient access to the [makemigrations command](https://docs.djangoproject.com/en/4.2/ref/django-admin/#django-admin-makemigrations), `make migrations` is available.
+
+#### migrate
+
+For convenient access to the [migrate command](https://docs.djangoproject.com/en/4.2/ref/django-admin/#django-admin-migrate).

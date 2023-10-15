@@ -12,11 +12,16 @@ endif
 
 export
 
-DJANGO_SETTINGS_MODULE=config.settings.base
+# PROJECT VARIABLES
 NAMESPACE ?= local
 PROJECT_NAME ?= balancer_backend
 PYTHON_VERSION ?= 3.10
 
+# GENERAL DOCKER VARIABLES (used in build and launch)
+DOCKER_REGISTRY ?= docker.fakecodeforphillydomain.com
+DOCKER_TAG_VERSION ?= latest
+
+# BUILD VARIABLES
 DOCKER_APP_DEST ?= /app
 DOCKER_BACKEND_CTX_FROM_COMPOSE ?= ../../..
 DOCKER_BACKEND_CTX_FROM_PROJECT_ROOT ?= .
@@ -28,11 +33,9 @@ DOCKER_NO_CACHE ?=  # Define with any value to disable caching on build
 DOCKER_PROJECT_ROOT_FROM_CTX ?= .
 DOCKER_PROJECT_SERVICE_NAME ?= balancer-backend
 DOCKER_PYTHON_DOCKER_FROM_CTX ?= Python-Docker
-DOCKER_REGISTRY ?= docker.fakecodeforphillydomain.com
-DOCKER_TAG_VERSION ?= latest
 DOCKER_WATCH ?= # Define with any value to display background deployment
 
-# These are built dyanimcally and used below?
+# These are built dynamically from above (for build commands)
 DOCKER_APP_SOURCE_FROM_COMPOSE ?= $(DOCKER_BACKEND_CTX_FROM_COMPOSE)/$(DOCKER_PROJECT_ROOT_FROM_CTX)
 DOCKER_COMPOSE_FILE ?= $(DOCKER_BACKEND_CTX_FROM_PYTHON_DOCKER)/$(DOCKER_PROJECT_ROOT_FROM_CTX)/config/docker/compose/docker-compose.$(NAMESPACE).yaml
 DOCKER_CONFIG_FOLDER_PATH ?= /root/.$(DOCKER_PROJECT_SERVICE_NAME)/config
@@ -43,7 +46,7 @@ DOCKER_USER_LOCAL_LOG_PATH_FROM_CTX ?= $(DOCKER_PROJECT_ROOT_FROM_CTX)/logs
 all: pull-python-docker build-base-image build-project
 
 # Necessary env vars for builds and deployment
-set-app-vars:
+set-python-docker-vars:
 	export \
 		DOCKER_APP_DEST=$(DOCKER_APP_DEST) \
 		DOCKER_CONFIG_FOLDER_PATH=$(DOCKER_CONFIG_FOLDER_PATH) \
@@ -53,8 +56,15 @@ set-app-vars:
 		DOCKER_TAG_VERSION=$(DOCKER_TAG_VERSION) \
 		DOCKER_USER_CONFIG_PATH_FROM_CTX={DOCKER_USER_CONFIG_PATH_FROM_CTX} \
 		DOCKER_USER_LOCAL_LOG_PATH_FROM_CTX={DOCKER_USER_LOCAL_LOG_PATH_FROM_CTX} \
+		NAMESPACE=$(NAMESPACE) \
 		PROJECT_NAME=$(PROJECT_NAME) \
 		DOCKER_APP_SOURCE_FROM_COMPOSE=$(DOCKER_APP_SOURCE_FROM_COMPOSE) \
+
+set-app-vars:
+	DOCKER_REGISTRY=$(DOCKER_REGISTRY) \
+	DOCKER_TAG_VERSION=$(DOCKER_TAG_VERSION) \
+	NAMESPACE=$(NAMESPACE) \
+	PROJECT_NAME=$(PROJECT_NAME)
 
 # Used for builds and launches.
 pull-python-docker:
@@ -64,14 +74,14 @@ pull-python-docker:
 	cd Python-Docker && git pull;
 
 # Builds base python/poetry image of given version
-build-base-image: pull-python-docker set-app-vars
+build-base-image: pull-python-docker set-python-docker-vars
 	cd $(DOCKER_BACKEND_CTX_FROM_PROJECT_ROOT)/$(DOCKER_PYTHON_DOCKER_FROM_CTX) && \
 		DOCKER_REGISTRY=$(DOCKER_REGISTRY) \
 		PYTHON_VERSION=$(PYTHON_VERSION) \
 		make build-base-image
 
 # Installs projects and requirements (per pyproject.toml)
-build-project: set-app-vars
+build-project: set-python-docker-vars
 	cd $(DOCKER_BACKEND_CTX_FROM_PROJECT_ROOT)/$(DOCKER_PYTHON_DOCKER_FROM_CTX) && \
 		DOCKER_BACKEND_CTX_FROM_PYTHON_DOCKER=$(DOCKER_BACKEND_CTX_FROM_PYTHON_DOCKER) \
 		DOCKER_ENTRYPOINT_DEST=$(DOCKER_ENTRYPOINT_DEST) \
@@ -84,7 +94,6 @@ build-project: set-app-vars
 
 # Create django superuser
 create-superuser: set-app-vars migrations migrate
-	NAMESPACE=$(NAMESPACE) \
 	docker compose \
 		-f config/docker/compose/docker-compose.local.yaml \
 		run \
@@ -93,7 +102,6 @@ create-superuser: set-app-vars migrations migrate
 
 # Run any command $(DOCKER_LOCAL_CMD) in local container
 launch-local-project: set-app-vars
-	NAMESPACE=$(NAMESPACE) \
 	docker compose \
 		-f config/docker/compose/docker-compose.local.yaml \
 		run \
@@ -105,7 +113,6 @@ launch-local-project: set-app-vars
 
 # Launch django runserver in local container
 launch-local-server: set-app-vars
-	NAMESPACE=local \
 	docker compose \
 		-f config/docker/compose/docker-compose.local.yaml \
 		run \
@@ -116,8 +123,6 @@ launch-local-server: set-app-vars
 
 # Launch django shell-plus in local container
 launch-shell-plus: set-app-vars
-	NAMESPACE=$(NAMESPACE) \
-	PROJECT_NAME=$(PROJECT_NAME) \
 	docker compose \
 		-f config/docker/compose/docker-compose.local.yaml \
 		run \
@@ -164,7 +169,7 @@ run-functional-tests: set-app-vars
 		${DOCKER_PROJECT_SERVICE_NAME} bash -c "cd app/functional_tests && pytest ${TESTS_ROOT}"
 
 # Teardown containers (as defined by compose file)
-teardown-project: pull-python-docker
+teardown-project:
 	docker compose -f $(DOCKER_COMPOSE_FILE) down --remove-orphans
 
 

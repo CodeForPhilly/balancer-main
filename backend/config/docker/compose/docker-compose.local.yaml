@@ -8,4 +8,4 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - "${DOCKER_APP_SOURCE_FROM_COMPOSE}:${DOCKER_APP_DEST}"
+      - "../../../:/app"

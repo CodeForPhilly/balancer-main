@@ -85,7 +85,7 @@ const Header = () => {
           </div>
           <>
             <Link
-              to="/login"
+              to="/about"
               className="mr-5  text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
             >
               About

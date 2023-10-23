@@ -16,7 +16,16 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from balancer_backend.controllers import chatgpt, jira, listDrugs, risk
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path("admin/", admin.site.urls),
+    path("api/chatgpt/extract_text/", chatgpt.extract_text, name="post_web_text"),
+    path("api/chatgpt/diagnosis/", chatgpt.diagnosis, name="post_diagnosis"),
+    path("api/chatgpt/chat", chatgpt.chatgpt, name="chatgpt"),
+    path("api/chatgpt/list_drugs", listDrugs.medication, name="listDrugs"),
+    path("api/chatgpt/risk", risk.medication, name="risk"),
+    path("api/jira/create_new_feedback/", jira.create_new_feedback, name="create_new_feedback"),
+    path("api/jira/upload_servicedesk_attachment/", jira.upload_servicedesk_attachment, name="upload_servicedesk_attachment"),
+    path("api/jira/attach_feedback_attachment/", jira.attach_feedback_attachment, name="attach_feedback_attachment"),
 ]

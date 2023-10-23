@@ -1,9 +1,0 @@
-version: "3"
-services:
-  balancer-backend:
-    image: ${DOCKER_REGISTRY}/${PROJECT_NAME}/${NAMESPACE}:${DOCKER_TAG_VERSION}
-    environment:
-      PROJECT_NAME: ${PROJECT_NAME}
-
-    volumes:
-      - "${DOCKER_APP_SOURCE_FROM_COMPOSE}:${DOCKER_APP_DEST}"

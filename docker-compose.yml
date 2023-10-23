@@ -1,20 +1,22 @@
 version: '3.8'
 services:
   db:
-    image: postgres:15-alpine
+    image: postgres:15
     volumes:
-      - ./pgdata:/var/lib/postgresql/data/
+      - postgres_data:/var/lib/postgresql/data/
     environment:
-      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=balancer
+      - POSTGRES_PASSWORD=balancer
+      - POSTGRES_DB=balancer_dev
   backend:
-    image: docker.fakecodeforphillydomain.com/balancer_backend/local
-    command: ["/app/tools/wait-for-it.sh", "db:5432", "--", "python", "/app/backend/manage.py", "runserver", "0.0.0.0:8000"]
-    environment:
-      - DJANGO_SETTINGS_MODULE=balancer.settings
+    build: ./server
+    command: python manage.py runserver 0.0.0.0:8000
     volumes:
-      - .:/app
+      - ./server/:/usr/src/server/
     ports:
       - 8000:8000
+    env_file:
+      - ./.env.dev
     depends_on:
       - db
   frontend:
@@ -30,3 +32,6 @@ services:
         - CHOKIDAR_USEPOLLING=true
     depends_on:
       - backend
+
+volumes:
+  postgres_data:

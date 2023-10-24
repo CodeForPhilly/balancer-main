@@ -41,7 +41,7 @@ function Footer() {
               placeholder="Enter your email"
             />
           </div>
-          <div className="ml-4 ">
+          <div className="ml-2 ">
             <button
               type="submit"
               className={`btnBlue ${

@@ -26,7 +26,7 @@ function Footer() {
           <Link
             key={index}
             to="/login"
-            className="mr-5 text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
+            className="ml-5 mr-5 text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
           >
             {text}
           </Link>

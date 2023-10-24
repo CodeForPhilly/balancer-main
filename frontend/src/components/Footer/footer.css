@@ -1,0 +1,29 @@
+.arrow {
+  display: inline-block;
+  width: 4px;
+  height: 10px;
+  background-color: blue;
+  animation: arrowMove 1s infinite;
+}
+
+.arrow:hover {
+  animation: none;
+}
+
+.footer-form {
+  display: flex;
+  margin-bottom: 10px;
+}
+
+.footer-form input {
+width: 150px;
+}
+
+
+.footer-form button {
+  background-color: blue;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  cursor: pointer;
+}

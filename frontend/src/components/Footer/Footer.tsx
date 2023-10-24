@@ -11,8 +11,10 @@ function Footer() {
   const handleMouseUp = () => setIsPressed(false);
 
   return (
-    <div className="footer-content">
-      <footer className="footer">
+    <div className="footer-content footer-content mb-16 mr-5 mt-20 rounded-md border-gray-300 ">
+      {/* <div className="footer-content footer-content mr-5 mt-5 rounded-md border-l border-r border-t border-gray-300 "> */}{" "}
+      {/* Added mt-5 and mr-5 */}
+      <footer className="footer font_body">
         {[
           "Copyright",
           "Contact us",
@@ -30,16 +32,16 @@ function Footer() {
           </Link>
         ))}
 
-        <div className="mt-6 flex items-center justify-center">
-          <div className="w-1/2 rounded border px-4 py-2 shadow-inner">
+        <div className="mb-8 mt-8 flex items-center justify-center">
+          <div className=" rounded  px-2 py-2 ">
             <input
               type="email"
               id="email"
-              className="focus:shadow-outline block w-full leading-tight text-gray-700 focus:outline-none"
+              className="input w-[300px]"
               placeholder="Enter your email"
             />
           </div>
-          <div className="ml-4">
+          <div className="ml-4 ">
             <button
               type="submit"
               className={`btnBlue ${
@@ -59,6 +61,9 @@ function Footer() {
               )}
             </button>
           </div>
+        </div>
+        <div className="flex justify-center rounded  px-4 py-2 ">
+          © 2020 Your Company, Inc. All rights reserved.
         </div>
       </footer>
     </div>

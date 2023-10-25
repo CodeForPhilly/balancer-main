@@ -11,10 +11,11 @@ function Footer() {
   const handleMouseUp = () => setIsPressed(false);
 
   return (
-    <div className="footer-content footer-content mb-16 mr-5 mt-20 rounded-md border-gray-300 ">
+    // <div className="xl:px-50 mx-auto hidden h-20 items-center justify-between border-t border-gray-300 bg-white  px-4 sm:px-6 md:px-8 lg:flex lg:px-8 2xl:px-56">
+    <div className=" mt-20 flex w-full  justify-center border-t border-gray-300  ">
       {/* <div className="footer-content footer-content mr-5 mt-5 rounded-md border-l border-r border-t border-gray-300 "> */}{" "}
       {/* Added mt-5 and mr-5 */}
-      <footer className="footer font_body">
+      <footer className="footer font_body mt-10 ">
         {[
           "Copyright",
           "Contact us",
@@ -63,10 +64,11 @@ function Footer() {
           </div>
         </div>
         <div className="flex justify-center rounded  px-4 py-2 ">
-          © 2020 Your Company, Inc. All rights reserved.
+          © 2023 Balancer. All rights reserved.
         </div>
       </footer>
     </div>
+    // </div>
   );
 }
 

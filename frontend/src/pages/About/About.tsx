@@ -1,4 +1,4 @@
-import Welcome from "../../components/Welcome/Welcome.tsx";
+//import Welcome from "../../components/Welcome/Welcome.tsx";
 import Layout from "../Layout/Layout";
 
 function About() {

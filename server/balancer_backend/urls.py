@@ -1,5 +1,5 @@
 """
-URL configuration for balancer project.
+URL configuration for balancer_backend project.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/4.2/topics/http/urls/
@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from balancer.controllers import chatgpt, jira, listDrugs, risk
+from balancer_backend.controllers import chatgpt, jira, listDrugs, risk
 
 urlpatterns = [
     path("admin/", admin.site.urls),

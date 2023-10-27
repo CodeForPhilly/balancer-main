@@ -19,6 +19,20 @@ def create_new_feedback(request: str) -> JsonResponse:
     name: str = data["name"]
     email: str = data["email"]
     message: str = data["message"]
+    feedback_type: str = data["feedbackType"]
+    feedback_type_id: int
+
+    match feedback_type:
+        case "issue":
+            feedback_type_id = 35
+        case "feature request":
+            feedback_type_id = 36
+        case "general":
+            feedback_type_id = 33
+        case _:
+            return JsonResponse(
+                {"status": 500, "message": "Internal server error"}
+            )
 
     url: str = "https://balancer.atlassian.net/rest/servicedeskapi/request"
 
@@ -35,7 +49,7 @@ def create_new_feedback(request: str) -> JsonResponse:
                 "customfield_10061": email,
                 "description": message,
             },
-            "requestTypeId": "33",
+            "requestTypeId": feedback_type_id,
             "serviceDeskId": "2",
         }
     )

@@ -11,18 +11,10 @@ services:
   backend:
     build: ./server
     command: python manage.py runserver 0.0.0.0:8000
-    image: balancer
-    build:
-      context: backend
-      dockerfile: Dockerfile
-      args:
-        - IMAGE_NAME=balancer-backend
-    environment:
-      - DJANGO_SETTINGS_MODULE=balancer.settings
     volumes:
-      - ./server/:/usr/src/server/
+      - ./server:/usr/src/server
     ports:
-      - 8000:8000
+      - "8000:8000"
     env_file:
       - ./.env.dev
     depends_on:

@@ -19,10 +19,5 @@ from django.urls import path, include
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api/chatgpt/extract_text/", chatgpt.extract_text, name="post_web_text"),
-    path("api/chatgpt/diagnosis/", chatgpt.diagnosis, name="post_diagnosis"),
-    path("api/chatgpt/chat", chatgpt.chatgpt, name="chatgpt"),
-    path("api/chatgpt/list_drugs", listDrugs.medication, name="listDrugs"),
-    path("api/chatgpt/risk", risk.medication, name="risk"),
     path("", include("views.urls", prefix="api/")),
 ]

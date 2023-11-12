@@ -19,5 +19,9 @@ from django.urls import path, include
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("", include("views.urls", prefix="api/")),
+    path("api/", include(balancer_backend.views.auth.urls)),
+    path("api/", include(balancer_backend.views.chatgpt.urls)),
+    path("api/", include(balancer_backend.views.jira.urls)),
+    path("api/", include(balancer_backend.views.listDrugs.urls)),
+    path("api/", include(balancer_backend.views.risk.urls)),
 ]

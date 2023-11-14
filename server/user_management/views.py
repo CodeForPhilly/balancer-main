@@ -4,7 +4,8 @@ from django.utils.html import strip_tags
 from rest_framework import status
 from rest_framework.decorators import api_view
 from django.http import JsonResponse
-from balancer_backend.models.users import RegistrationProfile
+from django.contrib.auth.models import User
+from balancer_backend.models.users.registrationprofile.models import RegistrationProfile
 import requests
 import json 
 import os
@@ -31,14 +32,17 @@ def register_user(request: str) -> JsonResponse:
     if not email or not password:
         return JsonResponse({"error": "Email and password are required."})
 
-    if RegistrationProfile.objects.filter(user__email=email).exists():
-        return JsonResponse({"error": "Email is already registred."})
+    if User.objects.filter(email=email).exists():
+        return JsonResponse({"error": "Email is already registered."})
     
     user = User.objects.create_user(email, email, password)
     user.is_active = False
     user.save()
 
-    send_verification_email(user)
+    # Create the RegistrationProfile for the user
+    registration_profile = RegistrationProfile.objects.create(user=user)
+
+    send_verification_email(user)  # Make sure this function sends the verification email
 
     return JsonResponse({"message": "Registration successful. Check your email for verification."})
 

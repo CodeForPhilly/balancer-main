@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'registration',
-    'balancer_backend'
+    'balancer_backend',
+    'user_management'
 ]
 
 MIDDLEWARE = [

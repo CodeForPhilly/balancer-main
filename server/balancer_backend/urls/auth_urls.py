@@ -1,5 +1,5 @@
 from django.urls import path
-from balancer_backend.views.auth import views
+from user_management import views
 
 urlpatterns = [
     path("auth/register_user/", views.register_user, name="register_user"),

@@ -1,5 +1,5 @@
 from django.urls import path
-from balancer_backend.views.chatgpt import views
+from api.views.chatgpt import views
 
 urlpatterns = [
     path("chatgpt/extract_text/", views.extract_text, name="post_web_text"),

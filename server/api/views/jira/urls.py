@@ -1,5 +1,5 @@
 from django.urls import path
-from balancer_backend.views.jira import views
+from api.views.jira import views
 
 urlpatterns = [
     path("jira/create_new_feedback/", views.create_new_feedback, name="create_new_feedback"),

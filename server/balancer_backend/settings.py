@@ -40,7 +40,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'registration',
     'balancer_backend',
-    'user_management'
+    'user_management',
+    'api'
 ]
 
 MIDDLEWARE = [

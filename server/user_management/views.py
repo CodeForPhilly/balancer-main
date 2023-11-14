@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from django.http import JsonResponse
 from django.contrib.auth.models import User
-from balancer_backend.models.users.registrationprofile.models import RegistrationProfile
+from .models import RegistrationProfile
 import requests
 import json 
 import os

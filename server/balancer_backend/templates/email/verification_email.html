@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Activation</title>
+</head>
+<body>
+    <p>
+        Hi {{ user.username }},<br><br>
+        
+        Thank you for registering on our website! Please click the link below to activate your account:
+        <br><br>
+        
+        <a href="{{ activation_link }}" target="_blank">{{ activation_link }}</a>
+        <br><br>
+        
+        If you did not request this, please ignore this email.
+    </p>
+</body>
+</html>

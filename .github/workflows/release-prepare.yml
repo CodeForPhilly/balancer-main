@@ -1,0 +1,20 @@
+name: 'Release: Prepare PR'
+
+on:
+  push:
+    branches: [ develop ]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  release-prepare:
+
+    runs-on: ubuntu-latest
+    steps:
+
+    - uses: JarvusInnovations/infra-components@channels/github-actions/release-prepare/latest
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        release-branch: main

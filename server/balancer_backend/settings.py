@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'balancer_backend',
-    'user_management',
     'api'
 ]
 

@@ -7,6 +7,9 @@ WORKDIR /usr/src/app
 # Copy package.json and package-lock.json
 COPY package*.json ./
 
+ARG FRONTEND_VERSION
+RUN npm version $FRONTEND_VERSION
+
 # Install dependencies
 RUN npm ci --legacy-peer-deps
 

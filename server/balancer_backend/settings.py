@@ -88,7 +88,7 @@ ACCOUNT_UNIQUE_EMAIL = True                # Ensure email addresses are unique
 ACCOUNT_USERNAME_REQUIRED = False          # Do not require a username
 
 # Set the login redirect URL after successful email verification
-LOGIN_REDIRECT_URL = '/accounts/login/'  # Change this to your desired URL
+LOGIN_REDIRECT_URL = os.environ.get("LOGIN_REDIRECT_URL")  # Change this to your desired URL
 
 WSGI_APPLICATION = 'balancer_backend.wsgi.application'
 
@@ -125,13 +125,6 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_USE_TLS = True
-EMAIL_HOST = 'smtp.yandex.com'
-EMAIL_HOST_USER = os.environ.get("EMAIL_USER")
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_PASSWORD")
-EMAIL_PORT = 465
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/

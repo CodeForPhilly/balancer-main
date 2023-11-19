@@ -9,3 +9,4 @@ nltk==3.8.1
 python-dotenv==1.0.0
 djangorestframework==3.14.0
 django-registration-redux==2.13
+django-cors-headers>=3.10.0

@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'balancer_backend',
-    'user_management',
     'api'
 ]
 
@@ -88,7 +87,7 @@ ACCOUNT_UNIQUE_EMAIL = True                # Ensure email addresses are unique
 ACCOUNT_USERNAME_REQUIRED = False          # Do not require a username
 
 # Set the login redirect URL after successful email verification
-LOGIN_REDIRECT_URL = os.environ.get("LOGIN_REDIRECT_URL")  # Change this to your desired URL
+LOGIN_REDIRECT_URL = os.environ.get("LOGIN_REDIRECT_URL")
 
 WSGI_APPLICATION = 'balancer_backend.wsgi.application'
 

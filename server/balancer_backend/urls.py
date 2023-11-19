@@ -2,11 +2,10 @@ from django.contrib import admin
 from django.urls import path, include
 import importlib
 
-urls = ['chatgpt', 'jira', 'listDrugs', 'listMeds', 'risk']
+urls = ['chatgpt', 'jira', 'listDrugs', 'listMeds', 'risk', 'login']
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path('accounts/', include('allauth.urls')),
 ]
 
 for url in urls:

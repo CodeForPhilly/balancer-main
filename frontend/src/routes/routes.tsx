@@ -5,6 +5,7 @@ import DrugSummary from "../pages/DrugSummary/DrugSummary.tsx";
 import RegistrationForm from "../pages/Register/Register.tsx";
 import About from "../pages/About/About.tsx";
 import Feedback from "../pages/Feedback/Feedback.tsx";
+import Login from "../pages/Login/Login.tsx";
 
 const routes = [
   {
@@ -28,6 +29,10 @@ const routes = [
     path: "feedback",
     element: <Feedback />,
   },
+  {
+    path: "login",
+    element: <Login />
+  }
 ];
 
 export default routes;

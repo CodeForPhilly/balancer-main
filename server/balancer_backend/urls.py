@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import path, include
 import importlib
 
-urls = ['chatgpt', 'jira', 'listDrugs', 'listMeds', 'risk', 'login', 'test']
+urls = ['chatgpt', 'jira', 'listDrugs', 'listMeds', 'risk', 'login']
 
 urlpatterns = [
     path("admin/", admin.site.urls),

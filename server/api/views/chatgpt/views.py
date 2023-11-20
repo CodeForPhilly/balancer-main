@@ -6,29 +6,29 @@ import openai
 import tiktoken
 import os
 import json
+import status
 
-# XXX: remove csrf_exempt usage before production
-from django.views.decorators.csrf import csrf_exempt
+class ChatGPT(APIView):
+    authentication_classes = [JWTAuthentication]
+    permisssion_classes = [IsAuthenticated]
 
-@csrf_exempt
-def chatgpt(request: str) -> JsonResponse:
-    """
-    Takes a diagnosis and returns a table of the most commonly prescribed medications for that diagnosis.
-    """
-    openai.api_key = os.environ.get("OPENAI_API_KEY")
-    data: dict[str, str] = json.loads(request.body)
+    def post(self, request):
+        """
+        Takes a diagnosis and returns a table of the most commonly prescribed medications for that diagnosis.
+        """
+        diagnosis = request.data.get('prompt')
+        openai.api_key = os.environ.get("OPENAI_API_KEY")
 
-    if data is not None:
-        diagnosis: str = data["prompt"]
-        ai_response = openai.ChatCompletion.create(
-            model="gpt-4",
-            messages= [
-                {"role": "system", "content": f"Balancer is a powerful tool for selecting bipolar medication for patients. We are open-source and available for free use. Converstation: {diagnosis}."}
-            ]
-        )
-        return JsonResponse({"message": ai_response})
-
-    return JsonResponse({"error": "Failed to retrieve results from ChatGPT."})
+        if diagnosis is not None:
+            ai_response = openai.ChatCompletion.create(
+                model="gpt-4",
+                messages= [
+                    {"role": "system", "content": f"Balancer is a powerful tool for selecting bipolar medication for patients. We are open-source and available for free use. Converstation: {diagnosis}."}
+                ]
+            )
+            return Response({"message": ai_response}, status=status.HTTP_200_OK)
+        else:
+            return Response({"error": "Failed to retrieve results from ChatGPT"}, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @csrf_exempt

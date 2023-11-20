@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+from datetime import timedelta
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -88,6 +89,16 @@ ACCOUNT_USERNAME_REQUIRED = False          # Do not require a username
 
 # Set the login redirect URL after successful email verification
 LOGIN_REDIRECT_URL = os.environ.get("LOGIN_REDIRECT_URL")
+
+# Token Lifetimes
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=60)
+}
+
+DEFAULT_AUTHENTICATION_CLASSES = [
+    'rest_framework_simplejwt.authentication.JWTAuthentication'
+]
 
 WSGI_APPLICATION = 'balancer_backend.wsgi.application'
 

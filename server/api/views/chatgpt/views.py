@@ -121,4 +121,4 @@ class Diagnosis(APIView):
             response_data = {"message": ai_response}
             return Response(response_data, status=HTTP_200_OK)
 
-    return Response({"error": "Invalid request"}, status=HTTP_400_BAD_REQUEST)
+        return Response({"error": "Invalid request"}, status=HTTP_400_BAD_REQUEST)

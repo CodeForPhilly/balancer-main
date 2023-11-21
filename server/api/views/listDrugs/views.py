@@ -10,6 +10,11 @@ from django.views.decorators.csrf import csrf_exempt
 @csrf_exempt
 def medication(request):
     openai.api_key = os.environ.get("OPENAI_API_KEY")
+
+    if request.method == 'OPTIONS':
+        # You can customize the response as needed for CORS, like setting headers
+        return JsonResponse({'message': 'OK'})
+
     data = json.loads(request.body)
 
     if data is not None:

@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'balancer_backend',
     'api'
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -54,9 +55,12 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'balancer_backend.urls'
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 TEMPLATES = [
     {
@@ -87,7 +91,8 @@ ACCOUNT_UNIQUE_EMAIL = True                # Ensure email addresses are unique
 ACCOUNT_USERNAME_REQUIRED = False          # Do not require a username
 
 # Set the login redirect URL after successful email verification
-LOGIN_REDIRECT_URL = os.environ.get("LOGIN_REDIRECT_URL")  # Change this to your desired URL
+# Change this to your desired URL
+LOGIN_REDIRECT_URL = os.environ.get("LOGIN_REDIRECT_URL")
 
 WSGI_APPLICATION = 'balancer_backend.wsgi.application'
 

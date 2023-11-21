@@ -39,12 +39,11 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "corsheaders",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
     "balancer_backend",
-    "api",
+    "api" "corsheaders",
 ]
 
 MIDDLEWARE = [
@@ -59,12 +58,9 @@ MIDDLEWARE = [
     "allauth.account.middleware.AccountMiddleware",
 ]
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-]
-CORS_ALLOW_CREDENTIALS = True
-
 ROOT_URLCONF = "balancer_backend.urls"
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 TEMPLATES = [
     {
@@ -95,17 +91,8 @@ ACCOUNT_UNIQUE_EMAIL = True  # Ensure email addresses are unique
 ACCOUNT_USERNAME_REQUIRED = False  # Do not require a username
 
 # Set the login redirect URL after successful email verification
+# Change this to your desired URL
 LOGIN_REDIRECT_URL = os.environ.get("LOGIN_REDIRECT_URL")
-
-# Token Lifetimes
-SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
-    "REFRESH_TOKEN_LIFETIME": timedelta(minutes=60),
-}
-
-DEFAULT_AUTHENTICATION_CLASSES = [
-    "rest_framework_simplejwt.authentication.JWTAuthentication"
-]
 
 WSGI_APPLICATION = "balancer_backend.wsgi.application"
 

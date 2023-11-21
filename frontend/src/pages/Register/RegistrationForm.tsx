@@ -1,17 +1,52 @@
 import { useFormik } from "formik";
 import { Link } from "react-router-dom";
+import axios from "axios";
 
 const LoginForm = () => {
   const { handleSubmit, handleChange, values } = useFormik({
     initialValues: {
       email: "",
-      password: "",
+      password1: "",
+      password2: "",
     },
-    onSubmit: (values) => {
-      console.log("values", values);
-      // make registration post request here.
+    onSubmit: async (values) => {
+      try {
+        const csrfTokenResponse = await fetch('http://localhost:8000/auth/csrf/', {
+          method: 'GET',
+          credentials: 'include',
+        });
+
+        if (!csrfTokenResponse.ok) {
+          throw new Error('Failed to get CSRF token.');
+        }
+
+        const data = await csrfTokenResponse.json();
+        const csrfToken = data.csrfToken;
+        console.log(csrfToken);
+
+        let body = new FormData();
+        body.append("email", values.email);
+        body.append("password1", values.password1);
+        body.append("password2", values.password2);
+
+        await axios({
+          method: "post",
+          url: "http://localhost:8000/accounts/signup/",
+          data: body,
+          headers: {
+            "Content-Type": "multipart/form-data",
+            "X-CSRFToken": csrfToken,
+          },
+        });
+        
+        // Additional logic after successful submission if needed
+
+      } catch (error) {
+        console.error('Error submitting form:', error);
+      }
     },
   });
+  
   return (
     <>
       <section className="mt-12 mx-auto w-full max-w-xs">
@@ -38,16 +73,29 @@ const LoginForm = () => {
           </div>
           <div className="mb-6">
             <label
-              htmlFor="email"
+              htmlFor="password1"
               className="block text-gray-700 text-sm font-bold mb-2">
               Password
             </label>
             <input
-              id="password"
-              name="password"
+              id="password1"
+              name="password1"
               type="password"
               onChange={handleChange}
-              value={values.password}
+              value={values.password1}
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            />
+            <label
+              htmlFor="password2"
+              className="block text-gray-700 text-sm font-bold mb-2">
+              Verify Password
+            </label>
+            <input
+              id="password2"
+              name="password2"
+              type="password"
+              onChange={handleChange}
+              value={values.password2}
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             />
           </div>

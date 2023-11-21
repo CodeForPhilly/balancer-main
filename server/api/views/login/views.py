@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.hashers import check_password
 from django.http import JsonResponse
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import login
 from django.views.decorators.csrf import ensure_csrf_cookie
 from datetime import datetime
 import json
@@ -39,4 +39,8 @@ def custom_login(request: str) -> JsonResponse:
 
 @ensure_csrf_cookie
 def get_csrf(request):
-    return JsonResponse({"message": "token sent"})
+    # token = csrf.get_token(request)
+
+    # response = JsonResponse({"csrfToken": token})
+    # response["Access-Control-Allow-Origin"] = "http://localhost:3000"
+    return JsonResponse({"message": "CSRF cookie set"})

@@ -38,11 +38,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'corsheaders',
-    'registration',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
     'balancer_backend',
-    'user_management',
     'api'
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -54,7 +55,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',
 ]
 
 ROOT_URLCONF = 'balancer_backend.urls'
@@ -76,6 +76,22 @@ TEMPLATES = [
         },
     },
 ]
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend'
+]
+
+# Allauth settings
+ACCOUNT_EMAIL_VERIFICATION = 'none'  # 'mandatory' requires email confirmation
+ACCOUNT_AUTHENTICATION_METHOD = 'email'   # Use email for authentication
+ACCOUNT_EMAIL_REQUIRED = True              # Users must provide an email address
+ACCOUNT_UNIQUE_EMAIL = True                # Ensure email addresses are unique
+ACCOUNT_USERNAME_REQUIRED = False          # Do not require a username
+
+# Set the login redirect URL after successful email verification
+# Change this to your desired URL
+LOGIN_REDIRECT_URL = os.environ.get("LOGIN_REDIRECT_URL")
 
 WSGI_APPLICATION = 'balancer_backend.wsgi.application'
 
@@ -112,20 +128,6 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-
-ACCOUNT_ACTIVATION_DAYS = 7
-REGISTRATION_AUTO_LOGIN = True
-REGISTRATION_EMAIL_SUBJECT_PREFIX = 'Balancer'
-REGISTRATION_SALT = 'TEST'
-
-EMAIL_USE_TLS = True
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER = os.environ.get("EMAIL_USER")
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_PASSWORD")
-EMAIL_PORT = 587
-
-# Internationalization
-# https://docs.djangoproject.com/en/4.2/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
 

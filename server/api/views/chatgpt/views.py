@@ -15,7 +15,7 @@ import json
 
 class ChatGPT(APIView):
     authentication_classes = [JWTAuthentication]
-    permisssion_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         """

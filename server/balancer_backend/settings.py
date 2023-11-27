@@ -43,7 +43,8 @@ INSTALLED_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     "balancer_backend",
-    "api" "corsheaders",
+    "api",
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
@@ -61,6 +62,9 @@ MIDDLEWARE = [
 ROOT_URLCONF = "balancer_backend.urls"
 
 CORS_ALLOW_ALL_ORIGINS = True
+
+CSRF_USE_SESSIONS = False
+CSRF_COOKIE_HTTPONLY = False
 
 TEMPLATES = [
     {

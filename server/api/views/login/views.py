@@ -4,10 +4,13 @@ from django.http import JsonResponse
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import login
 from django.views.decorators.csrf import ensure_csrf_cookie
+# from rest_framework import status
+# from rest_framework.views import APIView
+# from rest_framework.response import Response
 from datetime import datetime
 import json
 
-
+@ensure_csrf_cookie
 def custom_login(request: str) -> JsonResponse:
     if request.method == "POST":
         data: dict[str, str] = json.loads(request.body)
@@ -33,14 +36,12 @@ def custom_login(request: str) -> JsonResponse:
             )
         else:
             return JsonResponse({"message": "Invalid credentials"}, status=401)
+    elif request.method == "GET":
+        return JsonResponse({"message": "Token sent"}, status=200)
     else:
         return JsonResponse({"message": "Method not allowed"}, status=405)
 
 
 @ensure_csrf_cookie
 def get_csrf(request):
-    # token = csrf.get_token(request)
-
-    # response = JsonResponse({"csrfToken": token})
-    # response["Access-Control-Allow-Origin"] = "http://localhost:3000"
     return JsonResponse({"message": "CSRF cookie set"})

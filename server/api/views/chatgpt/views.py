@@ -12,11 +12,15 @@ import tiktoken
 import os
 import json
 
+# XXX: remove csrf_exempt usage before production
+from django.views.decorators.csrf import csrf_exempt
+
 
 class ChatGPT(APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
+    @csrf_exempt
     def post(self, request):
         """
         Takes a diagnosis and returns a table of the most commonly prescribed medications for that diagnosis.
@@ -46,6 +50,7 @@ class ExtractText(APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
+    @csrf_exempt
     def post(self, request):
         """
         Takes a URL and returns a summary of page's text content.
@@ -94,6 +99,7 @@ class Diagnosis(APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
+    @csrf_exempt
     def post(self, request):
         """Takes a diagnosis and returns a table of the most commonly prescribed medications for that diagnosis."""
         openai.api_key = os.environ.get("OPENAI_API_KEY")

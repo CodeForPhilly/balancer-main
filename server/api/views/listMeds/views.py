@@ -1,29 +1,29 @@
 from django.http import JsonResponse
-import os
-import openai
-import json
-
-# XXX: remove csrf_exempt usage before production
+from .models import StateMedication
 from django.views.decorators.csrf import csrf_exempt
+import json
 
 
 @csrf_exempt
-def medication(request):
-    openai.api_key = os.getenv('OPENAI_API_KEY')
-    print(os.getenv('OPENAI_API_KEY'))
+def get_medication(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        state_query = data.get('state')
 
-    if request.method == 'OPTIONS':
-        # You can customize the response as needed for CORS, like setting headers
-        return JsonResponse({'message': 'OK'})
-    data = json.loads(request.body)
+        if state_query not in [choice[0] for choice in StateMedication.STATE_CHOICES]:
+            return JsonResponse({'error': 'Invalid state'}, status=400)
 
-    if data is not None:
-        diagnosis = data.get('diagnosis')
+        try:
+            state_medication = StateMedication.objects.get(state=state_query)
+        except StateMedication.DoesNotExist:
+            return JsonResponse({'error': 'State not found'}, status=404)
 
-    ai_response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=[
-            {"role": "system", "content": "Please provide a table of the most commonly prescribed medications for %s. The table should be in HTML format, without any <head> tags. It should have a maximum width of 630px, with a margin of 0 for the top and bottom. The table should consist of two columns: 'Medication Class' and 'Medication Names'. Each cell should have a left padding and a border, and the text in the 'Medication Class' and 'Medications' cells should be displayed in bold. No other cells should be bold." % diagnosis, }]
-    )
+        meds = {
+            'high_med': state_medication.high_med,
+            'medium_med': state_medication.medium_med,
+            'low_med': state_medication.low_med
+        }
 
-    return JsonResponse({'message': ai_response})
+        return JsonResponse(meds)
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=405)

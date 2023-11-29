@@ -112,26 +112,26 @@ class UploadServiceDeskAttachment(APIView):
                 "POST", url, files={"file": request.FILES["attachment"]}, headers=headers
             )
             match response.status_code:
-            case 201:
-                response_body = json.loads(response.text)
-                temp_attachment_id: = response_body["temporaryAttachments"][0][
-                    "temporaryAttachmentId"
-                ]
-                issue_key = request.POST.get("issueKey")
-                return Response(
-                    {
-                        "message": "Attachment uploaded to temporary files",
-                        "tempAttachmentId": temp_attachment_id,
-                        "issueKey": issue_key,
-                    },
-                    status=HTTP_200_OK
-                )
-            case 400:
-                return Response({"message": "Invalid request"}, status=HTTP_400_BAD_REQUEST)
-            case 401 | 403:
-                return Response({"message": "Unauthorized request"}, status=HTTP_401_UNAUTHORIZED)
-            case _:
-                return Response({"message": "Internal server error"}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+                case 201:
+                    response_body = json.loads(response.text)
+                    temp_attachment_id = response_body["temporaryAttachments"][0][
+                        "temporaryAttachmentId"
+                    ]
+                    issue_key = request.POST.get("issueKey")
+                    return Response(
+                        {
+                            "message": "Attachment uploaded to temporary files",
+                            "tempAttachmentId": temp_attachment_id,
+                            "issueKey": issue_key,
+                        },
+                        status=HTTP_200_OK
+                    )
+                case 400:
+                    return Response({"message": "Invalid request"}, status=HTTP_400_BAD_REQUEST)
+                case 401 | 403:
+                    return Response({"message": "Unauthorized request"}, status=HTTP_401_UNAUTHORIZED)
+                case _:
+                    return Response({"message": "Internal server error"}, status=HTTP_500_INTERNAL_SERVER_ERROR)
     return Response({"message": "Invalid form object"}, status=HTTP_400_BAD_REQUEST)
 
 
@@ -140,37 +140,38 @@ class AttachFeedback(APIView):
     permission_classes = [IsAuthenticated]
 
     @csrf_exempt
-    """
-    Attach a temporary file to a Jira Service Desk issue.
-    """
-    token = os.environ.get("JIRA_API_KEY")
-    issue_key = request.data.get("issueKey")
-    temp_attachment_id = request.data.get("tempAttachmentId")
+    def post(self, request):
+        """
+        Attach a temporary file to a Jira Service Desk issue.
+        """
+        token = os.environ.get("JIRA_API_KEY")
+        issue_key = request.data.get("issueKey")
+        temp_attachment_id = request.data.get("tempAttachmentId")
 
-    url = f"https://balancer.atlassian.net/rest/servicedeskapi/request/{issue_key}/attachment"
+        url = f"https://balancer.atlassian.net/rest/servicedeskapi/request/{issue_key}/attachment"
 
-    headers = {
-        "Accept": "application/json",
-        "Content-Type": "application/json",
-        "Authorization": f"Basic {token}",
-    }
+        headers = {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "Authorization": f"Basic {token}",
+        }
 
-    payload = json.dumps(
-        {"public": True, "temporaryAttachmentIds": [temp_attachment_id]}
-    )
+        payload = json.dumps(
+            {"public": True, "temporaryAttachmentIds": [temp_attachment_id]}
+        )
 
-    response: requests.Response = requests.request(
-        "POST", url, data=payload, headers=headers
-    )
-    match response.status_code:
-        case 201:
-            return Response({"message": f"File attached to issue {issue_key}"}, status=HTTP_201_CREATED)
-        case 400:
-            return Response({"message": "Invalid request"}, status=HTTP_400_BAD_REQUEST)
-        case 401 | 403:
-            return Response({"message": "Unauthorized request"}, status=HTTP_401_UNAUTHORIZED)
-        case _:
-            return Response({"message": "Internal server error"}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+        response: requests.Response = requests.request(
+            "POST", url, data=payload, headers=headers
+        )
+        match response.status_code:
+            case 201:
+                return Response({"message": f"File attached to issue {issue_key}"}, status=HTTP_201_CREATED)
+            case 400:
+                return Response({"message": "Invalid request"}, status=HTTP_400_BAD_REQUEST)
+            case 401 | 403:
+                return Response({"message": "Unauthorized request"}, status=HTTP_401_UNAUTHORIZED)
+            case _:
+                return Response({"message": "Internal server error"}, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 # These functions are used to get Jira data, but shouldn't be enabled in production.

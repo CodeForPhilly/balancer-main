@@ -132,7 +132,7 @@ class UploadServiceDeskAttachment(APIView):
                     return Response({"message": "Unauthorized request"}, status=HTTP_401_UNAUTHORIZED)
                 case _:
                     return Response({"message": "Internal server error"}, status=HTTP_500_INTERNAL_SERVER_ERROR)
-    return Response({"message": "Invalid form object"}, status=HTTP_400_BAD_REQUEST)
+        return Response({"message": "Invalid form object"}, status=HTTP_400_BAD_REQUEST)
 
 
 class AttachFeedback(APIView):

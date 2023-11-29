@@ -9,12 +9,16 @@ from rest_framework.response import Response
 from datetime import datetime
 import json
 
+# XXX: remove csrf_exempt usage before production
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+
 class CustomLogin(APIView):
 
     @csrf_exempt
     def post(self, request):
-        email: = request.data.get("email")
-        password: = request.data.get("password")
+        email = request.data.get("email")
+        password = request.data.get("password")
 
         user = User.objects.filter(email=email).first()
 
@@ -36,3 +40,9 @@ class CustomLogin(APIView):
             )
         else:
             return Response({"message": "Invalid credentials"}, status=HTTP_401_UNAUTHORIZED)
+
+@method_decorator(ensure_csrf_cookie, name='dispatch')
+class TestCSRF(APIView):
+    
+    def get(self, request):
+        return Response({"message": "This is a test"})

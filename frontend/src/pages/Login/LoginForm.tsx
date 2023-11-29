@@ -7,9 +7,10 @@ const LoginForm = () => {
       email: "",
       password: "",
     },
-    onSubmit: (values) => {
+    onSubmit: async (values) => {
       console.log("values", values);
       // make login post request here.
+      await fetch("http://localhost:8000/accounts/csrf/")
     },
   });
   return (

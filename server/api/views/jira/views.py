@@ -1,4 +1,3 @@
-from django.http import JsonResponse
 from django import forms
 from rest_framework import status
 from rest_framework.views import APIView

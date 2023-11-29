@@ -97,7 +97,7 @@ class UploadServiceDeskAttachment(APIView):
         """
         Upload file to temporary files in Jira Service Desk.
         """
-        token: = os.environ.get("JIRA_API_KEY")
+        token = os.environ.get("JIRA_API_KEY")
         form = UploadAttachmentForm(request.POST, request.FILES)
         if form.is_valid():
             url

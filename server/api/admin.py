@@ -4,4 +4,4 @@ from .views.listMeds.models import StateMedication
 
 @admin.register(StateMedication)
 class StateMedicationAdmin(admin.ModelAdmin):
-    list_display = ['state', 'high_med', 'medium_med', 'low_med']
+    list_display = ['state', 'first', 'second', 'third']

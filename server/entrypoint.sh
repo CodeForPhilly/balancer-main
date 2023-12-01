@@ -13,5 +13,7 @@ fi
 
 # python manage.py flush --no-input
 python manage.py migrate
+# create superuser for postgre admin on start up
+python manage.py createsu
 
 exec "$@"

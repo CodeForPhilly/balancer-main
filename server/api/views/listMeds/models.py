@@ -3,9 +3,9 @@ from django.db import models
 
 class StateMedication(models.Model):
     STATE_CHOICES = [
-        ('mania', 'Mania'),
-        ('hypomania', 'Hypomania'),
-        ('depression', 'Depression'),
+        ('manic', 'Manic'),
+        ('hypomanic', 'Hypomanic'),
+        ('depressed', 'Depressed'),
         ('euthymic', 'Euthymic'),
     ]
 

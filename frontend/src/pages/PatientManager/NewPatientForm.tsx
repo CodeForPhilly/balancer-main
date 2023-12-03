@@ -298,11 +298,11 @@ const NewPatientForm = ({
                     className={isLoading ? " url_input_loading" : "dropdown"}
                   >
                     <option value="Null"> </option>
-                    <option value="mania"> Manic </option>
-                    <option value="depression">Depressed</option>
+                    <option value="manic"> Manic </option>
+                    <option value="depressed">Depressed</option>
                     <option value="hypomania">Hypomanic</option>
                     <option value="euthymic">Euthymic</option>
-                    <option value="Mixed">Mixed</option>
+                    {/* <option value="Mixed">Mixed</option> */}
                   </select>
                 </div>
                 {/* {errorMessage && (
@@ -320,19 +320,19 @@ const NewPatientForm = ({
                   <div className="justify-left  flex gap-x-3">
                     <div className="flex h-6 items-center ">
                       <input
-                        id="Mania"
-                        name="Mania"
+                        id="Manic"
+                        name="Manic"
                         type="checkbox"
                         className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                        onChange={(e) => handleCheckboxChange(e, "Mania")}
+                        onChange={(e) => handleCheckboxChange(e, "Manic")}
                       />
                     </div>
                     <div className="text-sm leading-6">
                       <label
-                        htmlFor="Mania"
+                        htmlFor="Manic"
                         className="font-medium text-gray-900"
                       >
-                        Mania
+                        Manic
                       </label>
                     </div>
                   </div>

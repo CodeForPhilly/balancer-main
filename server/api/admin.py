@@ -1,3 +1,7 @@
 from django.contrib import admin
+from .views.listMeds.models import StateMedication
 
-# Register your models here.
+
+@admin.register(StateMedication)
+class StateMedicationAdmin(admin.ModelAdmin):
+    list_display = ['state', 'first', 'second', 'third']

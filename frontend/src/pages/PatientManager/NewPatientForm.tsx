@@ -33,7 +33,6 @@ const NewPatientForm = ({
     Description: "",
     CurrentMedications: "",
     PriorMedications: "",
-    PossibleMedications: { drugs: [] },
     Mania: "False",
     Depression: "False",
     Hypomania: "False",
@@ -72,7 +71,7 @@ const NewPatientForm = ({
     e.preventDefault();
 
     const payload = {
-      diagnosis:
+      state:
         newPatientInfo.Diagnosis !== null ? newPatientInfo.Diagnosis : "Null",
     };
 
@@ -91,34 +90,32 @@ const NewPatientForm = ({
 
       const { data } = await axios.post(url + `/list_meds`, payload);
 
-      const drugsResponse = await axios.post(url + `/list_drugs`, payload);
+      console.log(data);
 
-      const possibleMedicationsData = drugsResponse.data;
+      const categorizedMedications = {
+        first: data.first ?? [],
+        second: data.second ?? [],
+        third: data.third ?? [],
+      };
 
-      if (possibleMedicationsData && Array.isArray(possibleMedicationsData)) {
-        // Extract drugs property from each object and flatten it into a single array
-        const possibleMedicationNames = possibleMedicationsData
-          .map((medication: { drugs: string[] }) => medication.drugs)
-          .flat();
+      console.log(categorizedMedications.first);
+      console.log(categorizedMedications.second);
 
-        setPatientInfo((prev) => ({
-          ...prev,
-          PossibleMedications: { drugs: possibleMedicationNames },
-        }));
-      }
+      setPatientInfo((prev) => ({
+        ...prev,
+        PossibleMedications: categorizedMedications,
+      }));
+
       const generatedGuid = uuidv4();
       const firstFiveCharacters = generatedGuid.substring(0, 5);
 
       setPatientInfo({ ...newPatientInfo, ID: firstFiveCharacters });
 
       if (data) {
-        const description = data.message.choices[0].message.content;
-
         const newDescription = {
           ...newPatientInfo,
-          Description: description,
           ID: firstFiveCharacters,
-          PossibleMedications: possibleMedicationsData,
+          PossibleMedications: categorizedMedications,
         };
 
         const updatedAllPatientInfo = [newDescription, ...allPatientInfo];
@@ -161,7 +158,6 @@ const NewPatientForm = ({
       Description: "",
       CurrentMedications: "",
       PriorMedications: "",
-      PossibleMedications: { drugs: [] },
       Mania: "False",
       Depression: "False",
       Hypomania: "False",
@@ -187,7 +183,6 @@ const NewPatientForm = ({
       Description: "",
       CurrentMedications: "",
       PriorMedications: "",
-      PossibleMedications: { drugs: [] },
       Mania: "False",
       Depression: "False",
       Hypomania: "False",
@@ -303,10 +298,10 @@ const NewPatientForm = ({
                     className={isLoading ? " url_input_loading" : "dropdown"}
                   >
                     <option value="Null"> </option>
-                    <option value="Manic"> Manic </option>
-                    <option value="Depressed">Depressed</option>
-                    <option value="Hypomanic">Hypomanic</option>
-                    <option value="Euthymic">Euthymic</option>
+                    <option value="mania"> Manic </option>
+                    <option value="depression">Depressed</option>
+                    <option value="hypomania">Hypomanic</option>
+                    <option value="euthymic">Euthymic</option>
                     <option value="Mixed">Mixed</option>
                   </select>
                 </div>

@@ -319,13 +319,17 @@ const PatientSummary = ({
                         Possible Medications:
                       </dt>
                       <dd className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+                        <dt className="ml-2 flex text-sm font-medium leading-6 text-gray-900">
+                          Tier 1: First-line Options:
+                        </dt>
                         <ul
                           role="list"
                           className="divide-y divide-gray-100 rounded-md border border-gray-200"
                         >
                           {patientInfo.PossibleMedications &&
-                            patientInfo.PossibleMedications.drugs?.map(
-                              (medication: string) => (
+                            patientInfo.PossibleMedications.first
+                              ?.split(", ")
+                              .map((medication: string) => (
                                 <li
                                   className={`flex items-center justify-between py-4 pl-4 pr-5 text-sm leading-4 hover:bg-indigo-100
                                 ${
@@ -356,8 +360,99 @@ const PatientSummary = ({
                                     </span>
                                   </div>
                                 </li>
-                              )
-                            )}
+                              ))}
+                        </ul>
+                      </dd>
+                      <dt className="flex text-sm font-medium leading-6 text-gray-900"></dt>
+                      <dd className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+                        <dt className="ml-2 flex text-sm font-medium leading-6 text-gray-900">
+                          Tier 2: Second-line Options:
+                        </dt>
+                        <ul
+                          role="list"
+                          className="divide-y divide-gray-100 rounded-md border border-gray-200"
+                        >
+                          {patientInfo.PossibleMedications &&
+                            patientInfo.PossibleMedications.second
+                              ?.split(", ")
+                              .map((medication: string) => (
+                                <li
+                                  className={`flex items-center justify-between py-4 pl-4 pr-5 text-sm leading-4 hover:bg-indigo-100
+                                ${
+                                  medication === clickedMedication
+                                    ? "bg-indigo-100"
+                                    : ""
+                                } cursor-pointer`}
+                                  onClick={() =>
+                                    handleMedicationClick(medication)
+                                  }
+                                >
+                                  <div className="flex w-0 flex-1 items-center">
+                                    <div className="ml-4 flex min-w-0 flex-1 gap-2">
+                                      <span className="truncate font-medium">
+                                        {medication}
+                                      </span>
+                                      <div className="ml-3 mt-0 flex max-w-sm items-start text-white">
+                                        {loading &&
+                                        medication === clickedMedication ? (
+                                          <TypingAnimation />
+                                        ) : null}
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="ml-4 flex-shrink-0">
+                                    <span className="font-medium text-indigo-600 hover:text-indigo-500">
+                                      Benefits and risks
+                                    </span>
+                                  </div>
+                                </li>
+                              ))}
+                        </ul>
+                      </dd>
+                      <dt className="flex text-sm font-medium leading-6 text-gray-900"></dt>
+                      <dd className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+                        <dt className="ml-2 flex text-sm font-medium leading-6 text-gray-900">
+                          Tier 3: Third-line Options:
+                        </dt>
+                        <ul
+                          role="list"
+                          className="divide-y divide-gray-100 rounded-md border border-gray-200"
+                        >
+                          {patientInfo.PossibleMedications &&
+                            patientInfo.PossibleMedications.third
+                              ?.split(", ")
+                              .map((medication: string) => (
+                                <li
+                                  className={`flex items-center justify-between py-4 pl-4 pr-5 text-sm leading-4 hover:bg-indigo-100
+                                ${
+                                  medication === clickedMedication
+                                    ? "bg-indigo-100"
+                                    : ""
+                                } cursor-pointer`}
+                                  onClick={() =>
+                                    handleMedicationClick(medication)
+                                  }
+                                >
+                                  <div className="flex w-0 flex-1 items-center">
+                                    <div className="ml-4 flex min-w-0 flex-1 gap-2">
+                                      <span className="truncate font-medium">
+                                        {medication}
+                                      </span>
+                                      <div className="ml-3 mt-0 flex max-w-sm items-start text-white">
+                                        {loading &&
+                                        medication === clickedMedication ? (
+                                          <TypingAnimation />
+                                        ) : null}
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="ml-4 flex-shrink-0">
+                                    <span className="font-medium text-indigo-600 hover:text-indigo-500">
+                                      Benefits and risks
+                                    </span>
+                                  </div>
+                                </li>
+                              ))}
                         </ul>
                       </dd>
                     </div>

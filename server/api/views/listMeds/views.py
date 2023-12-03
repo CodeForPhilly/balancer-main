@@ -8,7 +8,7 @@ import json
 def get_medication(request):
     if request.method == 'POST':
         data = json.loads(request.body)
-        state_query = data.get('state')
+        state_query = data.get('state', '').lower()
         print("Debug: state_query =", state_query)
 
         if state_query not in [choice[0] for choice in StateMedication.STATE_CHOICES]:

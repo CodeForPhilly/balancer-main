@@ -45,11 +45,12 @@ const DrugSummaryForm = () => {
       }
 
       const contentType = url ? "application/json" : "multi-part/form";
-
+      const baseUrl = import.meta.env.VITE_API_BASE_URL;
+      const completeBaseURL = `${baseUrl}/chatgpt`;
       try {
         // TODO change this to actual endpoint url once hosted
         const res = await axios.post(
-          "http://localhost:3001/text_extraction/",
+          completeBaseURL + `/extract_text/`,
           formData,
           {
             headers: {

@@ -6,8 +6,8 @@ def add_state_medication_data(apps, schema_editor):
 
     # Define your data
     state_medication_data = [
-        {'state': 'mania', 'first': 'mania-first',
-            'second': 'mania-second', 'third': 'mania-third'},
+        {'state': 'manic', 'first': 'manic-first',
+            'second': 'manic-second', 'third': 'manic-third'},
         {'state': 'hypomanic', 'first': 'hypomanic-first',
          'second': 'hypomanic-second', 'third': 'hypomanic-third'},
         {'state': 'depressed', 'first': 'depressed-first',

@@ -2,18 +2,20 @@ from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import TemplateView
 from django.conf import settings
-from django.conf.urls.static import static
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+from django.shortcuts import render
 import importlib
 
 urls = ['chatgpt', 'jira', 'listDrugs', 'listMeds', 'risk', 'login']
 
+def serve_static_index(request):
+    return render(request, 'index.html')
+
 urlpatterns = [
+    path('', serve_static_index),
     path("admin/", admin.site.urls),
-    path('', TemplateView.as_view(template_name='index.html')),
-]
+] + staticfiles_urlpatterns()
 
 for url in urls:
     url_module = importlib.import_module(f'api.views.{url}.urls')
     urlpatterns += getattr(url_module, 'urlpatterns', [])
-
-urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])

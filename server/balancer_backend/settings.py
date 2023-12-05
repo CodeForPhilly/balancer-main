@@ -62,6 +62,11 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "balancer_backend.urls"
 
+STATIC_URL = '/static'
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static/dist/')
+]
+
 CORS_ALLOW_ALL_ORIGINS = True
 
 CSRF_USE_SESSIONS = False
@@ -70,7 +75,7 @@ CSRF_COOKIE_HTTPONLY = False
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / 'static/dist'],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [

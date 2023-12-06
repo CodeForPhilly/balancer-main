@@ -1,5 +1,6 @@
 //import Welcome from "../../components/Welcome/Welcome.tsx";
 import Layout from "../Layout/Layout";
+import image from './OIP.jpeg'
 
 function About() {
   return (
@@ -7,16 +8,17 @@ function About() {
       <div className="flex w-full max-w-6xl flex-col items-center justify-center md:mt-28 summary_box font_body">
 
         {/* Top section */}
-        <div className="flex flex-row items-center">
-          <div className="mt-10 top-section flex w-full max-w-6xl flex-col justify-center">
+        <div className="flex flex-row">
+          <div className="mt-10 mr-10 top-section flex w-full max-w-6xl flex-col justify-center">
             <div className="text-3xl mt-5 font-bold">A tool that makes it easier to research medications for bipolar disorder.</div>
             <div className="text-lg mt-5 text-gray-500">It can take two to 10 years—and three to 30 medications—for people with bipolar disorder to find the right medication combination. Balancer is designed to help physicians shorten this journey for their patients.</div>
-            <div className="text-3xl mt-5">Get accurate, helpful information on bipolar medications fast</div>
-            <div className="text-lg mt-5 text-gray-500">Powered by innovative AI technology, Balancer is a tool that aids in providing personalized medication recommendations for patients with bipolar disorder in any state, including mania, depression, hypomania and mixed. Our platform utilizes machine learning to give you the latest, most up-to-date information on medications and active clinical trials to treat bipolar disorder. </div>
-            <div className="text-lg mt-5 text-gray-500">Balancer automates medication decision support by offering tailored medication recommendations and comprehensive risk-benefit assessments based on a patient's diagnosis, symptom severity, treatment goals and individual characteristics.  </div>
           </div>
-          <img src="OIP.jpeg" alt="about image"></img>
+          <img src={image} alt="about image" className="mt-10"></img>
         </div>
+        
+        <div className="text-3xl mt-5">Get accurate, helpful information on bipolar medications fast</div>
+        <div className="text-lg mt-5 text-gray-500">Powered by innovative AI technology, Balancer is a tool that aids in providing personalized medication recommendations for patients with bipolar disorder in any state, including mania, depression, hypomania and mixed. Our platform utilizes machine learning to give you the latest, most up-to-date information on medications and active clinical trials to treat bipolar disorder. </div>
+        <div className="text-lg mt-5 text-gray-500">Balancer automates medication decision support by offering tailored medication recommendations and comprehensive risk-benefit assessments based on a patient's diagnosis, symptom severity, treatment goals and individual characteristics.  </div>
 
         {/* Mission section */}
         <div className="mt-10 mission-section flex w-full max-w-6xl flex-col items-center justify-center md:mt-28">

@@ -13,19 +13,19 @@ function About() {
             <div className="text-3xl mt-5 font-bold">A tool that makes it easier to research medications for bipolar disorder.</div>
             <div className="text-lg mt-5 text-gray-500">It can take two to 10 years—and three to 30 medications—for people with bipolar disorder to find the right medication combination. Balancer is designed to help physicians shorten this journey for their patients.</div>
           </div>
-          <img src={image} alt="about image" className="mt-10"></img>
+          <img src={image} alt="about image" className="mt-10 rounded-2xl"></img>
         </div>
-        
-        <div className="text-3xl mt-5">Get accurate, helpful information on bipolar medications fast</div>
+
+        <div className="text-3xl mt-10">Get accurate, helpful information on bipolar medications fast</div>
         <div className="text-lg mt-5 text-gray-500">Powered by innovative AI technology, Balancer is a tool that aids in providing personalized medication recommendations for patients with bipolar disorder in any state, including mania, depression, hypomania and mixed. Our platform utilizes machine learning to give you the latest, most up-to-date information on medications and active clinical trials to treat bipolar disorder. </div>
         <div className="text-lg mt-5 text-gray-500">Balancer automates medication decision support by offering tailored medication recommendations and comprehensive risk-benefit assessments based on a patient's diagnosis, symptom severity, treatment goals and individual characteristics.  </div>
 
         {/* Mission section */}
-        <div className="mt-10 mission-section flex w-full max-w-6xl flex-col items-center justify-center md:mt-28">
+        <div className="mission-section flex w-full max-w-6xl flex-col items-center justify-center md:mt-28">
           <div className="text-3xl font-bold">Our mission</div>
           <div className="flex flex-row">
-            <div className="flex flex-col justify-between w-full mr-20">
-              <div className="text-lg mt-5 text-gray-500">
+            <div className="flex flex-col justify-between w-full">
+              <div className="text-lg mt-8 text-gray-500">
                 Bipolar disorder affects approximately 5.7 million adult Americans
                 <a href="https://www.dbsalliance.org/education/bipolar-disorder/bipolar-disorder-statistics/" className="underline" target="_blank"> every year</a>.
                 Delays in the correct diagnosis and proper treatment of bipolar disorder may result in social, occupational, and economic burdens, as well as
@@ -35,17 +35,13 @@ function About() {
                 The team behind Balancer believes that building a searchable, interactive and user-friendly research tool for bipolar medications has the potential to improve the health and well-being of people with bipolar disorder.
               </div>
             </div>
-            <div>
-              <div className="mt-5 mr-20">
-                <div className="text-xl font-bold">44 million</div>
+            <div className="w-full flex flex-col items-center">
+              <div>
+                <div className="mt-8 text-3xl font-bold">44 million</div>
                 <div>Transactions every 24 hours</div>
-              </div>
-              <div className="mt-5">
-                <div className="text-xl font-bold">$119 million</div>
+                <div className="mt-5 text-3xl font-bold">$119 million</div>
                 <div>Assets under holding</div>
-              </div>
-              <div className="mt-5">
-                <div className="text-xl font-bold">46,000</div>
+                <div className="mt-5 text-3xl font-bold">46,000</div>
                 <div>New users annually</div>
               </div>
             </div>
@@ -53,7 +49,7 @@ function About() {
         </div>
 
         {/* Support Us section */}
-        <div className="mt-10 team-section flex w-full max-w-6xl flex-col items-center justify-center md:mt-28">
+        <div className="team-section flex w-full max-w-6xl flex-col items-center justify-center md:mt-28">
           <div className="text-3xl font-bold">Support Us</div>
           <div className="text-lg mt-5 pr-56 pl-56 text-gray-500 flex flex-col items-center justify-center text-center">
             <div className="text-xl font-bold">

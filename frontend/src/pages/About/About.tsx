@@ -16,14 +16,14 @@ function About() {
           <img src={image} alt="about image" className="mt-10 rounded-2xl"></img>
         </div>
 
-        <div className="text-3xl mt-10">Get accurate, helpful information on bipolar medications fast</div>
-        <div className="text-lg mt-5 text-gray-500">Powered by innovative AI technology, Balancer is a tool that aids in providing personalized medication recommendations for patients with bipolar disorder in any state, including mania, depression, hypomania and mixed. Our platform utilizes machine learning to give you the latest, most up-to-date information on medications and active clinical trials to treat bipolar disorder. </div>
-        <div className="text-lg mt-5 text-gray-500">Balancer automates medication decision support by offering tailored medication recommendations and comprehensive risk-benefit assessments based on a patient's diagnosis, symptom severity, treatment goals and individual characteristics.  </div>
 
         {/* Mission section */}
-        <div className="mission-section flex w-full max-w-6xl flex-col items-center justify-center md:mt-28">
-          <div className="text-3xl font-bold">Our mission</div>
-          <div className="flex flex-row">
+        <div className="mission-section flex w-full max-w-6xl flex-row justify-center md:mt-28">
+          <div>
+            <div className="text-3xl font-bold">Get accurate, helpful information on bipolar medications fast</div>
+            <div className="text-lg mt-5 text-gray-500">Powered by innovative AI technology, Balancer is a tool that aids in providing personalized medication recommendations for patients with bipolar disorder in any state, including mania, depression, hypomania and mixed. Our platform utilizes machine learning to give you the latest, most up-to-date information on medications and active clinical trials to treat bipolar disorder. </div>
+            <div className="text-lg mt-5 text-gray-500">Balancer automates medication decision support by offering tailored medication recommendations and comprehensive risk-benefit assessments based on a patient's diagnosis, symptom severity, treatment goals and individual characteristics.  </div>
+            <div className="text-3xl font-bold mt-20">Our mission</div>
             <div className="flex flex-col justify-between w-full">
               <div className="text-lg mt-8 text-gray-500">
                 Bipolar disorder affects approximately 5.7 million adult Americans
@@ -35,15 +35,15 @@ function About() {
                 The team behind Balancer believes that building a searchable, interactive and user-friendly research tool for bipolar medications has the potential to improve the health and well-being of people with bipolar disorder.
               </div>
             </div>
-            <div className="w-full flex flex-col items-center">
-              <div>
-                <div className="mt-8 text-3xl font-bold">44 million</div>
-                <div>Transactions every 24 hours</div>
-                <div className="mt-5 text-3xl font-bold">$119 million</div>
-                <div>Assets under holding</div>
-                <div className="mt-5 text-3xl font-bold">46,000</div>
-                <div>New users annually</div>
-              </div>
+          </div>
+          <div className="w-full flex flex-col items-center">
+            <div>
+              <div className="mt-8 text-4xl font-bold">44 million</div>
+              <div className="text-lg">Transactions every 24 hours</div>
+              <div className="mt-5 text-4xl font-bold">$119 million</div>
+              <div className="text-lg">Assets under holding</div>
+              <div className="mt-5 text-4xl font-bold">46,000</div>
+              <div className="text-lg">New users annually</div>
             </div>
           </div>
         </div>

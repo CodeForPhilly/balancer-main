@@ -17,7 +17,7 @@ function About() {
         </div>
 
 
-        {/* Mission section */}
+        {/* Middle section */}
         <div className="mission-section flex w-full max-w-6xl flex-row justify-center md:mt-28">
           <div>
             <div className="text-3xl font-bold">Get accurate, helpful information on bipolar medications fast</div>

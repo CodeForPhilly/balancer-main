@@ -9,29 +9,29 @@ services:
       - POSTGRES_PASSWORD=balancer
       - POSTGRES_DB=balancer_dev
   backend:
-    build: ./server
-    command: python manage.py runserver 0.0.0.0:8000
-    volumes:
-      - ./server:/usr/src/server
+    build: 
+      context: ./server
     ports:
       - "8000:8000"
     env_file:
       - ./config/env/.env.dev
     depends_on:
       - db
-  frontend:
-    image: balancer-frontend
+    entrypoint: /entrypoint.sh
+    volumes:
+      - staticfiles:/server/staticfiles
+  nginx:
     build:
-      context: frontend
-      dockerfile: Dockerfile
-      args:
-        - IMAGE_NAME=balancer-frontend
+      context: .
+      dockerfile: ./webserver/Dockerfile
+    restart: always
+    volumes:
+      - staticfiles:/staticfiles
     ports:
-        - "3000:3000"
-    environment:
-        - CHOKIDAR_USEPOLLING=true
+      - "80:80"
     depends_on:
       - backend
 
 volumes:
   postgres_data:
+  staticfiles:

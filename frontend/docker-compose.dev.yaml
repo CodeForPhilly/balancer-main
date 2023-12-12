@@ -3,13 +3,14 @@ services:
   react-app:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
       args:
-        - IMAGE_NAME=balancer-frontend
+        - IMAGE_NAME=balancer-frontend-dev
     ports:
       - "3000:3000"
+        # The port number is hard-coded, located in ./vite.config.ts
     environment:
       - CHOKIDAR_USEPOLLING=true
     volumes:
       - "./:/usr/src/app:delegated"
-      - "/usr/src/app/node_modules/"
+      - "./node_modules:/usr/src/app/node_modules/"

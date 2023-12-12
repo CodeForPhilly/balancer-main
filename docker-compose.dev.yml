@@ -12,7 +12,7 @@ services:
     build: ./server
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
-      - ./server:/usr/src/server
+      - ./server:/usr/src/app
     ports:
       - "8000:8000"
     env_file:
@@ -23,9 +23,10 @@ services:
     image: balancer-frontend
     build:
       context: frontend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
       args:
         - IMAGE_NAME=balancer-frontend
+        - FRONTEND_VERSION=0.0.1
     ports:
         - "3000:3000"
     environment:

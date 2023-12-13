@@ -1,0 +1,38 @@
+# This dockerfile builds an image for a static frontend only server suitable for online hosting.
+# Use the official Node.js image as the base image
+FROM node:18 as builder
+
+# Set the working directory inside the container
+WORKDIR /usr/src/app
+
+# Copy package.json and package-lock.json
+COPY package*.json ./
+
+# Set version number
+ARG FRONTEND_VERSION
+RUN npm version $FRONTEND_VERSION
+
+# Install dependencies
+RUN npm ci --legacy-peer-deps
+
+# Copy project files
+COPY . .
+
+RUN npm run build
+
+FROM alpine:latest as nginx-config
+RUN apk --no-cache add gettext
+WORKDIR /app
+COPY nginx.conf.demo ./nginx.conf.demo
+# This will get overwritten by helm chart
+
+ARG SERVER_NAME
+ENV SERVER_NAME $SERVER_NAME
+RUN cat nginx.conf.demo | envsubst > nginx.conf
+
+FROM nginx:alpine
+
+COPY --from=nginx-config /app/nginx.conf /etc/nginx/nginx.conf
+COPY --from=Builder /usr/src/app/dist /usr/share/nginx/html
+
+# The default entrypoint works for us.

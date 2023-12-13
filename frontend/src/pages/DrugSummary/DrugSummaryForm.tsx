@@ -6,6 +6,7 @@ import axios from "axios";
 // import TypingAnimation from "./components/TypingAnimation.tsx";
 // import chatBubble from "../../assets/chatbubble.svg";
 import { extractContentFromDOM } from "../../services/domExtraction.tsx";
+import paperclip from "../../assets/paperclip.svg";
 
 interface ChatLogItem {
   type: string;
@@ -23,6 +24,26 @@ const DrugSummaryForm = () => {
   // ];
   const [pageContent, setPageContent] = useState("");
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files.length > 0) {
+      const file = event.target.files[0];
+      if (file.type === "application/pdf") {
+        // setSelectedFile(file);
+        setInputValue(file.name);
+        // Update chat log to show a message about the uploaded file
+        // setChatLog([
+        //   ...chatLog,
+        //   { type: "user", message: "PDF file uploaded." },
+        // ]);
+      } else {
+        // Handle non-PDF files or errors
+      }
+    } else {
+      // Handle the case where no file is selected
+    }
+  };
 
   const systemMessage = {
     role: "system",
@@ -197,13 +218,34 @@ const DrugSummaryForm = () => {
 
           {/* </div> */}
           <form onSubmit={handleSubmit} className="mb-1 flex">
-            <div className="ml-2 flex-grow">
+            <div className="relative flex w-full  items-center ">
+              <button
+                type="button"
+                className="absolute left-2 z-10"
+                onClick={() => {
+                  if (fileInputRef.current) {
+                    fileInputRef.current.click();
+                  }
+                }}
+              >
+                <img src={paperclip} alt="Upload" className="h-6" />
+              </button>
+
               <input
                 type="ani_input"
-                className="input dark:highlight-white/5  w-full"
+                className="input w-full rounded-md border border-gray-300"
                 placeholder="Talk to me..."
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
+              />
+
+              <input
+                type="file"
+                id="fileInput"
+                ref={fileInputRef}
+                accept=".pdf"
+                onChange={handleFileChange}
+                className="hidden"
               />
             </div>
             <div className="ml-5">

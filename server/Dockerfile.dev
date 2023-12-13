@@ -1,3 +1,5 @@
+# This image runs the Django lightweight development web server without the frontend.
+# Intended to be run along with the frontend dev server.
 # pull official base image
 FROM python:3.11.4-slim-buster
 

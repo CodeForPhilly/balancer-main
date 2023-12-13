@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -c -f nginx-docker-compose.yml -o nginx-helm-chart
+    kompose.version: 1.31.2 (a92241f79)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: frontend-static
+  name: frontend-static
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: frontend-static
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -c -f nginx-docker-compose.yml -o nginx-helm-chart
+        kompose.version: 1.31.2 (a92241f79)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/frontend-default: "true"
+        io.kompose.service: frontend-static
+    spec:
+      containers:
+        - env:
+            - name: CHOKIDAR_USEPOLLING
+              value: "true"
+            - name: VITE_API_BASE_URL
+              value: {{ .Values.VITE_API_BASE_URL }}
+
+          image: ghcr.io/codeforphilly/balancer-main/frontend-static:latest
+          name: frontend-static
+          ports:
+            - containerPort: 80
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /etc/nginx/nginx.conf
+              name: nginx-conf
+              subPath: nginx.conf
+              readOnly: true
+          resources: {}
+      volumes:
+        - name: nginx-conf
+          configMap:
+            name: nginx-conf
+            items:
+              - key: nginx.conf
+                path: nginx.conf
+      restartPolicy: Always
+status: {}

@@ -10,6 +10,7 @@ import json
 # XXX: remove csrf_exempt usage before production
 from django.views.decorators.csrf import csrf_exempt
 
+
 @csrf_exempt
 def chatgpt(request: str) -> JsonResponse:
     """
@@ -22,7 +23,7 @@ def chatgpt(request: str) -> JsonResponse:
         diagnosis: str = data["prompt"]
         ai_response = openai.ChatCompletion.create(
             model="gpt-4",
-            messages= [
+            messages=[
                 {"role": "system", "content": f"Balancer is a powerful tool for selecting bipolar medication for patients. We are open-source and available for free use. Converstation: {diagnosis}."}
             ]
         )

@@ -17,8 +17,8 @@ from django.views.decorators.csrf import csrf_exempt
 
 
 class ChatGPT(APIView):
-    # authentication_classes = [JWTAuthentication]
-    # permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     @csrf_exempt
     def post(self, request):

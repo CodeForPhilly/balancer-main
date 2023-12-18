@@ -77,7 +77,8 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
   };
 
   const sendMessage = (message: ChatLogItem[]) => {
-    const url = `/api/chatgpt/chat/`;
+    const baseUrl = import.meta.env.VITE_API_BASE_URL;
+    const url = `${baseUrl}/chatgpt/chat`;
 
     const apiMessages = message.map((messageObject) => {
       let role = "";

@@ -4,7 +4,7 @@ You've reached the CodeForPhilly balancer project (https://opencollective.com/co
 
 ## Backend Development Setup
 
-Rename env.dev inside of config/env to .env
+Rename env.dev inside of config/env to .env.dev
 
 docker-compose build
 

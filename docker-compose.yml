@@ -14,7 +14,7 @@ services:
     ports:
       - "8000:8000"
     env_file:
-      - ./server/.env.dev
+      - ./server/.env
     depends_on:
       - db
     entrypoint: /entrypoint.sh

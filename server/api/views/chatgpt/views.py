@@ -20,17 +20,23 @@ def chatgpt(request: str) -> JsonResponse:
     data: dict[str, str] = json.loads(request.body)
 
     if data is not None:
-        diagnosis: str = data["prompt"]
-        ai_response = openai.ChatCompletion.create(
+        user_input: str = data["prompt"]
+        ai_response = openai.Chatcompletion.create(
             model="gpt-4",
             messages=[
-                {"role": "system", "content": f"Balancer is a powerful tool for selecting bipolar medication for patients. We are open-source and available for free use. Converstation: {diagnosis}."}
+                {"role": "system", "content": f"Balancer is a powerful tool... Conversation: {user_input}." }
             ]
         )
-        return JsonResponse({"message": ai_response})
 
-    return JsonResponse({"error": "Failed to retrieve results from ChatGPT."})
+        dynamic_prompts = get_dynamic_prompts(ai_response)
+        response_data ={
+            "message": ai_response,
+            "newPrompts": dynamic_prompts
+        }
 
+        return JsonResponse(response_data)
+
+    return JsonResponse({"error": "Failed to retrieve results fromchatGPT"})
 
 @csrf_exempt
 def extract_text(request: str) -> JsonResponse:

@@ -38,6 +38,10 @@ def chatgpt(request: str) -> JsonResponse:
 
     return JsonResponse({"error": "Failed to retrieve results fromchatGPT"})
 
+
+# @csrf_exempt
+# def get_dynamic_prompts(ai_response):
+
 @csrf_exempt
 def extract_text(request: str) -> JsonResponse:
     """

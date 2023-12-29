@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from "react";
-
+import accountLogo from "../../assets/account.svg";
 import { Link } from "react-router-dom";
-
-import "../../components/Header/header.css";
+import LoginMenuDropDown from "./LoginMenuDropDown";
+import "../../components/Header/Header.css";
 import Chat from "./Chat";
 import { FeatureMenuDropDown } from "./FeatureMenuDropDown";
 import MdNavBar from "./MdNavBar";
@@ -12,6 +12,11 @@ const Header = () => {
   const dropdownRef = useRef(null);
   let delayTimeout: number | null = null;
   const [showChat, setShowChat] = useState(false);
+  const [showLoginMenu, setShowLoginMenu] = useState(false);
+
+  const handleLoginMenu = () => {
+    setShowLoginMenu(!showLoginMenu);
+  };
 
   const handleMouseEnter = () => {
     if (delayTimeout !== null) {
@@ -101,11 +106,21 @@ const Header = () => {
               Leave Feedback
             </Link>
 
+            <LoginMenuDropDown
+              showLoginMenu={showLoginMenu}
+              handleLoginMenu={handleLoginMenu}
+            />
             <Chat showChat={showChat} setShowChat={setShowChat} />
           </>
         </nav>
 
-        <span className="mr-72   text-xl font-bold text-white">Balancer</span>
+        <div onClick={handleLoginMenu} className="mr-72 ">
+          <img
+            src={accountLogo}
+            alt="logo"
+            className="hover: mr-1 cursor-pointer object-contain hover:cursor-pointer hover:border-b-2 hover:border-blue-600"
+          />
+        </div>
       </div>
       <MdNavBar />
     </header>

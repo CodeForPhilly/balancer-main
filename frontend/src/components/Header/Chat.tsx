@@ -1,6 +1,6 @@
 import React from "react";
 // import { Link } from "react-router-dom";
-import "../../components/Header/chat.css";
+import "../../components/Header/Chat.css";
 import { useState, useEffect, useRef } from "react";
 
 import axios from "axios";

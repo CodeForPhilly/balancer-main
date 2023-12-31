@@ -118,7 +118,7 @@ const Header = () => {
           <img
             src={accountLogo}
             alt="logo"
-            className="hover: mr-1 cursor-pointer object-contain hover:cursor-pointer hover:border-b-2 hover:border-blue-600"
+            className="hover: mr-1 h-8 cursor-pointer object-contain hover:cursor-pointer hover:border-b-2 hover:border-blue-600"
           />
         </div>
       </div>

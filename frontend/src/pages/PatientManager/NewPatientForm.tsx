@@ -1,8 +1,6 @@
 import { FormEvent, ChangeEvent, useEffect, useState } from "react";
-
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
-
 import { PatientInfo } from "./PatientTypes";
 import Tooltip from "../../components/Tooltip";
 // import ErrorMessage from "../../components/ErrorMessage";

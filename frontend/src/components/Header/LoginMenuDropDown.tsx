@@ -1,7 +1,5 @@
 import React from "react";
-
 import { Link } from "react-router-dom";
-
 import closeLogo from "../../assets/close.svg";
 
 interface LoginMenuDropDownProps {
@@ -63,23 +61,24 @@ const LoginMenuDropDown: React.FC<LoginMenuDropDownProps> = ({
           </p>
         </div>
         <div className="flex h-32 flex-col items-center justify-center text-center">
-          {" "}
-          <Link to="/login">
-            <button
-              type="submit"
-              className="mt-12 rounded-xl bg-blue-500 px-24 py-2 text-white hover:bg-blue-600"
-            >
-              Login
-            </button>
-          </Link>
-          <Link to="/register">
-            <button
-              type="submit"
-              className="mt-1 rounded-xl bg-blue-500 px-8 py-2 text-white hover:bg-blue-600"
-            >
-              Sign up for a new account
-            </button>
-          </Link>
+          <div className="mt-8 flex flex-col">
+            <Link to="/login">
+              <button
+                type="submit"
+                className=" mt-1 w-80 rounded-xl bg-blue-500 px-24 py-2 text-white hover:bg-blue-600"
+              >
+                Login
+              </button>
+            </Link>
+            <Link to="/register">
+              <button
+                type="submit"
+                className=" mt-1 w-80 rounded-xl bg-blue-500 px-24 py-2 text-white hover:bg-blue-600"
+              >
+                Sign up
+              </button>
+            </Link>
+          </div>
         </div>
       </div>
     </>

@@ -9,19 +9,15 @@ import json
 
 # XXX: remove csrf_exempt usage before production
 from django.views.decorators.csrf import csrf_exempt
-
+openai.api_key = os.environ.get("OPENAI_API_KEY")
 
 @csrf_exempt
 def chatgpt(request: str) -> JsonResponse:
-    """
-    Takes a diagnosis and returns a table of the most commonly prescribed medications for that diagnosis.
-    """
-    openai.api_key = os.environ.get("OPENAI_API_KEY")
     data: dict[str, str] = json.loads(request.body)
 
     if data is not None:
         user_input: str = data["prompt"]
-        ai_response = openai.Chatcompletion.create(
+        ai_response = openai.ChatCompletion.create(
             model="gpt-4",
             messages=[
                 {"role": "system", "content": f"Balancer is a powerful tool... Conversation: {user_input}." }
@@ -39,8 +35,18 @@ def chatgpt(request: str) -> JsonResponse:
     return JsonResponse({"error": "Failed to retrieve results fromchatGPT"})
 
 
-# @csrf_exempt
-# def get_dynamic_prompts(ai_response):
+@csrf_exempt
+def get_dynamic_prompts(ai_response):
+  ai_text = ai_response['choices'][0]['message']['content']
+  prompts = []
+
+  if 'medication' in ai_text.lower():
+      prompts.append("Would you like to know more about medications?")
+  if 'treatment' in ai_text.lower():
+      prompts.append("Can I help with understanding different treatments?")
+  if 'side effect' in ai_text.lower():
+      prompts.append("Do you want to discuss potential side effects?")
+  return prompts
 
 @csrf_exempt
 def extract_text(request: str) -> JsonResponse:

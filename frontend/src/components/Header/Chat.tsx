@@ -23,11 +23,11 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
   const [inputValue, setInputValue] = useState("");
   const [chatLog, setChatLog] = useState<ChatLogItem[]>([]); // Specify the type as ChatLogItem[]
   const [isLoading, setIsLoading] = useState(false);
-  const suggestionPrompts = [
+  const [suggestionPrompts, setSuggestionPrompts] = useState([
     "Tell me about treatment options.",
     "What are the common side effects?",
     "How to manage medication schedule?",
-  ];
+  ]);
   const [pageContent, setPageContent] = useState("");
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
@@ -118,6 +118,10 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
             message: response.data.message.choices[0].message.content,
           },
         ]);
+        if (response.data && response.data.newPrompts) {
+          console.log("new prompts received:", response.data.newPrompts)
+          setSuggestionPrompts(response.data.newPrompts)
+        }
         setIsLoading(false);
       })
       .catch((error) => {

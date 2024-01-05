@@ -60,6 +60,42 @@ export type AppDispatch = ThunkDispatch<RootState, unknown, ActionType>;
 
 export const useDispatch = () => useReduxDispatch<AppDispatch>();
 
+export const checkAuthenticated = () => async (dispatch: AppDispatch) => {
+  if (localStorage.getItem("access")) {
+    const config = {
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+    };
+
+    const body = JSON.stringify({ token: localStorage.getItem("access") });
+    const baseUrl = import.meta.env.VITE_API_BASE_URL;
+    const url = `${baseUrl}/auth/jwt/verify/`;
+    try {
+      const res = await axios.post(url, body, config);
+
+      if (res.data.code !== "token_not_valid") {
+        dispatch({
+          type: AUTHENTICATED_SUCCESS,
+        });
+      } else {
+        dispatch({
+          type: AUTHENTICATED_FAIL,
+        });
+      }
+    } catch (err) {
+      dispatch({
+        type: AUTHENTICATED_FAIL,
+      });
+    }
+  } else {
+    dispatch({
+      type: AUTHENTICATED_FAIL,
+    });
+  }
+};
+
 export const load_user = (): ThunkType => async (dispatch: AppDispatch) => {
   if (localStorage.getItem("access")) {
     const config = {
@@ -117,6 +153,12 @@ export const login =
       });
     }
   };
+
+export const logout = () => async (dispatch: AppDispatch) => {
+  dispatch({
+    type: LOGOUT,
+  });
+};
 
 // export const signup =
 //   (first_name, last_name, email, password, re_password) =>
@@ -234,9 +276,3 @@ export const login =
 //       });
 //     }
 //   };
-
-// export const logout = () => (dispatch: Dispatch<ActionType>) => {
-//   dispatch({
-//     type: LOGOUT,
-//   });
-// };

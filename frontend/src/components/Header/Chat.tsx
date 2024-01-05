@@ -49,7 +49,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
     });
 
     const extractedContent = extractContentFromDOM();
-    console.log(extractedContent);
+    // console.log(extractedContent);
     setPageContent(extractedContent);
   }, []);
 

@@ -1,12 +1,16 @@
+// Layout.tsx
 import { ReactNode } from "react";
 import Header from "../../components/Header/Header";
 import Footer from "../../components/Footer/Footer";
+import { connect } from "react-redux";
+import { useAuth } from "./authHooks";
 
 interface LayoutProps {
   children: ReactNode;
 }
 
-function Layout({ children }: LayoutProps) {
+export const Layout = ({ children }: LayoutProps): JSX.Element => {
+  useAuth();
   return (
     <main>
       <div className="main">
@@ -19,6 +23,7 @@ function Layout({ children }: LayoutProps) {
       </div>
     </main>
   );
-}
+};
 
-export default Layout;
+const ConnectedLayout = connect(null)(Layout);
+export default ConnectedLayout;

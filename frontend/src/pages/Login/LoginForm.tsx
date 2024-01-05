@@ -1,11 +1,26 @@
 import { useFormik } from "formik";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { login, AppDispatch } from "../../services/actions/auth";
 import { connect, useDispatch } from "react-redux";
 import { RootState } from "../../services/actions/types";
+import { useEffect } from "react";
 
-function LoginForm() {
+interface LoginFormProps {
+  isAuthenticated: boolean;
+}
+
+function LoginForm(props: LoginFormProps) {
+  const { isAuthenticated } = props;
   const dispatch = useDispatch<AppDispatch>();
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/");
+    }
+  }, [isAuthenticated, navigate]);
+
   const { handleChange, handleSubmit, values } = useFormik({
     initialValues: {
       email: "",
@@ -15,6 +30,7 @@ function LoginForm() {
       dispatch(login(values.email, values.password));
     },
   });
+
   return (
     <>
       <section className="mx-auto mt-36 w-full max-w-xs">
@@ -33,7 +49,7 @@ function LoginForm() {
               Email
             </label>
             <input
-              id="email"
+              id="login-email"
               name="email"
               type="email"
               onChange={handleChange}
@@ -43,7 +59,7 @@ function LoginForm() {
           </div>
           <div className="mb-6">
             <label
-              htmlFor="email"
+              htmlFor="password"
               className="mb-2 block text-sm font-bold text-gray-700"
             >
               Password

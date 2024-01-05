@@ -1,18 +1,61 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, Fragment } from "react";
 import accountLogo from "../../assets/account.svg";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import LoginMenuDropDown from "./LoginMenuDropDown";
 import "../../components/Header/Header.css";
 import Chat from "./Chat";
 import { FeatureMenuDropDown } from "./FeatureMenuDropDown";
 import MdNavBar from "./MdNavBar";
+import { connect, useDispatch } from "react-redux";
+import { RootState } from "../../services/actions/types";
+import { logout, AppDispatch } from "../../services/actions/auth";
 
-const Header = () => {
+interface LoginFormProps {
+  isAuthenticated: boolean;
+}
+
+const Header = (props: LoginFormProps) => {
+  const { isAuthenticated } = props;
+  const navigate = useNavigate();
   const [showFeaturesMenu, setShowFeaturesMenu] = useState(false);
   const dropdownRef = useRef(null);
   let delayTimeout: number | null = null;
   const [showChat, setShowChat] = useState(false);
   const [showLoginMenu, setShowLoginMenu] = useState(false);
+  const [redirect, setRedirect] = useState(false);
+
+  const dispatch = useDispatch<AppDispatch>();
+
+  const logout_user = () => {
+    dispatch(logout());
+    setRedirect(false);
+  };
+
+  const guestLinks = () => (
+    <div onClick={handleLoginMenu} className="mr-72 flex">
+      <img
+        src={accountLogo}
+        alt="logo"
+        className="hover: mr-1 h-5 cursor-pointer object-contain hover:cursor-pointer hover:border-b-2 hover:border-blue-600"
+      />
+      <Link to="/login" className="nav-link">
+        Sign in
+      </Link>
+    </div>
+  );
+
+  const authLinks = () => (
+    <div onClick={handleLoginMenu} className="mr-72 flex">
+      <img
+        src={accountLogo}
+        alt="logo"
+        className="hover: mr-1 h-4 cursor-pointer object-contain hover:cursor-pointer hover:border-b-2 hover:border-blue-600"
+      />
+      <a className="nav-link" href="#!" onClick={logout_user}>
+        Logout
+      </a>
+    </div>
+  );
 
   const handleLoginMenu = () => {
     setShowLoginMenu(!showLoginMenu);
@@ -105,7 +148,7 @@ const Header = () => {
             >
               Leave Feedback
             </Link>
-
+            {redirect ? navigate("/") : <Fragment></Fragment>}
             <LoginMenuDropDown
               showLoginMenu={showLoginMenu}
               handleLoginMenu={handleLoginMenu}
@@ -114,17 +157,16 @@ const Header = () => {
           </>
         </nav>
 
-        <div onClick={handleLoginMenu} className="mr-72 ">
-          <img
-            src={accountLogo}
-            alt="logo"
-            className="hover: mr-1 h-8 cursor-pointer object-contain hover:cursor-pointer hover:border-b-2 hover:border-blue-600"
-          />
-        </div>
+        {isAuthenticated ? authLinks() : guestLinks()}
       </div>
       <MdNavBar />
     </header>
   );
 };
 
-export default Header;
+const mapStateToProps = (state: RootState) => ({
+  isAuthenticated: state.auth.isAuthenticated,
+});
+
+const ConnectedLayout = connect(mapStateToProps)(Header);
+export default ConnectedLayout;

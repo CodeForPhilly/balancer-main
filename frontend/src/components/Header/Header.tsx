@@ -46,7 +46,7 @@ const Header = (props: LoginFormProps) => {
   const authLinks = () => (
     <nav
       onClick={logout_user}
-      className=" flex  w-full cursor-pointer items-center  justify-end "
+      className=" flex  w-full cursor-pointer items-center  justify-center "
     >
       <img src={accountLogo} alt="logo" className="mr-5 h-5  object-contain " />
       <span className=" text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline">

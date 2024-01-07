@@ -28,7 +28,7 @@ type ActionType =
     | { type: typeof USER_LOADED_FAIL }
     | { type: typeof AUTHENTICATED_SUCCESS }
     | { type: typeof AUTHENTICATED_FAIL }
-    | { type: typeof PASSWORD_RESET_SUCCESS; payload: ""  } 
+    | { type: typeof PASSWORD_RESET_SUCCESS} 
     | { type: typeof PASSWORD_RESET_FAIL }
     | { type: typeof PASSWORD_RESET_CONFIRM_SUCCESS; payload: ""  } 
     | { type: typeof PASSWORD_RESET_CONFIRM_FAIL }

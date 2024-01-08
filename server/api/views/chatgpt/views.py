@@ -6,6 +6,14 @@ import openai
 import tiktoken
 import os
 import json
+import spacy
+
+nlp = spacy.load("en_core_web_sm")
+
+prompt_templates = {
+    'ORG': "Would you like to know more about {entity}?",
+    'GPE': "Interested in more details about {entity}?"
+}
 
 # XXX: remove csrf_exempt usage before production
 from django.views.decorators.csrf import csrf_exempt
@@ -38,14 +46,15 @@ def chatgpt(request: str) -> JsonResponse:
 @csrf_exempt
 def get_dynamic_prompts(ai_response):
   ai_text = ai_response['choices'][0]['message']['content']
+  doc = nlp(ai_text)
+  # entities = [ent.label_ for ent in  doc.ents]
   prompts = []
 
-  if 'medication' in ai_text.lower():
-      prompts.append("Would you like to know more about medications?")
-  if 'treatment' in ai_text.lower():
-      prompts.append("Can I help with understanding different treatments?")
-  if 'side effect' in ai_text.lower():
-      prompts.append("Do you want to discuss potential side effects?")
+
+  for ent in doc.ents:
+        if ent.label_ in prompt_templates:
+            prompts.append(prompt_templates[ent.label_].format(entity=ent.text))
+
   return prompts
 
 @csrf_exempt

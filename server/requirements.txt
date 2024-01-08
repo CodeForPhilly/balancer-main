@@ -11,3 +11,4 @@ djangorestframework==3.14.0
 django-allauth==0.58.2
 django-registration-redux==2.13
 django-cors-headers>=3.10.0
+spacy

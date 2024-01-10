@@ -4,7 +4,7 @@ import Header from "../../components/Header/Header";
 import Footer from "../../components/Footer/Footer";
 import LoginMenuDropDown from "../../components/Header/LoginMenuDropDown";
 import { connect } from "react-redux";
-import { useAuth } from "./authHooks";
+import { useAuth } from "./AuthHooks";
 import { RootState } from "../../services/actions/types";
 import { useLocation } from "react-router-dom";
 
@@ -29,6 +29,8 @@ export const Layout = ({
       setShowLoginMenu(true);
     }
     if (location.pathname === "/login" && !isAuthenticated) {
+      setShowLoginMenu(false);
+    } else if (location.pathname === "/resetpassword" && !isAuthenticated) {
       setShowLoginMenu(false);
     } else if (!isAuthenticated) {
       setShowLoginMenu(true);

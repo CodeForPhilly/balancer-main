@@ -75,12 +75,9 @@ function LoginForm(props: LoginFormProps) {
           </div>
 
           <div className="flex items-center justify-between">
-            <a
-              className="inline-block align-baseline text-sm font-bold hover:text-blue-600"
-              href="register"
-            >
+            <Link to="/resetpassword" className="font-bold hover:text-blue-600">
               Forgot Password?
-            </a>
+            </Link>
             <button className="black_btn" type="submit">
               Sign In
             </button>

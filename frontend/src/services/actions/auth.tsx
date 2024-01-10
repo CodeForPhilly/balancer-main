@@ -168,7 +168,7 @@ export const reset_password =
         "Content-Type": "application/json",
       },
     };
-
+    console.log("yes");
     const body = JSON.stringify({ email });
     const baseUrl = import.meta.env.VITE_API_BASE_URL;
     const url = `${baseUrl}/auth/users/reset_password/`;

@@ -24,7 +24,7 @@ export const Layout = ({
   const location = useLocation();
 
   useEffect(() => {
-    console.log(isAuthenticated);
+    // console.log(isAuthenticated);
     if (!isAuthenticated) {
       setShowLoginMenu(true);
     }

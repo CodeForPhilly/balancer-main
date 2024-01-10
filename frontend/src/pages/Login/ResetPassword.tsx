@@ -1,9 +1,9 @@
 import { useFormik } from "formik";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { reset_password, AppDispatch } from "../../services/actions/auth";
 import { connect, useDispatch } from "react-redux";
 import { RootState } from "../../services/actions/types";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Layout from "../Layout/Layout";
 
 interface ResetPasswordProps {
@@ -13,6 +13,7 @@ interface ResetPasswordProps {
 function ResetPassword(props: ResetPasswordProps) {
   const { isAuthenticated } = props;
   const dispatch = useDispatch<AppDispatch>();
+  const [requestSent, setRequestSent] = useState(false);
 
   const navigate = useNavigate();
 
@@ -28,15 +29,19 @@ function ResetPassword(props: ResetPasswordProps) {
     },
     onSubmit: (values) => {
       dispatch(reset_password(values.email));
+      setRequestSent(true);
     },
   });
 
+  if (requestSent) {
+    navigate("/");
+  }
   return (
     <>
       <Layout>
         <section className="mx-auto mt-36 w-full max-w-xs">
           <h2 className="blue_gradient mb-6 font-satoshi text-xl font-bold text-gray-600">
-            Login
+            Reset Password
           </h2>
           <form
             onSubmit={handleSubmit}
@@ -58,28 +63,13 @@ function ResetPassword(props: ResetPasswordProps) {
                 className="focus:shadow-outline w-full appearance-none rounded border px-3 py-2 leading-tight text-gray-700 shadow focus:outline-none"
               />
             </div>
-
             <div className="flex items-center justify-between">
-              <a
-                className="inline-block align-baseline text-sm font-bold hover:text-blue-600"
-                href="register"
-              >
-                Forgot Password?
-              </a>
               <button className="black_btn" type="submit">
-                Sign In
+                Reset Password
               </button>
             </div>
           </form>
         </section>
-        <p>
-          Don't have an account?{" "}
-          <Link to="/register" className="font-bold hover:text-blue-600">
-            {" "}
-            Register here
-          </Link>
-          .
-        </p>
       </Layout>
     </>
   );

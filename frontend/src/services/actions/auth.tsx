@@ -203,11 +203,11 @@ export const reset_password_confirm =
     const baseUrl = import.meta.env.VITE_API_BASE_URL;
     const url = `${baseUrl}/auth/users/reset_password_confirm/`;
     try {
-      await axios.post(url, body, config);
-
+      const response = await axios.post(url, body, config);
       dispatch({
         type: PASSWORD_RESET_CONFIRM_SUCCESS,
       });
+      console.log(response);
     } catch (err) {
       dispatch({
         type: PASSWORD_RESET_CONFIRM_FAIL,

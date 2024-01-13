@@ -32,6 +32,12 @@ export const Layout = ({
       setShowLoginMenu(false);
     } else if (location.pathname === "/resetpassword" && !isAuthenticated) {
       setShowLoginMenu(false);
+    } else if (
+      (location.pathname.includes("password") ||
+        location.pathname.includes("reset")) &&
+      !isAuthenticated
+    ) {
+      setShowLoginMenu(false);
     } else if (!isAuthenticated) {
       setShowLoginMenu(true);
     }

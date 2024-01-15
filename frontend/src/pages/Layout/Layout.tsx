@@ -4,7 +4,7 @@ import Header from "../../components/Header/Header";
 import Footer from "../../components/Footer/Footer";
 import LoginMenuDropDown from "../../components/Header/LoginMenuDropDown";
 import { connect } from "react-redux";
-import { useAuth } from "./AuthHooks";
+import { useAuth } from "./authHooks.ts";
 import { RootState } from "../../services/actions/types";
 import { useLocation } from "react-router-dom";
 

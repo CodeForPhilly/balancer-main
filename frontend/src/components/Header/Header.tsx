@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, Fragment } from "react";
 import accountLogo from "../../assets/account.svg";
 import { Link, useNavigate } from "react-router-dom";
 import LoginMenuDropDown from "./LoginMenuDropDown";
-import "../../components/Header/Header.css";
+import "../../components/Header/header.css";
 import Chat from "./Chat";
 import { FeatureMenuDropDown } from "./FeatureMenuDropDown";
 import MdNavBar from "./MdNavBar";

@@ -5,7 +5,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     env_file:
-      - ./.env.prod.db
+      - ./config/env/.env.prod.db
   backend:
     build: 
       context: ./server
@@ -18,16 +18,11 @@ services:
     depends_on:
       - db
   frontend:
-    image: balancer-frontend
     build:
-      context: frontend
-      dockerfile: Dockerfile
-      args:
-        - IMAGE_NAME=balancer-frontend
+      context: ./frontend
+      dockerfile: Dockerfile.prod
     ports:
-        - "3000:3000"
-    environment:
-        - CHOKIDAR_USEPOLLING=true
+      - "3000:80"
     depends_on:
       - backend
 

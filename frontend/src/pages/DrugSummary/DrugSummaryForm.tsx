@@ -1,6 +1,6 @@
 import React from "react";
 // import { Link } from "react-router-dom";
-import "../../components/Header/Chat.css";
+import "../../components/Header/chat.css";
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 // import TypingAnimation from "./components/TypingAnimation.tsx";

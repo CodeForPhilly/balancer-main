@@ -58,6 +58,57 @@ def get_dynamic_prompts(ai_response):
   return prompts
 
 @csrf_exempt
+def get_entities_from_chatgpt(text):
+    try:
+      response = openai.ChatCompletion.create(
+          model="gpt-4",
+          messages=[{"role":"system", "content": "Identify and list the main entities in the following text."},
+                    {"role": "user", "content":text }
+                    ]
+      )
+      return parse_entites_from_response(response)
+    except Exception as e:
+      print(f"Error in get_entities_from_chatgpt: {e}")
+      return[]
+
+@csrf_exempt
+def parse_entites_from_response(response):
+    entites = []
+    try:
+        response_text=response.choices[0].messages.content
+        return entities
+    except Exception as e:
+        print(f"Error in get_entities_from_chatgpt: {e}")
+        return []
+
+@csrf_exempt
+def create_dynamic_prompts(entities):
+    prompts = []
+    for entity in entities:
+        prompts.extend([
+            f" Tell me more about {entity}.",
+            f"What is the signficance of {entity}?",
+            f"How does {entity} impact the current context?"
+        ])
+    return prompts
+
+@csrf_exempt
+def chatgpt_with_dynamic_prompts(request):
+    data = json.loads(request.body)
+    if data is not None:
+        user_input = data.get("prompt","")
+        entites = get_entites_from_chatgpt(user_input)
+        dynamic_prompts = create_dynamic_prompts(entites)
+
+        response_data = {
+            "entities": entities,
+            "dymaicPrompts":dynamic_prompts
+        }
+        return JsonResponse(response_data)
+    else:
+        return JsonResponse({"error": "Invalid request"}, status = 400)
+
+@csrf_exempt
 def extract_text(request: str) -> JsonResponse:
     """
     Takes a URL and returns a summary of page's text content.

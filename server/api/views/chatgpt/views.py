@@ -1,4 +1,4 @@
-from django.http import JsonResponse
+from django.http import JsonResponse #look here erin
 from bs4 import BeautifulSoup
 from nltk.stem import PorterStemmer
 import requests
@@ -6,31 +6,107 @@ import openai
 import tiktoken
 import os
 import json
+import spacy
+
+nlp = spacy.load("en_core_web_sm")
+
+prompt_templates = {
+    'ORG': "Would you like to know more about {entity}?",
+    'GPE': "Interested in more details about {entity}?"
+}
 
 # XXX: remove csrf_exempt usage before production
 from django.views.decorators.csrf import csrf_exempt
-
+openai.api_key = os.environ.get("OPENAI_API_KEY")
 
 @csrf_exempt
 def chatgpt(request: str) -> JsonResponse:
-    """
-    Takes a diagnosis and returns a table of the most commonly prescribed medications for that diagnosis.
-    """
-    openai.api_key = os.environ.get("OPENAI_API_KEY")
     data: dict[str, str] = json.loads(request.body)
 
     if data is not None:
-        diagnosis: str = data["prompt"]
+        user_input: str = data["prompt"]
         ai_response = openai.ChatCompletion.create(
             model="gpt-4",
             messages=[
-                {"role": "system", "content": f"Balancer is a powerful tool for selecting bipolar medication for patients. We are open-source and available for free use. Converstation: {diagnosis}."}
+                {"role": "system", "content": f"Balancer is a powerful tool... Conversation: {user_input}." }
             ]
         )
-        return JsonResponse({"message": ai_response})
 
-    return JsonResponse({"error": "Failed to retrieve results from ChatGPT."})
+        dynamic_prompts = get_dynamic_prompts(ai_response)
+        response_data ={
+            "message": ai_response,
+            "newPrompts": dynamic_prompts
+        }
 
+        return JsonResponse(response_data)
+
+    return JsonResponse({"error": "Failed to retrieve results fromchatGPT"})
+
+
+@csrf_exempt
+def get_dynamic_prompts(ai_response):  #look here erin
+  ai_text = ai_response['choices'][0]['message']['content']
+  doc = nlp(ai_text)
+  # entities = [ent.label_ for ent in  doc.ents]
+  prompts = []
+
+
+  for ent in doc.ents:
+        if ent.label_ in prompt_templates:
+            prompts.append(prompt_templates[ent.label_].format(entity=ent.text))
+
+  return prompts
+
+@csrf_exempt
+def get_entities_from_chatgpt(text):
+    try:
+      response = openai.ChatCompletion.create(
+          model="gpt-4",
+          messages=[{"role":"system", "content": "Identify and list the main entities in the following text."},
+                    {"role": "user", "content":text }
+                    ]
+      )
+      return parse_entites_from_response(response)
+    except Exception as e:
+      print(f"Error in get_entities_from_chatgpt: {e}")
+      return[]
+
+@csrf_exempt
+def parse_entites_from_response(response):
+    entites = []
+    try:
+        response_text=response.choices[0].messages.content
+        return entities
+    except Exception as e:
+        print(f"Error in get_entities_from_chatgpt: {e}")
+        return []
+
+@csrf_exempt
+def create_dynamic_prompts(entities):
+    prompts = []
+    for entity in entities:
+        prompts.extend([
+            f" Tell me more about {entity}.",
+            f"What is the signficance of {entity}?",
+            f"How does {entity} impact the current context?"
+        ])
+    return prompts
+
+@csrf_exempt
+def chatgpt_with_dynamic_prompts(request):
+    data = json.loads(request.body)
+    if data is not None:
+        user_input = data.get("prompt","")
+        entites = get_entites_from_chatgpt(user_input)
+        dynamic_prompts = create_dynamic_prompts(entites)
+
+        response_data = {
+            "entities": entities,
+            "dymaicPrompts":dynamic_prompts
+        }
+        return JsonResponse(response_data)
+    else:
+        return JsonResponse({"error": "Invalid request"}, status = 400)
 
 @csrf_exempt
 def extract_text(request: str) -> JsonResponse:

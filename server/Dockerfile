@@ -16,6 +16,8 @@ RUN pip install --upgrade pip
 COPY ./requirements.txt .
 RUN pip install -r requirements.txt
 
+RUN pip install spacy && python -m spacy download en_core_web_sm  # look here erin
+
 # copy project
 COPY . /usr/src/app
 

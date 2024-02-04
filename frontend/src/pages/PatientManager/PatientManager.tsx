@@ -1,5 +1,4 @@
 import { useState } from "react";
-
 import NewPatientForm from "./NewPatientForm.tsx";
 import PatientHistory from "./PatientHistory.tsx";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment

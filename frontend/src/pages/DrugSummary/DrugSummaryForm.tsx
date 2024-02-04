@@ -1,198 +1,261 @@
-import { useState } from "react";
+import React from "react";
+// import { Link } from "react-router-dom";
+import "../../components/Header/chat.css";
+import { useState, useEffect, useRef } from "react";
+import axios from "axios";
+// import TypingAnimation from "./components/TypingAnimation.tsx";
+// import chatBubble from "../../assets/chatbubble.svg";
+import { extractContentFromDOM } from "../../services/domExtraction.tsx";
+import paperclip from "../../assets/paperclip.svg";
 
-import axios, { AxiosError } from "axios";
-import { useFormik } from "formik";
-import { useMutation } from "react-query";
-import { object, string, mixed } from "yup";
-
-import Summary from "./Summary";
-
-interface FormValues {
-  pdf: File | null;
-  url: string;
+interface ChatLogItem {
+  type: string;
+  message: string;
 }
 
-const DrugSummaryValidation = object().shape({
-  url: string().url("Please enter a valid URL."),
-  pdf: mixed()
-    .nullable()
-    .test("pdf", "Maximum file size is 25MB.", (value) => {
-      if (value == null) return true; // pdf is optional
-      if (value && value instanceof File) {
-        return value?.size <= 2.5e7; // 25MB limit
-      }
-    })
-    .test("pdf", "File type must be PDF.", (value) => {
-      if (value == null) return true; // pdf is optional
-      if (value && value instanceof File) {
-        return value.type.includes("pdf");
-      }
-    }),
-});
-
 const DrugSummaryForm = () => {
-  const [summary, setSummary] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
+  const [inputValue, setInputValue] = useState("");
+  const [chatLog, setChatLog] = useState<ChatLogItem[]>([]); // Specify the type as ChatLogItem[]
+  const [isLoading, setIsLoading] = useState(false);
+  // const suggestionPrompts = [
+  //   "Tell me about treatment options.",
+  //   "What are the common side effects?",
+  //   "How to manage medication schedule?",
+  // ];
+  const [pageContent, setPageContent] = useState("");
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { isLoading, mutate } = useMutation(
-    async ({ url, pdf }: FormValues) => {
-      const formData = new FormData();
-
-      if (url) {
-        formData.append("url", url);
-      } else if (pdf) {
-        formData.append("pdf", pdf);
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files.length > 0) {
+      const file = event.target.files[0];
+      if (file.type === "application/pdf") {
+        // setSelectedFile(file);
+        setInputValue(file.name);
+        // Update chat log to show a message about the uploaded file
+        // setChatLog([
+        //   ...chatLog,
+        //   { type: "user", message: "PDF file uploaded." },
+        // ]);
+      } else {
+        // Handle non-PDF files or errors
       }
-
-      const contentType = url ? "application/json" : "multi-part/form";
-      const baseUrl = import.meta.env.VITE_API_BASE_URL;
-      const completeBaseURL = `${baseUrl}/chatgpt`;
-      try {
-        // TODO change this to actual endpoint url once hosted
-        const res = await axios.post(
-          completeBaseURL + `/extract_text/`,
-          formData,
-          {
-            headers: {
-              "Content-Type": contentType,
-            },
-          }
-        );
-        return res;
-      } catch (e: unknown) {
-        console.error(e);
-        const defaultErrorMessage =
-          "Something went wrong. Please try again later.";
-        if (e instanceof AxiosError) {
-          const resErrorMessage = e?.response?.data?.error;
-          const fileType =
-            resErrorMessage && resErrorMessage.includes("Invalid")
-              ? "URL"
-              : "PDF";
-          const message = !resErrorMessage
-            ? defaultErrorMessage
-            : `Please enter a valid ${fileType}.`;
-
-          setErrorMessage(message);
-        } else {
-          setErrorMessage(defaultErrorMessage);
-        }
-      }
+    } else {
+      // Handle the case where no file is selected
     }
-  );
+  };
 
-  const {
-    errors,
-    handleChange,
-    handleSubmit,
-    resetForm,
-    setFieldValue,
-    touched,
-    values,
-  } = useFormik<FormValues>({
-    initialValues: {
-      url: "",
-      pdf: null,
-    },
-    onSubmit: (values) => {
-      setSummary("");
-      mutate(values, {
-        onSuccess: (response) => {
-          const message =
-            response?.data?.message?.choices?.[0]?.message?.content;
-          if (message) {
-            setSummary(message);
-          }
-        },
-        onError: () => {
-          setErrorMessage("An error occured while submitting the form");
-        },
-        onSettled: () => {
-          resetForm();
-        },
+  const systemMessage = {
+    role: "system",
+    content: "You are a bot please keep conversation going.",
+  };
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      const content = extractContentFromDOM();
+      setPageContent(content);
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+    });
+
+    const extractedContent = extractContentFromDOM();
+    console.log(extractedContent);
+    setPageContent(extractedContent);
+  }, []);
+
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      const chatContainer = chatContainerRef.current;
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+  }, [chatLog]);
+
+  const suggestionPrompts = [
+    [
+      "Tell me about treatment options.",
+      "Additional details or related question.",
+    ],
+    [
+      "What are the common side effects?",
+      "Additional details or related question.",
+    ],
+    [
+      "How to manage medication schedule?",
+      "Additional details or related question.",
+    ],
+    ["Another question or topic?", "Additional details or related question."],
+  ];
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const newMessage = {
+      message: inputValue,
+      type: "user",
+    };
+
+    const newMessages = [...chatLog, newMessage];
+
+    setChatLog(newMessages);
+
+    sendMessage(newMessages);
+
+    setInputValue("");
+  };
+
+  const sendMessage = (message: ChatLogItem[]) => {
+    const baseUrl = import.meta.env.VITE_API_BASE_URL;
+    const url = `${baseUrl}/chatgpt/chat`;
+
+    const apiMessages = message.map((messageObject) => {
+      let role = "";
+      if (messageObject.type === "user") {
+        role = "user";
+      } else {
+        role = "assistant";
+      }
+      return { role: role, content: messageObject.message };
+    });
+
+    systemMessage.content += `If applicable, please use the following content to ask questions. If not applicable,
+      please answer to the best of your ability: ${pageContent}`;
+
+    const apiRequestBody = {
+      prompt: [systemMessage, ...apiMessages],
+    };
+
+    setIsLoading(true);
+
+    axios
+      .post(url, apiRequestBody)
+      .then((response) => {
+        console.log(response);
+        setChatLog((prevChatLog) => [
+          ...prevChatLog,
+          {
+            type: "bot",
+            message: response.data.message.choices[0].message.content,
+          },
+        ]);
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        setIsLoading(false);
+        console.log(error);
       });
-    },
-    validationSchema: DrugSummaryValidation,
-  });
+  };
 
   return (
     <>
-      <section className="mx-auto mt-12 w-full max-w-xs">
-        <form
-          onSubmit={handleSubmit}
-          className="mb-4 rounded bg-white px-8 pb-8 pt-6 shadow-md"
-        >
-          <div className="mb-4">
-            <label
-              htmlFor="url"
-              className="mb-2 block text-sm font-bold text-gray-700"
-            >
-              Enter a URL
-            </label>
-            <input
-              id="url"
-              name="url"
-              type="text"
-              onChange={handleChange}
-              disabled={Boolean(values.pdf)}
-              value={values.url}
-              className={` focus:shadow-outline w-full appearance-none rounded border px-3 py-2 leading-tight text-gray-700 shadow focus:outline-none disabled:bg-gray-200`}
-            />
-            <div className="form-error-container">
-              {touched?.url && errors?.url && (
-                <p className="text-sm text-red-500">{errors.url}</p>
-              )}
+      <div
+        ref={chatContainerRef}
+        id="chat_container"
+        className=" mx-auto flex h-full flex-col overflow-auto rounded "
+        style={{ width: "800px", height: "680px" }}
+      >
+        <div className="font_body pb-22 mt-36 flex flex-grow flex-col space-y-2 p-5">
+          {chatLog.length === 0 ? (
+            <>
+              <div className="max-h-[100%] max-w-[310px] rounded-lg border-2 bg-gray-200 p-2 text-black">
+                You can ask about the content on this page.
+              </div>
+              <div className="max-h-[100%] max-w-[190px] rounded-lg border-2 bg-gray-200 p-2 text-black">
+                Or questions in general.
+              </div>
+            </>
+          ) : (
+            chatLog.map((message, index) => (
+              <div
+                key={index}
+                className={`flex ${
+                  message.type === "user" ? "justify-end" : "justify-start"
+                }`}
+              >
+                <div
+                  className={`${
+                    message.type === "user"
+                      ? "bg-blue-200 text-black "
+                      : "border-2 bg-gray-200 text-black "
+                  }rounded-lg max-h-[100%] max-w-[500px] p-2`}
+                >
+                  {message.message}
+                </div>
+              </div>
+            ))
+          )}
+          {isLoading && (
+            <div key={chatLog.length} className="flex justify-between">
+              <div className="max-w-sm rounded-lg p-4 text-white">
+                {/* <TypingAnimation /> */}
+              </div>
             </div>
-          </div>
-          <p className="mb-4 font-bold text-blue-600">OR</p>
-          <div className="mb-4">
-            <label
-              id="pdf-label"
-              htmlFor="pdf"
-              className={`inline-block w-full appearance-none border px-3 py-2 leading-tight text-gray-700 shadow transition ease-in-out hover:cursor-pointer focus:outline-none ${
-                values.pdf
-                  ? "bg-green-200 hover:bg-green-200"
-                  : values.url
-                  ? "bg-gray-200 hover:cursor-default hover:bg-gray-200"
-                  : "bg-white hover:bg-green-100"
-              } rounded-md`}
-            >
-              {values?.pdf?.name || `Upload a PDF`}
-            </label>
-            <input
-              id="pdf"
-              name="pdf"
-              type="file"
-              disabled={Boolean(values.url)}
-              hidden
-              onChange={(event) => {
-                setFieldValue("pdf", event?.currentTarget?.files?.[0]);
-              }}
-              // TODO: Replace with custom input component. temporary workaround to stay within Formik value state manager.
-              value={undefined}
-            />
-            <div className="form-error-container">
-              {touched?.pdf && errors?.pdf && (
-                <p className="text-sm text-red-500">{errors.pdf}</p>
-              )}
+          )}
+        </div>
+      </div>
+
+      <div style={{ width: "800px" }}>
+        <div className="p-4">
+          {/* <div className="grid grid-cols-2 gap-2 p-2"> */}
+          <ul className="grid cursor-pointer grid-cols-2 gap-2 rounded-lg p-2 p-3">
+            {suggestionPrompts.map((suggestion, index) => (
+              <button
+                type="button"
+                key={index}
+                className="rounded-md border p-2 text-left text-sm text-black hover:bg-blue-200"
+                onClick={() => setInputValue(suggestion[0])}
+              >
+                <span className="font-bold text-black">{suggestion[0]}</span>
+                <div className="mt-1 font-satoshi text-sm text-gray-400">
+                  {suggestion[1]}
+                </div>
+              </button>
+            ))}
+          </ul>
+
+          {/* </div> */}
+          <form onSubmit={handleSubmit} className="mb-1 flex">
+            <div className="relative flex w-full  items-center ">
+              <button
+                type="button"
+                className="absolute left-2 z-10"
+                onClick={() => {
+                  if (fileInputRef.current) {
+                    fileInputRef.current.click();
+                  }
+                }}
+              >
+                <img src={paperclip} alt="Upload" className="h-6" />
+              </button>
+
+              <input
+                type="ani_input"
+                className="input w-full rounded-md border border-gray-300"
+                placeholder="Talk to me..."
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+              />
+
+              <input
+                type="file"
+                id="fileInput"
+                ref={fileInputRef}
+                accept=".pdf"
+                onChange={handleFileChange}
+                className="hidden"
+              />
             </div>
-          </div>
-          <div className="flex items-center justify-end">
-            <button
-              className="black_btn disabled:border-gray-300 disabled:bg-gray-300 disabled:text-gray-600"
-              type="submit"
-              disabled={(!values.url && !values.pdf) || isLoading}
-            >
-              Submit
-            </button>
-          </div>
-        </form>
-      </section>
-      <Summary
-        errorMessage={errorMessage}
-        isLoading={isLoading}
-        summary={summary}
-      />
+            <div className="ml-5">
+              <button type="submit" className="btnBlue">
+                Send
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     </>
   );
 };

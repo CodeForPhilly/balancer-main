@@ -1,12 +1,10 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-
 import { QueryClientProvider, QueryClient } from "react-query";
 import { Provider } from "react-redux";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-
 import routes from "./routes/routes";
-import { store } from "./services/store";
+import store from "./services/store";
 
 const router = createBrowserRouter(routes);
 

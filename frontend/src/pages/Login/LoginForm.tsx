@@ -1,45 +1,67 @@
 import { useFormik } from "formik";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { login, AppDispatch } from "../../services/actions/auth";
+import { connect, useDispatch } from "react-redux";
+import { RootState } from "../../services/actions/types";
+import { useEffect } from "react";
 
-const LoginForm = () => {
+interface LoginFormProps {
+  isAuthenticated: boolean;
+}
+
+function LoginForm(props: LoginFormProps) {
+  const { isAuthenticated } = props;
+  const dispatch = useDispatch<AppDispatch>();
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/");
+    }
+  }, [isAuthenticated, navigate]);
+
   const { handleChange, handleSubmit, values } = useFormik({
     initialValues: {
       email: "",
       password: "",
     },
     onSubmit: (values) => {
-      console.log("values", values);
-      // make login post request here.
+      dispatch(login(values.email, values.password));
     },
   });
+
   return (
     <>
-      <section className="mt-12 mx-auto w-full max-w-xs">
-        <h2 className="font-satoshi font-bold text-gray-600 text-xl blue_gradient mb-6">
+      <section className="mx-auto mt-36 w-full max-w-xs">
+        <h2 className="blue_gradient mb-6 font-satoshi text-xl font-bold text-gray-600">
           Login
         </h2>
         <form
           onSubmit={handleSubmit}
-          className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+          className="mb-4 rounded bg-white px-8 pb-8 pt-6 shadow-md"
+        >
           <div className="mb-4">
             <label
               htmlFor="email"
-              className="block text-gray-700 text-sm font-bold mb-2">
+              className="mb-2 block text-sm font-bold text-gray-700"
+            >
               Email
             </label>
             <input
-              id="email"
+              id="login-email"
               name="email"
               type="email"
               onChange={handleChange}
               value={values.email}
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              className="focus:shadow-outline w-full appearance-none rounded border px-3 py-2 leading-tight text-gray-700 shadow focus:outline-none"
             />
           </div>
           <div className="mb-6">
             <label
-              htmlFor="email"
-              className="block text-gray-700 text-sm font-bold mb-2">
+              htmlFor="password"
+              className="mb-2 block text-sm font-bold text-gray-700"
+            >
               Password
             </label>
             <input
@@ -48,16 +70,14 @@ const LoginForm = () => {
               type="password"
               onChange={handleChange}
               value={values.password}
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              className="focus:shadow-outline w-full appearance-none rounded border px-3 py-2 leading-tight text-gray-700 shadow focus:outline-none"
             />
           </div>
 
           <div className="flex items-center justify-between">
-            <a
-              className="inline-block align-baseline font-bold text-sm hover:text-blue-600"
-              href="register">
+            <Link to="/resetpassword" className="font-bold hover:text-blue-600">
               Forgot Password?
-            </a>
+            </Link>
             <button className="black_btn" type="submit">
               Sign In
             </button>
@@ -74,6 +94,14 @@ const LoginForm = () => {
       </p>
     </>
   );
-};
+}
 
-export default LoginForm;
+const mapStateToProps = (state: RootState) => ({
+  isAuthenticated: state.auth.isAuthenticated,
+});
+
+// Assign the connected component to a named constant
+const ConnectedLoginForm = connect(mapStateToProps)(LoginForm);
+
+// Export the named constant
+export default ConnectedLoginForm;

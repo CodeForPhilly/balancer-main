@@ -1,7 +1,7 @@
 import React from "react";
 // import { Link } from "react-router-dom";
 import "../../components/Header/chat.css";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 import axios from "axios";
 
@@ -23,12 +23,13 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
   const [inputValue, setInputValue] = useState("");
   const [chatLog, setChatLog] = useState<ChatLogItem[]>([]); // Specify the type as ChatLogItem[]
   const [isLoading, setIsLoading] = useState(false);
-  // const suggestionPrompts = [
-  //   "Tell me about treatment options.",
-  //   "What are the common side effects?",
-  //   "How to manage medication schedule?",
-  // ];
+  const suggestionPrompts = [
+    "Tell me about treatment options.",
+    "What are the common side effects?",
+    "How to manage medication schedule?",
+  ];
   const [pageContent, setPageContent] = useState("");
+  const chatContainerRef = useRef<HTMLDivElement>(null);
 
   let systemMessage = {
     role: "system",
@@ -48,16 +49,23 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
     });
 
     const extractedContent = extractContentFromDOM();
-    console.log(extractedContent);
+    // console.log(extractedContent);
     setPageContent(extractedContent);
   }, []);
 
+  // useEffect(() => {
+  //   const chatContainer = document.getElementById("chat_container");
+  //   if (chatContainer && showChat) {
+  //     chatContainer.scrollTop = chatContainer.scrollHeight;
+  //   }
+  // }, [showChat, chatLog]);
+
   useEffect(() => {
-    const chatContainer = document.getElementById("chat_container");
-    if (chatContainer && showChat) {
+    if (chatContainerRef.current) {
+      const chatContainer = chatContainerRef.current;
       chatContainer.scrollTop = chatContainer.scrollHeight;
     }
-  }, [showChat, chatLog]);
+  }, [chatLog]);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -133,7 +141,8 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
       >
         {showChat ? (
           <div
-            id="chat_container "
+            ref={chatContainerRef}
+            id="chat_container"
             className=" mx-auto flex h-full  flex-col overflow-auto rounded "
           >
             <div
@@ -208,7 +217,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
             </div>
 
             <div className="inside_chat absolute bottom-0 left-0 right-0 rounded-b-lg bg-white p-4">
-              {/* <div className="flex  space-x-2 p-2 ">
+              <div className="flex  space-x-2 p-2 ">
                 {suggestionPrompts.map((suggestion, index) => (
                   <button
                     type="button"
@@ -219,7 +228,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
                     {suggestion}
                   </button>
                 ))}
-              </div> */}
+              </div>
               <form onSubmit={handleSubmit} className="mb-1 flex">
                 <div className="ml-2 flex-grow">
                   <input

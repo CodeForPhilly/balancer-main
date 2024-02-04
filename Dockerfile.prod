@@ -69,7 +69,11 @@ RUN chown -R app:app $APP_HOME
 USER app
 
 # run entrypoint.prod.sh
+<<<<<<< HEAD:Dockerfile.prod
 ENTRYPOINT ["/home/app/web/entrypoint.prod.sh"]
 
 
 # TODO: gunicorn stuff
+=======
+ENTRYPOINT ["/home/app/web/entrypoint.prod.sh"]
+>>>>>>> ac68347c12ced724206112843623ee8c515bd3ad:server/Dockerfile.prod

@@ -1,17 +1,63 @@
-import { useState, useRef, useEffect } from "react";
-
-import { Link } from "react-router-dom";
-
+import { useState, useRef, useEffect, Fragment } from "react";
+import accountLogo from "../../assets/account.svg";
+import { Link, useNavigate } from "react-router-dom";
+import LoginMenuDropDown from "./LoginMenuDropDown";
 import "../../components/Header/header.css";
 import Chat from "./Chat";
 import { FeatureMenuDropDown } from "./FeatureMenuDropDown";
 import MdNavBar from "./MdNavBar";
+import { connect, useDispatch } from "react-redux";
+import { RootState } from "../../services/actions/types";
+import { logout, AppDispatch } from "../../services/actions/auth";
 
-const Header = () => {
+interface LoginFormProps {
+  isAuthenticated: boolean;
+}
+
+const Header = (props: LoginFormProps) => {
+  const { isAuthenticated } = props;
+  const navigate = useNavigate();
   const [showFeaturesMenu, setShowFeaturesMenu] = useState(false);
   const dropdownRef = useRef(null);
   let delayTimeout: number | null = null;
   const [showChat, setShowChat] = useState(false);
+  const [showLoginMenu, setShowLoginMenu] = useState(false);
+  const [redirect, setRedirect] = useState(false);
+
+  const dispatch = useDispatch<AppDispatch>();
+
+  const logout_user = () => {
+    dispatch(logout());
+    setRedirect(false);
+  };
+
+  const guestLinks = () => (
+    <nav
+      onClick={handleLoginMenu}
+      className=" flex w-full cursor-pointer items-center  justify-center "
+    >
+      <img src={accountLogo} alt="logo" className="mr-5 h-5  object-contain " />
+      <span className=" text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline">
+        Sign in
+      </span>
+    </nav>
+  );
+
+  const authLinks = () => (
+    <nav
+      onClick={logout_user}
+      className=" flex  w-full cursor-pointer items-center  justify-center "
+    >
+      <img src={accountLogo} alt="logo" className="mr-5 h-5  object-contain " />
+      <span className=" text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline">
+        Sign out
+      </span>
+    </nav>
+  );
+
+  const handleLoginMenu = () => {
+    setShowLoginMenu(!showLoginMenu);
+  };
 
   const handleMouseEnter = () => {
     if (delayTimeout !== null) {
@@ -100,16 +146,25 @@ const Header = () => {
             >
               Leave Feedback
             </Link>
-
+            {redirect ? navigate("/") : <Fragment></Fragment>}
+            <LoginMenuDropDown
+              showLoginMenu={showLoginMenu}
+              handleLoginMenu={handleLoginMenu}
+            />
             <Chat showChat={showChat} setShowChat={setShowChat} />
           </>
         </nav>
 
-        <span className="mr-72   text-xl font-bold text-white">Balancer</span>
+        {isAuthenticated ? authLinks() : guestLinks()}
       </div>
       <MdNavBar />
     </header>
   );
 };
 
-export default Header;
+const mapStateToProps = (state: RootState) => ({
+  isAuthenticated: state.auth.isAuthenticated,
+});
+
+const ConnectedLayout = connect(mapStateToProps)(Header);
+export default ConnectedLayout;

@@ -9,7 +9,9 @@ export interface PatientInfo {
   CurrentMedications?: string;
   PriorMedications?: string;
   PossibleMedications?: {
-    drugs?: string[];
+    first?: string;
+    second?: string;
+    third?: string;
   };
   Psychotic: string;
   Suicide: string;
@@ -32,7 +34,9 @@ export interface NewPatientInfo {
   CurrentMedications?: string;
   PriorMedications?: string;
   PossibleMedications?: {
-    drugs?: string[];
+    first?: string[];
+    second?: string[];
+    third?: string[];
   };
   Psychotic: string;
   Suicide: string;

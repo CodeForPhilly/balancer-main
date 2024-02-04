@@ -19,7 +19,6 @@ const PatientManager = () => {
     Description: "",
     CurrentMedications: "",
     PriorMedications: "",
-    PossibleMedications: { drugs: [] },
     Depression: "",
     Hypomania: "",
     Mania: "",
@@ -31,6 +30,11 @@ const PatientManager = () => {
     weight_gain: "",
     Reproductive: "",
     risk_pregnancy: "",
+    PossibleMedications: {
+      first: "",
+      second: "",
+      third: "",
+    },
   });
 
   const handlePatientDeleted = (deletedId: string) => {
@@ -42,7 +46,6 @@ const PatientManager = () => {
         Description: "",
         CurrentMedications: "",
         PriorMedications: "",
-        PossibleMedications: { drugs: [] },
         Depression: "",
         Hypomania: "",
         Mania: "",

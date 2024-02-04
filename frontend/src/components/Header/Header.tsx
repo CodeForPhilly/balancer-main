@@ -51,11 +51,9 @@ const Header = () => {
           "xl:px-50 mx-auto hidden h-20 items-center justify-between border-b border-gray-300 bg-white  px-4 sm:px-6 md:px-8 lg:flex lg:px-8 2xl:px-56"
         }
       >
-          <Link to="/">
-            <span className="header_logo  ml-72 text-xl font-bold">
-              Balancer
-            </span>
-          </Link>
+        <Link to="/">
+          <span className="header_logo  ml-72 text-xl font-bold">Balancer</span>
+        </Link>
         <nav className="flex w-full items-center justify-center font-satoshi text-base">
           <div
             onMouseEnter={handleMouseEnter}
@@ -66,8 +64,8 @@ const Header = () => {
             <span
               className={` mr-9 text-black ${
                 showFeaturesMenu
-                  ? "cursor-pointer mx-4 border-b-2 border-blue-600 hover:border-b-2 hover:border-blue-600 hover:no-underline"
-                  : "cursor-pointer mx-4 hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
+                  ? "mx-4 cursor-pointer border-b-2 border-blue-600 hover:border-b-2 hover:border-blue-600 hover:no-underline"
+                  : "mx-4 cursor-pointer hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
               }`}
             >
               Features
@@ -85,7 +83,7 @@ const Header = () => {
           </div>
           <>
             <Link
-              to="/login"
+              to="/about"
               className="mr-5  text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
             >
               About
@@ -106,11 +104,8 @@ const Header = () => {
             <Chat showChat={showChat} setShowChat={setShowChat} />
           </>
         </nav>
-        
-            <span className="text-white   mr-72 text-xl font-bold">
-              Balancer
-            </span>
-     
+
+        <span className="mr-72   text-xl font-bold text-white">Balancer</span>
       </div>
       <MdNavBar />
     </header>

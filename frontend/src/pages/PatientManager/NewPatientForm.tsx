@@ -219,45 +219,22 @@ const NewPatientForm = ({
   };
 
   return (
-    <section className="flex items-center justify-center">
+    <section className="md:flex md:items-center md:justify-center">
       {/* {search} */}
-      <div className="mx-3 md:mx-0 md:p-0">
+      <div className=" md:mx-0 md:p-0">
         <br />
-        <div className="flex w-[870px] justify-between">
-          {enterNewPatient ? (
-            <div onClick={handleClickNewPatient}>
-              <h2 className="header_logo cursor-pointer font-satoshi text-xl font-bold text-gray-600  hover:text-blue-600 ">
-                Enter Patient Details
-                {/* <span className="blue_gradient">Details</span> */}
-              </h2>
-            </div>
-          ) : (
+        {!enterNewPatient && (
+          <div className="flex  justify-between rounded-md p-2 px-3 ring-1 md:w-[870px]">
             <div onClick={handleClickSummary}>
               <h2 className="header_logo cursor-pointer font-satoshi text-xl font-bold text-gray-600  hover:text-blue-600  ">
                 Click To Enter New Patient
               </h2>
             </div>
-          )}
-          <div
-            onClick={handleClickSummary}
-            className=" cursor-pointer items-center"
-          >
-            {enterNewPatient ? (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-4 w-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M6 12h12"
-                />
-              </svg>
-            ) : (
+
+            <div
+              onClick={handleClickSummary}
+              className=" cursor-pointer items-center"
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-4 w-4"
@@ -272,15 +249,33 @@ const NewPatientForm = ({
                   d="M12 6v6m0 0v6m0-6h6m-6 0H6"
                 />
               </svg>
-            )}
+            </div>
           </div>
-        </div>
+        )}
         {enterNewPatient && (
-          <form onSubmit={handleSubmit} className="mt-2 ">
-            <div className="summary_box font_body">
+          <div className="font_body rounded-md  border bg-white p-2 px-3 ring-1 hover:ring-slate-300 md:p-4 md:px-8">
+            <div className="flex items-center justify-between">
+              <div
+                onClick={handleClickSummary}
+                className=" cursor-pointer items-center"
+              >
+                <h2 className="header_logo cursor-pointer font-satoshi text-xl font-bold text-gray-600  hover:text-blue-600 ">
+                  Enter Patient Details
+                  {/* <span className="blue_gradient">Details</span> */}
+                </h2>
+              </div>
+              <button
+                className="rounded bg-transparent text-2xl text-black hover:text-gray-600 focus:border-none focus:outline-none"
+                aria-label="Close"
+                onClick={handleClickSummary}
+              >
+                &times;
+              </button>
+            </div>
+            <form onSubmit={handleSubmit} className="mt-2 ">
               {/* <ErrorMessage errors={errors} /> */}
-              <div className=" flex items-center border-b border-gray-900/10 py-6  ">
-                <div className="w-[300px]">
+              <div className="flex flex-row justify-between border-b border-gray-900/10 py-6 md:items-center  ">
+                <div className="mr-5 md:mr-0 md:w-[300px]">
                   <label
                     htmlFor="current-state"
                     className="block text-sm font-semibold leading-6  text-gray-900"
@@ -288,7 +283,7 @@ const NewPatientForm = ({
                     Current state
                   </label>
                 </div>
-                <div className="w-[500px] pl-16">
+                <div className="mr-6 md:mr-0 md:w-[500px] md:pl-16">
                   <select
                     value={newPatientInfo.Diagnosis}
                     onChange={handleDiagnosisChange}
@@ -309,14 +304,14 @@ const NewPatientForm = ({
                 )} */}
               </div>
 
-              <div className="border-b border-gray-900/10 py-6  sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+              <div className="flex justify-between border-b border-gray-900/10 px-0  py-6 md:grid md:grid-cols-3 md:gap-4">
                 <div>
                   <legend className="text-sm font-semibold leading-6 text-gray-900">
                     Bipolar history
                   </legend>
                 </div>
-                <div className="pl-24">
-                  <div className="justify-left  flex gap-x-3">
+                <div className="pr-10 md:pl-24 md:pr-0">
+                  <div className=" flex gap-x-3">
                     <div className="flex h-6 items-center ">
                       <input
                         id="Mania"
@@ -398,12 +393,12 @@ const NewPatientForm = ({
                 <p className=" text-sm leading-6 text-gray-600">
                   Select patient characteristics
                 </p>
-                <fieldset className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                  <dt className="flex text-sm font-semibold leading-6 text-gray-900">
+                <fieldset className="mt-6 justify-between md:mt-0 md:grid md:grid-cols-3 md:gap-4 md:px-4 md:py-6">
+                  <dt className=" flex text-sm font-semibold leading-6 text-gray-900">
                     Currently psychotic
                   </dt>
 
-                  <dd className="mt-2 pl-24 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+                  <dd className="text-sm text-gray-900 md:col-span-2 md:mt-0 md:pl-24">
                     <div className="flex items-center gap-x-3 pr-16">
                       <input
                         id="psychotic"
@@ -437,7 +432,7 @@ const NewPatientForm = ({
                     </div>
                   </dd>
                 </fieldset>
-                <fieldset className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                <fieldset className="mt-6 justify-between md:mt-0 md:grid md:grid-cols-3 md:gap-4 md:px-4 md:py-6">
                   <dt className="flex text-sm font-semibold leading-6 text-gray-900">
                     History of suicide attempt(s)
                     <Tooltip text="Lithium is the only medication on the market that has been proven to reduce suicidality in patients with bipolar disorder, so it will be shown at the top of the suggested medications list.">
@@ -447,7 +442,7 @@ const NewPatientForm = ({
                     </Tooltip>
                   </dt>
 
-                  <dd className="mt-2 pl-24 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+                  <dd className="text-sm text-gray-900 md:col-span-2 md:mt-0 md:pl-24">
                     <div className="flex items-center gap-x-3 pr-16">
                       <input
                         id="suicide"
@@ -481,7 +476,7 @@ const NewPatientForm = ({
                     </div>
                   </dd>
                 </fieldset>
-                <fieldset className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                <fieldset className="mt-6 justify-between md:mt-0 md:grid md:grid-cols-3 md:gap-4 md:px-4 md:py-6">
                   <dt className="flex text-sm font-semibold leading-6 text-gray-900">
                     History or risk of kidney disease
                     <Tooltip text="Lithium can affect kidney function, so it will not be included in the suggested medication list for patients with a risk or history of kidney disease.">
@@ -490,7 +485,7 @@ const NewPatientForm = ({
                       </span>
                     </Tooltip>
                   </dt>
-                  <dd className="mt-2 pl-24 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+                  <dd className="text-sm text-gray-900 md:col-span-2 md:mt-0 md:pl-24">
                     <div className="flex items-center gap-x-3 pr-16">
                       <input
                         id="Kidney"
@@ -524,7 +519,7 @@ const NewPatientForm = ({
                     </div>
                   </dd>
                 </fieldset>
-                <fieldset className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                <fieldset className="mt-6 justify-between md:mt-0 md:grid md:grid-cols-3 md:gap-4 md:px-4 md:py-6">
                   <dt className="flex text-sm font-semibold leading-6 text-gray-900">
                     History or risk of liver disease
                     <Tooltip text="Depakote is processed through the liver, so it will not be included in the suggested medication list for patients with a risk or history of liver disease.">
@@ -533,7 +528,7 @@ const NewPatientForm = ({
                       </span>
                     </Tooltip>
                   </dt>
-                  <dd className="mt-2 pl-24 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+                  <dd className="text-sm text-gray-900 md:col-span-2 md:mt-0 md:pl-24">
                     <div className="flex items-center gap-x-3 pr-16">
                       <input
                         id="Liver"
@@ -568,7 +563,7 @@ const NewPatientForm = ({
                   </dd>
                 </fieldset>
 
-                <fieldset className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                <fieldset className="mt-6 justify-between md:mt-0 md:grid md:grid-cols-3 md:gap-4 md:px-4 md:py-6">
                   <dt className="flex text-sm font-semibold leading-6 text-gray-900">
                     <Tooltip text="Second-generation antipsychotics can cause low blood pressure upon standing, putting the patient at risk of passing out and hitting their head, so they will not be included in suggested medication list for patients with a risk or history of low blood pressure.">
                       History or risk of low blood pressure, or concern for
@@ -579,7 +574,7 @@ const NewPatientForm = ({
                     </Tooltip>
                   </dt>
 
-                  <dd className="mt-2 pl-24 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+                  <dd className="text-sm text-gray-900 md:col-span-2 md:mt-0 md:pl-24">
                     <div className="flex items-center gap-x-3 pr-16">
                       <input
                         id="blood_pressure"
@@ -613,7 +608,7 @@ const NewPatientForm = ({
                     </div>
                   </dd>
                 </fieldset>
-                <fieldset className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                <fieldset className="mt-6 justify-between md:mt-0 md:grid md:grid-cols-3 md:gap-4 md:px-4 md:py-6">
                   <dt className="flex text-sm font-semibold leading-6 text-gray-900">
                     Has weight gain concerns
                     <Tooltip text="Seroquel, Risperdal, Abilify, and Zyprexa are known for causing weight gain, so they will not be included in the suggested medications list for patients with concerns about weight gain.">
@@ -623,7 +618,7 @@ const NewPatientForm = ({
                     </Tooltip>
                   </dt>
 
-                  <dd className="mt-2 pl-24 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+                  <dd className="text-sm text-gray-900 md:col-span-2 md:mt-0 md:pl-24">
                     <div className="flex items-center gap-x-3 pr-16">
                       <input
                         id="weight_gain"
@@ -658,14 +653,14 @@ const NewPatientForm = ({
                   </dd>
                 </fieldset>
               </div>
-              <div className="flex border-b border-gray-900/10 py-6 ">
+              <div className="border-b border-gray-900/10 py-6 md:flex ">
                 <div className="w-[300px]">
-                  <legend className="flex text-sm font-semibold leading-6 text-gray-900">
+                  <legend className="mb-2 flex text-sm font-semibold leading-6 text-gray-900 md:flex">
                     Reproductive status
                   </legend>
                 </div>
-                <div className="w-[500px] pl-16">
-                  <div className="  flex gap-x-3">
+                <div className="md:w-[500px] md:pl-16">
+                  <div className="flex md:gap-x-3">
                     <div className="flex h-6 items-center ">
                       <input
                         id="Reproductive"
@@ -673,7 +668,7 @@ const NewPatientForm = ({
                         type="checkbox"
                         value="Yes"
                         onChange={(e) => handleRadioChange(e, "Reproductive")}
-                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                        className="mr-2 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
                       />
                     </div>
                     <div className="text-sm leading-6">
@@ -690,7 +685,7 @@ const NewPatientForm = ({
                       </label>
                     </div>
                   </div>
-                  <div className=" mt-2 hidden gap-x-3 sm:flex">
+                  <div className=" mt-2 flex md:gap-x-3">
                     <div className="flex h-6 items-center">
                       <input
                         id="risk_pregnancy"
@@ -698,7 +693,7 @@ const NewPatientForm = ({
                         type="checkbox"
                         value="Yes"
                         onChange={(e) => handleRadioChange(e, "risk_pregnancy")}
-                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                        className="mr-2 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
                       />
                     </div>
                     <div className="text-sm leading-6">
@@ -717,7 +712,7 @@ const NewPatientForm = ({
                   </div>
                 </div>
               </div>
-              <div className="mt-5 flex  items-center">
+              <div className="mt-5 items-center  md:flex">
                 <div className="w-[300px]">
                   <label
                     htmlFor="current-state"
@@ -726,7 +721,7 @@ const NewPatientForm = ({
                     Current medications
                   </label>
                 </div>
-                <div className="w-[500px]  pl-16">
+                <div className="md:w-[500px]  md:pl-16">
                   <input
                     id="currentMedications"
                     type="ani_input"
@@ -738,7 +733,7 @@ const NewPatientForm = ({
                       })
                     }
                     required
-                    placeholder="Separate multiple medications with commas"
+                    placeholder="Separate medications with commas"
                     className={
                       isLoading
                         ? "input_loading peer w-1/2"
@@ -747,7 +742,7 @@ const NewPatientForm = ({
                   />
                 </div>
               </div>
-              <div className="mt-5 flex items-center ">
+              <div className="mt-5 items-center  md:flex ">
                 <div className=" w-[300px]">
                   <label
                     htmlFor="current-state"
@@ -761,7 +756,7 @@ const NewPatientForm = ({
                     </Tooltip>
                   </label>
                 </div>
-                <div className="w-[500px]  pl-16">
+                <div className="md:w-[500px]  md:pl-16">
                   <input
                     id="priorMedications"
                     type="ani_input"
@@ -773,7 +768,7 @@ const NewPatientForm = ({
                       })
                     }
                     required
-                    placeholder="Separate multiple medications with commas"
+                    placeholder="Separate medications with commas"
                     className={
                       isLoading
                         ? "input_loading peer w-1/2"
@@ -817,8 +812,8 @@ const NewPatientForm = ({
                   )}
                 </button>
               </div>
-            </div>
-          </form>
+            </form>
+          </div>
         )}
         <br />
       </div>

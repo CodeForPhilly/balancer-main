@@ -29,5 +29,5 @@ for url in urls:
 
 # Add a catch-all URL pattern for handling SPA (Single Page Application) routing
 # Serve 'index.html' for any unmatched URL
-urlpatterns += [re_path(r'^.*',
-                        TemplateView.as_view(template_name='index.html'))]
+urlpatterns += [
+    re_path(r'^.*$', TemplateView.as_view(template_name='index.html')),]

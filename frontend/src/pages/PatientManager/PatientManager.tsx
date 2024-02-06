@@ -76,7 +76,7 @@ const PatientManager = () => {
         descriptionText="Balancer is a free and open-source tool for helping prescribers narrow
         down suitable bipolar medications based on patient characteristics."
       />
-      <div className="mt-0 flex w-[75%] flex-col md:mt-12 ">
+      <div className="mt-0 flex w-[90%] flex-col md:mt-12 md:w-[75%] ">
         <PatientSummary
           patientInfo={patientInfo}
           isPatientDeleted={isPatientDeleted}

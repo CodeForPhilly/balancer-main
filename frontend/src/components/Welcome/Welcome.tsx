@@ -8,9 +8,13 @@ function Welcome({
   descriptionText,
 }: WelcomeProps) {
   return (
-    <div className="mt-10">
-      <h1 className="head_text"></h1>
-      {subHeader && <h2 className="desc">{subHeader}</h2>}
+    <div className="md:mt-10">
+      <h1 className="text-center text-5xl font-extrabold leading-[1.15] text-black sm:text-6xl md:mt-16"></h1>
+      {subHeader && (
+        <h2 className="px-2  text-center font-sans text-2xl font-medium text-gray-800 md:mt-7 md:p-0 md:px-0 md:text-5xl">
+          {subHeader}
+        </h2>
+      )}
       {descriptionText && <p className="desc1">{descriptionText}</p>}
     </div>
   );

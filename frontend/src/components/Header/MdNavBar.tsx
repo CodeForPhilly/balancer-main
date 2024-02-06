@@ -2,14 +2,20 @@ import { useState } from "react";
 
 import { Link } from "react-router-dom";
 import { useLocation } from "react-router-dom";
-
-import logo from "../../assets/balancer.png";
+import Chat from "./Chat";
+// import logo from "../../assets/balancer.png";
 import closeLogo from "../../assets/close.svg";
 import hamburgerLogo from "../../assets/hamburger.svg";
 
-const MdNavBar = () => {
+interface LoginFormProps {
+  isAuthenticated: boolean;
+}
+
+const MdNavBar = (props: LoginFormProps) => {
   const [nav, setNav] = useState(true);
   const { pathname } = useLocation();
+  const [showChat, setShowChat] = useState(false);
+  const { isAuthenticated } = props;
   const handleNav = () => {
     setNav(!nav);
   };
@@ -17,12 +23,17 @@ const MdNavBar = () => {
   return (
     <div
       className={
-        "mx-auto flex h-20 items-center justify-between border-b border-gray-300 bg-white px-5 lg:hidden"
+        "mx-auto flex items-center justify-between border-b border-gray-300 bg-white px-5 md:h-20 lg:hidden"
       }
     >
-      <nav className="flex w-full items-center">
-        <Link to="/">
+      <nav className="flex w-full md:items-center">
+        {/* <Link to="/">
           <img src={logo} alt="logo" className="mr-16 w-28 object-contain " />
+        </Link> */}
+        <Link to="/">
+          <span className="header_logo  text-xl font-bold md:ml-52">
+            Balancer
+          </span>
         </Link>
       </nav>
       <div onClick={handleNav} className="">
@@ -51,11 +62,12 @@ const MdNavBar = () => {
           )}
         </div>
         <div className="m-4">
-          <img
+          {/* <img
             src={logo}
             alt="logo"
             className="mr-16 w-28 object-contain py-2"
-          />
+          /> */}
+          <span className="header_logo  ml-52 text-xl font-bold">Balancer</span>
         </div>
         <ul className="font-satoshi uppercase">
           <li className="border-b border-gray-300 p-4">
@@ -100,6 +112,9 @@ const MdNavBar = () => {
           </li>
         </ul>
       </div>
+      {isAuthenticated && (
+        <Chat showChat={showChat} setShowChat={setShowChat} />
+      )}
     </div>
   );
 };

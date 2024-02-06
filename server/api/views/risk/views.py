@@ -6,6 +6,7 @@ import json
 # XXX: remove csrf_exempt usage before production
 from django.views.decorators.csrf import csrf_exempt
 
+
 @csrf_exempt
 def medication(request):
     openai.api_key = os.environ.get("OPENAI_API_KEY")
@@ -15,10 +16,10 @@ def medication(request):
         diagnosis = data["diagnosis"]
     else:
         return JsonResponse({"error": "Diagnosis not found. Request must include diagnosis."})
-    
+
     ai_response = openai.ChatCompletion.create(
-        model = "gpt-3.5-turbo",
-        messages = [
+        model="gpt-3.5-turbo",
+        messages=[
             {
                 "role": "system",
                 "content": f"You are to provide a concise list of 5 key benefits and 5 key risks for the medication suggested when taking it for Bipolar. Each point should be short, clear and be kept under 10 words. Begin the benefits section with !!!benefits!!! and the risks section with !!!risk!!!. Please provide this information for the medication: {diagnosis}."
@@ -30,9 +31,10 @@ def medication(request):
 
     if '!!!benefits!!!' not in content or '!!!risks!!!' not in content:
         return JsonResponse({"error": "Unexpected format in the response content."})
-    
+
     # Split the content into benefits and risks sections
-    benefits_selection = content.split('!!!risks!!!')[0].replace('!!!benefits!!!', '').strip()
+    benefits_selection = content.split(
+        '!!!risks!!!')[0].replace('!!!benefits!!!', '').strip()
     risks_selection = content.split('!!!risks!!!')[1].strip()
 
     # Split  the sections into individiual points

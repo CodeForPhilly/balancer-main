@@ -20,8 +20,8 @@ from django.views.decorators.csrf import csrf_exempt
 openai.api_key = os.environ.get("OPENAI_API_KEY")
 
 @csrf_exempt
-def chatgpt(request: str) -> JsonResponse:
-    data: dict[str, str] = json.loads(request.body)
+def chatgpt(request):
+    data = json.loads(request.body)
 
     if data is not None:
         user_input: str = data["prompt"]
@@ -33,9 +33,10 @@ def chatgpt(request: str) -> JsonResponse:
         )
 
         dynamic_prompts = get_dynamic_prompts(ai_response)
+        dynamic_prompt = dynamic_prompts[0] if dynamic_prompts else "No further questions suggested."
         response_data ={
-            "message": ai_response,
-            "newPrompts": dynamic_prompts
+            "message": ai_response.choices[0].message['content'],
+            "newPrompt": dynamic_prompt
         }
 
         return JsonResponse(response_data)
@@ -54,7 +55,7 @@ def get_dynamic_prompts(ai_response):  #look here erin
   for ent in doc.ents:
         if ent.label_ in prompt_templates:
             prompts.append(prompt_templates[ent.label_].format(entity=ent.text))
-
+            break
   return prompts
 
 @csrf_exempt

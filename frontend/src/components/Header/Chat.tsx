@@ -10,7 +10,7 @@ import chatBubble from "../../assets/chatbubble.svg";
 import { extractContentFromDOM } from "../../services/domExtraction.tsx";
 
 interface ChatLogItem {
-  type: string;
+  type: 'user' | 'bot'; // Adjust according to your actual types
   message: string;
 }
 
@@ -25,7 +25,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [suggestionPrompts, setSuggestionPrompts] = useState([
     "Tell me about treatment options.",
-    "What are the common side effects?",
+    "What are the common side effects?",      //look here as these are the default prompts
     "How to manage medication schedule?",
   ]);
   const [pageContent, setPageContent] = useState("");
@@ -84,11 +84,11 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
     setInputValue("");
   };
 
-  const sendMessage = (message: ChatLogItem[]) => {
+  const sendMessage = (message: ChatLogItem[]) => { // Assuming ChatLogItem is your type
     const baseUrl = import.meta.env.VITE_API_BASE_URL;
     const url = `${baseUrl}/chatgpt/chat`;
-
-    const apiMessages = message.map((messageObject) => {
+  
+    const apiMessages = message.map((messageObject: ChatLogItem) => { // Explicit type for messageObject
       let role = "";
       if (messageObject.type === "user") {
         role = "user";
@@ -97,39 +97,46 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
       }
       return { role: role, content: messageObject.message };
     });
-
-    systemMessage.content += `If applicable, please use the following content to ask questions. If not applicable,
-      please answer to the best of your ability: ${pageContent}`;
-
+  
+    // Append dynamic content if needed
+    const dynamicContent = `If applicable, please use the following content to ask questions. If not applicable, please answer to the best of your ability: ${pageContent}`;
+    systemMessage.content += dynamicContent;
+  
     const apiRequestBody = {
       prompt: [systemMessage, ...apiMessages],
     };
-
+  
     setIsLoading(true);
-
-    axios
-      .post(url, apiRequestBody)
+  
+    axios.post(url, apiRequestBody)
       .then((response) => {
-        console.log(response);
-        setChatLog((prevChatLog) => [
-          ...prevChatLog,
-          {
-            type: "bot",
-            message: response.data.message.choices[0].message.content,
-          },
-        ]);
-        if (response.data && response.data.newPrompts) {
-          console.log("new prompts received:", response.data.newPrompts)
-          setSuggestionPrompts(response.data.newPrompts)
+        // Assuming the backend sends the ChatGPT response like this
+        const chatResponse = response.data.message; // Make sure this matches your backend's response structure
+        const botMessage = {
+          type: "bot",
+          message: chatResponse, // Correctly accessing the ChatGPT response
+        };
+  
+        // Handle the single dynamic prompt received from the backend
+        if (response.data.newPrompt) {
+          const promptMessage = {
+            type: "system", // or "bot", adjust based on your design
+            message: response.data.newPrompt, // Correctly handling the single new dynamic prompt
+          };
+  
+          setChatLog((prevChatLog) => [...prevChatLog, botMessage, promptMessage]);
+        } else {
+          setChatLog((prevChatLog) => [...prevChatLog, botMessage]);
         }
+  
         setIsLoading(false);
       })
       .catch((error) => {
-        setIsLoading(false);
         console.log(error);
+        setIsLoading(false);
       });
   };
-
+  
   return (
     <>
       {/* {showChat && (

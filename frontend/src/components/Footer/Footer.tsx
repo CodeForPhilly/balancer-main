@@ -38,7 +38,7 @@ function Footer() {
             <input
               type="email"
               id="email"
-              className="input w-[300px]"
+              className="input md:w-[300px]"
               placeholder="Enter your email"
             />
           </div>

@@ -9,10 +9,14 @@ services:
       - POSTGRES_PASSWORD=balancer
       - POSTGRES_DB=balancer_dev
   backend:
+    image: balancer-backend
     build: ./server
+<<<<<<< HEAD:docker-compose.dev.yml
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - ./server:/usr/src/app
+=======
+>>>>>>> ed1b2e3bc80a77cb1283844d0c153fa1f79d9d76:docker-compose.yml
     ports:
       - "8000:8000"
     env_file:
@@ -31,6 +35,7 @@ services:
         - "3000:3000"
     environment:
         - CHOKIDAR_USEPOLLING=true
+        - VITE_API_BASE_URL=https://balancertestsite.com/
     volumes:
         - "./frontend:/usr/src/app:delegated"
         - "/usr/src/app/node_modules/"

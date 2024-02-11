@@ -72,11 +72,11 @@ const PatientSummary = ({
   };
 
   return (
-    <div className="flex items-center justify-center">
-      <div className="mx-3 md:mx-0 md:p-0">
+    <div className="items-center justify-center md:flex">
+      <div className=" md:mx-0 md:p-0">
         {patientInfo.Diagnosis && (
-          <div className=" w-[870px] justify-between">
-            <div className="flex justify-between">
+          <div className=" justify-between md:w-[870px]">
+            <div className="mt-3 flex justify-between">
               <div>
                 <h2 className="header_logo cursor-pointer font-satoshi text-xl font-bold text-gray-600  hover:text-blue-600 ">
                   Summary
@@ -121,8 +121,8 @@ const PatientSummary = ({
               </div>
             </div>
             {showSummary && (
-              <div className="summary_box mt-2 w-[870px]">
-                <div className="border-b border-gray-900/10 px-4 py-6 sm:px-0">
+              <div className="font_body mt-2 rounded-md  border  bg-white p-2  px-3 ring-1 hover:ring-slate-300 md:w-[870px] md:p-8">
+                <div className="border-b border-gray-900/10">
                   <h3 className="text-base  leading-7 text-gray-900">
                     <label className="font-semibold">Patient ID:</label>{" "}
                     {patientInfo.ID}
@@ -133,39 +133,33 @@ const PatientSummary = ({
                 </div>
                 <div className="mt-3 ">
                   <dl className="">
-                    <div className="flex justify-between border-b border-gray-900/10 py-6">
-                      <div className="flex w-full ">
+                    <div className="flex-row justify-between border-b border-gray-900/10 py-6 md:flex">
+                      <div className="flex w-full p-2 md:p-0 ">
                         <dt className="w-1/2 text-sm font-medium leading-6 text-gray-900 ">
                           Current State:
                         </dt>
-                        <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                        <dd className="text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
                           {patientInfo.Diagnosis}
                         </dd>
                       </div>
-                      <div className=" flex w-full ">
+                      <div className="flex w-full p-2 md:p-0">
                         <dt className=" w-1/2 text-sm font-medium leading-6 text-gray-900">
                           Bipolar history:
                         </dt>
                         <dd className=" text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
                           <ul className=" ">
                             {patientInfo.Depression == "True" ? (
-                              <li className="h-3 text-sm md:my-0 md:mb-3">
-                                Depression
-                              </li>
+                              <li className="">Depression</li>
                             ) : (
                               ""
                             )}
                             {patientInfo.Hypomania == "True" ? (
-                              <li className="h-3 text-sm md:my-0 md:mb-3">
-                                Hypomania
-                              </li>
+                              <li className="">Hypomania</li>
                             ) : (
                               ""
                             )}
                             {patientInfo.Mania == "True" ? (
-                              <li className="h-3 text-sm md:my-0 md:mb-3">
-                                Mania
-                              </li>
+                              <li className="">Mania</li>
                             ) : (
                               ""
                             )}
@@ -173,7 +167,7 @@ const PatientSummary = ({
                         </dd>
                       </div>
                     </div>
-                    <div className="border-b border-gray-900/10 px-4 py-6 sm:grid sm:grid-cols-3  sm:gap-4 sm:px-0">
+                    <div className="border-b border-gray-900/10 p-2 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0  md:px-4 md:py-6">
                       <dt className="mt-3 flex text-sm font-medium leading-6 text-gray-900">
                         Risk Assessment:
                       </dt>

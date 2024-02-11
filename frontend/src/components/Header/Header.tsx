@@ -46,7 +46,7 @@ const Header = (props: LoginFormProps) => {
   const authLinks = () => (
     <nav
       onClick={logout_user}
-      className=" flex  w-full cursor-pointer items-center  justify-center "
+      className=" ml-40  flex w-full cursor-pointer items-center"
     >
       <img src={accountLogo} alt="logo" className="mr-5 h-5  object-contain " />
       <span className=" text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline">
@@ -82,15 +82,14 @@ const Header = (props: LoginFormProps) => {
 
   return (
     <header className="fixed w-full items-center">
-      <div className="hidden h-10 w-full items-center justify-center border-b border-gray-300 bg-blue-100 text-center text-sm font-light text-gray-500 md:flex">
+      <div className="hidden h-8 w-full items-center justify-center border-b border-gray-300 bg-blue-100 text-center text-sm font-light text-gray-500 md:flex">
         This app is currently in its beta testing phase. The information and
         tools provided herein are intended for general informational purposes
         only and should NOT be construed as medical advice, diagnosis, or
         treatment.
       </div>
-      <div className="flex h-10 w-full items-center justify-center border-b border-gray-300 bg-blue-100 text-center text-sm font-light text-gray-500 md:hidden ">
-        This app is currently in its beta testing phase. The information should
-        NOT be construed as medical advice.
+      <div className="flex h-9 w-full items-center justify-center border-b border-gray-300 bg-blue-100 text-center text-sm font-light text-gray-500 md:hidden ">
+        App is in beta; Do not use info as medical advice.
       </div>
       <div
         className={
@@ -98,7 +97,9 @@ const Header = (props: LoginFormProps) => {
         }
       >
         <Link to="/">
-          <span className="header_logo  ml-72 text-xl font-bold">Balancer</span>
+          <span className="header_logo text-xl font-bold md:ml-72 md:mr-36">
+            Balancer
+          </span>
         </Link>
         <nav className="flex w-full items-center justify-center font-satoshi text-base">
           <div
@@ -151,13 +152,16 @@ const Header = (props: LoginFormProps) => {
               showLoginMenu={showLoginMenu}
               handleLoginMenu={handleLoginMenu}
             />
-            <Chat showChat={showChat} setShowChat={setShowChat} />
+            {isAuthenticated && (
+              <Chat showChat={showChat} setShowChat={setShowChat} />
+            )}
+            {/* <Chat showChat={showChat} setShowChat={setShowChat} /> */}
           </>
         </nav>
 
         {isAuthenticated ? authLinks() : guestLinks()}
       </div>
-      <MdNavBar />
+      <MdNavBar isAuthenticated={isAuthenticated} />
     </header>
   );
 };

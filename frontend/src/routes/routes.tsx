@@ -7,6 +7,7 @@ import DrugSummary from "../pages/DrugSummary/DrugSummary.tsx";
 import RegistrationForm from "../pages/Register/Register.tsx";
 import About from "../pages/About/About.tsx";
 import Feedback from "../pages/Feedback/Feedback.tsx";
+import Help from "../pages/Help/Help.tsx";
 
 const routes = [
   {
@@ -37,6 +38,10 @@ const routes = [
   {
     path: "about",
     element: <About />,
+  },
+  {
+    path: "help",
+    element: <Help />,
   },
   {
     path: "feedback",

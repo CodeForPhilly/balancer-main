@@ -32,7 +32,7 @@ services:
         - IMAGE_NAME=balancer-frontend
         - FRONTEND_VERSION=0.0.1
     ports:
-        - "3000:3000"
+        - "3001:3001"
     environment:
         - CHOKIDAR_USEPOLLING=true
         - VITE_API_BASE_URL=https://balancertestsite.com/

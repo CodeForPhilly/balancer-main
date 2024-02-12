@@ -37,33 +37,28 @@ function Help() {
 
   return (
     <Layout>
-      <div className="mt-20 flex w-full max-w-6xl flex-col items-center justify-center px-4 md:mt-28">
-        <div className="flex justify-center ">
+      <div className="mt-20 flex w-full max-w-6xl flex-col items-center justify-center px-4">
+        <div className="flex justify-center text-center">
           <h1 className="mt-20 font-satoshi text-3xl text-blue-600">
             Help & Support Page
           </h1>
         </div>
-        <div>
+        <div className="flex text-center py-2">
           <h3 className="font-satoshi text-gray-600">
             Let us help you in your Balancer experience!
           </h3>
         </div>
-        <div className="flex flex-row gap-4">
-          <HelpCard
-            icon={data.icon[0]}
-            title={data.title[0]}
-            paragraph={data.paragraph[0]}
-          />
-          <HelpCard
-            icon={data.icon[1]}
-            title={data.title[1]}
-            paragraph={data.paragraph[1]}
-          />
-          <HelpCard
-            icon={data.icon[2]}
-            title={data.title[2]}
-            paragraph={data.paragraph[2]}
-          />
+        <div className="flex flex-col gap-4 sm:flex-row">
+          {data.icon.map((icon, index) => (
+            <div className="">
+            <HelpCard
+              key={index}
+              icon={icon}
+              title={data.title[index]}
+              paragraph={data.paragraph[index]}
+            />
+            </div>
+          ))}
         </div>
       </div>
     </Layout>

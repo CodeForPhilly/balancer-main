@@ -1,14 +1,21 @@
 import Layout from "../Layout/Layout";
 import { useEffect, useState } from "react";
 import HelpCard from "./HelpCard";
+import { Link } from "react-router-dom";
 
 interface HelpData {
-  icon: string[];
-  title: string[];
-  paragraph: string[];
+    link: string[];
+    icon: string[];
+    title: string[];
+    paragraph: string[];
 }
 
 const HelpCardData: HelpData = {
+    link: [
+        "/how-to",
+        "/feedback",
+        "/data"
+    ],
   icon: ["UserDoctor", "FeedbackIcon", "MagnifyingGlassChart"],
   title: ["How To Use this Site", "Submit Feedback", "How We Get Our Data"],
   paragraph: [
@@ -20,6 +27,7 @@ const HelpCardData: HelpData = {
 
 function Help() {
   const [data, setData] = useState<HelpData>({
+    link: [""],
     icon: [""],
     title: [""],
     paragraph: [""],
@@ -28,6 +36,7 @@ function Help() {
   useEffect(() => {
     if (!data) {
       setData({
+        link: [""],
         icon: [""],
         title: ["error setting data"],
         paragraph: ["error setting data"],
@@ -50,6 +59,8 @@ function Help() {
         </div>
         <div className="flex flex-col gap-4 sm:flex-row">
           {data.icon.map((icon, index) => (
+            <Link to={data.link[index]} key={index} className="flex"> 
+
             <div className="">
             <HelpCard
               key={index}
@@ -58,6 +69,7 @@ function Help() {
               paragraph={data.paragraph[index]}
             />
             </div>
+            </Link>
           ))}
         </div>
       </div>

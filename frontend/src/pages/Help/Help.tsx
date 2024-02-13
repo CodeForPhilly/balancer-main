@@ -14,7 +14,7 @@ const HelpCardData: HelpData = {
     link: [
         "/how-to",
         "/feedback",
-        "/data"
+        "/data-sources"
     ],
   icon: ["UserDoctor", "FeedbackIcon", "MagnifyingGlassChart"],
   title: ["How To Use this Site", "Submit Feedback", "How We Get Our Data"],

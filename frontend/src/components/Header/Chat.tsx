@@ -110,7 +110,9 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
   
     axios.post(url, apiRequestBody)
       .then((response) => {
-        // Assuming the backend sends the ChatGPT response like this
+
+        const dynamicPrompts = response.data.dynamicPrompts || ["No further questions suggested."]; // Fallback in case no dynamic prompts are provided
+        setSuggestionPrompts(dynamicPrompts);
         const chatResponse = response.data.message; // Make sure this matches your backend's response structure
         const botMessage = {
           type: "bot",

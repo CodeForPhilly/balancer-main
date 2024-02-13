@@ -8,6 +8,8 @@ import RegistrationForm from "../pages/Register/Register.tsx";
 import About from "../pages/About/About.tsx";
 import Feedback from "../pages/Feedback/Feedback.tsx";
 import Help from "../pages/Help/Help.tsx";
+import HowTo from "../pages/Help/HowTo.tsx";
+import DataSources from "../pages/Help/DataSources.tsx";
 
 const routes = [
   {
@@ -42,6 +44,13 @@ const routes = [
   {
     path: "help",
     element: <Help />,
+  },
+  {
+    path: "how-to",
+    element: <HowTo />,
+  },{
+    path: "data-sources",
+    element: <DataSources />,
   },
   {
     path: "feedback",

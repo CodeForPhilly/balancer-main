@@ -1,36 +1,47 @@
-import Layout from "../Layout/Layout";
 import { useEffect, useState } from "react";
+import MagnifyingGlassChart from "./MagnifyingGlassChart";
+import UserDoctor from "./UserDoctor";
+import FeedbackIcon from "./FeedbackIcon";
 
 interface HelpProps {
-    title: string;
-    paragraph: string;
+  icon: string;
+  title: string;
+  paragraph: string;
 }
 
-function HelpCard(data: HelpProps){
+function HelpCard(data: HelpProps) {
   const [paragraph, setParagraph] = useState("");
   const [title, setTitle] = useState("");
+  const [icon, setIcon] = useState<JSX.Element | null>(null);
 
   useEffect(() => {
-    if (!data.paragraph ) {
-        setParagraph("Error: No paragraph provided.");
+    if (!data.paragraph) {
+      setParagraph("Error: No paragraph provided.");
     }
-    if (!data.title ) {
-        setTitle("Error: No title provided.");
+    if (!data.title) {
+      setTitle("Error: No title provided.");
     }
-        setTitle(data.title);
-        setParagraph(data.paragraph);
+    setTitle(data.title);
+    setParagraph(data.paragraph);
+    if (data.icon == "UserDoctor") {
+      setIcon(<UserDoctor />);
+    } else if (data.icon == "FeedbackIcon") {
+      setIcon(<FeedbackIcon />);
+    } else if (data.icon == "MagnifyingGlassChart") {
+      setIcon(<MagnifyingGlassChart />);
+    }
   }, [paragraph, data, title]);
 
   return (
-    <div className="h-48 flex w-full max-w-6xl flex-col items-center justify-center px-4 py-8 shadow-md md:mt-28 bg-neutral-50 rounded-xl border-2 border-blue-100 p-4">
-      <div className="p-4 h-48">
-          <h1 className="text-center text-blue-600">{title}</h1>
-          <p
-            className="text-log sm:text-x; mx-auto
-          mt-5 hidden max-w-[100%] text-center font-satoshi text-gray-600 md:block"
-          >
+    <div className="flex h-72 w-full max-w-6xl flex-col items-center justify-center rounded-xl border-2 border-blue-100 bg-neutral-50 px-4 shadow-md md:mt-28">
+      <div className="flex h-full flex-col items-center">
+        {icon && <div className="mt-6 h-24 w-24">{icon}</div>}
+        <div className="mt-6 flex flex-col">
+          <h1 className="py-2 text-center text-black">{title}</h1>
+          <p className="text-center font-satoshi text-sm text-gray-600">
             {paragraph}
           </p>
+        </div>
       </div>
     </div>
   );

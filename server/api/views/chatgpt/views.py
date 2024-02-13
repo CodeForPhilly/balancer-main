@@ -9,6 +9,8 @@ import json
 import spacy
 
 nlp = spacy.load("en_core_web_sm")
+text = "Your example text here."
+doc = nlp(text)
 
 prompt_templates = {
     'ORG': "Would you like to know more about {entity}?",
@@ -45,18 +47,23 @@ def chatgpt(request):
 
 
 @csrf_exempt
-def get_dynamic_prompts(ai_response):  #look here erin
-  ai_text = ai_response['choices'][0]['message']['content']
-  doc = nlp(ai_text)
-  # entities = [ent.label_ for ent in  doc.ents]
-  prompts = []
+def get_dynamic_prompts(ai_response):
+    ai_text = ai_response['choices'][0]['message']['content']
+    doc = nlp(ai_text)
+    prompts = []
 
-
-  for ent in doc.ents:
+    print(f"Processing text: {ai_text}")
+    for ent in doc.ents:
+        print(f"Detected entity: '{ent.text}' of type '{ent.label_}'")
         if ent.label_ in prompt_templates:
-            prompts.append(prompt_templates[ent.label_].format(entity=ent.text))
-            break
-  return prompts
+            prompt = prompt_templates[ent.label_].format(entity=ent.text)
+            prompts.append(prompt)
+            print(f"Generated prompt: {prompt}")
+
+    if not prompts:
+        print("No matching entities found for dynamic prompts.")
+    return prompts
+
 
 @csrf_exempt
 def get_entities_from_chatgpt(text):

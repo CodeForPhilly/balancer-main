@@ -19,9 +19,9 @@ const howToData: HowToProps = {
     "2. Select the patient's current state.",
     "3. Answer 'yes' or 'no' to the questions related to patient characteristics.",
     "4. Check off any relevant reproductive status information.",
-    "5. Type out a list of the patient's current medications. " +
-      "6. You can separate medications with commas. It doesn't matter if you use the generic or " +
-      "brand name of the medication; Balancer will understand.",
+    "5. Type out a list of the patient's current medications. ",
+    "6. You can separate medications with commas. It doesn't matter if you use the generic or " +
+    "brand name of the medication; Balancer will understand.",
     "7. Type out a list of any medications you want Balancer to exclude from the recommended " +
       "medications list. (For example, if a patient has already tried a particular medication " +
       "without success, enter the name of that medication and Balancer will be sure not to " +

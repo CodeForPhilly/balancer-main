@@ -84,22 +84,16 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
     setInputValue("");
   };
 
-  const sendMessage = (message: ChatLogItem[]) => { // Assuming ChatLogItem is your type
+  const sendMessage = (message: ChatLogItem[]) => {
     const baseUrl = import.meta.env.VITE_API_BASE_URL;
     const url = `${baseUrl}/chatgpt/chat`;
   
-    const apiMessages = message.map((messageObject: ChatLogItem) => { // Explicit type for messageObject
-      let role = "";
-      if (messageObject.type === "user") {
-        role = "user";
-      } else {
-        role = "assistant";
-      }
-      return { role: role, content: messageObject.message };
+    const apiMessages = message.map((messageObject: ChatLogItem) => {
+      let role = messageObject.type === "user" ? "user" : "assistant";
+      return { role, content: messageObject.message };
     });
   
-    // Append dynamic content if needed
-    const dynamicContent = `If applicable, please use the following content to ask questions. If not applicable, please answer to the best of your ability: ${pageContent}`;
+    const dynamicContent = `Content related to dynamic suggestions here...`;
     systemMessage.content += dynamicContent;
   
     const apiRequestBody = {
@@ -111,33 +105,30 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
     axios.post(url, apiRequestBody)
       .then((response) => {
         console.log("Received response:", response);
-        const dynamicPrompts = response.data.dynamicPrompts || ["No further questions suggested."]; // Fallback in case no dynamic prompts are provided
-        setSuggestionPrompts(dynamicPrompts);
-        const chatResponse = response.data.message; // Make sure this matches your backend's response structure
+        console.log("Dynamic prompts received:", response.data.dynamicPrompts);
+        if (response.data.dynamicPrompts) {
+          setSuggestionPrompts(response.data.dynamicPrompts);
+          console.log("Updated suggestionPrompts state:", response.data.dynamicPrompts);  
+        } else {
+          // Handle the case where no dynamic prompts are provided
+          setSuggestionPrompts(["No further questions suggested."]);
+        }
+        const chatResponse = response.data.message;
         const botMessage = {
           type: "bot",
-          message: chatResponse, // Correctly accessing the ChatGPT response
+          message: chatResponse,
         };
   
-        // Handle the single dynamic prompt received from the backend
-        if (response.data.newPrompt) {
-          const promptMessage = {
-            type: "system", // or "bot", adjust based on your design
-            message: response.data.newPrompt, // Correctly handling the single new dynamic prompt
-          };
-  
-          setChatLog((prevChatLog) => [...prevChatLog, botMessage, promptMessage]);
-        } else {
-          setChatLog((prevChatLog) => [...prevChatLog, botMessage]);
-        }
+        setChatLog((prevChatLog) => [...prevChatLog, botMessage]);
   
         setIsLoading(false);
       })
       .catch((error) => {
-        console.log(error);
+        console.error("Error fetching dynamic prompts:", error);
         setIsLoading(false);
       });
   };
+  
   
   return (
     <>

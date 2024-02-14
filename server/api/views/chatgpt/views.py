@@ -12,9 +12,13 @@ nlp = spacy.load("en_core_web_sm")
 text = "Your example text here."
 doc = nlp(text)
 
+
+
 prompt_templates = {
     'ORG': "Would you like to know more about {entity}?",
-    'GPE': "Interested in more details about {entity}?"
+    'GPE': "Interested in more details about {entity}?",
+    'PERSON': "Would you like to learn more about {entity} and their contributions?",
+    'DATE': "Do you want information on events that happened around {entity}?"
 }
 
 # XXX: remove csrf_exempt usage before production
@@ -22,7 +26,7 @@ from django.views.decorators.csrf import csrf_exempt
 openai.api_key = os.environ.get("OPENAI_API_KEY")
 
 @csrf_exempt
-def chatgpt(request):
+def chatgpt(request):  # Handle Request And Generate ChatGpt Response
     data = json.loads(request.body)
 
     if data is not None:
@@ -47,26 +51,26 @@ def chatgpt(request):
 
 
 @csrf_exempt
-def get_dynamic_prompts(ai_response):
+def get_dynamic_prompts(ai_response): #Generate Dynamic Prompts Based On Entities
     ai_text = ai_response['choices'][0]['message']['content']
     doc = nlp(ai_text)
     prompts = []
 
-    print(f"Processing text: {ai_text}")
+    logger.info(f"Processing text: {ai_text}")
     for ent in doc.ents:
-        print(f"Detected entity: '{ent.text}' of type '{ent.label_}'")
+        logger.info(f"Detected entity: '{ent.text}' of type '{ent.label_}'")
         if ent.label_ in prompt_templates:
             prompt = prompt_templates[ent.label_].format(entity=ent.text)
             prompts.append(prompt)
-            print(f"Generated prompt: {prompt}")
+            logger.info(f"Generated prompt: {prompt}")
 
     if not prompts:
-        print("No matching entities found for dynamic prompts.")
+        logger.warning("No matching entities found for dynamic prompts.")
     return prompts
 
 
 @csrf_exempt
-def get_entities_from_chatgpt(text):
+def get_entities_from_chatgpt(text): #Get Entities From ChatGpt
     try:
       response = openai.ChatCompletion.create(
           model="gpt-4",
@@ -74,14 +78,14 @@ def get_entities_from_chatgpt(text):
                     {"role": "user", "content":text }
                     ]
       )
-      return parse_entites_from_response(response)
+      return parse_entities_from_response(response)
     except Exception as e:
       print(f"Error in get_entities_from_chatgpt: {e}")
       return[]
 
 @csrf_exempt
-def parse_entites_from_response(response):
-    entites = []
+def parse_entities_from_response(response): #Parse Entities From ChatGpt
+    entities = []
     try:
         response_text=response.choices[0].messages.content
         return entities
@@ -90,7 +94,7 @@ def parse_entites_from_response(response):
         return []
 
 @csrf_exempt
-def create_dynamic_prompts(entities):
+def create_dynamic_prompts(entities):   #Create Dynamic Prompts
     prompts = []
     for entity in entities:
         prompts.extend([
@@ -101,23 +105,27 @@ def create_dynamic_prompts(entities):
     return prompts
 
 @csrf_exempt
-def chatgpt_with_dynamic_prompts(request):
-    data = json.loads(request.body)
-    if data is not None:
-        user_input = data.get("prompt","")
-        entites = get_entites_from_chatgpt(user_input)
-        dynamic_prompts = create_dynamic_prompts(entites)
-
+def chatgpt_with_dynamic_prompts(request): # Handle Request And Generate ChatGpt Response
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        user_input = data.get('prompt', '')
+        
+        chat_resposne, dynamic_prompts = process_chat_input(user_input)
+        
         response_data = {
-            "entities": entities,
-            "dymaicPrompts":dynamic_prompts
+          "message": chat_resposne,
+          "dynamicPrompts": dynamic_prompts
         }
         return JsonResponse(response_data)
-    else:
-        return JsonResponse({"error": "Invalid request"}, status = 400)
+    return JsonResponse({"error":"Invalid request"}, status=400)
+
+def process_chat_input(user_input):
+    chat_response = " Simulated response from chatGPT based on user input"
+    dynamic_prompts = ["Prompt 1", "Prompt 2", "Prompt 3"]
+    return chat_response, dynamic_prompts
 
 @csrf_exempt
-def extract_text(request: str) -> JsonResponse:
+def extract_text(request: str) -> JsonResponse: # Handle Request And Generate ChatGpt Response
     """
     Takes a URL and returns a summary of page's text content.
 
@@ -154,7 +162,7 @@ def extract_text(request: str) -> JsonResponse:
     return JsonResponse({"message": ai_response})
 
 
-def get_tokens(string: str, encoding_name: str) -> str:
+def get_tokens(string: str, encoding_name: str) -> str: # Tokenize
     """Tokenize the first 3500 tokens of a string."""
     encoding = tiktoken.get_encoding(encoding_name)
     tokens = encoding.encode(string)
@@ -164,7 +172,7 @@ def get_tokens(string: str, encoding_name: str) -> str:
 
 
 @csrf_exempt
-def diagnosis(request: str) -> JsonResponse:
+def diagnosis(request: str) -> JsonResponse: # Handle Request And Generate ChatGpt Response
     """Takes a diagnosis and returns a table of the most commonly prescribed medications for that diagnosis."""
     openai.api_key = os.environ.get("OPENAI_API_KEY")
     data = json.loads(request.body)

@@ -107,7 +107,7 @@ const Header = (props: LoginFormProps) => {
             <span
               className={` mr-9 font-bold text-black ${
                 showFeaturesMenu
-                  ? "mx-4 cursor-pointer border-b-2 border-blue-600 hover:border-b-2 hover:border-blue-600 hover:no-underline"
+                  ? "mx-4 cursor-pointer border-b-2 border-blue-600 hover:border-b-2 hover:border-blue-600 hover:text-blue-600 hover:no-underline"
                   : "mx-4 cursor-pointer hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
               }`}
             >
@@ -127,19 +127,19 @@ const Header = (props: LoginFormProps) => {
           <>
             <Link
               to="/about"
-              className="mr-5 font-bold text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
+              className="mr-5 font-bold text-black hover:border-blue-600 hover:text-blue-600 hover:no-underline"
             >
               About
             </Link>
             <Link
               to="/help"
-              className="mr-5 font-bold text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
+              className="mr-5 font-bold text-black hover:border-blue-600 hover:text-blue-600 hover:no-underline"
             >
               Help
             </Link>
             <Link
               to="/feedback"
-              className="mr-5 font-bold text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
+              className="mr-5 font-bold text-black hover:border-blue-600 hover:text-blue-600 hover:no-underline"
             >
               Leave Feedback
             </Link>

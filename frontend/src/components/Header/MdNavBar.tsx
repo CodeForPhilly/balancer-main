@@ -26,14 +26,12 @@ const MdNavBar = (props: LoginFormProps) => {
         "mx-auto flex items-center justify-between border-b border-gray-300 bg-white px-5 md:h-20 lg:hidden"
       }
     >
-      <nav className="flex w-full md:items-center">
+      <nav className="flex w-full ">
         {/* <Link to="/">
           <img src={logo} alt="logo" className="mr-16 w-28 object-contain " />
         </Link> */}
         <Link to="/">
-          <span className="header_logo  text-xl font-bold md:ml-52">
-            Balancer
-          </span>
+          <span className="header_logo  text-xl font-bold ">Balancer</span>
         </Link>
       </nav>
       <div onClick={handleNav} className="">

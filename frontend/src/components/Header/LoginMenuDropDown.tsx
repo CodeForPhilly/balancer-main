@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import closeLogo from "../../assets/close.svg";
+// import closeLogo from "../../assets/close.svg";
 
 interface LoginMenuDropDownProps {
   showLoginMenu: boolean;
@@ -20,12 +20,12 @@ const LoginMenuDropDown: React.FC<LoginMenuDropDownProps> = ({
         ></div>
       )} */}
       {showLoginMenu && (
-        <div className="z-5 inset-0 bg-gray-900 opacity-50 md:fixed"></div>
+        <div className="inset-0 z-20 bg-gray-900 opacity-50 md:fixed"></div>
       )}
       <div
         className={
           showLoginMenu
-            ? "z20 fixed right-0 top-0 h-full w-[100%] border-l border-l-gray-900 bg-white p-16 duration-1000 ease-in-out md:w-[35%]"
+            ? "fixed right-0 top-0 z-40 h-full w-[100%] border-l border-l-gray-900 bg-white p-16 duration-1000 ease-in-out md:w-[65%] lg:w-[35%]"
             : "fixed right-[-500%] duration-500 ease-in-out md:right-[-100%]"
         }
       >
@@ -34,13 +34,13 @@ const LoginMenuDropDown: React.FC<LoginMenuDropDownProps> = ({
             <h1>Balance account</h1>
           </div>
           <div onClick={handleLoginMenu}>
-            {showLoginMenu && (
+            {/* {showLoginMenu && (
               <img
                 src={closeLogo}
                 alt="logo"
                 className="hover:cursor-pointer hover:border-b-2 hover:border-blue-600 md:h-7 md:w-7"
               />
-            )}
+            )} */}
           </div>
         </div>
         <div className="h-44"></div>

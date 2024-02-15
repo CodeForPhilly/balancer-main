@@ -132,7 +132,7 @@ const Header = (props: LoginFormProps) => {
               About
             </Link>
             <Link
-              to="/login"
+              to="/help"
               className="mr-5 font-bold text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
             >
               Help

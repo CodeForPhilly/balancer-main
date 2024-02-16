@@ -43,7 +43,7 @@ type ActionType =
     | { type: typeof LOGOUT };
 
 // Define the shape of your state
-interface StateType {
+export interface StateType {
     access: string | null;
     refresh: string | null;
     isAuthenticated: boolean | null;

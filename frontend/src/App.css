@@ -146,11 +146,11 @@ Button
 */
 
 .btnBlue {
-  @apply h-10 rounded-xl border bg-blue-500 px-3 py-1.5 font-satoshi text-sm  text-white  hover:bg-blue-400;
+  @apply h-10 rounded-xl border bg-blue-500 px-3 py-1.5 font-satoshi text-white  hover:bg-blue-400;
 }
 
 .btnGray {
-  @apply h-10 rounded-xl border bg-gray-400 px-3 py-1.5 font-satoshi text-sm  text-white  hover:bg-blue-400;
+  @apply h-10 rounded-xl border bg-gray-500 px-3 py-1.5 font-satoshi text-sm  text-white  hover:bg-blue-400;
 }  
 
 .btnRed {
@@ -241,18 +241,3 @@ Tooltip. Please see Tooltip.tsx under components folder
 Error message. Please see ErrorMessages.tsx under components folder
 */
 
-.error-message::before {
-  top: 0;
-  left: 0;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background-color: pink;
-}
-
-.error-message {
-  color: #FFFFFF;
-  padding: 10px;
-  margin: 5px 0;
-  border-radius: 5px;
-}

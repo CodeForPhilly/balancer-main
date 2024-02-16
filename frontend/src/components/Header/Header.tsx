@@ -9,6 +9,7 @@ import MdNavBar from "./MdNavBar";
 import { connect, useDispatch } from "react-redux";
 import { RootState } from "../../services/actions/types";
 import { logout, AppDispatch } from "../../services/actions/auth";
+import { HiChevronDown } from "react-icons/hi";
 
 interface LoginFormProps {
   isAuthenticated: boolean;
@@ -93,7 +94,7 @@ const Header = (props: LoginFormProps) => {
         }
       >
         <Link to="/">
-          <span className="bg-gradient-to-r  from-blue-600 via-blue-700 to-blue-600 bg-clip-text font-quicksand text-xl font-bold text-transparent lg:text-3xl ">
+          <span className="bg-gradient-to-r  from-blue-500 via-blue-700 to-blue-300 bg-clip-text font-quicksand text-xl font-bold text-transparent lg:text-3xl ">
             Balancer
           </span>
         </Link>
@@ -119,7 +120,7 @@ const Header = (props: LoginFormProps) => {
                     : "absolute ml-1.5 "
                 }`}
               >
-                &#8593;
+                <HiChevronDown className="inline-block" />
               </span>
             </span>
             {showFeaturesMenu && <FeatureMenuDropDown />}

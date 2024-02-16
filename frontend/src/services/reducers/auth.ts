@@ -23,23 +23,23 @@ import {
 
 type ActionType =
     | { type: typeof LOGIN_SUCCESS; payload: { access: string; refresh: string } }
-    | { type: typeof LOGIN_FAIL }
-    | { type: typeof USER_LOADED_SUCCESS; payload: ""  } 
+    | { type: typeof LOGIN_FAIL; payload: string } 
+    | { type: typeof USER_LOADED_SUCCESS; payload: "" }
     | { type: typeof USER_LOADED_FAIL }
     | { type: typeof AUTHENTICATED_SUCCESS }
     | { type: typeof AUTHENTICATED_FAIL }
-    | { type: typeof PASSWORD_RESET_SUCCESS} 
+    | { type: typeof PASSWORD_RESET_SUCCESS }
     | { type: typeof PASSWORD_RESET_FAIL }
-    | { type: typeof PASSWORD_RESET_CONFIRM_SUCCESS; payload: ""  } 
+    | { type: typeof PASSWORD_RESET_CONFIRM_SUCCESS; payload: "" }
     | { type: typeof PASSWORD_RESET_CONFIRM_FAIL }
-    | { type: typeof SIGNUP_SUCCESS; payload: ""  } 
-    | { type: typeof SIGNUP_FAIL }
-    | { type: typeof ACTIVATION_SUCCESS; payload: "" } 
+    | { type: typeof SIGNUP_SUCCESS; payload: "" }
+    | { type: typeof SIGNUP_FAIL; payload: string } 
+    | { type: typeof ACTIVATION_SUCCESS; payload: "" }
     | { type: typeof ACTIVATION_FAIL }
     | { type: typeof GOOGLE_AUTH_SUCCESS; payload: { access: string; refresh: string } }
-    | { type: typeof GOOGLE_AUTH_FAIL }
+    | { type: typeof GOOGLE_AUTH_FAIL; payload: string } 
     | { type: typeof FACEBOOK_AUTH_SUCCESS; payload: { access: string; refresh: string } }
-    | { type: typeof FACEBOOK_AUTH_FAIL }
+    | { type: typeof FACEBOOK_AUTH_FAIL; payload: string } 
     | { type: typeof LOGOUT };
 
 // Define the shape of your state
@@ -48,6 +48,7 @@ interface StateType {
     refresh: string | null;
     isAuthenticated: boolean | null;
     user: string; // 
+    error?: string | null; 
 }
 
 // Initial state with correct types
@@ -99,7 +100,27 @@ export default function authReducer(state = initialState, action: ActionType): S
         case GOOGLE_AUTH_FAIL:
         case FACEBOOK_AUTH_FAIL:
         case LOGIN_FAIL:
+            localStorage.removeItem('access');
+            localStorage.removeItem('refresh');
+            return {
+                ...state,
+                access: null,
+                refresh: null,
+                isAuthenticated: false,
+                user: "",
+                error: action.payload, // Store the error message from the action
+                };
         case SIGNUP_FAIL:
+            localStorage.removeItem('access');
+            localStorage.removeItem('refresh');
+            return {
+                ...state,
+                access: null,
+                refresh: null,
+                isAuthenticated: false,
+                user: "",
+                error: action.payload, // Add this line to store the error message
+                };
         case LOGOUT:
             localStorage.removeItem('access');
             localStorage.removeItem('refresh');
@@ -108,7 +129,8 @@ export default function authReducer(state = initialState, action: ActionType): S
                 access: null,
                 refresh: null,
                 isAuthenticated: false,
-                user: ""
+                user: "",
+                error: null
             }
         case PASSWORD_RESET_SUCCESS:
         case PASSWORD_RESET_FAIL:

@@ -2,7 +2,7 @@ import React from "react";
 // import { Link } from "react-router-dom";
 import "../../components/Header/chat.css";
 import { useState, useEffect, useRef } from "react";
-import axios from "axios"
+import axios from "axios";
 import TypingAnimation from "./components/TypingAnimation.tsx";
 import chatBubble from "../../assets/chatbubble.svg";
 import { extractContentFromDOM } from "../../services/domExtraction.tsx";

@@ -22,7 +22,7 @@ const MdNavBar = (props: LoginFormProps) => {
   return (
     <div
       className={
-        "mx-auto flex items-center justify-between border-b border-gray-300 bg-white px-5 md:h-20 lg:hidden"
+        "mx-auto flex items-center justify-between border-b border-gray-300 bg-white p-2 px-5 md:h-20 lg:hidden"
       }
     >
       <nav className="flex w-full ">
@@ -30,7 +30,7 @@ const MdNavBar = (props: LoginFormProps) => {
           <img src={logo} alt="logo" className="mr-16 w-28 object-contain " />
         </Link> */}
         <Link to="/">
-          <span className="bg-gradient-to-r  from-blue-500 via-blue-700 to-blue-300 bg-clip-text font-quicksand text-xl font-bold text-transparent md:text-3xl ">
+          <span className="bg-gradient-to-r  from-blue-500 via-blue-700 to-blue-300 bg-clip-text font-quicksand text-2xl font-bold text-transparent md:text-3xl ">
             Balancer
           </span>
         </Link>
@@ -52,7 +52,7 @@ const MdNavBar = (props: LoginFormProps) => {
         }
       >
         <div className="flex items-center justify-between p-5">
-          <span className="bg-gradient-to-r  from-blue-500 via-blue-700 to-blue-300 bg-clip-text font-quicksand text-xl font-bold text-transparent md:text-3xl lg:text-3xl ">
+          <span className="bg-gradient-to-r  from-blue-500 via-blue-700 to-blue-300 bg-clip-text font-quicksand text-3xl font-bold text-transparent md:text-3xl lg:text-3xl ">
             Balancer
           </span>
 
@@ -89,7 +89,15 @@ const MdNavBar = (props: LoginFormProps) => {
               to="/login"
               className="mr-9 text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
             >
-              Features
+              Medical Suggester
+            </Link>
+          </li>
+          <li className="border-b border-gray-300 p-4">
+            <Link
+              to="/drugSummary"
+              className="mr-9 text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
+            >
+              Chat
             </Link>
           </li>
           <li className="border-b border-gray-300 p-4">

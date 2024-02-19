@@ -86,10 +86,9 @@ const NewPatientForm = ({
     try {
       const baseUrl = import.meta.env.VITE_API_BASE_URL;
       const url = `${baseUrl}/chatgpt`;
+      console.log(payload);
 
       const { data } = await axios.post(url + `/list_meds`, payload);
-
-      console.log(data);
 
       const categorizedMedications = {
         first: data.first ?? [],
@@ -97,8 +96,8 @@ const NewPatientForm = ({
         third: data.third ?? [],
       };
 
-      console.log(categorizedMedications.first);
-      console.log(categorizedMedications.second);
+      // console.log(categorizedMedications.first);
+      // console.log(categorizedMedications.second);
 
       setPatientInfo((prev) => ({
         ...prev,

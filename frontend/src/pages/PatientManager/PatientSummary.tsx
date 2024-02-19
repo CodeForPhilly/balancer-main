@@ -60,6 +60,10 @@ const PatientSummary = ({
       setLoading(true);
       try {
         const baseUrl = import.meta.env.VITE_API_BASE_URL;
+        const postBody = {
+          diagnosis: medication,
+        };
+        console.log("Posting to /chatgpt/risk with body:", postBody);
         const response = await axios.post(`${baseUrl}/chatgpt/risk`, {
           diagnosis: medication,
         });

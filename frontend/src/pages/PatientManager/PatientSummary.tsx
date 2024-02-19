@@ -72,57 +72,74 @@ const PatientSummary = ({
   };
 
   return (
-    <div className="items-center justify-center md:flex">
+    <section className="lg:flex lg:items-center lg:justify-center">
       <div className=" md:mx-0 md:p-0">
+        <br />
         {patientInfo.Diagnosis && (
-          <div className=" justify-between md:w-[870px]">
-            <div className="mt-3 flex justify-between">
-              <div>
-                <h2 className="header_logo cursor-pointer font-satoshi text-xl font-bold text-gray-600  hover:text-blue-600 ">
-                  Summary
-                  {/* <span className="blue_gradient">Summary</span> */}
-                </h2>
+          <div className=" justify-between lg:w-[860px]">
+            {/* <div className="mt-3 flex justify-between"> */}
+            {!showSummary && (
+              <div className="font_body rounded-md  border bg-white p-2 px-3 ring-1 hover:ring-slate-300 md:p-4 md:px-8 lg:w-[860px]">
+                <div
+                  onClick={handleClickSummary}
+                  className=" flex items-center justify-between"
+                >
+                  <h2 className="header_logo cursor-pointer font-satoshi text-xl font-bold text-gray-600  hover:text-blue-600  ">
+                    Patient Summary
+                  </h2>
+                  <div className="cursor-pointer items-center">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                      />
+                    </svg>
+                  </div>
+                </div>
               </div>
-              <div
-                onClick={handleClickSummary}
-                className=" cursor-pointer items-center"
-              >
-                {showSummary ? (
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M6 12h12"
-                    />
-                  </svg>
-                ) : (
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                    />
-                  </svg>
-                )}
-              </div>
-            </div>
+            )}
+            {/* </div> */}
             {showSummary && (
-              <div className="font_body mt-2 rounded-md  border  bg-white p-2  px-3 ring-1 hover:ring-slate-300 md:w-[870px] md:p-8">
-                <div className="border-b border-gray-900/10">
+              <div className="font_body rounded-md  border bg-white p-2 px-3 ring-1 hover:ring-slate-300 md:p-4 md:px-8">
+                <div>
+                  <div
+                    onClick={handleClickSummary}
+                    className=" flex items-center justify-between"
+                  >
+                    <h2 className="header_logo cursor-pointer font-satoshi text-xl font-bold text-gray-600  hover:text-blue-600 ">
+                      Summary
+                      {/* <span className="blue_gradient">Summary</span> */}
+                    </h2>
+                    <div
+                      onClick={handleClickSummary}
+                      className=" cursor-pointer items-center"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="2"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M6 12h12"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-2 border-b border-gray-900/10 ">
                   <h3 className="text-base  leading-7 text-gray-900">
                     <label className="font-semibold">Patient ID:</label>{" "}
                     {patientInfo.ID}
@@ -134,7 +151,7 @@ const PatientSummary = ({
                 <div className="mt-3 ">
                   <dl className="">
                     <div className="flex-row justify-between border-b border-gray-900/10 py-6 md:flex">
-                      <div className="flex w-full p-2 md:p-0 ">
+                      <div className="flex w-full md:p-0 ">
                         <dt className="w-1/2 text-sm font-medium leading-6 text-gray-900 ">
                           Current State:
                         </dt>
@@ -142,7 +159,7 @@ const PatientSummary = ({
                           {patientInfo.Diagnosis}
                         </dd>
                       </div>
-                      <div className="flex w-full p-2 md:p-0">
+                      <div className="mt-2 flex w-full md:mt-0 md:p-0">
                         <dt className=" w-1/2 text-sm font-medium leading-6 text-gray-900">
                           Bipolar history:
                         </dt>
@@ -167,7 +184,7 @@ const PatientSummary = ({
                         </dd>
                       </div>
                     </div>
-                    <div className="border-b border-gray-900/10 p-2 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0  md:px-4 md:py-6">
+                    <div className=" border-b border-gray-900/10  sm:grid sm:grid-cols-3 sm:gap-4  sm:px-0 md:py-6">
                       <dt className="mt-3 flex text-sm font-medium leading-6 text-gray-900">
                         Risk Assessment:
                       </dt>
@@ -282,7 +299,7 @@ const PatientSummary = ({
                         </ul>
                       </dd>
                     </div>
-                    <div className="flex flex-row justify-between border-b border-gray-900/10 py-6 sm:px-0">
+                    <div className="flex flex-col justify-between border-b border-gray-900/10 py-6 sm:px-0 md:flex-row">
                       <div className="flex w-full">
                         <dt className="w-1/2 text-sm font-medium leading-6 text-gray-900">
                           Current Medications:
@@ -291,6 +308,7 @@ const PatientSummary = ({
                           {patientInfo.CurrentMedications}
                         </dt>
                       </div>
+                      <br></br>
                       <div className="flex w-full ">
                         <label
                           htmlFor="current-state"
@@ -325,7 +343,7 @@ const PatientSummary = ({
                               ?.split(", ")
                               .map((medication: string) => (
                                 <li
-                                  className={`flex items-center justify-between py-4 pl-4 pr-5 text-sm leading-4 hover:bg-indigo-100
+                                  className={`flex items-center justify-between py-4 pl-0 pr-2 text-sm leading-4 hover:bg-indigo-100 md:pl-4 md:pr-5
                                 ${
                                   medication === clickedMedication
                                     ? "bg-indigo-100"
@@ -371,7 +389,7 @@ const PatientSummary = ({
                               ?.split(", ")
                               .map((medication: string) => (
                                 <li
-                                  className={`flex items-center justify-between py-4 pl-4 pr-5 text-sm leading-4 hover:bg-indigo-100
+                                  className={`flex items-center justify-between py-4 pl-0 pr-2 text-sm leading-4 hover:bg-indigo-100 md:pl-4 md:pr-5
                                 ${
                                   medication === clickedMedication
                                     ? "bg-indigo-100"
@@ -417,7 +435,7 @@ const PatientSummary = ({
                               ?.split(", ")
                               .map((medication: string) => (
                                 <li
-                                  className={`flex items-center justify-between py-4 pl-4 pr-5 text-sm leading-4 hover:bg-indigo-100
+                                  className={`flex items-center justify-between py-4 pl-0 pr-2 text-sm leading-4 hover:bg-indigo-100 md:pl-4 md:pr-5
                                 ${
                                   medication === clickedMedication
                                     ? "bg-indigo-100"
@@ -511,7 +529,7 @@ const PatientSummary = ({
           </div>
         )}
       </div>
-    </div>
+    </section>
   );
 };
 

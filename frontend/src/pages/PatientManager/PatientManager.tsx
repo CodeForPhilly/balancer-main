@@ -70,7 +70,7 @@ const PatientManager = () => {
   // TODO: add error and loading state guards
 
   return (
-    <div className="mt-24 flex w-full max-w-6xl flex-col items-center justify-center md:mt-28">
+    <div className="mt-24 flex w-full max-w-6xl flex-col items-center  md:mt-28">
       <Welcome
         subHeader="Designed to assist prescribers"
         descriptionText="Balancer is a free and open-source tool for helping prescribers narrow

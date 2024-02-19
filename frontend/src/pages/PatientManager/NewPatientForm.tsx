@@ -219,36 +219,39 @@ const NewPatientForm = ({
   };
 
   return (
-    <section className="md:flex md:items-center md:justify-center">
+    <section className="lg:flex lg:items-center lg:justify-center">
       {/* {search} */}
       <div className=" md:mx-0 md:p-0">
         <br />
         {!enterNewPatient && (
-          <div className="flex  justify-between rounded-md p-2 px-3 ring-1 md:w-[870px]">
-            <div onClick={handleClickSummary}>
+          <div className="font_body rounded-md  border bg-white p-2 px-3 ring-1 hover:ring-slate-300 md:p-4 md:px-8 lg:w-[860px]">
+            <div
+              className="flex items-center justify-between"
+              onClick={handleClickSummary}
+            >
               <h2 className="header_logo cursor-pointer font-satoshi text-xl font-bold text-gray-600  hover:text-blue-600  ">
                 Click To Enter New Patient
               </h2>
-            </div>
 
-            <div
-              onClick={handleClickSummary}
-              className=" cursor-pointer items-center"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-4 w-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth="2"
+              <div
+                onClick={handleClickSummary}
+                className=" cursor-pointer items-center"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                />
-              </svg>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                  />
+                </svg>
+              </div>
             </div>
           </div>
         )}

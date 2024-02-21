@@ -52,24 +52,22 @@ function About() {
             <div className="flex w-full flex-col justify-between">
               <div className="mt-8 text-lg text-gray-500">
                 Bipolar disorder affects approximately 5.7 million adult
-                Americans
+                Americans{" "}
                 <a
                   href="https://www.dbsalliance.org/education/bipolar-disorder/bipolar-disorder-statistics/"
                   className="underline"
                   target="_blank"
                 >
-                  {" "}
                   every year
                 </a>
                 . Delays in the correct diagnosis and proper treatment of
                 bipolar disorder may result in social, occupational, and
-                economic burdens, as well as
+                economic burdens, as well as{" "}
                 <a
                   href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2796048/"
                   className="underline"
                   target="_blank"
                 >
-                  {" "}
                   an increase in completed suicides
                 </a>
                 .
@@ -100,13 +98,12 @@ function About() {
           <div className="mt-5 flex flex-col items-center justify-center text-center text-lg text-gray-500 md:pl-48 md:pr-48">
             <div className="text-xl font-bold">
               Balancer is a not-for-profit, civic-minded, open-source project
-              sponsored by
+              sponsored by{" "}
               <a
                 href="https://codeforphilly.org/"
                 className="underline"
                 target="_blank"
               >
-                {" "}
                 Code for Philly
               </a>
               .

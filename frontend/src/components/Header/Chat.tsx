@@ -179,7 +179,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
                     <br />
                   </div> */}
                   <div className="max-h-[100%] max-w-[310px] rounded-lg border-2 bg-gray-200 p-2 text-black">
-                    You can sdfask about the content on this page.
+                    You can ask about the content on this page.
                   </div>
                   <div className="max-h-[100%] max-w-[190px] rounded-lg border-2 bg-gray-200 p-2 text-black">
                     Or questions in general.

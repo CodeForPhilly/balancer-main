@@ -26,10 +26,10 @@ function About() {
             <div className="text-3xl font-bold mt-20">Our mission</div>
             <div className="flex flex-col justify-between w-full">
               <div className="text-lg mt-8 text-gray-500">
-                Bipolar disorder affects approximately 5.7 million adult Americans
-                <a href="https://www.dbsalliance.org/education/bipolar-disorder/bipolar-disorder-statistics/" className="underline" target="_blank"> every year</a>.
-                Delays in the correct diagnosis and proper treatment of bipolar disorder may result in social, occupational, and economic burdens, as well as
-                <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2796048/" className="underline" target="_blank"> an increase in completed suicides</a>.
+                Bipolar disorder affects approximately 5.7 million adult Americans {' '}
+                <a href="https://www.dbsalliance.org/education/bipolar-disorder/bipolar-disorder-statistics/" className="underline" target="_blank">every year</a>.
+                Delays in the correct diagnosis and proper treatment of bipolar disorder may result in social, occupational, and economic burdens, as well as {' '}
+                <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2796048/" className="underline" target="_blank">an increase in completed suicides</a>.
               </div>
               <div className="text-lg mt-5 text-gray-500">
                 The team behind Balancer believes that building a searchable, interactive and user-friendly research tool for bipolar medications has the potential to improve the health and well-being of people with bipolar disorder.
@@ -53,8 +53,8 @@ function About() {
           <div className="text-3xl font-bold">Support Us</div>
           <div className="text-lg mt-5 pr-56 pl-56 text-gray-500 flex flex-col items-center justify-center text-center">
             <div className="text-xl font-bold">
-              Balancer is a not-for-profit, civic-minded, open-source project sponsored by
-              <a href="https://codeforphilly.org/" className="underline" target="_blank"> Code for Philly</a>.
+              Balancer is a not-for-profit, civic-minded, open-source project sponsored by {' '}
+              <a href="https://codeforphilly.org/" className="underline" target="_blank">Code for Philly</a>.
             </div>
             <div className="mt-5">
               We are currently seeking donations to fund the next phase of development. Your contribution will go towards website domains and hosting, helpdesk software and marketing efforts.

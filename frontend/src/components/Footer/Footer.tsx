@@ -64,7 +64,7 @@ function Footer() {
           </div>
         </div>
         <div className="flex justify-center rounded  px-4 py-2 ">
-          © 2023 Balancer. All rights reserved.
+          © 2024 Balancer. All rights reserved.
         </div>
       </footer>
     </div>

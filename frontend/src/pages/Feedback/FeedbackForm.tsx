@@ -200,7 +200,7 @@ const FeedbackForm = () => {
                     className="block text-sm font-medium leading-6 text-gray-900"
                     htmlFor="psychotic-no"
                   >
-                    Bug
+                    Issue
                   </label>
                   <input
                     id="general-improvements"
@@ -213,7 +213,7 @@ const FeedbackForm = () => {
                     className="block text-sm font-medium leading-6 text-gray-900"
                     htmlFor="psychotic-no"
                   >
-                    General Improvements
+                    General Feedback
                   </label>
                 </div>
               </dd>

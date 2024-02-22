@@ -61,14 +61,12 @@ function Help() {
           {data.icon.map((icon, index) => (
             <Link to={data.link[index]} key={index} className="flex"> 
 
-            <div className="">
             <HelpCard
               key={index}
               icon={icon}
               title={data.title[index]}
               paragraph={data.paragraph[index]}
             />
-            </div>
             </Link>
           ))}
         </div>

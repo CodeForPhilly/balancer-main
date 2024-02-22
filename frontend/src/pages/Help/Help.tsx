@@ -48,9 +48,9 @@ function Help() {
     <Layout>
       <div className="mt-20 flex w-full max-w-6xl flex-col items-center justify-center px-4">
         <div className="flex justify-center text-center">
-          <h1 className="mt-20 font-satoshi text-3xl text-blue-600">
+          <h2 className="mt-20 font-satoshi text-3xl text-blue-600">
             Help & Support Page
-          </h1>
+          </h2>
         </div>
         <div className="flex text-center py-2">
           <h3 className="font-satoshi text-gray-600">

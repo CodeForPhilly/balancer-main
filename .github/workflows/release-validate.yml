@@ -1,0 +1,16 @@
+name: 'Release: Validate PR'
+
+on:
+  pull_request:
+    branches: [ main ]
+    types: [ opened, edited, reopened, synchronize ]
+
+jobs:
+  release-validate:
+
+    runs-on: ubuntu-latest
+    steps:
+
+    - uses: JarvusInnovations/infra-components@channels/github-actions/release-validate/latest
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}

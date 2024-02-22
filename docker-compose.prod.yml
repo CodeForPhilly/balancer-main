@@ -5,7 +5,11 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     env_file:
+<<<<<<< HEAD
+      - ./config/env/env.prod.db
+=======
       - ./config/env/.env.prod.db
+>>>>>>> ac68347c12ced724206112843623ee8c515bd3ad
   backend:
     build: 
       context: ./server
@@ -14,9 +18,11 @@ services:
     ports:
       - 8000:8000
     env_file:
-      - ./config/env/.env.prod
+      - ./config/env/env.prod
     depends_on:
       - db
+<<<<<<< HEAD
+=======
   frontend:
     build:
       context: ./frontend
@@ -25,6 +31,7 @@ services:
       - "3000:80"
     depends_on:
       - backend
+>>>>>>> ac68347c12ced724206112843623ee8c515bd3ad
 
 volumes:
   postgres_data:

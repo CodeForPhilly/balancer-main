@@ -1,0 +1,29 @@
+# nginx config file for static frontend demo site.
+# This will be the nginx.conf in the docker image before it gets overwritten by kubernetes helm chart.
+user nginx;
+    worker_processes  1;
+    events {
+      worker_connections  1024;
+    }
+    http {
+      include /etc/nginx/mime.types;
+      server {
+        listen       80;
+        listen  [::]:80;
+        server_name  $SERVER_NAME;
+
+        location / {
+            root   /usr/share/nginx/html;
+            index  index.html index.htm;
+        }
+
+        #error_page  404              /404.html;
+
+        # redirect server error pages to the static page /50x.html
+        #
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+            root   /usr/share/nginx/html;
+        }
+      }
+    }

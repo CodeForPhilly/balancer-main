@@ -2,10 +2,11 @@
 
 You've reached the CodeForPhilly balancer project (https://opencollective.com/code-for-philly/projects/balancer).
 
-## Backend Development Setup
+## Start project
 
-Rename env.dev inside of config/env to .env.dev
+1) You will need to clone the repos.
+2) Start docker desktop
+3) Type in terminal Docker-Compose up --build
 
-docker-compose build
+Reach out to Tai to get API key for ChatGPT.
 
-docker-compose up

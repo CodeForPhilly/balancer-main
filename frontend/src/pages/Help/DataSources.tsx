@@ -1,20 +1,45 @@
 import Layout from "../Layout/Layout";
+import LineChart from "./LineChart";
 
-function DataSources() {
+interface DataProps {
+  title: string;
+  paragraph: string[];
+}
+
+const data: DataProps = {
+  title: "How Do We Get Our Data?",
+  paragraph: [
+    "Balancer gets it data from publicly available peer-reviewed research "+
+    "as well as through extensive interviews with prescribers. ",
+    "Check back soon for more comprehensive information."
+  ],
+};
+
+function HowTo() {
   return (
     <Layout>
-      <div className="mt-20 flex w-full max-w-6xl flex-col items-center justify-center md:mt-28">
-        <div className="mt-10">
-          <h1 className="head_text"></h1>
-          <h2 className="desc">How Do We Find Our Data?</h2>
-          <p className="mx-auto mt-5 hidden
-          max-w-[100%] text-center font-satoshi text-log text-gray-400 sm:text-x; md:block">
-            Data sources coming soon!
-          </p>
+      <div className="mt-20 flex w-full max-w-6xl flex-col items-center justify-center px-8">
+        <div className="mt-10 h-44 w-44">
+        <LineChart />
+        </div>
+        <h3 className="flex items-center justify-center py-4 text-xl">
+          {data.title}
+        </h3>
+        <div className="flex flex-col min-w-68 rounded-xl border-2 border-blue-100 bg-neutral-50 px-4 py-4 shadow-md">
+          <div className="flex flex-col px-2 py-2">
+            <p className="font-satoshi text-sm text-gray-700">
+              {data.paragraph[0]}
+            </p>
+          </div>
+          <div className="flex flex-col px-2 py-2">
+            <p className="font-satoshi text-sm text-gray-700">
+              {data.paragraph[1]}
+            </p>
+          </div>
         </div>
       </div>
     </Layout>
   );
 }
 
-export default DataSources;
+export default HowTo;

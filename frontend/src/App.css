@@ -130,7 +130,7 @@ Font for body
 */
 
 .font_body {
-  @apply  font-satoshi text-sm;
+  @apply  font-satoshi;
 }
 
 /*
@@ -146,15 +146,15 @@ Button
 */
 
 .btnBlue {
-  @apply h-10 rounded-xl border bg-blue-500 px-3 py-1.5 font-satoshi text-sm  text-white  hover:bg-blue-400;
+  @apply h-12 rounded-xl border bg-blue-500 px-3 py-1.5 font-satoshi text-white  hover:bg-blue-400;
 }
 
 .btnGray {
-  @apply h-10 rounded-xl border bg-gray-400 px-3 py-1.5 font-satoshi text-sm  text-white  hover:bg-blue-400;
+  @apply h-12 rounded-xl border bg-gray-500 px-3 py-1.5 font-satoshi text-sm  text-white  hover:bg-blue-400;
 }  
 
 .btnRed {
-  @apply h-10 rounded-xl border bg-red-700 px-3 py-1.5 font-satoshi text-sm  text-white  hover:bg-blue-400;
+  @apply h-12 rounded-xl border bg-red-700 px-3 py-1.5 font-satoshi text-sm  text-white  hover:bg-blue-400;
 }  
 
 
@@ -180,7 +180,7 @@ Input field.
 */
 
 .input {
-  @apply block  rounded-md border-0 bg-white py-2 pl-5 pr-5 font-satoshi text-sm ring-1 transition duration-200  hover:border-0 hover:ring-1 hover:ring-sky-500   focus:outline-none focus:ring-2  focus:ring-sky-500;
+  @apply block  rounded-md border-0 bg-white py-3 pl-5 pr-5 font-satoshi text-base ring-1 transition duration-200  hover:border-0 hover:ring-1 hover:ring-sky-500   focus:outline-none focus:ring-2  focus:ring-sky-500;
 }
 
 /* 
@@ -188,7 +188,7 @@ This is for when the input field is loading
 */
 
 .input_loading {
-  @apply block w-full rounded-md border border-gray-300  bg-gray-300 bg-opacity-50 py-2 pl-5 pr-5 font-satoshi text-sm font-medium shadow-lg focus:border-black focus:outline-none focus:ring-0;
+  @apply block w-full rounded-md border border-gray-300  bg-gray-300 bg-opacity-50 py-3 pl-5 pr-5 font-satoshi text-base font-medium shadow-lg focus:border-black focus:outline-none focus:ring-0;
 }
 
 /* 
@@ -241,18 +241,3 @@ Tooltip. Please see Tooltip.tsx under components folder
 Error message. Please see ErrorMessages.tsx under components folder
 */
 
-.error-message::before {
-  top: 0;
-  left: 0;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background-color: pink;
-}
-
-.error-message {
-  color: #FFFFFF;
-  padding: 10px;
-  margin: 5px 0;
-  border-radius: 5px;
-}

@@ -8,6 +8,7 @@ export default {
         satoshi: ["Satoshi", "sans-serif"],
         inter: ["Inter", "sans-serif"],
         lora: "'Lora', serif",
+        'quicksand': ['Quicksand', 'sans-serif']
       },
     },
   },

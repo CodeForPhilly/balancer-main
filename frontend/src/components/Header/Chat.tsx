@@ -2,9 +2,7 @@ import React from "react";
 // import { Link } from "react-router-dom";
 import "../../components/Header/chat.css";
 import { useState, useEffect, useRef } from "react";
-
 import axios from "axios";
-
 import TypingAnimation from "./components/TypingAnimation.tsx";
 import chatBubble from "../../assets/chatbubble.svg";
 import { extractContentFromDOM } from "../../services/domExtraction.tsx";
@@ -181,7 +179,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
                     <br />
                   </div> */}
                   <div className="max-h-[100%] max-w-[310px] rounded-lg border-2 bg-gray-200 p-2 text-black">
-                    You can sdfask about the content on this page.
+                    You can ask about the content on this page.
                   </div>
                   <div className="max-h-[100%] max-w-[190px] rounded-lg border-2 bg-gray-200 p-2 text-black">
                     Or questions in general.

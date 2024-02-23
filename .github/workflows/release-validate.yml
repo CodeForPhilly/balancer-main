@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 name: 'Release: Validate PR'
 
 on:
@@ -14,3 +15,19 @@ jobs:
     - uses: JarvusInnovations/infra-components@channels/github-actions/release-validate/latest
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
+=======
+name: "Release: Validate PR"
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, edited, reopened, synchronize]
+
+jobs:
+  release-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: JarvusInnovations/infra-components@channels/github-actions/release-validate/latest
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+>>>>>>> afb000d3a3ee90a677a2580d82fe3a432d1c1933

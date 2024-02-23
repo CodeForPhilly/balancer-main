@@ -74,7 +74,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
       message: inputValue,
       type: "user",
     };
-
+    // console.log("Dynamic prompts received from backend:", response.data.dynamicPrompts); THIS ONE
     const newMessages = [...chatLog, newMessage];
 
     setChatLog(newMessages);
@@ -105,10 +105,10 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
     axios.post(url, apiRequestBody)
       .then((response) => {
         console.log("Received response:", response);
-        console.log("Dynamic prompts received:", response.data.dynamicPrompts);
         if (response.data.dynamicPrompts) {
           setSuggestionPrompts(response.data.dynamicPrompts);
-          console.log("Updated suggestionPrompts state:", response.data.dynamicPrompts);  
+           console.log("Updated suggestionPrompts state:", response.data.dynamicPrompts);
+           console.log("Dynamic prompts received from backend:", response.data.dynamicPrompts); 
         } else {
           // Handle the case where no dynamic prompts are provided
           setSuggestionPrompts(["No further questions suggested."]);

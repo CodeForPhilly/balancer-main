@@ -7,7 +7,9 @@ import tiktoken
 import os
 import json
 import spacy
+import logging
 
+logger = logging.getLogger(__name__)
 nlp = spacy.load("en_core_web_sm")
 text = "Your example text here."
 doc = nlp(text)
@@ -57,6 +59,8 @@ def get_dynamic_prompts(ai_response): #Generate Dynamic Prompts Based On Entitie
     prompts = []
 
     logger.info(f"Processing text: {ai_text}")
+    logger.info(f"Received text for processing: {ai_text}")
+    logger.info(f"Generated prompts: {prompts}")
     for ent in doc.ents:
         logger.info(f"Detected entity: '{ent.text}' of type '{ent.label_}'")
         if ent.label_ in prompt_templates:

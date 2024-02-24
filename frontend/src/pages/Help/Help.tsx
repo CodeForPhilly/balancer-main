@@ -46,7 +46,7 @@ function Help() {
 
   return (
     <Layout>
-      <div className="mt-20 flex w-full max-w-6xl flex-col items-center justify-center px-4">
+      <div className="mt-20 flex w-full flex-col items-center justify-center px-4">
         <div className="flex justify-center text-center">
           <h2 className="mt-20 font-satoshi text-3xl text-blue-600">
             Help & Support Page
@@ -59,14 +59,13 @@ function Help() {
         </div>
         <div className="flex flex-col gap-4 sm:flex-row">
           {data.icon.map((icon, index) => (
-            <Link to={data.link[index]} key={index} className="flex"> 
-
-            <HelpCard
-              key={index}
-              icon={icon}
-              title={data.title[index]}
-              paragraph={data.paragraph[index]}
-            />
+            <Link to={data.link[index]} key={index} className="flex flex-grow basis-1/3 max-w-full">
+              <HelpCard
+                key={index}
+                icon={icon}
+                title={data.title[index]}
+                paragraph={data.paragraph[index]}
+              />
             </Link>
           ))}
         </div>

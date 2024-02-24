@@ -40,7 +40,7 @@ function HelpCard(data: HelpProps) {
   [data.icon, data.title, data.paragraph]); 
 
   return (
-    <div className="flex h-72 w-full max-w-6xl min-w-[280px] flex-col items-center justify-center rounded-xl border-2 border-blue-100 bg-neutral-50 px-4 shadow-md md:mt-28">
+    <div className="flex h-72 w-full max-w-6xl md:max flex-col items-center justify-center rounded-xl border-2 border-blue-100 bg-neutral-50 px-4 shadow-md md:mt-28">
       <div className="flex h-full flex-col items-center">
         {icon && <div className="mt-6 h-24 w-24">{icon}</div>}
         <div className="mt-6 flex flex-col">

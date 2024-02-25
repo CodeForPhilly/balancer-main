@@ -20,8 +20,8 @@ const howToData: HowToProps = {
     "3. Answer 'yes' or 'no' to the questions related to patient characteristics.",
     "4. Check off any relevant reproductive status information.",
     "5. Type out a list of the patient's current medications. You can separate medications " +
-    "with commas. It doesn't matter if you use the generic or brand name of the medication; " + 
-    "Balancer will understand.",
+      "with commas. It doesn't matter if you use the generic or brand name of the medication; " +
+      "Balancer will understand.",
     "6. Type out a list of any medications you want Balancer to exclude from the recommended " +
       "medications list. (For example, if a patient has already tried a particular medication " +
       "without success, enter the name of that medication and Balancer will be sure not to " +
@@ -35,15 +35,15 @@ function HowTo() {
   return (
     <Layout>
       <div className="mt-20 flex w-full max-w-6xl flex-col items-center justify-center px-8">
-        <h3 className="mt-10 flex items-center justify-center py-4 text-xl">
+        <h3 className="mt-10 flex items-center justify-center py-4 text-4xl">
           {howToData.title}
         </h3>
         <div className="flex flex-col rounded-xl border-2 border-blue-100 bg-neutral-50 px-4 py-4 shadow-md">
           <div className="flex flex-col px-2 py-2">
-            <p className="font-satoshi text-sm text-gray-700">
+            <p className="text-md font-satoshi text-gray-700">
               {howToData.paragraph[0]}
             </p>
-            <p className="py-2 font-satoshi text-sm text-gray-600">
+            <p className="text-md py-2 font-satoshi text-gray-600">
               {howToData.paragraph[1]}
             </p>
           </div>
@@ -52,7 +52,7 @@ function HowTo() {
               {howToData.instructions.map((text, index) => {
                 return (
                   <li
-                    className="py-1 font-satoshi text-sm text-gray-700"
+                    className="text-md py-1 font-satoshi text-gray-700"
                     key={index}
                   >
                     {text}

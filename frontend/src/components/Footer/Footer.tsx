@@ -24,7 +24,11 @@ function Footer() {
             Home
           </Link>
           <Link
-            to="/feedback"
+            to='/'
+            onClick={(e) => {
+                window.location.href = 'mailto:balancerteam@codeforphilly.org';
+                e.preventDefault();
+            }}
             className="flex justify-center text-black hover:border-blue-600 hover:text-blue-600 hover:no-underline"
           >
             Contact us

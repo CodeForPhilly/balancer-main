@@ -16,7 +16,7 @@ You can view the current [build of the website here](https://balancertestsite.co
 
 ![image](https://github.com/CodeForPhilly/balancer-main/assets/26842253/92c5d6e3-2aaf-4d28-9095-0ea22fa87791)
 
-Likewise, you can view the very first iteration [build of the website here](https://64861cae18fa9449694ad5ef--deft-tapioca-dd7777.netlify.app/).
+Likewise, you can view the first iteration [build of the website here](https://64861cae18fa9449694ad5ef--deft-tapioca-dd7777.netlify.app/).
 
 ## Project Updates
 
@@ -26,6 +26,7 @@ Likewise, you can view the very first iteration [build of the website here](http
 
 ## Languages/Frameworks
 
+Django, React, PostGres
 
 ## Contribution
 

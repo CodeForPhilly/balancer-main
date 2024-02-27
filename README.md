@@ -19,10 +19,21 @@ You can view the current [build of the website here](https://balancertestsite.co
 Likewise, you can view the first iteration [build of the website here](https://64861cae18fa9449694ad5ef--deft-tapioca-dd7777.netlify.app/).
 
 ## Project Updates
+[Release V1.02272024]
+Updated Help Page. Thank you @kristo_baricevic
+Make 'Contact us' a mailto link. Thank you @greggaleg
+Improve Chat Response Formatting in UI. Thank you @greggaleg
 
 
 ## Current Tasks
 
+Official Deployment System:  @joshgerstein
+Prompt Creations:  @erinc
+Additional Business Logic for New Patient Form: @tomdoan
+Backend for Feedback Form: @dattali
+Redesign of AI Architecture
+Add logging to the backend for debugging
+Documentations of Forking and merging branches.
 
 ## Languages/Frameworks
 

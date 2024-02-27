@@ -20,20 +20,21 @@ Likewise, you can view the first iteration [build of the website here](https://6
 
 ## Project Updates
 [Release V1.02272024]
-Updated Help Page. Thank you @kristo_baricevic
-Make 'Contact us' a mailto link. Thank you @greggaleg
-Improve Chat Response Formatting in UI. Thank you @greggaleg
+
+1) Updated Help Page. Thank you @kristo_baricevic
+2) Make 'Contact us' a mailto link. Thank you @greggaleg
+3) Improve Chat Response Formatting in UI. Thank you @greggaleg
 
 
 ## Current Tasks
 
-Official Deployment System:  @joshgerstein
-Prompt Creations:  @erinc
-Additional Business Logic for New Patient Form: @tomdoan
-Backend for Feedback Form: @dattali
-Redesign of AI Architecture
-Add logging to the backend for debugging
-Documentations of Forking and merging branches.
+1) Official Deployment System:  @joshgerstein.
+2) Prompt Creations:  @erinc.
+3) Additional Business Logic for New Patient Form: @tomdoan.
+4) Backend for Feedback Form: @dattali.
+5) Redesign of AI Architecture.
+6) Add logging to the backend for debugging.
+7) Documentations of Forking and merging branches.
 
 ## Languages/Frameworks
 

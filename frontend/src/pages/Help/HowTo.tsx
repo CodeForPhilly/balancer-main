@@ -9,27 +9,71 @@ interface HowToProps {
 const howToData: HowToProps = {
   title: "How To Use the Balancer App",
   paragraph: [
-    "Balancer's Medication Suggester feature provides medication decision support by " +
+    "Balancer's Medication Suggestion Tool feature provides medication decision support by " +
       "offering tailored medication recommendations and comprehensive risk-benefit assessments " +
       "based on a patient's diagnosis and individual characteristics. ",
-    "Here is how to use it: ",
+    "How to use the Balancer App: ",
   ],
   instructions: [
-    "1. Navigate to the Medication Suggester.",
-    "2. Select the patient's current state.",
-    "3. Answer 'yes' or 'no' to the questions related to patient characteristics.",
-    "4. Check off any relevant reproductive status information.",
-    "5. Type out a list of the patient's current medications. You can separate medications " +
-    "with commas. It doesn't matter if you use the generic or brand name of the medication; " + 
+    "Navigate to the Medication Suggestion Tool.",
+    "Select the patient's current state.",
+    "Answer 'yes' or 'no' to the questions related to patient " +
+    "characteristics.",
+    "Reproductive status: check off any relevant reproductive status " +
+    "information.",
+    "Current medications: enter all of the patient's current medications. " +
+    "You can separate medications with commas. It doesn't matter if you " +
+    "use the generic or brand name of the medication; " +
     "Balancer will understand.",
-    "6. Type out a list of any medications you want Balancer to exclude from the recommended " +
-      "medications list. (For example, if a patient has already tried a particular medication " +
-      "without success, enter the name of that medication and Balancer will be sure not to " +
-      "suggest it in the results page.) You can separate medications with commas. Again, " +
-      "it doesn't matter if you use the generic or brand name of the medication; Balancer will " +
-      "understand.",
+    "Prior medications to exclude: type out a list of any medications you " +
+    "want Balancer to exclude from the recommended medications list."
   ],
 };
+
+function createList(list: string[]) {
+  return (
+    <ol>
+      {list.map((text, index) => {
+        if (index !== 5) {
+          return (
+            <li
+              className="py-1 font-satoshi text-sm text-gray-700"
+              key={index}
+            >
+              {`${index + 1}. ${text}`}
+            </li>
+          );
+        } else { // Custom sublist
+          return (
+            <li
+              className="py-1 font-satoshi text-sm text-gray-700"
+              key={index}
+            >
+              {`${index + 1}. ${text}`}
+              <ol
+                className="ml-4">
+                <li
+                  className="py-1 font-satoshi text-sm text-gray-700"
+                  key="1"
+                >{"a. For example, if a patient has already tried a particular medication " +
+                "without success, enter the name of that medication and Balancer will " +
+                "be sure not to suggest it in the results page."}
+                </li>
+                <li
+                  className="py-1 font-satoshi text-sm text-gray-700"
+                  key="2"
+                >{"b. You can separate medications with commas. " +
+                "Again, it doesn't matter if you use the generic or " +
+                "brand name of the medication; Balancer will understand."}
+                </li>
+              </ol>
+            </li>
+          );
+        }
+      })}
+    </ol>
+  )
+}
 
 function HowTo() {
   return (
@@ -48,18 +92,7 @@ function HowTo() {
             </p>
           </div>
           <div className="flex px-6">
-            <ol>
-              {howToData.instructions.map((text, index) => {
-                return (
-                  <li
-                    className="py-1 font-satoshi text-sm text-gray-700"
-                    key={index}
-                  >
-                    {text}
-                  </li>
-                );
-              })}
-            </ol>
+            {createList(howToData.instructions)}
           </div>
         </div>
       </div>

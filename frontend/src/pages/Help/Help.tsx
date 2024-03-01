@@ -4,18 +4,14 @@ import HelpCard from "./HelpCard";
 import { Link } from "react-router-dom";
 
 interface HelpData {
-    link: string[];
-    icon: string[];
-    title: string[];
-    paragraph: string[];
+  link: string[];
+  icon: string[];
+  title: string[];
+  paragraph: string[];
 }
 
 const HelpCardData: HelpData = {
-    link: [
-        "/how-to",
-        "/feedback",
-        "/data-sources"
-    ],
+  link: ["/how-to", "/feedback", "/data-sources"],
   icon: ["UserDoctor", "FeedbackIcon", "MagnifyingGlassChart"],
   title: ["How To Use This Site", "Submit Feedback", "How We Get Our Data"],
   paragraph: [
@@ -52,23 +48,24 @@ function Help() {
             Help & Support
           </h1>
         </div>
-        <div className="flex text-center py-2">
+        <div className="flex py-2 text-center">
           <h3 className="font-satoshi text-gray-600">
             Get help and support for improving your Balancer experience.
           </h3>
         </div>
         <div className="flex flex-col gap-4 sm:flex-row">
           {data.icon.map((icon, index) => (
-            <Link to={data.link[index]} key={index} className="flex">
-
-            <div className="">
-            <HelpCard
+            <Link
+              to={data.link[index]}
               key={index}
-              icon={icon}
-              title={data.title[index]}
-              paragraph={data.paragraph[index]}
-            />
-            </div>
+              className="flex max-w-full flex-grow basis-1/3"
+            >
+              <HelpCard
+                key={index}
+                icon={icon}
+                title={data.title[index]}
+                paragraph={data.paragraph[index]}
+              />
             </Link>
           ))}
         </div>

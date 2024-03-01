@@ -79,15 +79,15 @@ function HowTo() {
   return (
     <Layout>
       <div className="mt-20 flex w-full max-w-6xl flex-col items-center justify-center px-8">
-        <h3 className="mt-10 flex items-center justify-center py-4 text-xl">
+        <h3 className="mt-10 flex items-center justify-center py-4 text-4xl">
           {howToData.title}
         </h3>
         <div className="flex flex-col rounded-xl border-2 border-blue-100 bg-neutral-50 px-4 py-4 shadow-md">
           <div className="flex flex-col px-2 py-2">
-            <p className="font-satoshi text-sm text-gray-700">
+            <p className="text-md font-satoshi text-gray-700">
               {howToData.paragraph[0]}
             </p>
-            <p className="py-2 font-satoshi text-sm text-gray-600">
+            <p className="text-md py-2 font-satoshi text-gray-600">
               {howToData.paragraph[1]}
             </p>
           </div>

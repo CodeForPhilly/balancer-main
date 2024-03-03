@@ -26,8 +26,3 @@ for url in urls:
     url_module = importlib.import_module(f'api.views.{url}.urls')
     # Append the URL patterns from each imported module
     urlpatterns += getattr(url_module, 'urlpatterns', [])
-
-# Add a catch-all URL pattern for handling SPA (Single Page Application) routing
-# Serve 'index.html' for any unmatched URL
-urlpatterns += [
-    re_path(r'^.*$', TemplateView.as_view(template_name='index.html')),]

@@ -132,7 +132,7 @@ const NewPatientForm = ({
     setIsLoading(true); // Start loading
 
     try {
-      const baseUrl = import.meta.env.VITE_API_BASE_URL;
+      const baseUrl = 'http://' + window.location.host + '/api';
       const url = `${baseUrl}/chatgpt`;
       console.log(payload);
 

@@ -1,0 +1,68 @@
+{{/* This is an attempt at an ingress controller that would send traffic to both frontend and backend containers,
+instead of having the frontend container act as a proxy for backend. I couldn't get it working though. */}}
+
+{{- if false -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: balancer-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  {{- if .Values.ingress.className }}
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- end }}
+  {{- if .Values.ingress.tls }}
+  tls:
+    {{- range .Values.ingress.tls }}
+    - hosts:
+        {{- range .hosts }}
+        - {{ . | quote }}
+        {{- end }}
+      secretName: {{ .secretName }}
+    {{- end }}
+  {{- end }}
+  rules:
+      {{- range .Values.ingress.hosts }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+            {{- range .paths }}
+          - path: {{ . | trimSuffix "/" }}/api/
+            pathType: Prefix
+            backend:
+              service:
+                name: backend
+                port:
+                  name: gunicorn
+          - path: {{ . | trimSuffix "/" }}/admin/
+            pathType: Prefix
+            backend:
+              service:
+                name: backend
+                port:
+                  name: gunicorn
+          - path: {{ . | trimSuffix "/" }}/admin
+            pathType: Exact
+            backend:
+              service:
+                name: backend
+                port:
+                  name: gunicorn
+          - path: {{ . | trimSuffix "/" }}/auth/
+            pathType: Prefix
+            backend:
+              service:
+                name: backend
+                port:
+                  name: gunicorn
+          - path: {{ . }}
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  name: http
+            {{- end }}
+      {{- end }}
+{{- end }}

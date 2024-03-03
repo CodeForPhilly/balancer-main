@@ -20,6 +20,9 @@ RUN pip install -r requirements.txt
 # copy project
 COPY . /usr/src/app
 
+# copy static files to static dir so that the frontend container can copy them
+RUN python manage.py collectstatic
+
 # Correct line endings in entrypoint.sh and make it executable
 RUN sed -i 's/\r$//' entrypoint.sh && chmod +x entrypoint.sh
 
@@ -27,4 +30,4 @@ RUN sed -i 's/\r$//' entrypoint.sh && chmod +x entrypoint.sh
 ENTRYPOINT ["./entrypoint.prod.sh"]
 
 # Default command to run on container start
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000", "--noreload"]
+CMD ["gunicorn", "balancer_backend.wsgi:application", "--bind", "0.0.0.0:8000"]

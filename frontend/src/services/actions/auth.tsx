@@ -75,7 +75,7 @@ export const checkAuthenticated = () => async (dispatch: AppDispatch) => {
     };
 
     const body = JSON.stringify({ token: localStorage.getItem("access") });
-    const baseUrl = import.meta.env.VITE_API_BASE_URL;
+    const baseUrl = 'http://' + window.location.host;
     const url = `${baseUrl}/auth/jwt/verify/`;
     try {
       const res = await axios.post(url, body, config);
@@ -112,7 +112,7 @@ export const load_user = (): ThunkType => async (dispatch: AppDispatch) => {
         Accept: "application/json",
       },
     };
-    const baseUrl = import.meta.env.VITE_API_BASE_URL;
+    const baseUrl = 'http://' + window.location.host;
     const url = `${baseUrl}/auth/users/me/`;
     try {
       const res = await axios.get(url, config);
@@ -143,7 +143,7 @@ export const login =
     };
 
     const body = JSON.stringify({ email, password });
-    const baseUrl = import.meta.env.VITE_API_BASE_URL;
+    const baseUrl = 'http://' + window.location.host;
     const url = `${baseUrl}/auth/jwt/create/`;
     try {
       const res = await axios.post(url, body, config);
@@ -184,7 +184,7 @@ export const reset_password =
     };
     console.log("yes");
     const body = JSON.stringify({ email });
-    const baseUrl = import.meta.env.VITE_API_BASE_URL;
+    const baseUrl = 'http://' + window.location.host;
     const url = `${baseUrl}/auth/users/reset_password/`;
     try {
       await axios.post(url, body, config);
@@ -214,7 +214,7 @@ export const reset_password_confirm =
     };
 
     const body = JSON.stringify({ uid, token, new_password, re_new_password });
-    const baseUrl = import.meta.env.VITE_API_BASE_URL;
+    const baseUrl = 'http://' + window.location.host;
     const url = `${baseUrl}/auth/users/reset_password_confirm/`;
     try {
       const response = await axios.post(url, body, config);

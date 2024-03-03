@@ -1,44 +1,82 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
+  labels:
+    app.kubernetes.io/component: frontend
   name: nginx-conf
-# https://stackoverflow.com/questions/64178370/custom-nginx-conf-from-configmap-in-kubernetes
+
 data:
   nginx.conf: |
-    user nginx;
-    worker_processes  1;
+    worker_processes 1;
+
+    user nobody nogroup;
+    # 'user nobody nobody;' for systems with 'nobody' as a group instead
+    error_log  /var/log/nginx/error.log warn;
+    pid /var/run/nginx.pid;
+
     events {
-      worker_connections  1024;
+      worker_connections 1024; # increase if you have lots of clients
+      accept_mutex off; # set to 'on' if nginx worker_processes > 1
+      # 'use epoll;' to enable for Linux 2.6+
+      # 'use kqueue;' to enable for FreeBSD, OSX
     }
+
     http {
-      include /etc/nginx/mime.types;
-      error_log  /var/log/nginx/error_log;
-      access_log /var/log/nginx/access_log;
+      include mime.types;
+      # fallback in case we can't determine a type
+      default_type application/octet-stream;
+      access_log /var/log/nginx/access.log combined;
+      sendfile on;
+
+      upstream gunicorn_server {
+        # fail_timeout=0 means we always retry an upstream even if it failed
+        # to return a good HTTP response
+
+        # for UNIX domain socket setups
+        # server unix:/tmp/gunicorn.sock fail_timeout=0;
+
+        # for a TCP configuration
+        # "backend" here is the name of the kubernetes service
+        server backend:8000 fail_timeout=0;
+      }
+
       server {
-        listen       80;
-        listen  [::]:80;
-        server_name  {{ .Values.nginx.serverName }};
+        # if no Host match, close the connection to prevent host spoofing
+        listen 80 default_server;
+        return 444;
+      }
 
-        location /access_log {
-            alias /var/log/nginx/access_log;
+      server {
+        # use 'listen 80 deferred;' for Linux
+        # use 'listen 80 accept_filter=httpready;' for FreeBSD
+        listen 80 deferred;
+        client_max_body_size 4G;
+
+        # set the correct host(s) for your site
+        server_name {{.Values.frontend.server_name}};
+
+        keepalive_timeout 5;
+
+        # path for static files
+        root /usr/share/nginx/html;
+        location ~ (^\/api\/|^\/auth\/|^\/admin) {
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto $scheme;
+          proxy_set_header Host $http_host;
+          # we don't want nginx trying to do something clever with
+          # redirects, we set the Host: header above already.
+          proxy_redirect off;
+          proxy_pass http://gunicorn_server;
         }
-        location /error_log {
-            alias /var/log/nginx/error_log;
-        }
-        
+
         location / {
-            root   /usr/share/nginx/html;
-            index  index.html index.htm;
+          index index.html;
+          try_files $uri $uri/ /index.html;
         }
 
-        #error_page  404              /404.html;
-
-        # redirect server error pages to the static page /50x.html
-        #
-        #error_page   500 502 503 504  /50x.html;
-        #location = /50x.html {
-        #    root   /usr/share/nginx/html;
-        
-        #}
+        error_page 500 502 503 504 /50x.html;
+        location = /50x.html {
+          root /usr/share/nginx/html;
+        }
       }
     }

@@ -64,6 +64,7 @@ const FeedbackForm = () => {
 
     try {
       const res = await axios.post(
+        // this URL won't work
         "http://localhost:3001/text_extraction",
         formData,
         {
@@ -86,14 +87,15 @@ const FeedbackForm = () => {
       },
       onSubmit: async (values) => {
         setFeedback("");
+        const baseUrl = 'http://' + window.location.host + '/api';
         try {
           // Call 1: Create Feedback request
-          const response = await axios.post(
-            "http://localhost:8000/api/jira/create_new_feedback/",
+          const response = await axios.post(baseUrl + "/jira/create_new_feedback/",
             {
               name: values.name,
               email: values.email,
               message: values.message,
+              // the backend endpoint also expects a feedbackType
             },
             {
               headers: {
@@ -113,7 +115,7 @@ const FeedbackForm = () => {
               formData.append("attachment", values.image);
 
               const response2 = await axios.post(
-                "http://localhost:8000/api/jira/upload_servicedesk_attachment/",
+                baseUrl + "/jira/upload_servicedesk_attachment/",
                 formData,
                 {
                   headers: {
@@ -128,7 +130,7 @@ const FeedbackForm = () => {
 
                 // Step 3: Attach upload image to feedback request
                 const response3 = await axios.post(
-                  "http://localhost:8000/api/jira/attach_feedback_attachment/",
+                  baseUrl + "/jira/attach_feedback_attachment/",
                   {
                     issueKey: issueKey,
                     tempAttachmentId: attachmentId,

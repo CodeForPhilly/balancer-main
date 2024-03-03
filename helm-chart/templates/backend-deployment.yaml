@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/component: backend
+  name: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: backend
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: backend
+    spec:
+      containers:
+        - args:
+            - gunicorn
+            - balancer_backend.wsgi:application
+            - --bind
+            - 0.0.0.0:8000
+          envFrom:
+            - configMapRef:
+                name: backend-env
+            - secretRef:
+                name: {{ .Values.backend.existingSecret }}
+          env:
+            - name: SQL_HOST
+              value: db-service
+            - name: SQL_USER
+              valueFrom:
+                secretKeyRef:
+                  key: POSTGRES_USER
+                  name: postgresql
+            - name: SQL_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  key: POSTGRES_DB
+                  name: postgresql
+            - name: SQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: POSTGRES_PASSWORD
+                  name: postgresql
+          image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
+          imagePullPolicy: Always
+          name: backend
+          ports:
+            - containerPort: 8000
+              protocol: TCP
+          resources: {}
+      restartPolicy: Always

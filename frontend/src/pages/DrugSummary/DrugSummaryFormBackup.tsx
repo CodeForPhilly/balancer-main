@@ -45,7 +45,7 @@ const DrugSummaryForm = () => {
       }
 
       const contentType = url ? "application/json" : "multi-part/form";
-      const baseUrl = import.meta.env.VITE_API_BASE_URL;
+      const baseUrl = 'http://' + window.location.host + '/api';
       const completeBaseURL = `${baseUrl}/chatgpt`;
       try {
         // TODO change this to actual endpoint url once hosted

@@ -108,7 +108,7 @@ const DrugSummaryForm = () => {
   };
 
   const sendMessage = (message: ChatLogItem[]) => {
-    const baseUrl = import.meta.env.VITE_API_BASE_URL;
+    const baseUrl = 'http://' + window.location.host + '/api';
     const url = `${baseUrl}/chatgpt/chat`;
 
     const apiMessages = message.map((messageObject) => {

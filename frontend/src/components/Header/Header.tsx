@@ -1,15 +1,16 @@
-import { useState, useRef, useEffect, Fragment } from "react";
+// import { useState, useRef, useEffect, Fragment } from "react";
+import { useState, Fragment } from "react";
 import accountLogo from "../../assets/account.svg";
 import { Link, useNavigate } from "react-router-dom";
 import LoginMenuDropDown from "./LoginMenuDropDown";
 import "../../components/Header/header.css";
 import Chat from "./Chat";
-import { FeatureMenuDropDown } from "./FeatureMenuDropDown";
+// import { FeatureMenuDropDown } from "./FeatureMenuDropDown";
 import MdNavBar from "./MdNavBar";
 import { connect, useDispatch } from "react-redux";
 import { RootState } from "../../services/actions/types";
 import { logout, AppDispatch } from "../../services/actions/auth";
-import { HiChevronDown } from "react-icons/hi";
+// import { HiChevronDown } from "react-icons/hi";
 
 interface LoginFormProps {
   isAuthenticated: boolean;
@@ -18,9 +19,9 @@ interface LoginFormProps {
 const Header = (props: LoginFormProps) => {
   const { isAuthenticated } = props;
   const navigate = useNavigate();
-  const [showFeaturesMenu, setShowFeaturesMenu] = useState(false);
-  const dropdownRef = useRef(null);
-  let delayTimeout: number | null = null;
+  // const [showFeaturesMenu, setShowFeaturesMenu] = useState(false);
+  // const dropdownRef = useRef(null);
+  // let delayTimeout: number | null = null;
   const [showChat, setShowChat] = useState(false);
   const [showLoginMenu, setShowLoginMenu] = useState(false);
   const [redirect, setRedirect] = useState(false);
@@ -54,26 +55,26 @@ const Header = (props: LoginFormProps) => {
     setShowLoginMenu(!showLoginMenu);
   };
 
-  const handleMouseEnter = () => {
-    if (delayTimeout !== null) {
-      clearTimeout(delayTimeout);
-    }
-    setShowFeaturesMenu(true);
-  };
+  // const handleMouseEnter = () => {
+  //   if (delayTimeout !== null) {
+  //     clearTimeout(delayTimeout);
+  //   }
+  //   setShowFeaturesMenu(true);
+  // };
 
-  const handleMouseLeave = () => {
-    delayTimeout = setTimeout(() => {
-      setShowFeaturesMenu(false);
-    }, 300) as unknown as number; // Adjust the delay time as needed
-  };
+  // const handleMouseLeave = () => {
+  //   delayTimeout = setTimeout(() => {
+  //     setShowFeaturesMenu(false);
+  //   }, 300) as unknown as number; // Adjust the delay time as needed
+  // };
 
-  useEffect(() => {
-    return () => {
-      if (delayTimeout !== null) {
-        clearTimeout(delayTimeout);
-      }
-    };
-  }, [delayTimeout]);
+  // useEffect(() => {
+  //   return () => {
+  //     if (delayTimeout !== null) {
+  //       clearTimeout(delayTimeout);
+  //     }
+  //   };
+  // }, [delayTimeout]);
 
   return (
     <header className="z10 fixed w-full items-center ">
@@ -99,7 +100,7 @@ const Header = (props: LoginFormProps) => {
           </span>
         </Link>
         <nav className="flex font-satoshi text-base lg:gap-2 xl:gap-5">
-          <div
+          {/* <div
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
             ref={dropdownRef}
@@ -124,7 +125,13 @@ const Header = (props: LoginFormProps) => {
               </span>
             </span>
             {showFeaturesMenu && <FeatureMenuDropDown />}
-          </div>
+          </div> */}
+          <Link
+            to="/"
+            className="mr-5 font-bold text-black hover:border-blue-600 hover:text-blue-600 hover:no-underline"
+          >
+            Medication Suggester
+          </Link>
           <>
             <Link
               to="/about"

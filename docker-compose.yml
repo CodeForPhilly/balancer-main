@@ -22,7 +22,7 @@ services:
       PGADMIN_DEFAULT_PASSWORD: balancer
       # PGADMIN_LISTEN_PORT = 80
     volumes:
-      - ./server/pgadmin-data:/var/lib/pgadmin
+      - ./pgadmin-data:/var/lib/pgadmin
           # PGADMIN_LISTEN_PORT = 80
     ports:
       - "5050:80"

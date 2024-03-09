@@ -2,7 +2,7 @@
 FROM python:3.11.4-slim-buster
 
 # set work directory
-WORKDIR /usr/src/app
+WORKDIR /usr/src/server
 
 # set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
@@ -17,13 +17,10 @@ COPY ./requirements.txt .
 RUN pip install -r requirements.txt
 
 # copy project
-COPY . .
+COPY . /usr/src/app
 
 # Correct line endings in entrypoint.sh and make it executable
-RUN sed -i 's/\r$//' entrypoint.sh && chmod +x entrypoint.sh
+RUN sed -i 's/\r$//' /usr/src/app/entrypoint.sh && chmod +x /usr/src/app/entrypoint.sh
 
 # run entrypoint.sh
-ENTRYPOINT ["./entrypoint.sh"]
-
-# Default command to run on container start
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000", "--noreload"]
+ENTRYPOINT ["/usr/src/app/entrypoint.sh"]

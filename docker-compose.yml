@@ -13,12 +13,15 @@ services:
   backend:
     image: balancer-backend
     build: ./server
+    command: python manage.py runserver 0.0.0.0:8000
     ports:
       - "8000:8000"
     env_file:
       - ./config/env/env.dev
     depends_on:
       - db
+    volumes:
+      - ./server:/usr/src/server
   frontend:
     image: balancer-frontend
     build:

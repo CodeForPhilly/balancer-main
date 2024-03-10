@@ -171,6 +171,7 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('JWT',),
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'TOKEN_OBTAIN_SERIALIZER': 'api.models.TokenObtainPairSerializer.MyTokenObtainPairSerializer',
     'AUTH_TOKEN_CLASSES': (
         'rest_framework_simplejwt.tokens.AccessToken',
     )

@@ -15,7 +15,7 @@ def uploadFiles(request):
 
         # Read file contents in binary mode
         file_contents = file.read()
-
+        print(file.read())
         # Use the original file name
         file_name = file.name
 

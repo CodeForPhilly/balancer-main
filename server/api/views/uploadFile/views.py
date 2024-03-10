@@ -20,7 +20,7 @@ def uploadFiles(request):
         file_name = file.name
 
         # Create an instance of the model
-        upload_file = UploadFile(file_name=file_name, file_data=file_contents)
+        upload_file = UploadFile(file_name=file_name, file=file_contents)
 
         # Save the instance to the database
         try:

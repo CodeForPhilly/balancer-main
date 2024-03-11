@@ -22,5 +22,6 @@ export interface RootState {
   auth: {
     error: any;
     isAuthenticated: boolean;
+    isSuperuser: boolean;
   };
 }

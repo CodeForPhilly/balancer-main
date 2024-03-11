@@ -14,10 +14,12 @@ import { logout, AppDispatch } from "../../services/actions/auth";
 
 interface LoginFormProps {
   isAuthenticated: boolean;
+  isSuperuser: boolean;
 }
 
 const Header = (props: LoginFormProps) => {
   const { isAuthenticated } = props;
+  const { isSuperuser } = props;
   const navigate = useNavigate();
   // const [showFeaturesMenu, setShowFeaturesMenu] = useState(false);
   // const dropdownRef = useRef(null);
@@ -151,6 +153,14 @@ const Header = (props: LoginFormProps) => {
             >
               Leave Feedback
             </Link>
+            {isSuperuser && (
+              <Link
+                to="/adminportal"
+                className="mr-5 font-bold text-black hover:border-blue-600 hover:text-blue-600 hover:no-underline"
+              >
+                Admin Portal
+              </Link>
+            )}
             {redirect ? navigate("/") : <Fragment></Fragment>}
           </>
         </nav>
@@ -171,6 +181,7 @@ const Header = (props: LoginFormProps) => {
 
 const mapStateToProps = (state: RootState) => ({
   isAuthenticated: state.auth.isAuthenticated,
+  isSuperuser: state.auth.isSuperuser,
 });
 
 const ConnectedLayout = connect(mapStateToProps)(Header);

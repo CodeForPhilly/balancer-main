@@ -12,8 +12,9 @@ services:
     - "5432:5432"
   backend:
     image: balancer-backend
-    dockerfile: Dockerfile.prod
-    build: ./server
+    build:
+      context: server
+      dockerfile: Dockerfile.prod 
     ports:
       - "8000:8000"
     env_file:

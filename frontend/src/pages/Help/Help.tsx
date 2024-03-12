@@ -4,24 +4,20 @@ import HelpCard from "./HelpCard";
 import { Link } from "react-router-dom";
 
 interface HelpData {
-    link: string[];
-    icon: string[];
-    title: string[];
-    paragraph: string[];
+  link: string[];
+  icon: string[];
+  title: string[];
+  paragraph: string[];
 }
 
 const HelpCardData: HelpData = {
-    link: [
-        "/how-to",
-        "/feedback",
-        "/data-sources"
-    ],
+  link: ["/how-to", "/feedback", "/data-sources"],
   icon: ["UserDoctor", "FeedbackIcon", "MagnifyingGlassChart"],
-  title: ["How To Use this Site", "Submit Feedback", "How We Get Our Data"],
+  title: ["How To Use This Site", "Submit Feedback", "How We Get Our Data"],
   paragraph: [
-    "Visit this page to learn how to use the Balancer App!",
+    "Visit this page to learn how to use the Balancer App.",
     "Give the Balancer team feedback on your experience.",
-    "Learn where the Balancer team gets our data!",
+    "Learn about how the Balancer team gets our data.",
   ],
 };
 
@@ -48,24 +44,27 @@ function Help() {
     <Layout>
       <div className="mt-20 flex w-full flex-col items-center justify-center px-4">
         <div className="flex justify-center text-center">
-          <h2 className="mt-20 font-satoshi text-3xl text-blue-600">
+          <h1 className="mt-20 font-satoshi text-3xl text-blue-600">
             Help & Support Page
-          </h2>
+          </h1>
         </div>
-        <div className="flex text-center py-2">
+        <div className="flex py-2 text-center">
           <h3 className="font-satoshi text-gray-600">
-            Let us help you in your Balancer experience!
+            Get help and support for improving your Balancer experience.
           </h3>
         </div>
         <div className="flex flex-col gap-4 sm:flex-row">
           {data.icon.map((icon, index) => (
-            <Link to={data.link[index]} key={index} className="flex flex-grow basis-1/3 max-w-full">
-              <HelpCard
-                key={index}
-                icon={icon}
-                title={data.title[index]}
-                paragraph={data.paragraph[index]}
-              />
+            <Link to={data.link[index]} key={index} className="flex"> 
+
+            <div className="">
+            <HelpCard
+              key={index}
+              icon={icon}
+              title={data.title[index]}
+              paragraph={data.paragraph[index]}
+            />
+            </div>
             </Link>
           ))}
         </div>

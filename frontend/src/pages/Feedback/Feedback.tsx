@@ -10,7 +10,7 @@ function Feedback() {
           <h2 className="desc">Feedback</h2>
           <p className="mx-auto mt-5 hidden
           max-w-[100%] text-center font-satoshi text-log text-gray-400 sm:text-x; md:block">
-            Leave Feedback for the Balancer Team.
+            Leave feedback for the Balancer Team.
           </p>
           <FeedbackForm />
         </div>

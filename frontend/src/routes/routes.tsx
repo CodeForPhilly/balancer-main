@@ -1,6 +1,7 @@
 import App from "../App";
 import RouteError from "../pages/404/404.tsx";
 import LoginForm from "../pages/Login/Login.tsx";
+import AdminPortal from "../pages/AdminPortal/AdminPortal.tsx";
 import ResetPassword from "../pages/Login/ResetPassword.tsx";
 import ResetPasswordConfirm from "../pages/Login/ResetPasswordConfirm.tsx";
 import DrugSummary from "../pages/DrugSummary/DrugSummary.tsx";
@@ -48,13 +49,18 @@ const routes = [
   {
     path: "how-to",
     element: <HowTo />,
-  },{
+  },
+  {
     path: "data-sources",
     element: <DataSources />,
   },
   {
     path: "feedback",
     element: <Feedback />,
+  },
+  {
+    path: "adminportal",
+    element: <AdminPortal />,
   },
 ];
 

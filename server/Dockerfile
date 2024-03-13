@@ -18,10 +18,9 @@ RUN pip install -r requirements.txt
 
 # copy project
 COPY . /usr/src/app
+
 # Correct line endings in entrypoint.sh and make it executable
 RUN sed -i 's/\r$//' /usr/src/app/entrypoint.sh && chmod +x /usr/src/app/entrypoint.sh
+
 # run entrypoint.sh
 ENTRYPOINT ["/usr/src/app/entrypoint.sh"]
-
-# Default command to run on container start
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000", "--noreload"]

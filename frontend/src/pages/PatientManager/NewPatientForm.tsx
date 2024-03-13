@@ -782,7 +782,6 @@ const NewPatientForm = ({
                         CurrentMedications: String(e.target.value),
                       })
                     }
-                    required
                     placeholder="Separate medications with commas"
                     className={
                       isLoading
@@ -817,7 +816,6 @@ const NewPatientForm = ({
                         PriorMedications: String(e.target.value),
                       })
                     }
-                    required
                     placeholder="Separate medications with commas"
                     className={
                       isLoading
@@ -840,14 +838,12 @@ const NewPatientForm = ({
                 </div>
                 <button
                   type="submit"
-                  className={`btnBlue  ${
-                    isPressed &&
+                  className={`btnBlue  ${isPressed &&
                     "transition-transform focus:outline-none focus:ring focus:ring-blue-200"
-                  }${
-                    isLoading
+                    }${isLoading
                       ? "bg-white-600 transition-transform focus:outline-none focus:ring focus:ring-blue-500"
                       : ""
-                  }`}
+                    }`}
                   onMouseDown={handleMouseDown}
                   onMouseUp={handleMouseUp}
                   disabled={isLoading} // Disable the button while loading

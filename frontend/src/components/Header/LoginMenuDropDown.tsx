@@ -43,15 +43,17 @@ const LoginMenuDropDown: React.FC<LoginMenuDropDownProps> = ({
             )} */}
           </div>
         </div>
-        <div className="h-44"></div>
+        <div className="h-36"></div>
         <div className="flex h-20 flex-col items-center  justify-self-center">
-          <span className="bg-gradient-to-r  from-blue-500 via-blue-700 to-blue-300 bg-clip-text font-quicksand text-xl font-bold text-transparent lg:text-3xl ">
+          <span className="bg-gradient-to-r  from-blue-500 via-blue-700 to-blue-300 bg-clip-text font-quicksand text-3xl font-bold text-transparent lg:text-3xl ">
             Balancer
           </span>
         </div>
         <div className="mb-4 flex  h-14 flex-col items-center justify-center text-center font-satoshi text-xl md:block">
           <p>Log into your Balancer account</p>
         </div>
+        <br />
+        <br />
         <div className="flex h-28 flex-col items-center justify-center text-center">
           <p className="mb-4">
             Access Balancer's cutting-edge features by signing into your

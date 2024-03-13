@@ -9,10 +9,13 @@ interface DataProps {
 const data: DataProps = {
   title: "How Do We Get Our Data?",
   paragraph: [
-    "Balancer gets it data from publicly available peer-reviewed research "+
-    "as well as through extensive interviews with prescribers. ",
-    "Check back soon for more comprehensive information."
+    "Balancer is a free and open-source tool that utilizes data from " +
+    "publicly available peer-reviewed medical research, as well as " +
+    "through extensive interviews with physicians and medical professionals " +
+    "who treat patients with bipolar disorder.",
+    "Check back soon for more comprehensive information on our data sources."
   ],
+
 };
 
 function HowTo() {

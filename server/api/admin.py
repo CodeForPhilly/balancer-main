@@ -1,6 +1,7 @@
 from django.contrib import admin
 from .views.uploadFile.models import UploadFile
 from .views.listMeds.models import Medication, Diagnosis, Suggestion
+from .models.authUser import UserAccount
 
 @admin.register(Medication)
 class MedicationAdmin(admin.ModelAdmin):
@@ -17,3 +18,8 @@ class SuggestionAdmin(admin.ModelAdmin):
 @admin.register(UploadFile)
 class UploadFile(admin.ModelAdmin):
     list_display = ['guid', 'file_name', 'file']
+
+
+@admin.register(UserAccount)
+class UserAccountAdmin(admin.ModelAdmin):
+    list_display = ['id', 'first_name', 'email', 'is_superuser']

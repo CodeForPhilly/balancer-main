@@ -113,8 +113,8 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
           ...prevChatLog,
           {
             type: "bot",
-            message: response.data.message.choices[0].message.content,
-          },
+            message: response.data.message.choices[0].message.content
+          }
         ]);
         setIsLoading(false);
       })
@@ -179,7 +179,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
                     <br />
                   </div> */}
                   <div className="max-h-[100%] max-w-[310px] rounded-lg border-2 bg-gray-200 p-2 text-black">
-                    You can sdfask about the content on this page.
+                    You can ask about the content on this page.
                   </div>
                   <div className="max-h-[100%] max-w-[190px] rounded-lg border-2 bg-gray-200 p-2 text-black">
                     Or questions in general.
@@ -193,15 +193,22 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
                       message.type === "user" ? "justify-end" : "justify-start"
                     }`}
                   >
-                    <div
+                    <pre
+                      style={{
+                        fontFamily: 'inherit',
+                        whiteSpace: "pre-wrap",
+                        wordWrap: "break-word",
+                      }}
                       className={`${
                         message.type === "user"
                           ? "bg-blue-200 text-black "
                           : "border-2 bg-gray-200 text-black "
                       }rounded-lg max-h-[100%] max-w-[500px] p-2`}
+                      dangerouslySetInnerHTML={{
+                        __html: message.message
+                      }}
                     >
-                      {message.message}
-                    </div>
+                    </pre>
                   </div>
                 ))
               )}

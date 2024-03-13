@@ -73,8 +73,8 @@ const PatientManager = () => {
     <div className="mt-24 flex w-full max-w-6xl flex-col items-center  md:mt-28">
       <Welcome
         subHeader="Designed to assist prescribers"
-        descriptionText="Balancer is a free and open-source tool for helping prescribers narrow
-        down suitable bipolar medications based on patient characteristics."
+        descriptionText="Use our tool to get medication suggestions for bipolar
+        disorder based on patient characteristics."
       />
       <div className="mt-0 flex w-[90%] flex-col md:mt-12 md:w-[75%] ">
         <PatientSummary

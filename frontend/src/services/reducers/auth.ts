@@ -1,3 +1,4 @@
+import { jwtDecode } from 'jwt-decode';
 import {
     LOGIN_SUCCESS,
     LOGIN_FAIL,
@@ -20,6 +21,10 @@ import {
     LOGOUT
 } from '../actions/types';
 
+
+type TokenClaims = {
+    is_superuser: boolean;
+};
 
 type ActionType =
     | { type: typeof LOGIN_SUCCESS; payload: { access: string; refresh: string } }
@@ -49,6 +54,7 @@ export interface StateType {
     isAuthenticated: boolean | null;
     user: string; // 
     error?: string | null; 
+    isSuperuser: boolean | null;
 }
 
 // Initial state with correct types
@@ -56,6 +62,7 @@ const initialState: StateType = {
     access: localStorage.getItem('access'),
     refresh: localStorage.getItem('refresh'),
     isAuthenticated: null,
+    isSuperuser: null, 
     user: ""
 };
 
@@ -68,15 +75,18 @@ export default function authReducer(state = initialState, action: ActionType): S
             }
         case LOGIN_SUCCESS:
         case GOOGLE_AUTH_SUCCESS:
-        case FACEBOOK_AUTH_SUCCESS:
+        case FACEBOOK_AUTH_SUCCESS:{
             localStorage.setItem('access', action.payload.access);
             localStorage.setItem('refresh', action.payload.refresh);
+            const decoded: TokenClaims = jwtDecode(action.payload.access);
             return {
                 ...state,
                 isAuthenticated: true,
                 access: action.payload.access,
-                refresh: action.payload.refresh
-            }
+                refresh: action.payload.refresh,
+                isSuperuser: decoded.is_superuser
+            };
+        }
         case SIGNUP_SUCCESS:
             return {
                 ...state,

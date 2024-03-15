@@ -29,16 +29,16 @@ services:
       app_net:
         ipv4_address: 192.168.0.3
   backend:
-    image: balancer-backend
-    build: ./server
+    image: balancer-ai
+    build: ./ai
     ports:
-      - "8000:8000"
+      - "8001:8001"
     env_file:
       - ./config/env/env.dev
     depends_on:
       - db
     volumes:
-      - ./server:/usr/src/server
+      - ./ai:/usr/src/ai
     networks:
       app_net:
         ipv4_address: 192.168.0.4

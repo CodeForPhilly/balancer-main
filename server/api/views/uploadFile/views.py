@@ -1,10 +1,13 @@
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 from django.http import JsonResponse
 from .models import UploadFile
-from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import ValidationError
 
 
-@csrf_exempt
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def uploadFiles(request):
     if request.method == 'POST':
         file = request.FILES.get('file')

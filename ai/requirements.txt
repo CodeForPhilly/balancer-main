@@ -12,3 +12,7 @@ django-registration-redux==2.13
 django-cors-headers>=3.10.0
 djangorestframework-simplejwt
 djoser
+langchain
+langchain-community
+pgvector
+sentence_transformers

@@ -1,7 +1,9 @@
 version: '3.8'
 services:
   db:
-    image: postgres:15
+    build:
+      context: ./db
+      dockerfile: Dockerfile
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     environment:
@@ -10,6 +12,9 @@ services:
       - POSTGRES_DB=balancer_dev
     ports:
     - "5432:5432"
+    networks:
+      app_net:
+        ipv4_address: 192.168.0.2  
   backend:
     image: balancer-backend
     build:

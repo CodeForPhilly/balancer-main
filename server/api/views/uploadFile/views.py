@@ -1,35 +1,23 @@
-from django.http import JsonResponse
-from .models import UploadFile
+
 from django.views.decorators.csrf import csrf_exempt
-from django.core.exceptions import ValidationError
+from django.utils.decorators import method_decorator
+    
 
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .models import UploadFile
+from .serializers import UploadFileSerializer
 
-@csrf_exempt
-def uploadFiles(request):
-    if request.method == 'POST':
-        file = request.FILES.get('file')
+@method_decorator(csrf_exempt, name='dispatch')
+class UploadFile(APIView):
+    authentication_classes = []
+    permission_classes = []
 
-        # Validate input
-        if not file:
-            return JsonResponse({'error': 'Missing file'}, status=400)
-
-        # Read file contents in binary mode
-        file_contents = file.read()
-        print(file.read())
-        # Use the original file name
-        file_name = file.name
-
-        # Create an instance of the model
-        upload_file = UploadFile(file_name=file_name, file=file_contents)
-
-        # Save the instance to the database
-        try:
-            upload_file.full_clean()  # Validate the model instance
-            upload_file.save()
-        except ValidationError as e:
-            return JsonResponse({'error': str(e)}, status=400)
-
-        # Return the GUID in the response
-        return JsonResponse({'guid': str(upload_file.guid)})
-    else:
-        return JsonResponse({'error': 'Invalid request method'}, status=405)
+    def post(self, request, format=None):
+        serializer = UploadFileSerializer(data=request.data)
+        file_obj = request.data['file']
+        if serializer.is_valid():
+            #serializer.save()
+            return Response({'content': serializer.data, 'file': file_obj}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

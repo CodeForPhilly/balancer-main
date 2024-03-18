@@ -20,8 +20,8 @@ RUN pip install -r requirements.txt
 COPY . /usr/src/server
 
 # Correct line endings in entrypoint.sh and make it executable
-RUN sed -i 's/\r$//' /usr/src/app/entrypoint.sh && chmod +x /usr/src/app/entrypoint.sh
+RUN sed -i 's/\r$//' /usr/src/server/entrypoint.sh && chmod +x /usr/src/server/entrypoint.sh
 
 # run entrypoint.sh
-ENTRYPOINT ["/usr/src/app/entrypoint.sh"]
+ENTRYPOINT ["/usr/src/server/entrypoint.sh"]
 

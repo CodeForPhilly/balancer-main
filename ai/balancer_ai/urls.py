@@ -9,7 +9,7 @@ urlpatterns = [
 
 
 # List of application names for which URL patterns will be dynamically added
-urls = ['embeddings']
+urls = ['embeddings', 'extractText']
 
 # Loop through each application name and dynamically import and add its URL patterns
 for url in urls:

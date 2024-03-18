@@ -1,9 +1,7 @@
 from django.urls import path
-from api.views.embeddings import views
+from .views import ExtractEmbeddingsAPIView
 
 urlpatterns = [
-    path("embeddings/extract_embeddings/",
-         views.extract_embeddings, name="extract_embeddings"),
-
-
+    path('extract_embeddings/', ExtractEmbeddingsAPIView.as_view(),
+         name='extract-embeddings'),
 ]

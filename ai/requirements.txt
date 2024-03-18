@@ -16,3 +16,6 @@ langchain
 langchain-community
 pgvector
 sentence_transformers
+PyMuPDF
+Pillow
+pytesseract

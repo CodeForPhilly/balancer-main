@@ -5,12 +5,10 @@ from rest_framework import status
 import openai
 import os
 import json
+from langchain.vectorstores.pgvector import PGVector
 
 
 class ExtractEmbeddingsAPIView(APIView):
-    """
-    Takes a diagnosis and returns a table of the most commonly prescribed medications for that diagnosis.
-    """
 
     def post(self, request, *args, **kwargs):
         openai.api_key = os.environ.get("OPENAI_API_KEY")

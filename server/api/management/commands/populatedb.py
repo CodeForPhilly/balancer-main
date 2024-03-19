@@ -166,6 +166,8 @@ class Command(BaseCommand):
     help = 'Populate the DB after initialization'
 
     def handle(self, *args, **kwargs):
+        if Medication.objects.all().count() > 0:
+            return
         med_set = {}
         for med in MEDICATIONS:
             medication = Medication.objects.get_or_create(

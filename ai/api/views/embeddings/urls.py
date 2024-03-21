@@ -1,8 +1,8 @@
 from django.urls import path
-from .views import ExtractEmbeddingsAPIView
-from .views import StoreEmbeddingsAPIView
-from .SearchEmbeddings import SearchEmbeddingsAPIView
-from .AskEmbeddings import AskEmbeddingsAPIView
+from .store_views import StoreEmbeddingsAPIView
+from .search_views import SearchEmbeddingsAPIView
+from .ask_views import AskEmbeddingsAPIView
+from .extract_views import ExtractEmbeddingsAPIView
 
 urlpatterns = [
     path('api/embeddings/extract_embeddings', ExtractEmbeddingsAPIView.as_view(),

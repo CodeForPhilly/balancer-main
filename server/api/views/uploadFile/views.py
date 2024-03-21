@@ -27,12 +27,17 @@ class UploadFile(APIView):
         serializer = UploadFileSerializer(data=data)
         if serializer.is_valid():
             if serializer.validated_data["file_type"] in acceptable_file_types:
-                print(serializer.validated_data)
-                serializer.validated_data["file"] = request.FILES["file"].read()
-                serializer.save()
-                return Response(
-                    {"content": serializer.data}, status=status.HTTP_201_CREATED
-                )
+                try:
+                    serializer.validated_data["file"] = request.FILES["file"].read()
+                    serializer.save()
+                    return Response(
+                        {"message": serializer.data}, status=status.HTTP_201_CREATED
+                    )
+                except:
+                    return Response(
+                        {"message": "Error. Something went wrong."},
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                    )
             else:
                 return Response(
                     {

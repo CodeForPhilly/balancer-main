@@ -1,3 +1,7 @@
 from django.contrib import admin
+from .views.embeddings.models import Embeddings
 
-# Register your models here.
+
+@admin.register(Embeddings)
+class StateMedicationAdmin(admin.ModelAdmin):
+    list_display = ['name', 'text', 'embedding']

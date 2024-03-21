@@ -1,20 +1,19 @@
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
-
-
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 import json
-import base64
-from .models import UploadFile
-from .serializers import UploadFileSerializer
+from .models import UploadFile as UploadFileModel
+from .serializers import UploadFileSerializer, UploadFileGetSerializer
+from .paginators import UploadFilePageNumberPagination
 
 
 @method_decorator(csrf_exempt, name="dispatch")
 class UploadFile(APIView):
     permission_classes = [IsAuthenticated]
+    pagination_class = UploadFilePageNumberPagination
 
     def post(self, request, format=None):
         if not request.user.is_superuser:
@@ -36,7 +35,7 @@ class UploadFile(APIView):
                 except:
                     return Response(
                         {"message": "Error. Something went wrong."},
-                        status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR,
                     )
             else:
                 return Response(
@@ -45,3 +44,13 @@ class UploadFile(APIView):
                     }
                 )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get(self, request, format=None):
+        queryset = UploadFileModel.objects.all()
+        paginator = self.pagination_class()
+        page = paginator.paginate_queryset(queryset, request)
+        if page is not None:
+            serializer = UploadFileGetSerializer(page, many=True)
+            return paginator.get_paginated_response(serializer.data)
+        serializer = UploadFileGetSerializer(queryset, many=True)
+        return serializer.data

@@ -9,6 +9,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from django.core.files.base import ContentFile
 from pathlib import Path
 from .models import Embeddings
+from django.db.models import Count
 
 
 class ManageEmbeddingsAPIView(APIView):
@@ -38,7 +39,6 @@ class ManageEmbeddingsAPIView(APIView):
 
             chunks_data = []
             for i, (chunk, embedding) in enumerate(zip(chunks, embeddings)):
-                # Create an Embeddings object for each chunk and save to database
                 embedding_instance = Embeddings(
                     name=file_name,
                     text=chunk,
@@ -62,7 +62,30 @@ class ManageEmbeddingsAPIView(APIView):
 
             return Response({'chunks_data': chunks_data}, status=status.HTTP_200_OK)
         except Exception as e:
-            # Print the error and return a response indicating an internal server error
+            print(f"An error occurred: {e}")
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def get(self, request, *args, **kwargs):
+        try:
+
+            documents_with_chunks = Embeddings.objects.values('name').annotate(
+                chunks_count=Count('chunk_number')).order_by('name')
+
+            documents_list = list(documents_with_chunks)
+            return Response(documents_list, status=status.HTTP_200_OK)
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def delete(self, request, *args, **kwargs):
+        document_name = request.query_params.get('name', None)
+        if document_name is None:
+            return Response({"error": "Document name parameter 'name' is required for deletion."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            Embeddings.objects.filter(name=document_name).delete()
+            return Response({"message": f"All chunks for document '{document_name}' have been deleted."}, status=status.HTTP_200_OK)
+        except Exception as e:
             print(f"An error occurred: {e}")
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 

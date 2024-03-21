@@ -46,11 +46,21 @@ class UploadFile(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request, format=None):
+        guid = request.query_params.get("guid", None)
         queryset = UploadFileModel.objects.all()
+
+        if guid is not None:
+            queryset = queryset.filter(guid=guid)
+
+        elif not queryset:
+            return Response({"message": "Requested file does not exist, or was not found."}, status=status.HTTP_404_NOT_FOUND)
+
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(queryset, request)
         if page is not None:
             serializer = UploadFileGetSerializer(page, many=True)
             return paginator.get_paginated_response(serializer.data)
+        
         serializer = UploadFileGetSerializer(queryset, many=True)
-        return serializer.data
+        return Response(serializer.data, status=status.HTTP_200_OK)
+

@@ -2,9 +2,6 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
-import openai
-import os
-import json
 from langchain.vectorstores.pgvector import PGVector
 import fitz
 import pytesseract

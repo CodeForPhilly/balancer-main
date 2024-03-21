@@ -11,7 +11,7 @@ from pathlib import Path
 from .models import Embeddings
 
 
-class StoreEmbeddingsAPIView(APIView):
+class ManageEmbeddingsAPIView(APIView):
     def post(self, request, *args, **kwargs):
         try:
             pdf_file = request.FILES.get('file', None)
@@ -43,19 +43,17 @@ class StoreEmbeddingsAPIView(APIView):
                     name=file_name,
                     text=chunk,
                     chunk_number=i,
-                    # Assuming your VectorField can handle list input directly
                     embedding=embedding.tolist()
                 )
                 embedding_instance.save()
 
-                # Optionally, append information to chunks_data for the response
                 chunks_data.append({
                     "index": i,
                     "file_name": file_name,
                     "chunk": chunk,
                     "embedding": embedding.tolist()
                 })
-            # Constructing the response with chunk, index, and its embedding
+
             # chunks_data = [
             #     {"index": i, "file name": file_name,
             #         "chunk": chunk, "embedding": embedding.tolist()}
@@ -82,7 +80,6 @@ class StoreEmbeddingsAPIView(APIView):
 #                 "temp_uploaded.pdf", ContentFile(pdf_content))
 
 #             print("test10s")
-#             # Now that the file is saved, you can use a file path based loader
 #             loader = PyPDFLoader(temp_file_path)
 #             documents = loader.load()
 #             # full_text = ""
@@ -117,9 +114,7 @@ class StoreEmbeddingsAPIView(APIView):
 #             )
 #             print("test33")
 
-#             # Return the embedding. Note: embedding is a numpy array so it needs to be converted to a list to be JSON serializable
 #             return Response("embeddings", status=status.HTTP_200_OK)
 #         except Exception as e:
-#             # Print the error and return a response indicating an internal server error
 #             print(f"An error occurred: {e}")
 #             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

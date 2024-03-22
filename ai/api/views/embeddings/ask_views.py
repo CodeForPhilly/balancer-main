@@ -20,7 +20,7 @@ class AskEmbeddingsAPIView(APIView):
 
             closest_embeddings = Embeddings.objects.annotate(
                 distance=L2Distance('embedding', embedding_message)
-            ).order_by('distance')[:3]
+            ).order_by('distance')[:10]
 
             if not closest_embeddings.exists():
                 return Response({"error": "No matching documents found."}, status=status.HTTP_404_NOT_FOUND)
@@ -40,8 +40,11 @@ class AskEmbeddingsAPIView(APIView):
             openai.api_key = os.getenv("OPENAI_API_KEY")
             response = openai.ChatCompletion.create(
                 model="gpt-4",
+                temperature=0.7,
+                max_tokens=500,
                 messages=[
-                    {"role": "system", "content": "You are a knowledgeable assistant."},
+                    {"role": "system",
+                        "content": "Only answer the question from content below. and give a detail expatiation for the answer and list out the documents used at the end of the answer."},
                     {"role": "user", "content": formatted_prompt}
                 ]
             )
@@ -50,8 +53,9 @@ class AskEmbeddingsAPIView(APIView):
 
             return Response({
                 "question": message_data,
+                "llm_response": answer,
                 "embeddings_info": embeddings_info,
-                "llm_response": answer
+                "sent to LLM": formatted_prompt
             }, status=status.HTTP_200_OK)
 
         except Exception as e:

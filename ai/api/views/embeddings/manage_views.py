@@ -15,11 +15,55 @@ from django.db.models import Count
 class ManageEmbeddingsAPIView(APIView):
     def post(self, request, *args, **kwargs):
         try:
-            pdf_file = request.FILES.get('file', None)
-            if pdf_file is None:
-                return Response({"error": "No PDF file provided."}, status=status.HTTP_400_BAD_REQUEST)
+            pdf_files = request.FILES.getlist('files')
+            if not pdf_files:
+                return Response({"error": "No PDF files provided."}, status=status.HTTP_400_BAD_REQUEST)
 
-            file_name = Path(pdf_file.name).stem
+            all_files_data = []
+            rejected_files = []
+
+            for pdf_file in pdf_files:
+                file_name = Path(pdf_file.name).stem
+
+                if Embeddings.objects.filter(name=file_name).exists():
+                    rejected_files.append(pdf_file.name)
+                    continue
+
+                doc = fitz.open(stream=pdf_file.read(), filetype="pdf")
+
+                text = ""
+                for page in doc:
+                    text += page.get_text()
+                doc.close()
+
+                model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
+
+                words = text.split()
+                chunks = [' '.join(words[i:i+100])
+                          for i in range(0, len(words), 100)]
+                embeddings = model.encode(chunks)
+
+                chunks_data = []
+                for i, (chunk, embedding) in enumerate(zip(chunks, embeddings)):
+                    embedding_instance = Embeddings(
+                        name=file_name,
+                        text=chunk,
+                        chunk_number=i,
+                        embedding=embedding.tolist()
+                    )
+                    embedding_instance.save()
+
+                    chunks_data.append({
+                        "index": i,
+                        "file_name": file_name,
+                        "chunk": chunk,
+                        "embedding": embedding.tolist()
+                    })
+
+                all_files_data.append({
+                    "file_name": file_name,
+                    "chunks_data": chunks_data
+                })
 
             doc = fitz.open(stream=pdf_file.read(), filetype="pdf")
 
@@ -54,13 +98,23 @@ class ManageEmbeddingsAPIView(APIView):
                     "embedding": embedding.tolist()
                 })
 
+            all_files_data.append({
+                "file_name": file_name,
+                "chunks_data": chunks_data
+            })
+
             # chunks_data = [
             #     {"index": i, "file name": file_name,
             #         "chunk": chunk, "embedding": embedding.tolist()}
             #     for i, (chunk, embedding) in enumerate(zip(chunks, embeddings))
             # ]
 
-            return Response({'chunks_data': chunks_data}, status=status.HTTP_200_OK)
+            response_data = {'all_files_data': all_files_data}
+            if rejected_files:
+                response_data['rejected_files'] = rejected_files
+                response_data['message'] = 'Some files were rejected because their names already exist in the database.'
+
+            return Response(response_data, status=status.HTTP_200_OK)
         except Exception as e:
             print(f"An error occurred: {e}")
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -1,7 +1,9 @@
 version: '3.8'
 services:
   db:
-    image: postgres:15
+    build:
+      context: ./db
+      dockerfile: Dockerfile
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     environment:
@@ -31,6 +33,7 @@ services:
   ai:
     image: balancer-ai
     build: ./ai
+    command: python manage.py runserver 0.0.0.0:8001
     ports:
       - "8001:8001"
     env_file:
@@ -38,7 +41,7 @@ services:
     depends_on:
       - db
     volumes:
-      - ./ai:/usr/src/ai
+      - ./ai:/usr/src/server
     networks:
       app_net:
         ipv4_address: 192.168.0.4

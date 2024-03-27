@@ -4,6 +4,8 @@ from .views.listMeds.models import StateMedication
 from .models.authUser import UserAccount
 from .views.ai_settings.models import AI_Settings
 from .views.ai_promptStorage.models import AI_PromptStorage
+from .views.ai_settings.models import AI_Settings
+from .views.ai_promptStorage.models import AI_PromptStorage
 
 
 @admin.register(StateMedication)

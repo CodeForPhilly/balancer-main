@@ -43,6 +43,14 @@ export const FeatureMenuDropDown = () => {
             </div>
           </ul>
         </Link>
+        <Link to="/settings">
+          <ul className=" cursor-pointer rounded-lg p-3 transition duration-300 hover:bg-gray-100">
+            <span className=" font-bold text-black ">Settings Manager</span>
+            <div className="mt-1 font-satoshi text-sm  text-gray-400">
+              Control Settings for the Balancer-AI.
+            </div>
+          </ul>
+        </Link>
 
         {/* <div
           className="mr-9 text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"

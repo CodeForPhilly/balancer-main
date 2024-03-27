@@ -71,7 +71,8 @@ export default function authReducer(state = initialState, action: ActionType): S
         case AUTHENTICATED_SUCCESS:
             return {
                 ...state,
-                isAuthenticated: true
+                isAuthenticated: true,
+                isSuperuser: true
             }
         case LOGIN_SUCCESS:
         case GOOGLE_AUTH_SUCCESS:

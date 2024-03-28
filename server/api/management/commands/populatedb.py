@@ -53,11 +53,6 @@ MEDICATIONS = [
         'Weight gain, Metabolic issues, Sedation, Diabetes risk, Elevated cholesterol'
     ],
     [
-        'Valproate (divalproex)', 
-        'Mood stabilization, Reduces manic episodes, Decreases irritability, Helps with anxiety, Reduces aggression',
-        'Liver damage, Weight gain, Pancreatitis, Birth defects, Sedation phase'
-    ],
-    [
         'Valproate', 
         'Stabilizes mood swings, Reduces manic episodes, Prevents future mood episodes, Eases symptoms of mania, Can be used long-term', 
         'Weight gain, Liver damage, Birth defects, Pancreatitis risk, Sedation and dizziness'
@@ -152,7 +147,7 @@ MED_CHOICES = {
     ],
     'Depressed': [
         'Quetiapine, Lurasidone',
-        'Olanzapine plus Fluoxetine, Valproate (divalproex), Quetiapine plus Lithium, Quetiapine plus Valproate, Lurasidone plus Lithium, Lurasidone plus Valproate, Lithium plus Valproate, Lithium plus Lamotrigine',
+        'Olanzapine plus Fluoxetine, Valproate, Quetiapine plus Lithium, Quetiapine plus Valproate, Lurasidone plus Lithium, Lurasidone plus Valproate, Lithium plus Valproate, Lithium plus Lamotrigine',
         'Lamotrigine, Lithium, Olanzapine, Carbamazepine, Cariprazine, Olanzapine plus lithium, Olanzapine plus valproate'
     ],
     'Euthymic': [

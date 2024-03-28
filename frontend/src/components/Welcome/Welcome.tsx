@@ -1,11 +1,15 @@
+import { ReactElement } from 'react';
+
 interface WelcomeProps {
   subHeader?: string;
   descriptionText?: string;
+	descriptionEl?: ReactElement;
 }
 
 function Welcome({
   subHeader = "Designed to assist prescribers",
   descriptionText,
+	descriptionEl,
 }: WelcomeProps) {
   return (
     <div className="md:mt-10">
@@ -15,7 +19,7 @@ function Welcome({
           {subHeader}
         </h2>
       )}
-      {descriptionText && <p className="desc1">{descriptionText}</p>}
+      { (descriptionText && <p className="desc1">{descriptionText}</p>) || descriptionEl}
     </div>
   );
 }

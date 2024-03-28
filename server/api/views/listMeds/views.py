@@ -3,11 +3,11 @@ from .models import Diagnosis, Medication, Suggestion
 from django.views.decorators.csrf import csrf_exempt
 import json
 
-MEDS_INCLUDE = {'suicideHistory': ['Lithium']}
+MEDS_INCLUDE = { 'suicideHistory': ['Lithium'] }
 MED_EXCLUDE = {
     'kidneyHistory': ['Lithium'],
     'liverHistory': ['Valproate'],
-    'bloodPressureHistory': [],
+    'bloodPressureHistory': ['Asenapine', 'Lurasidone', 'Olanzapine', 'Paliperidone', 'Quetiapine', 'Risperidone', 'Ziprasidone', 'Aripiprazole', 'Cariprazine'],
     'weightGainConcern': ['Quetiapine', 'Risperidone', 'Aripiprazole', 'Olanzapine']
 }
 
@@ -44,6 +44,8 @@ def get_medication(request):
                     if med in suggestion.medication.name:
                         to_exclude = True
                         break
+                if i > 0 and suggestion.medication.name in include_result:
+                    to_exclude = True
                 if not to_exclude:
                     meds[line] += suggestion.medication.name + ", "
             meds[line] = meds[line][:-2]

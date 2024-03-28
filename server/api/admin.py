@@ -11,7 +11,7 @@ class StateMedicationAdmin(admin.ModelAdmin):
 
 @admin.register(UploadFile)
 class UploadFile(admin.ModelAdmin):
-    list_display = ['guid', 'file_name', 'file']
+    list_display = ['guid', 'file_name']
 
 
 @admin.register(UserAccount)

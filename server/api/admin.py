@@ -25,7 +25,7 @@ class UserAccountAdmin(admin.ModelAdmin):
 
 @admin.register(AI_Settings)
 class AI_Settings(admin.ModelAdmin):
-    list_display = ['id', 'guid', 'SettingGUID', 'SettingValue']
+    list_display = ['id', 'guid', 'SourceTableGUID', 'SettingValue']
 
 
 @admin.register(AI_PromptStorage)

@@ -11,6 +11,7 @@ import Feedback from "../pages/Feedback/Feedback.tsx";
 import Help from "../pages/Help/Help.tsx";
 import HowTo from "../pages/Help/HowTo.tsx";
 import DataSources from "../pages/Help/DataSources.tsx";
+import Settings from "../pages/Settings/Settings.tsx";
 
 const routes = [
   {
@@ -61,6 +62,10 @@ const routes = [
   {
     path: "adminportal",
     element: <AdminPortal />,
+  },
+  {
+    path: "Settings",
+    element: <Settings />,
   },
 ];
 

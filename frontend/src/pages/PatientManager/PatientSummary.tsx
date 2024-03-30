@@ -98,11 +98,11 @@ const PatientSummary = ({
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
-                      stroke-width="2"
+                      strokeWidth="2"
                     >
                       <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
                         d="M12 6v6m0 0v6m0-6h6m-6 0H6"
                       />
                     </svg>
@@ -132,11 +132,11 @@ const PatientSummary = ({
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
-                        stroke-width="2"
+                        strokeWidth="2"
                       >
                         <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
                           d="M6 12h12"
                         />
                       </svg>
@@ -153,380 +153,381 @@ const PatientSummary = ({
                   </p>
                 </div>
                 <div className="mt-3 ">
-                  <dl className="">
-                    <div className="flex-row justify-between border-b border-gray-900/10 py-6 md:flex">
-                      <div className="flex w-full md:p-0 ">
-                        <dt className="w-1/2 text-sm font-medium leading-6 text-gray-900 ">
-                          Current State:
-                        </dt>
-                        <dd className="text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                          {patientInfo.Diagnosis}
-                        </dd>
-                      </div>
-                      <div className="mt-2 flex w-full md:mt-0 md:p-0">
-                        <dt className=" w-1/2 text-sm font-medium leading-6 text-gray-900">
-                          Bipolar history:
-                        </dt>
-                        <dd className=" text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                          <ul className=" ">
-                            {patientInfo.Depression == "True" ? (
-                              <li className="">Depression</li>
-                            ) : (
-                              ""
-                            )}
-                            {patientInfo.Hypomania == "True" ? (
-                              <li className="">Hypomania</li>
-                            ) : (
-                              ""
-                            )}
-                            {patientInfo.Mania == "True" ? (
-                              <li className="">Mania</li>
-                            ) : (
-                              ""
-                            )}
-                          </ul>
-                        </dd>
-                      </div>
-                    </div>
-                    <div className=" border-b border-gray-900/10  sm:grid sm:grid-cols-3 sm:gap-4  sm:px-0 md:py-6">
-                      <dt className="mt-3 flex text-sm font-medium leading-6 text-gray-900">
-                        Risk Assessment:
-                      </dt>
-                      <dd className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                        <ul
-                          role="list"
-                          className="divide-y divide-gray-100 rounded-md border border-gray-200  "
-                        >
-                          <span className="font-medium ">
-                            {patientInfo.Psychotic == "Yes" ? (
-                              <li className="flex items-center justify-between border-b border-gray-900/10 py-4 pl-4 pr-5 text-sm leading-4 hover:bg-indigo-100 ">
-                                Currently psychotic
-                              </li>
-                            ) : (
-                              ""
-                            )}
-                          </span>
-                          <span className="font-medium ">
-                            {patientInfo.Suicide == "Yes" ? (
-                              <li className="flex items-center justify-between  border-b border-gray-900/10 py-4 pl-4 pr-5 text-sm leading-4 hover:bg-indigo-100 ">
-                                Patient has attempted suicide
-                              </li>
-                            ) : (
-                              ""
-                            )}
-                          </span>
-                          <span className="font-medium ">
-                            {patientInfo.Kidney == "Yes" ? (
-                              <li className="flex items-center justify-between border-b border-gray-900/10 py-4 pl-4 pr-5 text-sm leading-4 hover:bg-indigo-100 ">
-                                <Tooltip text="Lithium can affect kidney function, so it will not be included in the suggested medication list for patients with a risk or history of kidney disease.">
-                                  At risk for Kidney disease
-                                  <span className="material-symbols-outlined  ml-1">
-                                    info
-                                  </span>
-                                </Tooltip>
-                              </li>
-                            ) : (
-                              ""
-                            )}
-                          </span>
-                          <span className="font-medium ">
-                            {patientInfo.Liver == "Yes" ? (
-                              <li className="flex items-center justify-between border-b border-gray-900/10 py-4 pl-4 pr-5 text-sm leading-4 hover:bg-indigo-100 ">
-                                <Tooltip text="Depakote is processed through the liver, so it will not be included in the suggested medication list for patients with a risk or history of liver disease.">
-                                  At risk for Liver disease
-                                  <span className="material-symbols-outlined  ml-1">
-                                    info
-                                  </span>
-                                </Tooltip>
-                              </li>
-                            ) : (
-                              ""
-                            )}
-                          </span>
-                          <span className="font-medium ">
-                            {patientInfo.blood_pressure == "Yes" ? (
-                              <li className="flex items-center justify-between border-b border-gray-900/10 py-4 pl-4 pr-5 text-sm leading-4 hover:bg-indigo-100 ">
-                                <Tooltip text="Second-generation antipsychotics can cause low blood pressure upon standing, putting the patient at risk of passing out and hitting their head, so they will not be included in suggested medication list for patients with a risk or history of low blood pressure.">
-                                  At risk for low blood pressure or concern for
-                                  falls
-                                  <span className="material-symbols-outlined  ml-1">
-                                    info
-                                  </span>
-                                </Tooltip>
-                              </li>
-                            ) : (
-                              ""
-                            )}
-                          </span>
-                          <span className="font-medium ">
-                            {patientInfo.weight_gain == "Yes" ? (
-                              <li className="flex items-center justify-between border-b border-gray-900/10 py-4 pl-4 pr-5 text-sm leading-4 hover:bg-indigo-100 ">
-                                <Tooltip text="Seroquel, Risperdal, Abilify, and Zyprexa are known for causing weight gain, so they will not be included in the suggested medications list for patients with concerns about weight gain.">
-                                  Has weight gain concerns
-                                  <span className="material-symbols-outlined  ml-1">
-                                    info
-                                  </span>
-                                </Tooltip>
-                              </li>
-                            ) : (
-                              ""
-                            )}
-                          </span>
-                          <span className="font-medium ">
-                            {patientInfo.Reproductive == "Yes" ? (
-                              <li className="flex items-center justify-between border-b border-gray-900/10 py-4 pl-4 pr-5 text-sm leading-4 hover:bg-indigo-100 ">
-                                <Tooltip text="Depakote is known for causing birth defects and will not be included in the suggested medications list for patients interested in becoming pregnant.">
-                                  Wants to conceive in next 2 years
-                                  <span className="material-symbols-outlined ml-1">
-                                    info
-                                  </span>
-                                </Tooltip>
-                              </li>
-                            ) : (
-                              ""
-                            )}
-                          </span>
-                          <span className="font-medium ">
-                            {patientInfo.risk_pregnancy == "Yes" ? (
-                              <li className="flex items-center justify-between border-b border-gray-900/10 py-4 pl-4 pr-5 text-sm leading-4 hover:bg-indigo-100 ">
-                                <Tooltip text="Depakote is known for causing birth defects and will not be included in the suggested medications list for patients at risk of pregnancy. Note: If the patient is on birth control, taking Depakote is less of a risk.">
-                                  Any risk of pregnancy
-                                  <span className="material-symbols-outlined ml-1">
-                                    info
-                                  </span>
-                                </Tooltip>
-                              </li>
-                            ) : (
-                              ""
-                            )}
-                          </span>
-                        </ul>
-                      </dd>
-                    </div>
-                    <div className="flex flex-col justify-between border-b border-gray-900/10 py-6 sm:px-0 md:flex-row">
-                      <div className="flex w-full">
-                        <dt className="w-1/2 text-sm font-medium leading-6 text-gray-900">
-                          Current Medications:
-                        </dt>
-                        <dt className="text-sm  leading-6 text-gray-700">
-                          {patientInfo.CurrentMedications}
-                        </dt>
-                      </div>
-                      <br></br>
-                      <div className="flex w-full ">
-                        <label
-                          htmlFor="current-state"
-                          className="block flex w-1/2 text-sm font-medium leading-6 text-gray-900"
-                        >
-                          Prior medications
-                          <Tooltip text="Any bipolar medications entered here will not appear in the list of suggested medications, as they have already been tried without success.">
-                            <span className="material-symbols-outlined  ml-1">
-                              info
-                            </span>
-                          </Tooltip>
-                        </label>
-                        <dt className=" text-sm  leading-6 text-gray-700">
-                          {patientInfo.PriorMedications}
-                        </dt>
-                      </div>
-                    </div>
-                    <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                      <dt className="flex text-sm font-medium leading-6 text-gray-900">
-                        Possible Medications:
-                      </dt>
-                      <dd className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                        <dt className="ml-2 flex text-sm font-medium leading-6 text-gray-900">
-                          Tier 1: First-line Options:
-                        </dt>
-                        <ul
-                          role="list"
-                          className="divide-y divide-gray-100 rounded-md border border-gray-200"
-                        >
-                          {patientInfo.PossibleMedications &&
-                            patientInfo.PossibleMedications.first
-                              ?.split(", ")
-                              .map((medication: string) => (
-                                <li
-                                  className={`flex items-center justify-between py-4 pl-0 pr-2 text-sm leading-4 hover:bg-indigo-100 md:pl-4 md:pr-5
-                                ${
-                                  medication === clickedMedication
-                                    ? "bg-indigo-100"
-                                    : ""
-                                } cursor-pointer`}
-                                  onClick={() =>
-                                    handleMedicationClick(medication)
-                                  }
-                                >
-                                  <div className="flex w-0 flex-1 items-center">
-                                    <div className="ml-4 flex min-w-0 flex-1 gap-2">
-                                      <span className="truncate font-medium">
-                                        {medication}
-                                      </span>
-                                      <div className="ml-3 mt-0 flex max-w-sm items-start text-white">
-                                        {loading &&
-                                        medication === clickedMedication ? (
-                                          <TypingAnimation />
-                                        ) : null}
-                                      </div>
-                                    </div>
-                                  </div>
-                                  <div className="ml-4 flex-shrink-0">
-                                    <span className="font-medium text-indigo-600 hover:text-indigo-500">
-                                      Benefits and risks
-                                    </span>
-                                  </div>
-                                </li>
-                              ))}
-                        </ul>
-                      </dd>
-                      <dt className="flex text-sm font-medium leading-6 text-gray-900"></dt>
-                      <dd className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                        <dt className="ml-2 flex text-sm font-medium leading-6 text-gray-900">
-                          Tier 2: Second-line Options:
-                        </dt>
-                        <ul
-                          role="list"
-                          className="divide-y divide-gray-100 rounded-md border border-gray-200"
-                        >
-                          {patientInfo.PossibleMedications &&
-                            patientInfo.PossibleMedications.second
-                              ?.split(", ")
-                              .map((medication: string) => (
-                                <li
-                                  className={`flex items-center justify-between py-4 pl-0 pr-2 text-sm leading-4 hover:bg-indigo-100 md:pl-4 md:pr-5
-                                ${
-                                  medication === clickedMedication
-                                    ? "bg-indigo-100"
-                                    : ""
-                                } cursor-pointer`}
-                                  onClick={() =>
-                                    handleMedicationClick(medication)
-                                  }
-                                >
-                                  <div className="flex w-0 flex-1 items-center">
-                                    <div className="ml-4 flex min-w-0 flex-1 gap-2">
-                                      <span className="truncate font-medium">
-                                        {medication}
-                                      </span>
-                                      <div className="ml-3 mt-0 flex max-w-sm items-start text-white">
-                                        {loading &&
-                                        medication === clickedMedication ? (
-                                          <TypingAnimation />
-                                        ) : null}
-                                      </div>
-                                    </div>
-                                  </div>
-                                  <div className="ml-4 flex-shrink-0">
-                                    <span className="font-medium text-indigo-600 hover:text-indigo-500">
-                                      Benefits and risks
-                                    </span>
-                                  </div>
-                                </li>
-                              ))}
-                        </ul>
-                      </dd>
-                      <dt className="flex text-sm font-medium leading-6 text-gray-900"></dt>
-                      <dd className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                        <dt className="ml-2 flex text-sm font-medium leading-6 text-gray-900">
-                          Tier 3: Third-line Options:
-                        </dt>
-                        <ul
-                          role="list"
-                          className="divide-y divide-gray-100 rounded-md border border-gray-200"
-                        >
-                          {patientInfo.PossibleMedications &&
-                            patientInfo.PossibleMedications.third
-                              ?.split(", ")
-                              .map((medication: string) => (
-                                <li
-                                  className={`flex items-center justify-between py-4 pl-0 pr-2 text-sm leading-4 hover:bg-indigo-100 md:pl-4 md:pr-5
-                                ${
-                                  medication === clickedMedication
-                                    ? "bg-indigo-100"
-                                    : ""
-                                } cursor-pointer`}
-                                  onClick={() =>
-                                    handleMedicationClick(medication)
-                                  }
-                                >
-                                  <div className="flex w-0 flex-1 items-center">
-                                    <div className="ml-4 flex min-w-0 flex-1 gap-2">
-                                      <span className="truncate font-medium">
-                                        {medication}
-                                      </span>
-                                      <div className="ml-3 mt-0 flex max-w-sm items-start text-white">
-                                        {loading &&
-                                        medication === clickedMedication ? (
-                                          <TypingAnimation />
-                                        ) : null}
-                                      </div>
-                                    </div>
-                                  </div>
-                                  <div className="ml-4 flex-shrink-0">
-                                    <span className="font-medium text-indigo-600 hover:text-indigo-500">
-                                      Benefits and risks
-                                    </span>
-                                  </div>
-                                </li>
-                              ))}
-                        </ul>
-                      </dd>
-                    </div>
+									<div className="flex-row justify-between border-b border-gray-900/10 py-6 md:flex">
+										<dl className="flex w-full md:p-0 ">
+											<dt className="w-1/2 text-sm font-medium leading-6 text-gray-900 ">
+												Current State:
+											</dt>
+											<dd className="text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+												{patientInfo.Diagnosis}
+											</dd>
+										</dl>
+										<dl className="mt-2 flex w-full md:mt-0 md:p-0">
+											<dt className=" w-1/2 text-sm font-medium leading-6 text-gray-900">
+												Bipolar history:
+											</dt>
+											<dd className=" text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+												<ul className=" ">
+													{patientInfo.Depression == "True" ? (
+														<li className="">Depression</li>
+													) : (
+														""
+													)}
+													{patientInfo.Hypomania == "True" ? (
+														<li className="">Hypomania</li>
+													) : (
+														""
+													)}
+													{patientInfo.Mania == "True" ? (
+														<li className="">Mania</li>
+													) : (
+														""
+													)}
+												</ul>
+											</dd>
+										</dl>
+									</div>
+									<dl className=" border-b border-gray-900/10  sm:grid sm:grid-cols-3 sm:gap-4  sm:px-0 md:py-6">
+										<dt className="mt-3 flex text-sm font-medium leading-6 text-gray-900">
+											Risk Assessment:
+										</dt>
+										<dd className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+											<ul
+												role="list"
+												className="divide-y divide-gray-100 rounded-md border border-gray-200  "
+											>
+												<span className="font-medium ">
+													{patientInfo.Psychotic == "Yes" ? (
+														<li className="flex items-center justify-between border-b border-gray-900/10 py-4 pl-4 pr-5 text-sm leading-4 hover:bg-indigo-100 ">
+															Currently psychotic
+														</li>
+													) : (
+														""
+													)}
+												</span>
+												<span className="font-medium ">
+													{patientInfo.Suicide == "Yes" ? (
+														<li className="flex items-center justify-between  border-b border-gray-900/10 py-4 pl-4 pr-5 text-sm leading-4 hover:bg-indigo-100 ">
+															Patient has attempted suicide
+														</li>
+													) : (
+														""
+													)}
+												</span>
+												<span className="font-medium ">
+													{patientInfo.Kidney == "Yes" ? (
+														<li className="flex items-center justify-between border-b border-gray-900/10 py-4 pl-4 pr-5 text-sm leading-4 hover:bg-indigo-100 ">
+															<Tooltip text="Lithium can affect kidney function, so it will not be included in the suggested medication list for patients with a risk or history of kidney disease.">
+																At risk for Kidney disease
+																<span className="material-symbols-outlined  ml-1">
+																	info
+																</span>
+															</Tooltip>
+														</li>
+													) : (
+														""
+													)}
+												</span>
+												<span className="font-medium ">
+													{patientInfo.Liver == "Yes" ? (
+														<li className="flex items-center justify-between border-b border-gray-900/10 py-4 pl-4 pr-5 text-sm leading-4 hover:bg-indigo-100 ">
+															<Tooltip text="Depakote is processed through the liver, so it will not be included in the suggested medication list for patients with a risk or history of liver disease.">
+																At risk for Liver disease
+																<span className="material-symbols-outlined  ml-1">
+																	info
+																</span>
+															</Tooltip>
+														</li>
+													) : (
+														""
+													)}
+												</span>
+												<span className="font-medium ">
+													{patientInfo.blood_pressure == "Yes" ? (
+														<li className="flex items-center justify-between border-b border-gray-900/10 py-4 pl-4 pr-5 text-sm leading-4 hover:bg-indigo-100 ">
+															<Tooltip text="Second-generation antipsychotics can cause low blood pressure upon standing, putting the patient at risk of passing out and hitting their head, so they will not be included in suggested medication list for patients with a risk or history of low blood pressure.">
+																At risk for low blood pressure or concern for
+																falls
+																<span className="material-symbols-outlined  ml-1">
+																	info
+																</span>
+															</Tooltip>
+														</li>
+													) : (
+														""
+													)}
+												</span>
+												<span className="font-medium ">
+													{patientInfo.weight_gain == "Yes" ? (
+														<li className="flex items-center justify-between border-b border-gray-900/10 py-4 pl-4 pr-5 text-sm leading-4 hover:bg-indigo-100 ">
+															<Tooltip text="Seroquel, Risperdal, Abilify, and Zyprexa are known for causing weight gain, so they will not be included in the suggested medications list for patients with concerns about weight gain.">
+																Has weight gain concerns
+																<span className="material-symbols-outlined  ml-1">
+																	info
+																</span>
+															</Tooltip>
+														</li>
+													) : (
+														""
+													)}
+												</span>
+												<span className="font-medium ">
+													{patientInfo.Reproductive == "Yes" ? (
+														<li className="flex items-center justify-between border-b border-gray-900/10 py-4 pl-4 pr-5 text-sm leading-4 hover:bg-indigo-100 ">
+															<Tooltip text="Depakote is known for causing birth defects and will not be included in the suggested medications list for patients interested in becoming pregnant.">
+																Wants to conceive in next 2 years
+																<span className="material-symbols-outlined ml-1">
+																	info
+																</span>
+															</Tooltip>
+														</li>
+													) : (
+														""
+													)}
+												</span>
+												<span className="font-medium ">
+													{patientInfo.risk_pregnancy == "Yes" ? (
+														<li className="flex items-center justify-between border-b border-gray-900/10 py-4 pl-4 pr-5 text-sm leading-4 hover:bg-indigo-100 ">
+															<Tooltip text="Depakote is known for causing birth defects and will not be included in the suggested medications list for patients at risk of pregnancy. Note: If the patient is on birth control, taking Depakote is less of a risk.">
+																Any risk of pregnancy
+																<span className="material-symbols-outlined ml-1">
+																	info
+																</span>
+															</Tooltip>
+														</li>
+													) : (
+														""
+													)}
+												</span>
+											</ul>
+										</dd>
+									</dl>
+									<div className="flex flex-col justify-between border-b border-gray-900/10 py-6 sm:px-0 md:flex-row">
+										<dl className="flex w-full">
+											<dt className="w-1/2 text-sm font-medium leading-6 text-gray-900">
+												Current Medications:
+											</dt>
+											<dd className="text-sm  leading-6 text-gray-700">
+												{patientInfo.CurrentMedications}
+											</dd>
+										</dl>
+										<br></br>
+										<div className="flex w-full ">
+											<label
+												htmlFor="current-state"
+												className="block flex w-1/2 text-sm font-medium leading-6 text-gray-900"
+											>
+												Prior medications
+												<Tooltip text="Any bipolar medications entered here will not appear in the list of suggested medications, as they have already been tried without success.">
+													<span className="material-symbols-outlined  ml-1">
+														info
+													</span>
+												</Tooltip>
+											</label>
+											<dt className=" text-sm  leading-6 text-gray-700">
+												{patientInfo.PriorMedications}
+											</dt>
+										</div>
+									</div>
+									<div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+										<div className="flex text-sm font-medium leading-6 text-gray-900">
+											Possible Medications:
+										</div>
+										<dl className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+											<dt className="ml-2 flex text-sm font-medium leading-6 text-gray-900">
+												Tier 1: First-line Options:
+											</dt>
+											<ul
+												role="list"
+												className="divide-y divide-gray-100 rounded-md border border-gray-200"
+											>
+												{patientInfo.PossibleMedications &&
+													patientInfo.PossibleMedications.first
+														?.split(", ")
+														.map((medication: string, index: number) => (
+															<li
+																key={index}
+																className={`flex items-center justify-between py-4 pl-0 pr-2 text-sm leading-4 hover:bg-indigo-100 md:pl-4 md:pr-5
+															${
+																medication === clickedMedication
+																	? "bg-indigo-100"
+																	: ""
+															} cursor-pointer`}
+																onClick={() =>
+																	handleMedicationClick(medication)
+																}
+															>
+																<div className="flex w-0 flex-1 items-center">
+																	<div className="ml-4 flex min-w-0 flex-1 gap-2">
+																		<span className="truncate font-medium">
+																			{medication}
+																		</span>
+																		<div className="ml-3 mt-0 flex max-w-sm items-start text-white">
+																			{loading &&
+																			medication === clickedMedication ? (
+																				<TypingAnimation />
+																			) : null}
+																		</div>
+																	</div>
+																</div>
+																<div className="ml-4 flex-shrink-0">
+																	<span className="font-medium text-indigo-600 hover:text-indigo-500">
+																		Benefits and risks
+																	</span>
+																</div>
+															</li>
+														))}
+											</ul>
+										</dl>
+										<dt className="flex text-sm font-medium leading-6 text-gray-900"></dt>
+										<dl className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+											<dt className="ml-2 flex text-sm font-medium leading-6 text-gray-900">
+												Tier 2: Second-line Options:
+											</dt>
+											<ul
+												role="list"
+												className="divide-y divide-gray-100 rounded-md border border-gray-200"
+											>
+												{patientInfo.PossibleMedications &&
+													patientInfo.PossibleMedications.second
+														?.split(", ")
+														.map((medication: string, index: number) => (
+															<li
+																key={index}
+																className={`flex items-center justify-between py-4 pl-0 pr-2 text-sm leading-4 hover:bg-indigo-100 md:pl-4 md:pr-5
+															${
+																medication === clickedMedication
+																	? "bg-indigo-100"
+																	: ""
+															} cursor-pointer`}
+																onClick={() =>
+																	handleMedicationClick(medication)
+																}
+															>
+																<div className="flex w-0 flex-1 items-center">
+																	<div className="ml-4 flex min-w-0 flex-1 gap-2">
+																		<span className="truncate font-medium">
+																			{medication}
+																		</span>
+																		<div className="ml-3 mt-0 flex max-w-sm items-start text-white">
+																			{loading &&
+																			medication === clickedMedication ? (
+																				<TypingAnimation />
+																			) : null}
+																		</div>
+																	</div>
+																</div>
+																<div className="ml-4 flex-shrink-0">
+																	<span className="font-medium text-indigo-600 hover:text-indigo-500">
+																		Benefits and risks
+																	</span>
+																</div>
+															</li>
+														))}
+											</ul>
+										</dl>
+										<dt className="flex text-sm font-medium leading-6 text-gray-900"></dt>
+										<dl className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+											<dt className="ml-2 flex text-sm font-medium leading-6 text-gray-900">
+												Tier 3: Third-line Options:
+											</dt>
+											<ul
+												role="list"
+												className="divide-y divide-gray-100 rounded-md border border-gray-200"
+											>
+												{patientInfo.PossibleMedications &&
+													patientInfo.PossibleMedications.third
+														?.split(", ")
+														.map((medication: string, index: number) => (
+															<li
+																key={index}
+																className={`flex items-center justify-between py-4 pl-0 pr-2 text-sm leading-4 hover:bg-indigo-100 md:pl-4 md:pr-5
+															${
+																medication === clickedMedication
+																	? "bg-indigo-100"
+																	: ""
+															} cursor-pointer`}
+																onClick={() =>
+																	handleMedicationClick(medication)
+																}
+															>
+																<div className="flex w-0 flex-1 items-center">
+																	<div className="ml-4 flex min-w-0 flex-1 gap-2">
+																		<span className="truncate font-medium">
+																			{medication}
+																		</span>
+																		<div className="ml-3 mt-0 flex max-w-sm items-start text-white">
+																			{loading &&
+																			medication === clickedMedication ? (
+																				<TypingAnimation />
+																			) : null}
+																		</div>
+																	</div>
+																</div>
+																<div className="ml-4 flex-shrink-0">
+																	<span className="font-medium text-indigo-600 hover:text-indigo-500">
+																		Benefits and risks
+																	</span>
+																</div>
+															</li>
+														))}
+											</ul>
+										</dl>
+									</div>
 
-                    {riskData && (
-                      <div className="grid gap-4 px-4 py-3">
-                        {/* <dt className="text-sm font-medium leading-6 text-gray-900">
-                          Benefits and risks
-                        </dt> */}
-                        <dd className="mt-1 text-sm leading-6  text-gray-900 sm:col-span-2 sm:mt-0">
-                          <div className="flex">
-                            <div className=" w-[50%]">
-                              <div>
-                                <h4 className="mb-4 mt-4 text-sm font-medium text-indigo-600">
-                                  Benefits:
-                                </h4>
-                              </div>
-                              <div className="">
-                                <ul className="">
-                                  {riskData.benefits.map(
-                                    (benefit: string, index: number) => (
-                                      <li
-                                        key={index}
-                                        className="my-8  mr-1 h-12 text-sm hover:bg-indigo-100 md:my-0 md:mb-3"
-                                      >
-                                        {benefit}
-                                      </li>
-                                    )
-                                  )}
-                                </ul>
-                              </div>
-                            </div>
-                            <div className="w-[50%]">
-                              <div>
-                                <h4 className="mb-4 mt-4  text-sm font-medium  text-indigo-600">
-                                  Risks:
-                                </h4>
-                              </div>
-                              <div className="">
-                                <ul className="">
-                                  {riskData.risks.map(
-                                    (risk: string, index: number) => (
-                                      <li
-                                        key={index}
-                                        className=" my-8 mr-1 h-12 text-sm hover:bg-indigo-100 md:my-0 md:mb-3"
-                                      >
-                                        {risk}
-                                      </li>
-                                    )
-                                  )}
-                                </ul>
-                              </div>
-                            </div>
-                          </div>
-                        </dd>
-                      </div>
-                    )}
-                  </dl>
+									{riskData && (
+										<dl className="grid gap-4 px-4 py-3">
+											{/* <dt className="text-sm font-medium leading-6 text-gray-900">
+												Benefits and risks
+											</dt> */}
+											<dd className="mt-1 text-sm leading-6  text-gray-900 sm:col-span-2 sm:mt-0">
+												<div className="flex">
+													<div className=" w-[50%]">
+														<div>
+															<h4 className="mb-4 mt-4 text-sm font-medium text-indigo-600">
+																Benefits:
+															</h4>
+														</div>
+														<div className="">
+															<ul className="">
+																{riskData.benefits.map(
+																	(benefit: string, index: number) => (
+																		<li
+																			key={index}
+																			className="my-8  mr-1 h-12 text-sm hover:bg-indigo-100 md:my-0 md:mb-3"
+																		>
+																			{benefit}
+																		</li>
+																	)
+																)}
+															</ul>
+														</div>
+													</div>
+													<div className="w-[50%]">
+														<div>
+															<h4 className="mb-4 mt-4  text-sm font-medium  text-indigo-600">
+																Risks:
+															</h4>
+														</div>
+														<div className="">
+															<ul className="">
+																{riskData.risks.map(
+																	(risk: string, index: number) => (
+																		<li
+																			key={index}
+																			className=" my-8 mr-1 h-12 text-sm hover:bg-indigo-100 md:my-0 md:mb-3"
+																		>
+																			{risk}
+																		</li>
+																	)
+																)}
+															</ul>
+														</div>
+													</div>
+												</div>
+											</dd>
+										</dl>
+									)}
                 </div>
               </div>
             )}

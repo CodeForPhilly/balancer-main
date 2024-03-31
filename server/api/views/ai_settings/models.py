@@ -8,7 +8,7 @@ class AI_Settings(models.Model):
     SettingsLabel = models.CharField(max_length=255, null=True)
     SettingValue = models.TextField()
     SourceTable = models.TextField()
-    SourceTableGUID = models.CharField(max_length=255, unique=True)
+    SourceTableGUID = models.CharField(max_length=255, unique=True, null=True)
     LastModified = models.DateTimeField(auto_now=True)
     ModifiedByUser = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='settings_modified')

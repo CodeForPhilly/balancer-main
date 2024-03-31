@@ -70,16 +70,16 @@ const PatientManager = () => {
 
   // TODO: add error and loading state guards
 
-	let descriptionEl = (<div className="md:mt-10">
-		Use our tool to get medication suggestions for bipolar disorder based on patient characteristics.
-		{' '}
-		<Link
-			to="/data-sources"
-			className="mr-5 font-bold hover:border-blue-600 hover:text-blue-600 hover:no-underline"
-		>
-			Read about where we get our data.
-		</Link>
-	</div>);
+  let descriptionEl = (<div className="md:mt-10">
+    Use our tool to get medication suggestions for bipolar disorder based on patient characteristics.
+    {' '}
+    <Link
+      to="/data-sources"
+      className="mr-5 font-bold hover:border-blue-600 hover:text-blue-600 hover:no-underline"
+    >
+      Read about where we get our data.
+    </Link>
+  </div>);
 
   return (
     <div className="mt-24 flex w-full max-w-6xl flex-col items-center  md:mt-28">

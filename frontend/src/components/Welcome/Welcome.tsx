@@ -3,13 +3,13 @@ import { ReactElement } from 'react';
 interface WelcomeProps {
   subHeader?: string;
   descriptionText?: string;
-	descriptionEl?: ReactElement;
+  descriptionEl?: ReactElement;
 }
 
 function Welcome({
   subHeader = "Designed to assist prescribers",
   descriptionText,
-	descriptionEl,
+  descriptionEl,
 }: WelcomeProps) {
   return (
     <div className="md:mt-10">
@@ -19,7 +19,9 @@ function Welcome({
           {subHeader}
         </h2>
       )}
-      { (descriptionText && <p className="desc1">{descriptionText}</p>) || descriptionEl}
+      { ( descriptionText || descriptionEl ) &&
+        <p className="desc1">{ descriptionText || descriptionEl }</p>
+      }
     </div>
   );
 }

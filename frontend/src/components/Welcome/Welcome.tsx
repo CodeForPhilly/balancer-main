@@ -1,15 +1,15 @@
 import { ReactElement } from 'react';
 
 interface WelcomeProps {
-  subHeader?: string;
-  descriptionText?: string;
-	descriptionEl?: ReactElement;
+    subHeader?: string;
+    descriptionText?: string;
+    descriptionEl?: ReactElement;
 }
 
 function Welcome({
-  subHeader = "Designed to assist prescribers",
-  descriptionText,
-	descriptionEl,
+    subHeader = 'Designed to assist prescribers',
+    descriptionText,
+    descriptionEl,
 }: WelcomeProps) {
   return (
     <div className="md:mt-10">

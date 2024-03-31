@@ -163,7 +163,7 @@ const PatientSummary = ({
                           {patientInfo.Diagnosis}
                         </dd>
                       </div>
-                      <div className="mt-2 flex w-full md:mt-0 md:p-0">
+                      {/* <div className="mt-2 flex w-full md:mt-0 md:p-0">
                         <dt className=" w-1/2 text-sm font-medium leading-6 text-gray-900">
                           Bipolar history:
                         </dt>
@@ -186,7 +186,7 @@ const PatientSummary = ({
                             )}
                           </ul>
                         </dd>
-                      </div>
+                      </div> */}
                     </div>
                     <div className=" border-b border-gray-900/10  sm:grid sm:grid-cols-3 sm:gap-4  sm:px-0 md:py-6">
                       <dt className="mt-3 flex text-sm font-medium leading-6 text-gray-900">

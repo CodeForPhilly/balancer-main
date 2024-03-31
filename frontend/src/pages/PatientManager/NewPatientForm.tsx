@@ -98,7 +98,7 @@ const NewPatientForm = ({
     //   state:
     //     newPatientInfo.Diagnosis !== null ? newPatientInfo.Diagnosis : "Null",
     // };
-    
+
     // send payload to backend using the new interface
     const payload: PatientInfoInterface = {
       id: newPatientInfo.ID,
@@ -117,8 +117,8 @@ const NewPatientForm = ({
       bloodPressureHistory: newPatientInfo.blood_pressure == "Yes",
       weightGainConcern: newPatientInfo.weight_gain == "Yes",
       reproductive: newPatientInfo.Reproductive == "Yes",
-      riskPregnancy: newPatientInfo.risk_pregnancy == "Yes"
-    }
+      riskPregnancy: newPatientInfo.risk_pregnancy == "Yes",
+    };
     console.log(newPatientInfo);
 
     // Check if Diagnosis is "Null"
@@ -243,16 +243,16 @@ const NewPatientForm = ({
     }));
   };
 
-  const handleCheckboxChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    checkboxName: string
-  ) => {
-    const isChecked = e.target.checked;
-    setNewPatientInfo((prevInfo) => ({
-      ...prevInfo,
-      [checkboxName]: isChecked ? "True" : "False", // Update for both checked and unchecked
-    }));
-  };
+  // const handleCheckboxChange = (
+  //   e: React.ChangeEvent<HTMLInputElement>,
+  //   checkboxName: string
+  // ) => {
+  //   const isChecked = e.target.checked;
+  //   setNewPatientInfo((prevInfo) => ({
+  //     ...prevInfo,
+  //     [checkboxName]: isChecked ? "True" : "False", // Update for both checked and unchecked
+  //   }));
+  // };
 
   const handleRadioChange = (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -354,7 +354,7 @@ const NewPatientForm = ({
                 )} */}
               </div>
 
-              <div className="flex justify-between border-b border-gray-900/10 px-0  py-6 md:grid md:grid-cols-3 md:gap-4">
+              {/* <div className="flex justify-between border-b border-gray-900/10 px-0  py-6 md:grid md:grid-cols-3 md:gap-4">
                 <div>
                   <legend className="text-sm font-semibold leading-6 text-gray-900">
                     Bipolar history
@@ -438,7 +438,7 @@ const NewPatientForm = ({
                     </div>
                   </div>
                 </div>
-              </div>
+              </div> */}
               <div className="border-b border-gray-900/10 py-6 ">
                 <p className=" text-sm leading-6 text-gray-600">
                   Select patient characteristics
@@ -838,12 +838,14 @@ const NewPatientForm = ({
                 </div>
                 <button
                   type="submit"
-                  className={`btnBlue  ${isPressed &&
+                  className={`btnBlue  ${
+                    isPressed &&
                     "transition-transform focus:outline-none focus:ring focus:ring-blue-200"
-                    }${isLoading
+                  }${
+                    isLoading
                       ? "bg-white-600 transition-transform focus:outline-none focus:ring focus:ring-blue-500"
                       : ""
-                    }`}
+                  }`}
                   onMouseDown={handleMouseDown}
                   onMouseUp={handleMouseUp}
                   disabled={isLoading} // Disable the button while loading

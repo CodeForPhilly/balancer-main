@@ -75,7 +75,7 @@ const PatientManager = () => {
     {' '}
     <Link
       to="/data-sources"
-      className="mr-5 font-bold hover:border-blue-600 hover:text-blue-600 hover:no-underline"
+      className="mr-5 underline hover:border-blue-600 hover:text-blue-600 hover:no-underline"
     >
       Read about where we get our data.
     </Link>

@@ -12,7 +12,7 @@ interface SettingItem {
 }
 
 const SettingsManager: React.FC = () => {
-  const [showSummary, setShowSummary] = useState<boolean>(true);
+  // const [showSummary, setShowSummary] = useState<boolean>(true);
   const [settings, setSettings] = useState<SettingItem[]>([]);
 
   // Simulate fetching data from an API
@@ -46,9 +46,9 @@ const SettingsManager: React.FC = () => {
     fetchData();
   }, []);
 
-  const handleClickSummary = () => {
-    setShowSummary(!showSummary);
-  };
+  // const handleClickSummary = () => {
+  //   setShowSummary(!showSummary);
+  // };
 
   return (
     <section className="md:mt-28 lg:flex lg:items-center lg:justify-center">
@@ -56,30 +56,30 @@ const SettingsManager: React.FC = () => {
         <br />
         <div className="justify-between lg:w-[860px]">
           <div className="font_body rounded-md border bg-white p-2 px-3 ring-1 hover:ring-slate-300 md:p-4 md:px-8">
-            <h2 className="header_logo font-satoshi text-xl font-bold text-gray-600 hover:text-blue-600">
-              Settings
+            <h2 className="text-base  leading-7 text-gray-900">
+              <label className="font-semibold">AI Settings</label>
             </h2>
+            <div className="mt-2 border-b border-gray-900/10 ">
+              <p className="mb-5 mt-1 max-w-2xl text-sm leading-6  text-gray-500">
+                This is where you set your settings.
+              </p>
+            </div>
+
             {settings.map((setting, index) => (
-              <div key={index} className="mt-2 border-b border-gray-900/10">
-                <p className="text-base leading-7 text-gray-900">
-                  <strong>GUID:</strong> {setting.guid}
-                  <br />
-                  <strong>Source Table GUID:</strong>{" "}
-                  {setting.SourceTableGUID || "N/A"}
-                  <br />
-                  <strong>Setting Value:</strong> {setting.SettingValue}
-                  <br />
-                  <strong>Settings Label:</strong>{" "}
-                  {setting.SettingsLabel || "N/A"}
-                  <br />
-                  <strong>Source Table:</strong> {setting.SourceTable}
-                  <br />
-                  <strong>Last Modified:</strong>{" "}
-                  {new Date(setting.LastModified).toLocaleDateString()}
-                  <br />
-                  <strong>Modified By User:</strong> {setting.ModifiedByUser}
-                </p>
-              </div>
+              <li
+                key={index}
+                className="flex items-center justify-between  border-b border-gray-900/10"
+              >
+                <div className="my-5 flex w-[360px]  items-center justify-start  text-base leading-7  text-gray-900">
+                  <div className="font-medium">
+                    {setting.SettingsLabel || "N/A"}
+                  </div>
+                  <div className="ml-56">{setting.SettingValue}</div>
+                </div>
+                <div className="flex text-base leading-7 text-gray-900">
+                  <div className="font-medium">Update</div>
+                </div>
+              </li>
             ))}
           </div>
         </div>

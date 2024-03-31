@@ -70,7 +70,7 @@ const PatientManager = () => {
 
   // TODO: add error and loading state guards
 
-  let descriptionEl = (<div className="md:mt-10">
+  const descriptionEl = (<div className="md:mt-10">
     Use our tool to get medication suggestions for bipolar disorder based on patient characteristics.
     {' '}
     <Link

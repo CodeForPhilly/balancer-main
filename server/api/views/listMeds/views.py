@@ -25,8 +25,7 @@ def get_medication(request):
                 include_result.extend(MEDS_INCLUDE[condition])
         for condition in MED_EXCLUDE:
             if data.get(condition, False):
-                for med in MED_EXCLUDE[condition]:
-                    include_result.remove(med)
+                include_result = [med for med in include_result if med not in MED_EXCLUDE[condition]]
                 exclude_result.extend(MED_EXCLUDE[condition])
 
         diag_query = Diagnosis.objects.filter(state=state_query)
@@ -49,6 +48,8 @@ def get_medication(request):
                 if not to_exclude:
                     meds[line] += suggestion.medication.name + ", "
             meds[line] = meds[line][:-2]
+            if meds[line] == '':
+                meds[line] = 'None'
         print(meds)
         return JsonResponse(meds)
     else:

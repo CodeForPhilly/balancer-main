@@ -352,10 +352,15 @@ const PatientSummary = ({
                                   medication === clickedMedication
                                     ? "bg-indigo-100"
                                     : ""
-                                } cursor-pointer`}
-                                  onClick={() =>
-                                    handleMedicationClick(medication)
-                                  }
+                                } 
+                                ${
+                                  medication !== "None" ?
+                                  "cursor-pointer" :
+                                  "default"
+                                }`}
+                                  onClick={() => {
+                                    if (medication !== "None") handleMedicationClick(medication)
+                                  }}
                                 >
                                   <div className="flex w-0 flex-1 items-center">
                                     <div className="ml-4 flex min-w-0 flex-1 gap-2">
@@ -370,11 +375,13 @@ const PatientSummary = ({
                                       </div>
                                     </div>
                                   </div>
-                                  <div className="ml-4 flex-shrink-0">
-                                    <span className="font-medium text-indigo-600 hover:text-indigo-500">
-                                      Benefits and risks
-                                    </span>
-                                  </div>
+                                  {medication !== "None" &&
+                                    <div className="ml-4 flex-shrink-0">
+                                      <span className="font-medium text-indigo-600 hover:text-indigo-500">
+                                        Benefits and risks
+                                      </span>
+                                    </div>
+                                  }
                                 </li>
                               ))}
                         </ul>

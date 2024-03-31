@@ -19,8 +19,8 @@ function Welcome({
           {subHeader}
         </h2>
       )}
-      { (descriptionText || descriptionEl) &&
-        <p className="desc1">{ (descriptionText || descriptionEl) }</p>
+      { ( descriptionText || descriptionEl ) &&
+        <p className="desc1">{ descriptionText || descriptionEl }</p>
       }
     </div>
   );

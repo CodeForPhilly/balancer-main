@@ -5,6 +5,32 @@ import { PatientInfo } from "./PatientTypes";
 import Tooltip from "../../components/Tooltip";
 // import ErrorMessage from "../../components/ErrorMessage";
 
+// create new interface for refactor and to work with backend
+interface PatientInfoInterface {
+  id?: string;
+  state?: string;
+  otherDiagnosis?: string;
+  description?: string;
+  depression?: boolean;
+  hypomania?: boolean;
+  mania?: boolean;
+  currentMedications?: string;
+  priorMedications?: string;
+  possibleMedications?: {
+    first?: string;
+    second?: string;
+    third?: string;
+  };
+  psychotic: boolean;
+  suicideHistory: boolean;
+  kidneyHistory: boolean;
+  liverHistory: boolean;
+  bloodPressureHistory: boolean;
+  weightGainConcern: boolean;
+  reproductive: boolean;
+  riskPregnancy: boolean;
+}
+
 // TODO: refactor with Formik
 
 export interface NewPatientFormProps {
@@ -68,10 +94,32 @@ const NewPatientForm = ({
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const payload = {
-      state:
-        newPatientInfo.Diagnosis !== null ? newPatientInfo.Diagnosis : "Null",
-    };
+    // const payload = {
+    //   state:
+    //     newPatientInfo.Diagnosis !== null ? newPatientInfo.Diagnosis : "Null",
+    // };
+    
+    // send payload to backend using the new interface
+    const payload: PatientInfoInterface = {
+      id: newPatientInfo.ID,
+      state: newPatientInfo.Diagnosis,
+      otherDiagnosis: newPatientInfo.OtherDiagnosis,
+      description: newPatientInfo.Description,
+      depression: newPatientInfo.Depression == "True",
+      hypomania: newPatientInfo.Hypomania == "True",
+      mania: newPatientInfo.Hypomania == "True",
+      currentMedications: newPatientInfo.CurrentMedications,
+      priorMedications: newPatientInfo.PriorMedications,
+      psychotic: newPatientInfo.Psychotic == "Yes",
+      suicideHistory: newPatientInfo.Suicide == "Yes",
+      kidneyHistory: newPatientInfo.Kidney == "Yes",
+      liverHistory: newPatientInfo.Liver == "Yes",
+      bloodPressureHistory: newPatientInfo.blood_pressure == "Yes",
+      weightGainConcern: newPatientInfo.weight_gain == "Yes",
+      reproductive: newPatientInfo.Reproductive == "Yes",
+      riskPregnancy: newPatientInfo.risk_pregnancy == "Yes"
+    }
+    console.log(newPatientInfo);
 
     // Check if Diagnosis is "Null"
     if (newPatientInfo.Diagnosis === "Null") {

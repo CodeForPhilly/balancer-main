@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 
 // Define an interface for the setting items
 interface SettingItem {
@@ -14,38 +15,44 @@ interface SettingItem {
 const SettingsManager: React.FC = () => {
   // const [showSummary, setShowSummary] = useState<boolean>(true);
   const [settings, setSettings] = useState<SettingItem[]>([]);
+  function truncateStringByWord(str: string, limit: number): string {
+    const words = str.split(" ");
 
-  // Simulate fetching data from an API
+    if (words.length > limit) {
+      return words.slice(0, limit).join(" ") + "...";
+    }
+
+    return str;
+  }
   useEffect(() => {
     const fetchData = async () => {
-      // Simulate an API call
-      const data: SettingItem[] = [
-        {
-          guid: "f4749460-e37f-497a-9023-34f88aec7b81",
-          SourceTableGUID: null,
-          SettingValue: "System Prompt",
-          SettingsLabel: null,
-          SourceTable: "api_ai_promptstorage",
-          LastModified: "2024-03-26T12:46:01.789632Z",
-          ModifiedByUser: 1,
-        },
-        {
-          guid: "410a06de-7064-4b80-af43-bbffff0eacd0",
-          SourceTableGUID: null,
-          SettingValue: "ChatGpt",
-          SettingsLabel: "LLM",
-          SourceTable: "api_chats",
-          LastModified: "2024-03-31T00:36:57.419137Z",
-          ModifiedByUser: 1,
-        },
-      ];
+      const accessToken = localStorage.getItem("access");
+      if (accessToken) {
+        const config = {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `JWT ${accessToken}`, // Assuming the use of JWT for Authorization
+          },
+        };
 
-      setSettings(data);
+        // Use an environment variable for the base URL or directly insert the URL if not available
+        const baseUrl =
+          import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+        const url = `${baseUrl}/ai_settings/settings/`;
+        try {
+          const response = await axios.get<SettingItem[]>(url, config);
+          setSettings(response.data);
+        } catch (error) {
+          console.error("There was an error fetching the settings:", error);
+        }
+      } else {
+        console.log("Access token is not available.");
+      }
     };
 
     fetchData();
   }, []);
-
   // const handleClickSummary = () => {
   //   setShowSummary(!showSummary);
   // };
@@ -64,23 +71,24 @@ const SettingsManager: React.FC = () => {
                 This is where you set your settings.
               </p>
             </div>
-
-            {settings.map((setting, index) => (
-              <li
-                key={index}
-                className="flex items-center justify-between  border-b border-gray-900/10"
-              >
-                <div className="my-5 flex w-[360px]  items-center justify-start  text-base leading-7  text-gray-900">
-                  <div className="font-medium">
+            <ul className="list-none">
+              {settings.map((setting, index) => (
+                <li
+                  key={index}
+                  className="my-5 grid grid-cols-12 items-center border-b border-gray-900/10 py-2"
+                >
+                  <div className="col-span-4 text-base font-medium leading-7 text-gray-900">
                     {setting.SettingsLabel || "N/A"}
                   </div>
-                  <div className="ml-56">{setting.SettingValue}</div>
-                </div>
-                <div className="flex text-base leading-7 text-gray-900">
-                  <div className="font-medium">Update</div>
-                </div>
-              </li>
-            ))}
+                  <div className="col-span-7 text-base leading-7 text-gray-900">
+                    {truncateStringByWord(setting.SettingValue, 50)}
+                  </div>
+                  <div className="col-span-1 text-right text-base leading-7 text-gray-900">
+                    <button className="font-medium">Update</button>
+                  </div>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </div>

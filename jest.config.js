@@ -1,7 +1,7 @@
 // jest.config.js
 module.exports = {
   preset: 'ts-jest/presets/default-esm',
-  testEnvironment: 'node',
+  testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['./jest.setup.js'],
   globals: {
     'ts-jest': {

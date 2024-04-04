@@ -25,6 +25,7 @@ const DrugSummaryForm = () => {
   const [pageContent, setPageContent] = useState("");
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const scrollToBottomRef = useRef<HTMLDivElement | null>(null);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
@@ -74,21 +75,27 @@ const DrugSummaryForm = () => {
     }
   }, [chatLog]);
 
-  const suggestionPrompts = [
-    [
-      "Tell me about treatment options.",
-      "Additional details or related question.",
-    ],
-    [
-      "What are the common side effects?",
-      "Additional details or related question.",
-    ],
-    [
-      "How to manage medication schedule?",
-      "Additional details or related question.",
-    ],
-    ["Another question or topic?", "Additional details or related question."],
-  ];
+  useEffect(() => {
+    if (scrollToBottomRef.current) {
+      scrollToBottomRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [chatLog]);
+
+  // const suggestionPrompts = [
+  //   [
+  //     "Tell me about treatment options.",
+  //     "Additional details or related question.",
+  //   ],
+  //   [
+  //     "What are the common side effects?",
+  //     "Additional details or related question.",
+  //   ],
+  //   [
+  //     "How to manage medication schedule?",
+  //     "Additional details or related question.",
+  //   ],
+  //   ["Another question or topic?", "Additional details or related question."],
+  // ];
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -151,77 +158,85 @@ const DrugSummaryForm = () => {
 
   return (
     <>
-      <div
-        ref={chatContainerRef}
-        id="chat_container"
-        className=" mx-auto flex h-full flex-col overflow-auto rounded "
-        style={{ width: "800px", height: "680px" }}
-      >
-        <div className="font_body pb-22 mt-36 flex flex-grow flex-col space-y-2 p-5">
+      <header className=" fixed w-full items-center ">
+        {" "}
+        <div
+          className={
+            "   h-20  w-full items-center justify-between border-b border-gray-300 bg-white lg:flex xl:px-60"
+          }
+        >
+          {" "}
+          <span className="bg-gradient-to-r  from-blue-500 via-blue-700 to-blue-300 bg-clip-text font-quicksand text-xl font-bold text-transparent lg:text-3xl ">
+            Balancer
+          </span>
+        </div>
+      </header>
+      <div className="mx-auto  min-h-screen w-full max-w-[800px] overflow-y-auto border">
+        <div className="h-[100px]"> </div>
+        <div
+          ref={chatContainerRef}
+          id="chat_container"
+          className="flex flex-col p-5 "
+        >
           {chatLog.length === 0 ? (
             <>
-              <div className="max-h-[100%] max-w-[310px] rounded-lg border-2 bg-gray-200 p-2 text-black">
-                You can ask about the content on this page.
-              </div>
-              <div className="max-h-[100%] max-w-[190px] rounded-lg border-2 bg-gray-200 p-2 text-black">
-                Or questions in general.
+              <div className="flex  flex-col gap-4 p-3">
+                <div className="max-h-[100%] max-w-[310px] rounded-lg border-2 bg-stone-50 p-2 text-sky-950">
+                  You can ask about the content on this page.
+                </div>
+                <div className="max-h-[100%] max-w-[190px] rounded-lg border-2 bg-stone-50 p-2 text-sky-950">
+                  Or questions in general.
+                </div>
               </div>
             </>
           ) : (
             chatLog.map((message, index) => (
-              <div
-                key={index}
-                className={`flex ${
-                  message.type === "user" ? "justify-end" : "justify-start"
-                }`}
-              >
+              <div className="flex  flex-col gap-4 p-3">
                 <div
+                  key={index}
                   className={`${
-                    message.type === "user"
-                      ? "bg-blue-200 text-black "
-                      : "border-2 bg-gray-200 text-black "
-                  }rounded-lg max-h-[100%] max-w-[500px] p-2`}
+                    message.type === "user" ? "justify-end" : "justify-start"
+                  }   p-2`}
+                  ref={index === chatLog.length - 1 ? scrollToBottomRef : null}
                 >
-                  {message.message}
+                  <div
+                    className={`${
+                      message.type === "user"
+                        ? "bg-blue-200 text-neutral-600 "
+                        : " bg-stone-50 text-sky-950 "
+                    }rounded-lg  p-2`}
+                  >
+                    {message.message}
+                  </div>
                 </div>
               </div>
             ))
           )}
           {isLoading && (
             <div key={chatLog.length} className="flex justify-between">
-              <div className="max-w-sm rounded-lg p-4 text-white">
-                {/* <TypingAnimation /> */}
-              </div>
+              <div className="max-w-sm rounded-lg p-4 text-white"></div>
             </div>
           )}
+          <div className="h-[100px]"> </div>
         </div>
-      </div>
 
-      <div style={{ width: "800px" }}>
-        <div className="p-4">
-          {/* <div className="grid grid-cols-2 gap-2 p-2"> */}
-          <ul className="grid cursor-pointer grid-cols-2 gap-2 rounded-lg p-2 p-3">
-            {suggestionPrompts.map((suggestion, index) => (
-              <button
-                type="button"
-                key={index}
-                className="rounded-md border p-2 text-left text-sm text-black hover:bg-blue-200"
-                onClick={() => setInputValue(suggestion[0])}
-              >
-                <span className="font-bold text-black">{suggestion[0]}</span>
-                <div className="mt-1 font-satoshi text-sm text-gray-400">
-                  {suggestion[1]}
-                </div>
-              </button>
-            ))}
-          </ul>
-
-          {/* </div> */}
-          <form onSubmit={handleSubmit} className="mb-1 flex">
+        <div className=" max-w-[800px] ">
+          <form
+            onSubmit={handleSubmit}
+            className="fixed bottom-3 flex w-[800px] p-4"
+          >
             <div className="relative flex w-full  items-center ">
+              <input
+                type="text"
+                className="w-full rounded-md border border-gray-300 py-3 pl-10 pr-3"
+                placeholder="Talk to me..."
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+              />
+
               <button
                 type="button"
-                className="absolute left-2 z-10"
+                className="absolute left-0 ml-2"
                 onClick={() => {
                   if (fileInputRef.current) {
                     fileInputRef.current.click();
@@ -230,15 +245,6 @@ const DrugSummaryForm = () => {
               >
                 <img src={paperclip} alt="Upload" className="h-6" />
               </button>
-
-              <input
-                type="ani_input"
-                className="input w-full rounded-md border border-gray-300"
-                placeholder="Talk to me..."
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-              />
-
               <input
                 type="file"
                 id="fileInput"

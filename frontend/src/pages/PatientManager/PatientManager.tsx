@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import NewPatientForm from "./NewPatientForm.tsx";
 import PatientHistory from "./PatientHistory.tsx";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -69,12 +70,22 @@ const PatientManager = () => {
 
   // TODO: add error and loading state guards
 
+	let descriptionEl = (<div className="md:mt-10">
+		Use our tool to get medication suggestions for bipolar disorder based on patient characteristics.
+		{' '}
+		<Link
+			to="/data-sources"
+			className="mr-5 font-bold hover:border-blue-600 hover:text-blue-600 hover:no-underline"
+		>
+			Read about where we get our data.
+		</Link>
+	</div>);
+
   return (
     <div className="mt-24 flex w-full max-w-6xl flex-col items-center  md:mt-28">
       <Welcome
         subHeader="Designed to assist prescribers"
-        descriptionText="Use our tool to get medication suggestions for bipolar
-        disorder based on patient characteristics."
+        descriptionEl={descriptionEl}
       />
       <div className="mt-0 flex w-[90%] flex-col md:mt-12 md:w-[75%] ">
         <PatientSummary

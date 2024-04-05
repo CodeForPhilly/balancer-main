@@ -21,6 +21,8 @@ services:
       - ./config/env/env.dev
     depends_on:
       - db
+<<<<<<< HEAD
+=======
   frontend:
     image: balancer-frontend
     build:
@@ -38,6 +40,7 @@ services:
         - "/usr/src/app/node_modules/"
     depends_on:
       - backend
+>>>>>>> ac68347c12ced724206112843623ee8c515bd3ad
 
 volumes:
   postgres_data:

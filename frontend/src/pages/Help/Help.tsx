@@ -42,10 +42,10 @@ function Help() {
 
   return (
     <Layout>
-      <div className="mt-20 flex w-full max-w-6xl flex-col items-center justify-center px-4">
+      <div className="mt-20 flex w-full flex-col items-center justify-center px-4">
         <div className="flex justify-center text-center">
           <h1 className="mt-20 font-satoshi text-3xl text-blue-600">
-            Help & Support
+            Help & Support Page
           </h1>
         </div>
         <div className="flex py-2 text-center">
@@ -55,17 +55,16 @@ function Help() {
         </div>
         <div className="flex flex-col gap-4 sm:flex-row">
           {data.icon.map((icon, index) => (
-            <Link
-              to={data.link[index]}
+            <Link to={data.link[index]} key={index} className="flex"> 
+
+            <div className="">
+            <HelpCard
               key={index}
-              className="flex max-w-full flex-grow basis-1/3"
-            >
-              <HelpCard
-                key={index}
-                icon={icon}
-                title={data.title[index]}
-                paragraph={data.paragraph[index]}
-              />
+              icon={icon}
+              title={data.title[index]}
+              paragraph={data.paragraph[index]}
+            />
+            </div>
             </Link>
           ))}
         </div>

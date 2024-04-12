@@ -1,25 +1,29 @@
-import { useState, useRef, useEffect, Fragment } from "react";
+// import { useState, useRef, useEffect, Fragment } from "react";
+import { useState, Fragment } from "react";
 import accountLogo from "../../assets/account.svg";
 import { Link, useNavigate } from "react-router-dom";
 import LoginMenuDropDown from "./LoginMenuDropDown";
 import "../../components/Header/header.css";
 import Chat from "./Chat";
-import { FeatureMenuDropDown } from "./FeatureMenuDropDown";
+// import { FeatureMenuDropDown } from "./FeatureMenuDropDown";
 import MdNavBar from "./MdNavBar";
 import { connect, useDispatch } from "react-redux";
 import { RootState } from "../../services/actions/types";
 import { logout, AppDispatch } from "../../services/actions/auth";
+// import { HiChevronDown } from "react-icons/hi";
 
 interface LoginFormProps {
   isAuthenticated: boolean;
+  isSuperuser: boolean;
 }
 
 const Header = (props: LoginFormProps) => {
   const { isAuthenticated } = props;
+  const { isSuperuser } = props;
   const navigate = useNavigate();
-  const [showFeaturesMenu, setShowFeaturesMenu] = useState(false);
-  const dropdownRef = useRef(null);
-  let delayTimeout: number | null = null;
+  // const [showFeaturesMenu, setShowFeaturesMenu] = useState(false);
+  // const dropdownRef = useRef(null);
+  // let delayTimeout: number | null = null;
   const [showChat, setShowChat] = useState(false);
   const [showLoginMenu, setShowLoginMenu] = useState(false);
   const [redirect, setRedirect] = useState(false);
@@ -32,10 +36,7 @@ const Header = (props: LoginFormProps) => {
   };
 
   const guestLinks = () => (
-    <nav
-      onClick={handleLoginMenu}
-      className=" flex w-full cursor-pointer items-center  justify-center "
-    >
+    <nav onClick={handleLoginMenu} className=" flex cursor-pointer  ">
       <img src={accountLogo} alt="logo" className="mr-5 h-5  object-contain " />
       <span className=" text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline">
         Sign in
@@ -44,10 +45,7 @@ const Header = (props: LoginFormProps) => {
   );
 
   const authLinks = () => (
-    <nav
-      onClick={logout_user}
-      className=" ml-40  flex w-full cursor-pointer items-center"
-    >
+    <nav onClick={logout_user} className="  flex  cursor-pointer ">
       <img src={accountLogo} alt="logo" className="mr-5 h-5  object-contain " />
       <span className=" text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline">
         Sign out
@@ -59,59 +57,61 @@ const Header = (props: LoginFormProps) => {
     setShowLoginMenu(!showLoginMenu);
   };
 
-  const handleMouseEnter = () => {
-    if (delayTimeout !== null) {
-      clearTimeout(delayTimeout);
-    }
-    setShowFeaturesMenu(true);
-  };
+  // const handleMouseEnter = () => {
+  //   if (delayTimeout !== null) {
+  //     clearTimeout(delayTimeout);
+  //   }
+  //   setShowFeaturesMenu(true);
+  // };
 
-  const handleMouseLeave = () => {
-    delayTimeout = setTimeout(() => {
-      setShowFeaturesMenu(false);
-    }, 300) as unknown as number; // Adjust the delay time as needed
-  };
+  // const handleMouseLeave = () => {
+  //   delayTimeout = setTimeout(() => {
+  //     setShowFeaturesMenu(false);
+  //   }, 300) as unknown as number; // Adjust the delay time as needed
+  // };
 
-  useEffect(() => {
-    return () => {
-      if (delayTimeout !== null) {
-        clearTimeout(delayTimeout);
-      }
-    };
-  }, [delayTimeout]);
+  // useEffect(() => {
+  //   return () => {
+  //     if (delayTimeout !== null) {
+  //       clearTimeout(delayTimeout);
+  //     }
+  //   };
+  // }, [delayTimeout]);
 
   return (
-    <header className="fixed w-full items-center">
-      <div className="hidden h-8 w-full items-center justify-center border-b border-gray-300 bg-blue-100 text-center text-sm font-light text-gray-500 md:flex">
-        This app is currently in its beta testing phase. The information and
-        tools provided herein are intended for general informational purposes
-        only and should NOT be construed as medical advice, diagnosis, or
-        treatment.
+    <header className="z10 fixed w-full items-center ">
+      <div className="hidden w-full items-center justify-center border-b border-gray-300 bg-blue-100 p-1 text-center text-sm font-light text-gray-500 lg:flex">
+        <p className="">
+          This app is currently in its beta testing phase. The information and
+          tools provided herein are intended for general informational purposes
+          only and should NOT be construed as medical advice, diagnosis, or
+          treatment.
+        </p>
       </div>
-      <div className="flex h-9 w-full items-center justify-center border-b border-gray-300 bg-blue-100 text-center text-sm font-light text-gray-500 md:hidden ">
+      <div className="flex items-center justify-center border-b border-gray-300 bg-blue-100 p-1 text-center text-sm font-light text-gray-500 lg:hidden ">
         App is in beta; Do not use info as medical advice.
       </div>
       <div
         className={
-          "xl:px-50 mx-auto hidden h-20 items-center justify-between border-b border-gray-300 bg-white  px-4 sm:px-6 md:px-8 lg:flex lg:px-8 2xl:px-56"
+          "  hidden h-20  w-full items-center justify-between border-b border-gray-300 bg-white px-96 md:px-20 lg:flex xl:px-60"
         }
       >
         <Link to="/">
-          <span className="header_logo text-xl font-bold md:ml-72 md:mr-36">
+          <span className="bg-gradient-to-r  from-blue-500 via-blue-700 to-blue-300 bg-clip-text font-quicksand text-xl font-bold text-transparent lg:text-3xl ">
             Balancer
           </span>
         </Link>
-        <nav className="flex w-full items-center justify-center font-satoshi text-base">
-          <div
+        <nav className="flex font-satoshi text-base lg:gap-2 xl:gap-5">
+          {/* <div
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
             ref={dropdownRef}
             className=""
           >
             <span
-              className={` mr-9 text-black ${
+              className={` mr-9 font-bold text-black ${
                 showFeaturesMenu
-                  ? "mx-4 cursor-pointer border-b-2 border-blue-600 hover:border-b-2 hover:border-blue-600 hover:no-underline"
+                  ? "mx-4 cursor-pointer border-b-2 border-blue-600 hover:border-b-2 hover:border-blue-600 hover:text-blue-600 hover:no-underline"
                   : "mx-4 cursor-pointer hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
               }`}
             >
@@ -123,42 +123,55 @@ const Header = (props: LoginFormProps) => {
                     : "absolute ml-1.5 "
                 }`}
               >
-                &#8593;
+                <HiChevronDown className="inline-block" />
               </span>
             </span>
             {showFeaturesMenu && <FeatureMenuDropDown />}
-          </div>
+          </div> */}
+          <Link
+            to="/"
+            className="mr-5 font-bold text-black hover:border-blue-600 hover:text-blue-600 hover:no-underline"
+          >
+            Medication Suggester
+          </Link>
           <>
             <Link
               to="/about"
-              className="mr-5  text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
+              className="mr-5 font-bold text-black hover:border-blue-600 hover:text-blue-600 hover:no-underline"
             >
               About
             </Link>
             <Link
-              to="/login"
-              className="mr-5  text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
+              to="/help"
+              className="mr-5 font-bold text-black hover:border-blue-600 hover:text-blue-600 hover:no-underline"
             >
               Help
             </Link>
             <Link
               to="/feedback"
-              className="mr-5  text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
+              className="mr-5 font-bold text-black hover:border-blue-600 hover:text-blue-600 hover:no-underline"
             >
               Leave Feedback
             </Link>
-            {redirect ? navigate("/") : <Fragment></Fragment>}
-            <LoginMenuDropDown
-              showLoginMenu={showLoginMenu}
-              handleLoginMenu={handleLoginMenu}
-            />
-            {isAuthenticated && (
-              <Chat showChat={showChat} setShowChat={setShowChat} />
+            {isSuperuser && (
+              <Link
+                to="/adminportal"
+                className="mr-5 font-bold text-black hover:border-blue-600 hover:text-blue-600 hover:no-underline"
+              >
+                Admin Portal
+              </Link>
             )}
-            {/* <Chat showChat={showChat} setShowChat={setShowChat} /> */}
+            {redirect ? navigate("/") : <Fragment></Fragment>}
           </>
         </nav>
-
+        <LoginMenuDropDown
+          showLoginMenu={showLoginMenu}
+          handleLoginMenu={handleLoginMenu}
+        />
+        {isAuthenticated && (
+          <Chat showChat={showChat} setShowChat={setShowChat} />
+        )}
+        {/* <Chat showChat={showChat} setShowChat={setShowChat} /> */}
         {isAuthenticated ? authLinks() : guestLinks()}
       </div>
       <MdNavBar isAuthenticated={isAuthenticated} />
@@ -168,6 +181,7 @@ const Header = (props: LoginFormProps) => {
 
 const mapStateToProps = (state: RootState) => ({
   isAuthenticated: state.auth.isAuthenticated,
+  isSuperuser: state.auth.isSuperuser,
 });
 
 const ConnectedLayout = connect(mapStateToProps)(Header);

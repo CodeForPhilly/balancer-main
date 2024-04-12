@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import closeLogo from "../../assets/close.svg";
+// import closeLogo from "../../assets/close.svg";
 
 interface LoginMenuDropDownProps {
   showLoginMenu: boolean;
@@ -20,46 +20,51 @@ const LoginMenuDropDown: React.FC<LoginMenuDropDownProps> = ({
         ></div>
       )} */}
       {showLoginMenu && (
-        <div className="z-5 inset-0 bg-gray-900 opacity-50 md:fixed"></div>
+        <div className="inset-0 z-20 bg-gray-900 opacity-50 md:fixed"></div>
       )}
       <div
         className={
           showLoginMenu
-            ? "z20 fixed right-0 top-0 h-full w-[100%] border-l border-l-gray-900 bg-white p-16 duration-1000 ease-in-out md:w-[35%]"
-            : "fixed right-[-500%] duration-500 ease-in-out md:right-[-100%]"
+            ? "fixed right-0 top-0 z-40 h-full w-[100%] border-l border-l-gray-900 bg-white p-16 duration-1000 ease-in-out md:w-[65%] lg:w-[35%]"
+            : "fixed right-[-500%] duration-500 ease-in-out md:right-[-500%]"
         }
       >
         <div className="hidden justify-between md:block md:flex">
           <div className="font-satoshi text-2xl">
-            <h1>Balance account</h1>
+            {/* <h1>Balance account</h1> */}
           </div>
           <div onClick={handleLoginMenu}>
-            {showLoginMenu && (
+            {/* {showLoginMenu && (
               <img
                 src={closeLogo}
                 alt="logo"
                 className="hover:cursor-pointer hover:border-b-2 hover:border-blue-600 md:h-7 md:w-7"
               />
-            )}
+            )} */}
           </div>
         </div>
-        <div className="h-44"></div>
+        <div className="h-36"></div>
         <div className="flex h-20 flex-col items-center  justify-self-center">
-          <span className="text-xl font-bold md:mr-8">Balancer</span>
+          <span className="bg-gradient-to-r  from-blue-500 via-blue-700 to-blue-300 bg-clip-text font-quicksand text-3xl font-bold text-transparent lg:text-3xl ">
+            Balancer
+          </span>
         </div>
-        <div className="mb-4 flex hidden h-14 flex-col items-center justify-center text-center font-satoshi text-xl md:block">
+        <div className="mb-4 flex  h-14 flex-col items-center justify-center text-center font-satoshi text-xl md:block">
           <p>Log into your Balancer account</p>
         </div>
+        <br />
+        <br />
         <div className="flex h-28 flex-col items-center justify-center text-center">
           <p className="mb-4">
-            Log into an existing Balancer account or create a new one. With a
-            Balance account, you can get access to additional features and store
-            data.
+            Access Balancer's cutting-edge features by signing into your
+            account. Our platform is in Beta, aiming to refine your experience.
+            Remember, our site's insights are not medical advice. Your feedback
+            shapes the future of Balancer.
           </p>
-          <p className="w-96">
+          {/* <p className="w-96">
             You can log in or sign up for a Balancer account using your email,
             gmail or Facebook account.
-          </p>
+          </p> */}
         </div>
         <div className="flex h-32 flex-col items-center justify-center text-center">
           <div className="mt-8 flex flex-col">

@@ -1,32 +1,35 @@
 from django.http import JsonResponse
-from .models import uploadFiles
+from .models import UploadFile
 from django.views.decorators.csrf import csrf_exempt
-import json
+from django.core.exceptions import ValidationError
 
 
 @csrf_exempt
 def uploadFiles(request):
     if request.method == 'POST':
-        data = json.loads(request.body)
-        # state_query = data.get('state', '').lower()
-        # print("Debug: state_query =", state_query)
+        file = request.FILES.get('file')
 
-        # if state_query not in [choice[0] for choice in StateMedication.STATE_CHOICES]:
-        #     print("Debug: state_medication =",  StateMedication.STATE_CHOICES)
-        #     return JsonResponse({'error': 'Invalid state'}, status=400)
+        # Validate input
+        if not file:
+            return JsonResponse({'error': 'Missing file'}, status=400)
 
-        # try:
-        #     state_medication = StateMedication.objects.get(state=state_query)
-        #     # print("Debug: state_medication =", state_medication)
-        # except StateMedication.DoesNotExist:
-        #     return JsonResponse({'error': 'State not found'}, status=404)
+        # Read file contents in binary mode
+        file_contents = file.read()
+        print(file.read())
+        # Use the original file name
+        file_name = file.name
 
-        meds = {
-            'first': 'fd',
-            'second': 'fd',
-            'third': 'fd'
-        }
+        # Create an instance of the model
+        upload_file = UploadFile(file_name=file_name, file=file_contents)
 
-        return JsonResponse(meds)
+        # Save the instance to the database
+        try:
+            upload_file.full_clean()  # Validate the model instance
+            upload_file.save()
+        except ValidationError as e:
+            return JsonResponse({'error': str(e)}, status=400)
+
+        # Return the GUID in the response
+        return JsonResponse({'guid': str(upload_file.guid)})
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=405)

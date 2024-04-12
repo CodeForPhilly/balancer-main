@@ -20,6 +20,8 @@ export const LOGOUT = "LOGOUT";
 
 export interface RootState {
   auth: {
+    error: any;
     isAuthenticated: boolean;
+    isSuperuser: boolean;
   };
 }

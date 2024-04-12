@@ -1,8 +1,16 @@
+<<<<<<< HEAD
 name: 'Containers: Publish'
 
 on:
   push:
     tags: [ 'v*' ]
+=======
+name: "Containers: Publish"
+
+on:
+  push:
+    tags: ["v*"]
+>>>>>>> 5d9968afe8f5ab373ab0379485cea79ba3253193
 
 permissions:
   packages: write
@@ -12,6 +20,7 @@ jobs:
     name: Build and Push
     runs-on: ubuntu-latest
     steps:
+<<<<<<< HEAD
 
     - uses: actions/checkout@v3
 
@@ -52,6 +61,47 @@ jobs:
 
     - name: 'Push Docker container image frontend-static:v*'
       run: docker push "${DOCKER_REPOSITORY}/frontend-static:${DOCKER_TAG}"
+=======
+      - uses: actions/checkout@v3
+
+      - name: Login to ghcr.io Docker registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compute Docker container image addresses
+        run: |
+          DOCKER_REPOSITORY="ghcr.io/${GITHUB_REPOSITORY,,}"
+          DOCKER_TAG="${GITHUB_REF:11}"
+
+          echo "DOCKER_REPOSITORY=${DOCKER_REPOSITORY}" >> $GITHUB_ENV
+          echo "DOCKER_TAG=${DOCKER_TAG}" >> $GITHUB_ENV
+
+          echo "Using: ${DOCKER_REPOSITORY}/*:${DOCKER_TAG}"
+
+      # - name: 'Pull previous Docker container image: :latest'
+      #   run: docker pull "${DOCKER_REPOSITORY}:latest" || true
+
+      - name: "Pull previous Docker container image: frontend-static:latest"
+        run: docker pull "${DOCKER_REPOSITORY}/frontend-static:latest" || true
+
+      - name: "Build Docker container image: frontend-static:latest"
+        run: |
+          docker build \
+              --cache-from "${DOCKER_REPOSITORY}/frontend-static:latest" \
+              --file frontend/Dockerfile.demo \
+              --build-arg SERVER_NAME=localhost \
+              --tag "${DOCKER_REPOSITORY}/frontend-static:latest" \
+              --tag "${DOCKER_REPOSITORY}/frontend-static:${DOCKER_TAG}" \
+              frontend
+      - name: "Push Docker container image frontend-static:latest"
+        run: docker push "${DOCKER_REPOSITORY}/frontend-static:latest"
+
+      - name: "Push Docker container image frontend-static:v*"
+        run: docker push "${DOCKER_REPOSITORY}/frontend-static:${DOCKER_TAG}"
+>>>>>>> 5d9968afe8f5ab373ab0379485cea79ba3253193
 #
 #
 #    - name: 'Build Docker container image: backend:latest'
@@ -66,5 +116,10 @@ jobs:
 #    - name: Push Docker container image backend:v*
 #      run: docker push "${DOCKER_REPOSITORY}/backend:${DOCKER_TAG}"
 
+<<<<<<< HEAD
     # - name: Push Docker container image :v*"
     #   run: docker push "${DOCKER_REPOSITORY}:${DOCKER_TAG}"
+=======
+# - name: Push Docker container image :v*"
+#   run: docker push "${DOCKER_REPOSITORY}:${DOCKER_TAG}"
+>>>>>>> 5d9968afe8f5ab373ab0379485cea79ba3253193

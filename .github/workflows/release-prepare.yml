@@ -1,8 +1,16 @@
+<<<<<<< HEAD
 name: 'Release: Prepare PR'
 
 on:
   push:
     branches: [ develop ]
+=======
+name: "Release: Prepare PR"
+
+on:
+  push:
+    branches: [develop]
+>>>>>>> 5d9968afe8f5ab373ab0379485cea79ba3253193
 
 permissions:
   contents: read
@@ -10,6 +18,7 @@ permissions:
 
 jobs:
   release-prepare:
+<<<<<<< HEAD
 
     runs-on: ubuntu-latest
     steps:
@@ -18,3 +27,11 @@ jobs:
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         release-branch: main
+=======
+    runs-on: ubuntu-latest
+    steps:
+      - uses: JarvusInnovations/infra-components@channels/github-actions/release-prepare/latest
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          release-branch: main
+>>>>>>> 5d9968afe8f5ab373ab0379485cea79ba3253193

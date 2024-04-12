@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import {
   LOGIN_SUCCESS,
   LOGIN_FAIL,
@@ -24,6 +24,11 @@ import {
 import { ThunkAction } from "redux-thunk";
 import { RootState } from "../reducers";
 import { ThunkDispatch } from "redux-thunk";
+
+// Type guard to determine if the error is an AxiosError
+function isAxiosError(error: unknown): error is AxiosError {
+  return axios.isAxiosError(error);
+}
 
 type ActionType =
   | { type: typeof LOGIN_SUCCESS; payload: { access: string; refresh: string } }
@@ -95,7 +100,9 @@ export const checkAuthenticated = () => async (dispatch: AppDispatch) => {
     });
   }
 };
-
+interface ErrorResponse {
+  detail?: string;
+}
 export const load_user = (): ThunkType => async (dispatch: AppDispatch) => {
   if (localStorage.getItem("access")) {
     const config = {
@@ -148,8 +155,15 @@ export const login =
 
       dispatch(load_user());
     } catch (err) {
+      let errorMessage = "Login failed due to server error"; // Default error message
+      if (isAxiosError(err) && err.response) {
+        const errorData = err.response.data as ErrorResponse;
+        errorMessage = errorData.detail || errorMessage;
+      }
+
       dispatch({
         type: LOGIN_FAIL,
+        payload: errorMessage,
       });
     }
   };

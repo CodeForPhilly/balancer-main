@@ -5,6 +5,32 @@ import { PatientInfo } from "./PatientTypes";
 import Tooltip from "../../components/Tooltip";
 // import ErrorMessage from "../../components/ErrorMessage";
 
+// create new interface for refactor and to work with backend
+interface PatientInfoInterface {
+  id?: string;
+  state?: string;
+  otherDiagnosis?: string;
+  description?: string;
+  depression?: boolean;
+  hypomania?: boolean;
+  mania?: boolean;
+  currentMedications?: string;
+  priorMedications?: string;
+  possibleMedications?: {
+    first?: string;
+    second?: string;
+    third?: string;
+  };
+  psychotic: boolean;
+  suicideHistory: boolean;
+  kidneyHistory: boolean;
+  liverHistory: boolean;
+  bloodPressureHistory: boolean;
+  weightGainConcern: boolean;
+  reproductive: boolean;
+  riskPregnancy: boolean;
+}
+
 // TODO: refactor with Formik
 
 export interface NewPatientFormProps {
@@ -68,10 +94,32 @@ const NewPatientForm = ({
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const payload = {
-      state:
-        newPatientInfo.Diagnosis !== null ? newPatientInfo.Diagnosis : "Null",
+    // const payload = {
+    //   state:
+    //     newPatientInfo.Diagnosis !== null ? newPatientInfo.Diagnosis : "Null",
+    // };
+
+    // send payload to backend using the new interface
+    const payload: PatientInfoInterface = {
+      id: newPatientInfo.ID,
+      state: newPatientInfo.Diagnosis,
+      otherDiagnosis: newPatientInfo.OtherDiagnosis,
+      description: newPatientInfo.Description,
+      depression: newPatientInfo.Depression == "True",
+      hypomania: newPatientInfo.Hypomania == "True",
+      mania: newPatientInfo.Hypomania == "True",
+      currentMedications: newPatientInfo.CurrentMedications,
+      priorMedications: newPatientInfo.PriorMedications,
+      psychotic: newPatientInfo.Psychotic == "Yes",
+      suicideHistory: newPatientInfo.Suicide == "Yes",
+      kidneyHistory: newPatientInfo.Kidney == "Yes",
+      liverHistory: newPatientInfo.Liver == "Yes",
+      bloodPressureHistory: newPatientInfo.blood_pressure == "Yes",
+      weightGainConcern: newPatientInfo.weight_gain == "Yes",
+      reproductive: newPatientInfo.Reproductive == "Yes",
+      riskPregnancy: newPatientInfo.risk_pregnancy == "Yes",
     };
+    console.log(newPatientInfo);
 
     // Check if Diagnosis is "Null"
     if (newPatientInfo.Diagnosis === "Null") {
@@ -86,10 +134,9 @@ const NewPatientForm = ({
     try {
       const baseUrl = import.meta.env.VITE_API_BASE_URL;
       const url = `${baseUrl}/chatgpt`;
+      console.log(payload);
 
       const { data } = await axios.post(url + `/list_meds`, payload);
-
-      console.log(data);
 
       const categorizedMedications = {
         first: data.first ?? [],
@@ -97,8 +144,8 @@ const NewPatientForm = ({
         third: data.third ?? [],
       };
 
-      console.log(categorizedMedications.first);
-      console.log(categorizedMedications.second);
+      // console.log(categorizedMedications.first);
+      // console.log(categorizedMedications.second);
 
       setPatientInfo((prev) => ({
         ...prev,
@@ -196,16 +243,16 @@ const NewPatientForm = ({
     }));
   };
 
-  const handleCheckboxChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    checkboxName: string
-  ) => {
-    const isChecked = e.target.checked;
-    setNewPatientInfo((prevInfo) => ({
-      ...prevInfo,
-      [checkboxName]: isChecked ? "True" : "False", // Update for both checked and unchecked
-    }));
-  };
+  // const handleCheckboxChange = (
+  //   e: React.ChangeEvent<HTMLInputElement>,
+  //   checkboxName: string
+  // ) => {
+  //   const isChecked = e.target.checked;
+  //   setNewPatientInfo((prevInfo) => ({
+  //     ...prevInfo,
+  //     [checkboxName]: isChecked ? "True" : "False", // Update for both checked and unchecked
+  //   }));
+  // };
 
   const handleRadioChange = (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -219,36 +266,39 @@ const NewPatientForm = ({
   };
 
   return (
-    <section className="md:flex md:items-center md:justify-center">
+    <section className="lg:flex lg:items-center lg:justify-center">
       {/* {search} */}
       <div className=" md:mx-0 md:p-0">
         <br />
         {!enterNewPatient && (
-          <div className="flex  justify-between rounded-md p-2 px-3 ring-1 md:w-[870px]">
-            <div onClick={handleClickSummary}>
+          <div className="font_body rounded-md  border bg-white p-2 px-3 ring-1 hover:ring-slate-300 md:p-4 md:px-8 lg:w-[860px]">
+            <div
+              className="flex items-center justify-between"
+              onClick={handleClickSummary}
+            >
               <h2 className="header_logo cursor-pointer font-satoshi text-xl font-bold text-gray-600  hover:text-blue-600  ">
                 Click To Enter New Patient
               </h2>
-            </div>
 
-            <div
-              onClick={handleClickSummary}
-              className=" cursor-pointer items-center"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-4 w-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth="2"
+              <div
+                onClick={handleClickSummary}
+                className=" cursor-pointer items-center"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                />
-              </svg>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                  />
+                </svg>
+              </div>
             </div>
           </div>
         )}
@@ -304,7 +354,7 @@ const NewPatientForm = ({
                 )} */}
               </div>
 
-              <div className="flex justify-between border-b border-gray-900/10 px-0  py-6 md:grid md:grid-cols-3 md:gap-4">
+              {/* <div className="flex justify-between border-b border-gray-900/10 px-0  py-6 md:grid md:grid-cols-3 md:gap-4">
                 <div>
                   <legend className="text-sm font-semibold leading-6 text-gray-900">
                     Bipolar history
@@ -388,7 +438,7 @@ const NewPatientForm = ({
                     </div>
                   </div>
                 </div>
-              </div>
+              </div> */}
               <div className="border-b border-gray-900/10 py-6 ">
                 <p className=" text-sm leading-6 text-gray-600">
                   Select patient characteristics
@@ -732,7 +782,6 @@ const NewPatientForm = ({
                         CurrentMedications: String(e.target.value),
                       })
                     }
-                    required
                     placeholder="Separate medications with commas"
                     className={
                       isLoading
@@ -767,7 +816,6 @@ const NewPatientForm = ({
                         PriorMedications: String(e.target.value),
                       })
                     }
-                    required
                     placeholder="Separate medications with commas"
                     className={
                       isLoading

@@ -6,7 +6,12 @@ VITE_API_BASE_URL: https://devnull-as-a-service.com/dev/null
 ingress:
   enabled: false
   className: ""
+<<<<<<< HEAD
   annotations: {}
+=======
+  annotations:
+    {}
+>>>>>>> 5d9968afe8f5ab373ab0379485cea79ba3253193
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
   hosts:
@@ -14,4 +19,8 @@ ingress:
       paths:
         - path: /
           pathType: ImplementationSpecific
+<<<<<<< HEAD
   tls: []
+=======
+  tls: []
+>>>>>>> 5d9968afe8f5ab373ab0379485cea79ba3253193

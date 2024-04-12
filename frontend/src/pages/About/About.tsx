@@ -1,14 +1,15 @@
 //import Welcome from "../../components/Welcome/Welcome.tsx";
 import Layout from "../Layout/Layout";
-import image from "./OIP.jpeg";
+// import image from "./OIP.jpeg";
+import image from "./OIP2.png";
 
 function About() {
   return (
     <Layout>
-      <div className="summary_box font_body mt-48 flex w-full max-w-6xl flex-col items-center justify-center">
+      <div className=" font_body mt-48  flex w-full flex-col items-center justify-center  rounded-md border bg-white p-4 px-8 ring-1 hover:ring-slate-300 md:max-w-6xl">
         {/* Top section */}
         <div className="flex flex-row">
-          <div className="top-section mr-10 mt-10 flex w-full max-w-6xl flex-col justify-center">
+          <div className="top-section mr-10 mt-10 flex max-w-6xl flex-col justify-center md:w-full">
             <div className="mt-5 text-3xl font-bold">
               A tool that makes it easier to research medications for bipolar
               disorder.
@@ -23,12 +24,12 @@ function About() {
           <img
             src={image}
             alt="about image"
-            className="mt-10 rounded-2xl"
+            className="hidden md:mt-10 md:block md:h-64 md:rounded-2xl"
           ></img>
         </div>
 
         {/* Middle section */}
-        <div className="mission-section flex w-full max-w-6xl flex-row justify-center md:mt-28">
+        <div className="mission-section flex w-full flex-row justify-center md:mt-28 md:max-w-6xl">
           <div>
             <div className="text-3xl font-bold">
               Get accurate, helpful information on bipolar medications fast
@@ -51,24 +52,22 @@ function About() {
             <div className="flex w-full flex-col justify-between">
               <div className="mt-8 text-lg text-gray-500">
                 Bipolar disorder affects approximately 5.7 million adult
-                Americans
+                Americans{" "}
                 <a
                   href="https://www.dbsalliance.org/education/bipolar-disorder/bipolar-disorder-statistics/"
                   className="underline"
                   target="_blank"
                 >
-                  {" "}
                   every year
                 </a>
                 . Delays in the correct diagnosis and proper treatment of
                 bipolar disorder may result in social, occupational, and
-                economic burdens, as well as
+                economic burdens, as well as{" "}
                 <a
                   href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2796048/"
                   className="underline"
                   target="_blank"
                 >
-                  {" "}
                   an increase in completed suicides
                 </a>
                 .
@@ -81,7 +80,11 @@ function About() {
               </div>
             </div>
           </div>
+<<<<<<< HEAD
           <div className="w-full flex flex-col items-center">
+=======
+          {/* <div className="flex w-full flex-col items-center">
+>>>>>>> 5d9968afe8f5ab373ab0379485cea79ba3253193
             <div>
               <div className="mt-8 text-4xl font-bold">44 million</div>
               <div className="text-lg">Transactions every 24 hours</div>
@@ -89,23 +92,27 @@ function About() {
               <div className="text-lg">Assets under holding</div>
               <div className="mt-5 text-4xl font-bold">46,000</div>
               <div className="text-lg">New users annually</div>
+<<<<<<< HEAD
             </div> */}
           </div>
+=======
+            </div>
+          </div> */}
+>>>>>>> 5d9968afe8f5ab373ab0379485cea79ba3253193
         </div>
 
         {/* Support Us section */}
-        <div className="team-section flex w-full max-w-6xl flex-col items-center justify-center md:mt-28">
+        <div className=" flex w-full flex-col items-center justify-center md:mt-28">
           <div className="text-3xl font-bold">Support Us</div>
-          <div className="mt-5 flex flex-col items-center justify-center pl-56 pr-56 text-center text-lg text-gray-500">
+          <div className="mt-5 flex flex-col items-center justify-center text-center text-lg text-gray-500 md:pl-48 md:pr-48">
             <div className="text-xl font-bold">
               Balancer is a not-for-profit, civic-minded, open-source project
-              sponsored by
+              sponsored by{" "}
               <a
                 href="https://codeforphilly.org/"
                 className="underline"
                 target="_blank"
               >
-                {" "}
                 Code for Philly
               </a>
               .
@@ -113,7 +120,7 @@ function About() {
             <div className="mt-5">
               We are currently seeking donations to fund the next phase of
               development. Your contribution will go towards website domains and
-              hosting, helpdesk software and marketing efforts.
+              hosting, help desk software and marketing efforts.
             </div>
           </div>
 

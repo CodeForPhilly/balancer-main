@@ -5,5 +5,9 @@ apiVersion: v2
 keywords:
   - nginx-helm-chart
 sources:
+<<<<<<< HEAD
     - https://github.com/CodeForPhilly/balancer-main
+=======
+  - https://github.com/CodeForPhilly/balancer-main
+>>>>>>> 5d9968afe8f5ab373ab0379485cea79ba3253193
 home: https://opencollective.com/code-for-philly/projects/balancer

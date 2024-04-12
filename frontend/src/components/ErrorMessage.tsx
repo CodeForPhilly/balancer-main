@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 type Errors = string[];
 
@@ -8,19 +8,16 @@ const ErrorMessage: React.FC<{ errors: Errors }> = ({ errors }) => {
   }
 
   return (
-    <div className="error-message  bg-red-100">
-
-      <ul className="flex flex-col gap-2 error-messages bg-red-100 p-2 rounded">
+    <div className=" bg-red-100">
+      <ul className=" flex flex-col gap-2 rounded bg-red-100 p-2">
         {errors.map((error) => (
-          <div className='  '>
-
-            <span className='text-red-800 font-bold'>
-              There {errors.length === 1 ? 'was' : 'were'} {errors.length} {errors.length === 1 ? 'error' : 'errors'} with your submission
+          <div className="  ">
+            <span className="font-bold text-red-800">
+              There {errors.length === 1 ? "was" : "were"} {errors.length}{" "}
+              {errors.length === 1 ? "error" : "errors"} with your submission
             </span>
-            <li key={error} className="list-disc ml-5  text-red-700 ">
-
+            <li key={error} className="ml-5 list-disc  text-red-700 ">
               {error}
-
             </li>
           </div>
         ))}

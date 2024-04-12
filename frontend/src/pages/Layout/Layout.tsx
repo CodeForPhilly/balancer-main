@@ -53,7 +53,7 @@ export const Layout = ({
       <div className="main">
         <div className="gradient" />
       </div>
-      <div className="container">
+      <div className="relative z-10 mx-auto flex w-full flex-col items-center">
         {!isAuthenticated && (
           <LoginMenuDropDown
             showLoginMenu={showLoginMenu}

@@ -1,5 +1,4 @@
 import DrugSummaryForm from "./DrugSummaryForm.tsx";
-
 import Layout from "../Layout/Layout";
 
 function DrugLookup() {

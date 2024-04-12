@@ -81,7 +81,7 @@ function About() {
               </div>
             </div>
           </div>
-          <div className="flex w-full flex-col items-center">
+          <div className="w-full flex flex-col items-center">
             <div>
               <div className="mt-8 text-4xl font-bold">44 million</div>
               <div className="text-lg">Transactions every 24 hours</div>
@@ -89,7 +89,7 @@ function About() {
               <div className="text-lg">Assets under holding</div>
               <div className="mt-5 text-4xl font-bold">46,000</div>
               <div className="text-lg">New users annually</div>
-            </div>
+            </div> */}
           </div>
         </div>
 

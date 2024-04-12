@@ -1,0 +1,16 @@
+version: "3.8"
+services:
+  frontend-static:
+    build:
+      context: .
+      dockerfile: Dockerfile.demo
+      args:
+        - IMAGE_NAME=frontend-static
+        - FRONTEND_VERSION=0.0.2
+        - SERVER_NAME=localhost
+    image: ghcr.io/codeforphilly/balancer-main/frontend-static:0.0.2
+    ports:
+      - "80:80"
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - VITE_API_BASE_URL=https://devnull-as-a-service.com/dev/null

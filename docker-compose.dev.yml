@@ -11,6 +11,12 @@ services:
   backend:
     image: balancer-backend
     build: ./server
+<<<<<<< HEAD:docker-compose.dev.yml
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./server:/usr/src/app
+=======
+>>>>>>> ed1b2e3bc80a77cb1283844d0c153fa1f79d9d76:docker-compose.yml
     ports:
       - "8000:8000"
     env_file:
@@ -21,9 +27,10 @@ services:
     image: balancer-frontend
     build:
       context: frontend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
       args:
         - IMAGE_NAME=balancer-frontend
+        - FRONTEND_VERSION=0.0.1
     ports:
         - "3000:3000"
     environment:

@@ -1,0 +1,9 @@
+name: nginx-helm-chart
+description: A generated Helm Chart for nginx-helm-chart from Skippbox Kompose
+version: 0.0.2
+apiVersion: v2
+keywords:
+  - nginx-helm-chart
+sources:
+    - https://github.com/CodeForPhilly/balancer-main
+home: https://opencollective.com/code-for-philly/projects/balancer

@@ -1,9 +1,10 @@
+# This image runs the production server, with nginx
 ###########
 # BUILDER #
 ###########
 
 # pull official base image
-FROM python:3.11.4-slim-buster as builder
+FROM python:3.11.4-slim-buster as python_builder
 
 # set work directory
 WORKDIR /usr/src/app
@@ -48,8 +49,8 @@ WORKDIR $APP_HOME
 
 # install dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends netcat
-COPY --from=builder /usr/src/app/wheels /wheels
-COPY --from=builder /usr/src/app/requirements.txt .
+COPY --from=python_builder /usr/src/app/wheels /wheels
+COPY --from=python_builder /usr/src/app/requirements.txt .
 RUN pip install --upgrade pip
 RUN pip install --no-cache /wheels/*
 
@@ -68,4 +69,11 @@ RUN chown -R app:app $APP_HOME
 USER app
 
 # run entrypoint.prod.sh
+<<<<<<< HEAD:Dockerfile.prod
 ENTRYPOINT ["/home/app/web/entrypoint.prod.sh"]
+
+
+# TODO: gunicorn stuff
+=======
+ENTRYPOINT ["/home/app/web/entrypoint.prod.sh"]
+>>>>>>> ac68347c12ced724206112843623ee8c515bd3ad:server/Dockerfile.prod

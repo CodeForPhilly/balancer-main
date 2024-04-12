@@ -4,10 +4,24 @@ services:
     image: postgres:15
     volumes:
       - postgres_data:/var/lib/postgresql/data/
+<<<<<<< HEAD
+    env_file:
+<<<<<<< HEAD
+      - ./config/env/env.prod.db
+=======
+      - ./config/env/.env.prod.db
+>>>>>>> ac68347c12ced724206112843623ee8c515bd3ad
+  backend:
+    build: 
+      context: ./server
+      dockerfile: Dockerfile.prod
+    command: gunicorn balancer_backend.wsgi:application --bind 0.0.0.0:8000
+=======
     environment:
       - POSTGRES_USER=balancer
       - POSTGRES_PASSWORD=balancer
       - POSTGRES_DB=balancer_dev
+>>>>>>> 5d9968afe8f5ab373ab0379485cea79ba3253193
     ports:
     - "5432:5432"
   backend:
@@ -18,7 +32,11 @@ services:
     ports:
       - "8000:8000"
     env_file:
+<<<<<<< HEAD
+      - ./config/env/env.prod
+=======
       - ./config/env/env.dev
+>>>>>>> 5d9968afe8f5ab373ab0379485cea79ba3253193
     depends_on:
       - db
 <<<<<<< HEAD

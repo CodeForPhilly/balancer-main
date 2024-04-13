@@ -335,6 +335,7 @@ const NewPatientForm = ({
                 </div>
                 <div className="mr-6 md:mr-0 md:w-[500px] md:pl-16">
                   <select
+                    id="current-state"
                     value={newPatientInfo.Diagnosis}
                     onChange={handleDiagnosisChange}
                     required
@@ -830,6 +831,7 @@ const NewPatientForm = ({
                 <div className="flex w-full justify-end">
                   <button
                     type="button"
+                    aria-label="clear-form"
                     className="btnGray mr-5"
                     onClick={handleClickNewPatient}
                   >
@@ -838,6 +840,7 @@ const NewPatientForm = ({
                 </div>
                 <button
                   type="submit"
+                  aria-label="submit-test"
                   className={`btnBlue  ${
                     isPressed &&
                     "transition-transform focus:outline-none focus:ring focus:ring-blue-200"

@@ -24,5 +24,3 @@ config/env/env.dev
 *.njsproj
 *.sln
 *.sw?
-
-.DS_Store

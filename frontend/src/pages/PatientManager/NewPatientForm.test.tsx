@@ -1,27 +1,22 @@
-jest.mock('../../config/envConfig', () => ({
-    getEnv: () => ({
-      apiUrl: 'http://localhost:8000/api/listMeds/',
-    }),
-}));
-
-import React from 'react';
-// mock React's useState function
-jest.mock('react', () => {
-    const originalReact = jest.requireActual('react'); // Import actual React module
-    return {
-      ...originalReact, // Spread all original exports
-      useState: jest.fn(), // Override only useState
-    };
-  });
-  
-
-import { render } from '@testing-library/react';
-import '@testing-library/jest-dom';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import NewPatientForm from './NewPatientForm';
+import axios from 'axios';
 
+vi.mock('axios');
+const mockedAxios = vi.mocked(axios, true);
+  
+// Implement a mock function that can handle both overloads
+window.scrollTo = vi.fn((...args: [ScrollToOptions?] | [number, number]) => {
+if (args.length === 1 && typeof args[0] === 'object') {
+    console.log(`Scrolling with options`, args[0]);
+} else if (typeof args[0] === 'number' && typeof args[1] === 'number') {
+    console.log(`Scrolling to position (${args[0]}, ${args[1]})`);
+}
+}) as typeof window.scrollTo;
 
 // Define mock data
-export interface PatientInfo {
+interface PatientInfo {
     ID?: string;
     Diagnosis?: string;
     OtherDiagnosis?: string;
@@ -70,46 +65,106 @@ const mockPatientInfo: PatientInfo = {
     Reproductive: 'No',
     risk_pregnancy: 'No',
 };
-  
+
 // Mock functions for setting state
-const mockSetPatientInfo = jest.fn();
-const mockSetAllPatientInfo = jest.fn();
+const mockSetPatientInfo = vi.fn();
+const mockSetAllPatientInfo = vi.fn();
 
-// Mock array for allPatientInfo
-const mockAllPatientInfo = [mockPatientInfo]; 
+const mockAllPatientInfo = [mockPatientInfo];
 
-// At the top of your test file
-// jest.mock('axios');
-// import axios from 'axios';
-// const mockedAxios = axios as jest.Mocked<typeof axios>;
+// Mock localStorage
+Object.defineProperty(window, 'localStorage', {
+  value: {
+    getItem: vi.fn(() => JSON.stringify([mockPatientInfo])),
+    setItem: vi.fn(() => null),
+  },
+  writable: true
+});
 
+const props = {
+  patientInfo: mockPatientInfo,
+  setPatientInfo: mockSetPatientInfo,
+  allPatientInfo: mockAllPatientInfo,
+  setAllPatientInfo: mockSetAllPatientInfo
+};
 
+describe('NewPatientForm useEffect', () => {
+  it('loads patient info from localStorage on mount', () => {
+    render(<NewPatientForm {...props} />);
+    expect(mockSetAllPatientInfo).toHaveBeenCalledWith([mockPatientInfo]);
+  });
+});
 
 describe('NewPatientForm Component', () => {
-    beforeEach(() => {
-        // Clear all mocks before each test
-        jest.clearAllMocks();
-      
-        // Reset useState mock to a clean state
-        const originalReact = jest.requireActual('react');
-        (React.useState as jest.Mock)
-          .mockImplementation((initial: any) => originalReact.useState(initial));
-      });
-    
+  beforeEach(() => {
+    mockedAxios.post.mockClear();
+    vi.spyOn(Storage.prototype, 'getItem').mockReturnValue(JSON.stringify([mockPatientInfo]));
 
-    it('renders without crashing', () => {
-        (React.useState as jest.Mock)
-        .mockImplementationOnce(() => [false, jest.fn()]) // Mock for isPressed
-        .mockImplementationOnce(() => [false, jest.fn()]); 
-        render(<NewPatientForm
-          patientInfo={mockPatientInfo}
-          setPatientInfo={mockSetPatientInfo}
-          allPatientInfo={mockAllPatientInfo}
-          setAllPatientInfo={mockSetAllPatientInfo}
-        />);
-        
-        // Look for a static element that should always be present
-        // For example, if your form always renders a submit button, check for that
-        // expect(screen.getByRole('button', { name: /submit/i })).toBeInTheDocument();
-      });
+    // Mocking Axios post request to return specific data needed for the component
+    mockedAxios.post.mockResolvedValue({
+      data: {
+        first: ["MedicationA1", "MedicationA2"],
+        second: ["MedicationB1", "MedicationB2"],
+        third: ["MedicationC1", "MedicationC2"]
+      }
     });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('renders without crashing', () => {
+    render(<NewPatientForm {...props} />);
+    expect(screen.getByText('Enter Patient Details')).toBeInTheDocument();
+  });
+
+  it('prevents form submission if the diagnosis is "Null"', async () => {
+    render(<NewPatientForm {...props} />);
+    
+    // Attempt to submit the form without changing the diagnosis
+    const submitButton = screen.getByRole('button', { name: 'submit-test' })
+    fireEvent.click(submitButton);
+    
+    await waitFor(() => expect(mockedAxios.post).not.toHaveBeenCalled());
+  });
+
+  it('handles patient info on form submit', async () => {
+    const { getByRole, getByLabelText } = render(<NewPatientForm {...props} />);
+    
+    fireEvent.change(getByLabelText('Current state'), { target: { value: 'Manic' } });
+    fireEvent.click(getByRole('button', { name: 'submit-test' }));
+    
+    await waitFor(() => {
+      expect(mockedAxios.post).toHaveBeenCalled();
+    });
+  });
+
+  it('clears the form when the clear button is clicked', async () => {
+    render(<NewPatientForm {...props} />);
+    const diagnosisSelect = screen.getByRole('combobox', { name: /current state/i }) as HTMLSelectElement; 
+    
+    fireEvent.change(diagnosisSelect, { target: { value: 'Manic' } });
+  
+    const clearButton = screen.getByTestId('clear-form-button');
+    fireEvent.click(clearButton);
+  
+    await waitFor(() => {
+      expect(diagnosisSelect).toHaveValue('Null');
+    });
+  });
+
+  it('handles patient info on form submit', async () => {
+    render(<NewPatientForm {...props} />);
+    
+    fireEvent.change(screen.getByLabelText('Current state'), { target: { value: 'Manic' } });
+    fireEvent.click(screen.getByRole('button', { name: 'submit-test' }));
+    
+    await waitFor(() => {
+      expect(mockedAxios.post).toHaveBeenCalledWith(
+        'http://localhost:3000/chatgpt/list_meds', 
+        { state: 'Manic' }
+      );
+    });
+  });
+});

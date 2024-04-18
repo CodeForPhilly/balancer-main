@@ -108,7 +108,8 @@ const DrugSummaryForm = () => {
   };
 
   const sendMessage = (message: ChatLogItem[]) => {
-    const baseUrl = 'http://' + window.location.host + '/api';
+    let baseUrl = 'http://' + window.location.host + '/api';
+    baseUrl = baseUrl.replace(":3000", ":8000");
     const url = `${baseUrl}/chatgpt/chat`;
 
     const apiMessages = message.map((messageObject) => {

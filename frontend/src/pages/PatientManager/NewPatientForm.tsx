@@ -132,7 +132,8 @@ const NewPatientForm = ({
     setIsLoading(true); // Start loading
 
     try {
-      const baseUrl = 'http://' + window.location.host + '/api';
+      let baseUrl = 'http://' + window.location.host + '/api';
+      baseUrl = baseUrl.replace(":3000", ":8000");
       const url = `${baseUrl}/chatgpt`;
       console.log(payload);
 

@@ -83,7 +83,8 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
   };
 
   const sendMessage = (message: ChatLogItem[]) => {
-    const baseUrl = import.meta.env.VITE_API_BASE_URL;
+    let baseUrl = 'http://' + window.location.host + '/api';
+    baseUrl = baseUrl.replace(":3000", ":8000");
     const url = `${baseUrl}/chatgpt/chat`;
 
     const apiMessages = message.map((messageObject) => {

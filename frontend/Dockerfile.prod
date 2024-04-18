@@ -10,10 +10,16 @@ COPY . .
 
 RUN npm run build
 
+FROM ghcr.io/codeforphilly/balancer-main/backend:latest as backend
+# The frontend needs to get the static files from the backend for the django admin site and
+# django rest framework error pages. Pulling them from the built image works but may not be the best way to do this
+# because it causes the frontend image to depend on the backend image.
+
 FROM nginx:latest
 
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# The nginx.conf file will be replaced from the helm chart.
 
-COPY --from=builder /usr/src/app/build /usr/share/nginx/html
+COPY --from=builder /usr/src/server/build /usr/share/nginx/html
+COPY --from=backend /usr/src/app/static /usr/share/nginx/html/static
 
 EXPOSE 80

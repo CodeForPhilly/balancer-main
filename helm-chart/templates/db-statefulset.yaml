@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app.kubernetes.io/component: db
+  name: db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: db
+  template:
+    metadata:
+      labels:
+        io.kompose.network/balancer-main-default: "true"
+        app.kubernetes.io/component: db
+    spec:
+      containers:
+        {{- if .Values.postgresql.existingSecret }}
+        - envFrom:
+            - secretRef:
+                name: {{ .Values.postgresql.existingSecret }}
+        {{- end }}
+          image: "{{ .Values.postgresql.image.repository }}:{{ .Values.postgresql.image.tag }}"
+          name: db
+          resources: {}
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: postgres-data
+
+      restartPolicy: Always
+      volumes:
+        - name: postgres-data
+          persistentVolumeClaim:
+            claimName: postgres-data-claim
+  serviceName: "db"

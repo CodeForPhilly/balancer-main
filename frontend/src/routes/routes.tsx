@@ -11,6 +11,7 @@ import Feedback from "../pages/Feedback/Feedback.tsx";
 import Help from "../pages/Help/Help.tsx";
 import HowTo from "../pages/Help/HowTo.tsx";
 import DataSources from "../pages/Help/DataSources.tsx";
+import ListMeds from "../pages/ListMeds/ListMeds.tsx";
 
 const routes = [
   {
@@ -62,6 +63,10 @@ const routes = [
     path: "adminportal",
     element: <AdminPortal />,
   },
+  {
+    path: "medications",
+    element: <ListMeds />
+  }
 ];
 
 export default routes;

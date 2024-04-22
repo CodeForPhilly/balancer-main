@@ -159,19 +159,26 @@ const DrugSummaryForm = () => {
   return (
     <>
       <header className=" fixed w-full items-center ">
-        {" "}
         <div
           className={
-            "   h-20  w-full items-center justify-between border-b border-gray-300 bg-white lg:flex xl:px-60"
+            "   h-20  w-full items-center justify-between border-b border-gray-300 bg-white lg:flex xl:px-72"
           }
-        >
-          {" "}
+        ></div>
+      </header>
+
+      <div
+        className={
+          "  fixed h-full  w-60 justify-between border-r border-gray-300 bg-white lg:flex"
+        }
+      >
+        <div>
           <span className="bg-gradient-to-r  from-blue-500 via-blue-700 to-blue-300 bg-clip-text font-quicksand text-xl font-bold text-transparent lg:text-3xl ">
             Balancer
           </span>
         </div>
-      </header>
-      <div className="mx-auto  min-h-screen w-full max-w-[800px] overflow-y-auto border">
+      </div>
+
+      <div className="mx-auto  min-h-screen w-full max-w-[810px] overflow-y-auto border">
         <div className="h-[100px]"> </div>
         <div
           ref={chatContainerRef}
@@ -202,8 +209,8 @@ const DrugSummaryForm = () => {
                   <div
                     className={`${
                       message.type === "user"
-                        ? "bg-blue-200 text-neutral-600 "
-                        : " bg-stone-50 text-sky-950 "
+                        ? "border-2  bg-blue-200 text-neutral-600 "
+                        : " border-2  bg-stone-50 text-sky-950 "
                     }rounded-lg  p-2`}
                   >
                     {message.message}
@@ -220,47 +227,48 @@ const DrugSummaryForm = () => {
           <div className="h-[100px]"> </div>
         </div>
 
-        <div className=" max-w-[800px] ">
-          <form
-            onSubmit={handleSubmit}
-            className="fixed bottom-3 flex w-[800px] p-4"
-          >
-            <div className="relative flex w-full  items-center ">
-              <input
-                type="text"
-                className="w-full rounded-md border border-gray-300 py-3 pl-10 pr-3"
-                placeholder="Talk to me..."
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-              />
+        <form
+          onSubmit={handleSubmit}
+          className="fixed bottom-0 flex  w-[808px]  bg-white p-5"
+        >
+          <div className="relative flex w-full  items-center ">
+            <input
+              type="text"
+              className="w-full rounded-md border border-gray-300 py-3 pl-10 pr-3"
+              placeholder="Talk to me..."
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+            />
 
-              <button
-                type="button"
-                className="absolute left-0 ml-2"
-                onClick={() => {
-                  if (fileInputRef.current) {
-                    fileInputRef.current.click();
-                  }
-                }}
-              >
-                <img src={paperclip} alt="Upload" className="h-6" />
-              </button>
-              <input
-                type="file"
-                id="fileInput"
-                ref={fileInputRef}
-                accept=".pdf"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-            </div>
-            <div className="ml-5">
-              <button type="submit" className="btnBlue">
-                Send
-              </button>
-            </div>
-          </form>
-        </div>
+            <button
+              type="button"
+              className="absolute left-0 ml-2"
+              onClick={() => {
+                if (fileInputRef.current) {
+                  fileInputRef.current.click();
+                }
+              }}
+            >
+              <img src={paperclip} alt="Upload" className="h-6" />
+            </button>
+            <input
+              type="file"
+              id="fileInput"
+              ref={fileInputRef}
+              accept=".pdf"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+          </div>
+          <div className="ml-5 flex items-center justify-between">
+            <button
+              type="submit"
+              className=" h-12 rounded-xl border bg-blue-500 px-3 py-1.5 font-satoshi  text-white hover:bg-blue-400"
+            >
+              Send
+            </button>
+          </div>
+        </form>
       </div>
     </>
   );

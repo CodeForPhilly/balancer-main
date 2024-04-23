@@ -1,35 +1,70 @@
-from django.http import JsonResponse
-from .models import UploadFile
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from django.core.exceptions import ValidationError
+import pdfplumber
+from .models import UploadFile  # Import your UploadFile model
+from django.core.files.base import ContentFile
+import os
 
 
-@csrf_exempt
-def uploadFiles(request):
-    if request.method == 'POST':
-        file = request.FILES.get('file')
+@method_decorator(csrf_exempt, name='dispatch')
+class UploadFileView(APIView):
+    # permission_classes = [IsAuthenticated]
 
-        # Validate input
-        if not file:
-            return JsonResponse({'error': 'Missing file'}, status=400)
+    def post(self, request, format=None):
+        print(request.auth)
+        print(f"UploadFileView post called. Path: {request.path}")
+        if not request.user.is_superuser:
+            return Response(
+                {"message": "Error, user is not a superuser."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
 
-        # Read file contents in binary mode
-        file_contents = file.read()
-        print(file.read())
-        # Use the original file name
-        file_name = file.name
+        uploaded_file = request.FILES.get('file')
+        if uploaded_file is None:
+            return Response(
+                {"message": "No file was provided."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-        # Create an instance of the model
-        upload_file = UploadFile(file_name=file_name, file=file_contents)
+        if not uploaded_file.name.endswith('.pdf'):
+            return Response(
+                {"message": "Only PDF files are accepted."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-        # Save the instance to the database
         try:
-            upload_file.full_clean()  # Validate the model instance
-            upload_file.save()
-        except ValidationError as e:
-            return JsonResponse({'error': str(e)}, status=400)
+            with pdfplumber.open(uploaded_file) as pdf:
+                pages = pdf.pages
+                page_count = len(pages)
+                file_type = 'pdf'  # Since you are only accepting PDFs
+                size = uploaded_file.size  # Size in bytes
 
-        # Return the GUID in the response
-        return JsonResponse({'guid': str(upload_file.guid)})
-    else:
-        return JsonResponse({'error': 'Invalid request method'}, status=405)
+                # Read the entire PDF to store in the BinaryField
+                pdf_binary = uploaded_file.read()
+
+                # Create a new UploadFile instance and populate it
+                new_file = UploadFile(
+                    file_name=uploaded_file.name,
+                    file=pdf_binary,
+                    size=size,
+                    page_count=page_count,
+                    file_type=file_type,
+                    # Assuming you want to capture who uploaded the file
+                    uploaded_by=request.user.username
+                )
+                new_file.save()
+
+                return Response(
+                    {"message": "File uploaded successfully.",
+                        "file_id": new_file.id},
+                    status=status.HTTP_201_CREATED,
+                )
+        except Exception as e:
+            return Response(
+                {"message": f"Error processing PDF: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )

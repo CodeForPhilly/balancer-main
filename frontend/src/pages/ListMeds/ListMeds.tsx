@@ -1,42 +1,55 @@
 import Layout from "../Layout/Layout";
 import Welcome from "../../components/Welcome/Welcome";
 import HourglassSpinner from "../../components/HourglassSpinner/HourglassSpinner";
+import ErrorMessage from "../../components/ErrorMessage";
 import { MedData } from "./MedTypes";
 import { useState, useEffect } from "react";
 
 function ListMeds () {
 
   const [medications, setMedications] = useState<MedData[]>([])
+  const [errors, setErrors] = useState<string[]>([])
 
   useEffect(() => {
     const baseUrl = import.meta.env.VITE_API_BASE_URL;
     
     fetch(`${baseUrl}/V1/medications/`)
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) {
+          throw new Error ('Could not get medications list')
+        } else {
+          return res.json()
+        }})
       .then(data => {
         const details = data.map((med: {name: string}) => {
         return fetch(`${baseUrl}/V1/medications/?name=${med.name}`)
-          .then(res => res.json())
+          .then(res => {
+            if (!res.ok) {
+              throw new Error ('Could not get medication details')
+            } else {
+              return res.json()
+            }})
         })
 
         return Promise.all(details)
       })
       .then(listWithDetails => setMedications(listWithDetails))
+      .catch(e => setErrors((prev) => [...prev, e.message]))
   }, [])
 
   const medsList = medications.map((med) => {
     
-    const benefitsList = med.benefits.split(', ').map(benefit => {
+    const benefitsList = med.benefits.split(', ').map((benefit, index) => {
       return (
-            <li className="text-sm">
+            <li className="text-sm" key={index}>
               {benefit}
             </li>
       )
     })
     
-    const risksList = med.risks.split(', ').map(risk => {
+    const risksList = med.risks.split(', ').map((risk, index) => {
       return (
-            <li className="text-sm">
+            <li className="text-sm" key={index}>
               {risk}
             </li>
       )
@@ -67,6 +80,16 @@ function ListMeds () {
     )
   })
   
+  if (errors.length > 0) {
+    return (
+      <Layout>
+        <div className= "mt-32">
+          <ErrorMessage errors={errors}/>
+        </div>
+      </Layout>
+    )
+  }
+
   return (
     <Layout>
       <div className="mt-24 mx-auto w-full max-w-6xl">

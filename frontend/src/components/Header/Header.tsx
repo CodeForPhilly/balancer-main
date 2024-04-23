@@ -139,7 +139,7 @@ const Header = (props: LoginFormProps) => {
               to="/medications"
               className="mr-5 font-bold text-black hover:border-blue-600 hover:text-blue-600 hover:no-underline"
             >
-              Medications
+              Medication List
             </Link>
             <Link
               to="/about"

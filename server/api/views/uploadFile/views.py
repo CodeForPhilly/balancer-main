@@ -54,7 +54,7 @@ class UploadFileView(APIView):
                     page_count=page_count,
                     file_type=file_type,
                     # Assuming you want to capture who uploaded the file
-                    uploaded_by=request.user.username
+                    uploaded_by=request.user.email
                 )
                 new_file.save()
 

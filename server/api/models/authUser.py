@@ -1,7 +1,6 @@
 
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager, Chatlog
-
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 
 class UserAccountManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
@@ -50,4 +49,4 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
         return self.email
 
     def get_messages(self):
-        return Chatlog.objects.filter(user=self)
+        return Chatlog.objects.filter(user=self).order_by('-timestamp')

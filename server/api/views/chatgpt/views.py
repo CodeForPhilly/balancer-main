@@ -89,7 +89,6 @@ def get_tokens(string: str, encoding_name: str) -> str:
     output_string = encoding.decode(tokens)
     return output_string
 
-
 @csrf_exempt
 def diagnosis(request: str) -> JsonResponse:
     """Takes a diagnosis and returns a table of the most commonly prescribed medications for that diagnosis."""
@@ -121,3 +120,24 @@ def diagnosis(request: str) -> JsonResponse:
 
     # Handle the case when data is None
     return JsonResponse({"error": "Invalid request"})
+
+@csrf_exempt
+def chat_history(request):
+    user_email = request.user_email
+    try:
+        user_account = UserAccount.objects.get(email=user_email)
+        chat_logs = user_account.get_messages()
+        
+        history = []
+        for log in chat_logs:
+            history.append({
+                'timestamp': log.timestamp,
+                'message': log.message,
+                'sent_by_user': log.sent_by_user
+            })
+        
+        return JsonResponse({'chat_history': history})
+    except UserAccount.DoesNotExist:
+        return JsonResponse({'error': 'User not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)

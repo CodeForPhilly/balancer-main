@@ -20,14 +20,25 @@ def chatgpt(request: str) -> JsonResponse:
     data: dict[str, str] = json.loads(request.body)
 
     if data is not None:
+        user_email: str = data.get("user_email")
+        prompt: str = data.get("prompt")
         diagnosis: str = data["prompt"]
+
+        user = UserAccount.objects.get(email=user_email)
+
+        user_message = Chatlog.objects.create(user=user, message=prompt)
+
         ai_response = openai.ChatCompletion.create(
             model="gpt-4",
             messages=[
                 {"role": "system", "content": f"Balancer is a powerful tool for selecting bipolar medication for patients. We are open-source and available for free use. Converstation: {diagnosis}."}
             ]
         )
+
+        ai_response_message = Chatlog.objects.create(user=user, message=ai_response.choices[0].message.content, sent_by_user=False)
+
         return JsonResponse({"message": ai_response})
+
 
     return JsonResponse({"error": "Failed to retrieve results from ChatGPT."})
 

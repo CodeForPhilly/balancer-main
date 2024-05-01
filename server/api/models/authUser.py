@@ -50,4 +50,4 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
         return self.email
 
     def get_messages(self):
-        return Chatlog.objects.filter(sender=self)
+        return Chatlog.objects.filter(user=self)

@@ -1,6 +1,6 @@
 
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager, Chatlog
 
 
 class UserAccountManager(BaseUserManager):
@@ -48,3 +48,6 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+
+    def get_messages(self):
+        return Chatlog.objects.filter(sender=self)

@@ -123,7 +123,7 @@ def diagnosis(request: str) -> JsonResponse:
 
 @csrf_exempt
 def chat_history(request):
-    user_email = request.user_email
+    user_email = request.email
     try:
         user_account = UserAccount.objects.get(email=user_email)
         chat_logs = user_account.get_messages()

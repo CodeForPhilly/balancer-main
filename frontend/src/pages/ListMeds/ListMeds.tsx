@@ -21,19 +21,21 @@ function ListMeds () {
           return res.json()
         }})
       .then(data => {
-        const details = data.map((med: {name: string}) => {
-        return fetch(`${baseUrl}/V1/medications/?name=${med.name}`)
-          .then(res => {
-            if (!res.ok) {
-              throw new Error ('Could not get medication details')
-            } else {
-              return res.json()
-            }})
+        data.sort((a, b) => {
+          const nameA = a.name.toUpperCase()
+          const nameB = b.name.toUpperCase()
+          if (nameA < nameB) {
+            return -1
+          }
+          if (nameA > nameB) {
+            return 1
+          }
+        
+          return 0
         })
 
-        return Promise.all(details)
+        setMedications(data)
       })
-      .then(listWithDetails => setMedications(listWithDetails))
       .catch(e => setErrors((prev) => [...prev, e.message]))
   }, [])
 

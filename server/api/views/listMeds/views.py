@@ -74,7 +74,7 @@ def list_or_detail_medication(request):
             return JsonResponse({'error': 'Medication not found'}, status=404)
     else:
         medications = Medication.objects.all()
-        response_data = [{'name': med.name} for med in medications]
+        response_data = [{'name': med.name, 'benefits': med.benefits, 'risks': med.risks} for med in medications]
 
     # safe=False is needed if response_data is a list
     return JsonResponse(response_data, safe=False)

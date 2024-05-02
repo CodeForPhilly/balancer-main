@@ -209,7 +209,12 @@ const PatientSummary = ({
                           <span className="font-medium ">
                             {patientInfo.Suicide == "Yes" ? (
                               <li className="flex items-center justify-between  border-b border-gray-900/10 py-4 pl-4 pr-5 text-sm leading-4 hover:bg-indigo-100 ">
-                                Patient has a history of suicide attempts
+                                <Tooltip text="Lithium is the only medication on the market that has been proven to reduce suicidality in patients with bipolar disorder, so it will be shown at the top of the suggested medications list.">
+                                  Patient has a history of suicide attempts
+                                  <span className="material-symbols-outlined  ml-1">
+                                    info
+                                  </span>
+                                </Tooltip>
                               </li>
                             ) : (
                               ""

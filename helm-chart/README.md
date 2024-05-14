@@ -12,4 +12,3 @@ Relevant file locations on GitHub:
 ---
 - Release values specific to the cfp-sandbox-cluster: https://github.com/CodeForPhilly/cfp-sandbox-cluster/blob/main/balancer/release-values.yaml
 - Sealed secrets: https://github.com/CodeForPhilly/cfp-sandbox-cluster/blob/main/balancer.secrets/
-- This helm chart: https://github.com/CodeForPhilly/balancer-main/tree/develop/helm-chart

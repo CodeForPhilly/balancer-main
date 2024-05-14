@@ -16,5 +16,6 @@ python manage.py makemigrations api --no-input
 python manage.py migrate
 # create superuser for postgre admin on start up
 python manage.py createsu
-
+# populate the database on start up
+python manage.py populatedb
 exec "$@"

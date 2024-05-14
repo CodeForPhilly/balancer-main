@@ -97,7 +97,7 @@ const Header = (props: LoginFormProps) => {
         }
       >
         <Link to="/">
-          <span className="bg-gradient-to-r  from-blue-500 via-blue-700 to-blue-300 bg-clip-text font-quicksand text-xl font-bold text-transparent lg:text-3xl ">
+          <span className="bg-gradient-to-r  from-blue-500 via-blue-700 to-blue-300 bg-clip-text font-quicksand text-xl font-bold text-transparent lg:text-5xl ">
             Balancer
           </span>
         </Link>
@@ -109,6 +109,12 @@ const Header = (props: LoginFormProps) => {
             Medication Suggester
           </Link>
           <>
+            <Link
+              to="/medications"
+              className="mr-5 font-bold text-black hover:border-blue-600 hover:text-blue-600 hover:no-underline"
+            >
+              Medication List
+            </Link>
             <Link
               to="/about"
               className="mr-5 font-bold text-black hover:border-blue-600 hover:text-blue-600 hover:no-underline"

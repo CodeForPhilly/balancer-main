@@ -1,6 +1,6 @@
 from django.urls import path
-from api.views.uploadFile import views
+from .views import UploadFileView
 
 urlpatterns = [
-    path("chatgpt/uploadFile", views.uploadFiles, name="uploadFiles")
+    path("v1/api/uploadFile", UploadFileView.as_view(), name="uploadFiles")
 ]

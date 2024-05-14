@@ -163,7 +163,7 @@ const PatientSummary = ({
                           {patientInfo.Diagnosis}
                         </dd>
                       </div>
-                      <div className="mt-2 flex w-full md:mt-0 md:p-0">
+                      {/* <div className="mt-2 flex w-full md:mt-0 md:p-0">
                         <dt className=" w-1/2 text-sm font-medium leading-6 text-gray-900">
                           Bipolar history:
                         </dt>
@@ -186,7 +186,7 @@ const PatientSummary = ({
                             )}
                           </ul>
                         </dd>
-                      </div>
+                      </div> */}
                     </div>
                     <div className=" border-b border-gray-900/10  sm:grid sm:grid-cols-3 sm:gap-4  sm:px-0 md:py-6">
                       <dt className="mt-3 flex text-sm font-medium leading-6 text-gray-900">
@@ -209,7 +209,12 @@ const PatientSummary = ({
                           <span className="font-medium ">
                             {patientInfo.Suicide == "Yes" ? (
                               <li className="flex items-center justify-between  border-b border-gray-900/10 py-4 pl-4 pr-5 text-sm leading-4 hover:bg-indigo-100 ">
-                                Patient has attempted suicide
+                                <Tooltip text="Lithium is the only medication on the market that has been proven to reduce suicidality in patients with bipolar disorder, so it will be shown at the top of the suggested medications list.">
+                                  Patient has a history of suicide attempts
+                                  <span className="material-symbols-outlined  ml-1">
+                                    info
+                                  </span>
+                                </Tooltip>
                               </li>
                             ) : (
                               ""
@@ -352,10 +357,15 @@ const PatientSummary = ({
                                   medication === clickedMedication
                                     ? "bg-indigo-100"
                                     : ""
-                                } cursor-pointer`}
-                                  onClick={() =>
-                                    handleMedicationClick(medication)
-                                  }
+                                } 
+                                ${
+                                  medication !== "None" ?
+                                  "cursor-pointer" :
+                                  "default"
+                                }`}
+                                  onClick={() => {
+                                    if (medication !== "None") handleMedicationClick(medication)
+                                  }}
                                 >
                                   <div className="flex w-0 flex-1 items-center">
                                     <div className="ml-4 flex min-w-0 flex-1 gap-2">
@@ -370,11 +380,13 @@ const PatientSummary = ({
                                       </div>
                                     </div>
                                   </div>
-                                  <div className="ml-4 flex-shrink-0">
-                                    <span className="font-medium text-indigo-600 hover:text-indigo-500">
-                                      Benefits and risks
-                                    </span>
-                                  </div>
+                                  {medication !== "None" &&
+                                    <div className="ml-4 flex-shrink-0">
+                                      <span className="font-medium text-indigo-600 hover:text-indigo-500">
+                                        Benefits and risks
+                                      </span>
+                                    </div>
+                                  }
                                 </li>
                               ))}
                         </ul>

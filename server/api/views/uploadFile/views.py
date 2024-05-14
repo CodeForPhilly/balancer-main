@@ -44,6 +44,7 @@ class UploadFileView(APIView):
                 size = uploaded_file.size  # Size in bytes
 
                 # Read the entire PDF to store in the BinaryField
+                uploaded_file.seek(0)
                 pdf_binary = uploaded_file.read()
 
                 # Create a new UploadFile instance and populate it

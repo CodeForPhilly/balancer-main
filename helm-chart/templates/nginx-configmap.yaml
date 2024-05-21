@@ -41,12 +41,6 @@ data:
       }
 
       server {
-        # if no Host match, close the connection to prevent host spoofing
-        listen 80 default_server;
-        return 444;
-      }
-
-      server {
         # use 'listen 80 deferred;' for Linux
         # use 'listen 80 accept_filter=httpready;' for FreeBSD
         listen 80 deferred;

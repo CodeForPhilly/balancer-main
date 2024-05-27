@@ -8,8 +8,8 @@ backend:
     tag: "latest"
   env:
     DATABASE: "postgres"
-    DEBUG: "FALSE"
-    DJANGO_ALLOWED_HOSTS: "frontend localhost 127.0.0.1 [::1]"
+    DEBUG: "TRUE"
+#    DJANGO_ALLOWED_HOSTS: "frontend localhost 127.0.0.1 [::1]"
     SQL_ENGINE: "django.db.backends.postgresql"
     LOGIN_REDIRECT_URL: "https://balancertestsite.com/login"
     EMAIL_HOST: "smtp.gmail.com"

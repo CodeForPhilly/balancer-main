@@ -75,7 +75,7 @@ export const checkAuthenticated = () => async (dispatch: AppDispatch) => {
     };
 
     const body = JSON.stringify({ token: localStorage.getItem("access") });
-    let baseUrl = 'http://' + window.location.host;
+    let baseUrl = window.location.origin;
     baseUrl = baseUrl.replace(":3000", ":8000");
     const url = `${baseUrl}/auth/jwt/verify/`;
     try {
@@ -113,7 +113,7 @@ export const load_user = (): ThunkType => async (dispatch: AppDispatch) => {
         Accept: "application/json",
       },
     };
-    let baseUrl = 'http://' + window.location.host;
+    let baseUrl = window.location.origin;
     baseUrl = baseUrl.replace(":3000", ":8000");
     const url = `${baseUrl}/auth/users/me/`;
     try {
@@ -145,7 +145,7 @@ export const login =
     };
 
     const body = JSON.stringify({ email, password });
-    let baseUrl = 'http://' + window.location.host;
+    let baseUrl = window.location.origin;
     baseUrl = baseUrl.replace(":3000", ":8000");
     const url = `${baseUrl}/auth/jwt/create/`;
     try {
@@ -187,7 +187,7 @@ export const reset_password =
     };
     console.log("yes");
     const body = JSON.stringify({ email });
-    let baseUrl = 'http://' + window.location.host;
+    let baseUrl = window.location.origin;
     baseUrl = baseUrl.replace(":3000", ":8000");
     const url = `${baseUrl}/auth/users/reset_password/`;
     try {
@@ -218,7 +218,7 @@ export const reset_password_confirm =
     };
 
     const body = JSON.stringify({ uid, token, new_password, re_new_password });
-    let baseUrl = 'http://' + window.location.host;
+    let baseUrl = window.location.origin;
     baseUrl = baseUrl.replace(":3000", ":8000");
     const url = `${baseUrl}/auth/users/reset_password_confirm/`;
     try {

@@ -59,7 +59,7 @@ const PatientSummary = ({
       setClickedMedication(medication);
       setLoading(true);
       try {
-        let baseUrl = 'http://' + window.location.host + '/api';
+        let baseUrl = window.location.origin + '/api';
         baseUrl = baseUrl.replace(":3000", ":8000");
         const postBody = {
           diagnosis: medication,

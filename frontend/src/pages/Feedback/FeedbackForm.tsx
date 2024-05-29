@@ -87,7 +87,7 @@ const FeedbackForm = () => {
       },
       onSubmit: async (values) => {
         setFeedback("");
-        let baseUrl = 'http://' + window.location.host + '/api';
+        let baseUrl = window.location.origin + '/api';
         baseUrl = baseUrl.replace(":3000", ":8000");
         try {
           // Call 1: Create Feedback request

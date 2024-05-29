@@ -36,6 +36,7 @@ ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', '*').split()
 if ALLOWED_HOSTS == ['*'] or ALLOWED_HOSTS == ['']:
     ALLOWED_HOSTS = ['*']
 
+CSRF_TRUSTED_ORIGINS = map(lambda s: "https://" + s, ALLOWED_HOSTS)
 
 # Application definition
 

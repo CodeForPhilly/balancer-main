@@ -45,7 +45,7 @@ const DrugSummaryForm = () => {
       }
 
       const contentType = url ? "application/json" : "multi-part/form";
-      let baseUrl = 'http://' + window.location.host + '/api';
+      let baseUrl = window.location.origin + '/api';
       baseUrl = baseUrl.replace(":3000", ":8000");
       const completeBaseURL = `${baseUrl}/chatgpt`;
       try {

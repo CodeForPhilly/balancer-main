@@ -56,10 +56,11 @@ const LoginMenuDropDown: React.FC<LoginMenuDropDownProps> = ({
         <br />
         <div className="flex h-28 flex-col items-center justify-center text-center">
           <p className="mb-4">
-            Access Balancer's cutting-edge features by signing into your
-            account. Our platform is in Beta, aiming to refine your experience.
-            Remember, our site's insights are not medical advice. Your feedback
-            shapes the future of Balancer.
+            Balancer is an interactive and user-friendly research tool for
+            bipolar medications, powered by Code for Philly volunteers. We built
+            Balancer to improve the health and well-being of people with bipolar
+            disorder. Balancer is currently still being developed, so do not
+            take any information on the test site as actual medical advice.
           </p>
           {/* <p className="w-96">
             You can log in or sign up for a Balancer account using your email,
@@ -73,7 +74,7 @@ const LoginMenuDropDown: React.FC<LoginMenuDropDownProps> = ({
                 type="submit"
                 className=" mt-1 w-80 rounded-xl bg-blue-500 px-24 py-2 text-white hover:bg-blue-600"
               >
-                Login
+                Log in
               </button>
             </Link>
             {/* <Link to="/register">

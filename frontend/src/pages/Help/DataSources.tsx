@@ -1,5 +1,5 @@
 import Layout from "../Layout/Layout";
-import LineChart from "./LineChart";
+import LineChart from "./Icons/LineChart";
 
 interface DataProps {
   title: string;

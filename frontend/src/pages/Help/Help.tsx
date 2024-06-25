@@ -1,45 +1,9 @@
-import Layout from "../Layout/Layout";
-import { useEffect, useState } from "react";
-import HelpCard from "./HelpCard";
 import { Link } from "react-router-dom";
-
-interface HelpData {
-  link: string[];
-  icon: string[];
-  title: string[];
-  paragraph: string[];
-}
-
-const HelpCardData: HelpData = {
-  link: ["/how-to", "/feedback", "/data-sources"],
-  icon: ["UserDoctor", "FeedbackIcon", "MagnifyingGlassChart"],
-  title: ["How To Use This Site", "Submit Feedback", "How We Get Our Data"],
-  paragraph: [
-    "Visit this page to learn how to use the Balancer App.",
-    "Give the Balancer team feedback on your experience.",
-    "Learn about how the Balancer team gets our data.",
-  ],
-};
+import Layout from "../Layout/Layout";
+import HelpCard from "./HelpCard";
+import { helpData } from "./helpData";
 
 function Help() {
-  const [data, setData] = useState<HelpData>({
-    link: [""],
-    icon: [""],
-    title: [""],
-    paragraph: [""],
-  });
-
-  useEffect(() => {
-    if (!data) {
-      setData({
-        link: [""],
-        icon: [""],
-        title: ["error setting data"],
-        paragraph: ["error setting data"],
-      });
-    } else setData(HelpCardData);
-  }, [data]);
-
   return (
     <Layout>
       <div className="mt-20 flex w-full max-w-6xl flex-col items-center justify-center px-4">
@@ -54,20 +18,30 @@ function Help() {
           </h3>
         </div>
         <div className="flex flex-col gap-4 sm:flex-row">
-          {data.icon.map((icon, index) => (
-            <Link
-              to={data.link[index]}
-              key={index}
-              className="flex max-w-full flex-grow basis-1/3"
-            >
+          {helpData.map((helpDataEntry, index) => {
+            const card = (
               <HelpCard
                 key={index}
-                icon={icon}
-                title={data.title[index]}
-                paragraph={data.paragraph[index]}
+                title={helpDataEntry.title}
+                paragraph={helpDataEntry.paragraph}
+                Icon={helpDataEntry.Icon}
               />
-            </Link>
-          ))}
+            );
+
+            return helpDataEntry.link ? (
+              <Link
+                to={helpDataEntry.link}
+                key={index}
+                className="flex max-w-full flex-grow basis-1/3"
+              >
+                {card}
+              </Link>
+            ) : (
+              <div key={index} className="flex max-w-full flex-grow basis-1/3">
+                {card}
+              </div>
+            );
+          })}
         </div>
       </div>
     </Layout>

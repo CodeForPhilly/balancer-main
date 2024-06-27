@@ -1,7 +1,7 @@
 import { FormEvent, ChangeEvent, useEffect, useState } from "react";
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
-import { PatientInfo } from "./PatientTypes";
+import { PatientInfo, Diagnosis } from "./PatientTypes";
 import Tooltip from "../../components/Tooltip";
 // import ErrorMessage from "../../components/ErrorMessage";
 
@@ -52,7 +52,7 @@ const NewPatientForm = ({
 
   const [newPatientInfo, setNewPatientInfo] = useState<PatientInfo>({
     ID: "",
-    Diagnosis: "Null",
+    Diagnosis: Diagnosis.Manic,
     OtherDiagnosis: "",
     Description: "",
     CurrentMedications: "",
@@ -94,11 +94,6 @@ const NewPatientForm = ({
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // const payload = {
-    //   state:
-    //     newPatientInfo.Diagnosis !== null ? newPatientInfo.Diagnosis : "Null",
-    // };
-
     // send payload to backend using the new interface
     const payload: PatientInfoInterface = {
       id: newPatientInfo.ID,
@@ -120,14 +115,6 @@ const NewPatientForm = ({
       riskPregnancy: newPatientInfo.risk_pregnancy == "Yes",
     };
     console.log(newPatientInfo);
-
-    // Check if Diagnosis is "Null"
-    if (newPatientInfo.Diagnosis === "Null") {
-      newPatientInfo.Diagnosis = "Manic";
-      // setErrors(["Please select a current state."]);
-      // window.scrollTo({ top: 0, behavior: "smooth" });
-      return; // Prevent form submission
-    }
 
     setIsLoading(true); // Start loading
 
@@ -186,11 +173,11 @@ const NewPatientForm = ({
   };
 
   const handleDiagnosisChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    const selectedValue = e.target.value;
+    const selectedValue = e.target.value as keyof typeof Diagnosis;
 
     setNewPatientInfo({
       ...newPatientInfo,
-      Diagnosis: selectedValue,
+      Diagnosis: Diagnosis[selectedValue],
       OtherDiagnosis: "", // Reset the OtherDiagnosis value
     });
   };
@@ -199,7 +186,7 @@ const NewPatientForm = ({
     setNewPatientInfo((prevPatientInfo) => ({
       ...prevPatientInfo,
       ID: "",
-      Diagnosis: "Null",
+      Diagnosis: Diagnosis.Manic,
       OtherDiagnosis: "",
       Description: "",
       CurrentMedications: "",
@@ -224,7 +211,7 @@ const NewPatientForm = ({
     setNewPatientInfo((prevPatientInfo) => ({
       ...prevPatientInfo,
       ID: "",
-      Diagnosis: "Null",
+      Diagnosis: Diagnosis.Manic,
       OtherDiagnosis: "",
       Description: "",
       CurrentMedications: "",
@@ -341,11 +328,11 @@ const NewPatientForm = ({
                     autoComplete="current-state"
                     className={isLoading ? " url_input_loading" : "dropdown"}
                   >
-                    {/* <option value="Null"> </option> */}
-                    <option value="Manic"> Manic </option>
-                    <option value="Depressed">Depressed</option>
-                    <option value="Hypomanic">Hypomanic</option>
-                    <option value="Euthymic">Euthymic</option>
+                    {Object.values(Diagnosis).map((diagnosis) => (
+                      <option key={diagnosis} value={diagnosis}>
+                        {diagnosis}
+                      </option>
+                    ))}
                     {/* <option value="Mixed">Mixed</option> */}
                   </select>
                 </div>

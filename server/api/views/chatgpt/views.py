@@ -1,3 +1,7 @@
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
 from django.http import JsonResponse
 from bs4 import BeautifulSoup
 from nltk.stem import PorterStemmer
@@ -6,9 +10,50 @@ import openai
 import tiktoken
 import os
 import json
-
-# XXX: remove csrf_exempt usage before production
+from api.views.ai_settings.models import AI_Settings
+from api.views.ai_promptStorage.models import AI_PromptStorage
 from django.views.decorators.csrf import csrf_exempt
+
+
+@api_view(['POST'])
+def chatgpt1(request) -> Response:
+    openai.api_key = os.environ.get("OPENAI_API_KEY")
+
+    guid = request.query_params.get('guid')
+
+    if guid:
+        try:
+            prompt_storage = AI_PromptStorage.objects.get(guid=guid)
+        except AI_PromptStorage.DoesNotExist:
+            return Response({"error": "Prompt text not found for the provided GUID."}, status=404)
+    else:
+        try:
+            setting = AI_Settings.objects.get(SettingValue='System Prompt')
+            prompt_storage = AI_PromptStorage.objects.get(
+                guid=setting.SettingGUID)
+        except (AI_Settings.DoesNotExist, AI_PromptStorage.DoesNotExist) as e:
+            return Response({"error": str(e)}, status=404)
+
+    # Print the prompt text to the console
+    print(prompt_storage.PromptText)
+
+    data = request.data
+
+    if data:
+        message = data.get("message")
+        system_prompt = prompt_storage.PromptText
+
+        ai_response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": system_prompt.format(
+                    message=message)}
+            ]
+        )
+
+        return Response({"message": ai_response})
+
+    return Response({"error": "Failed to retrieve results from ChatGPT."}, status=400)
 
 
 @csrf_exempt

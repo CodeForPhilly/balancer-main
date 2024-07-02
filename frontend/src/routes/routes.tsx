@@ -11,8 +11,9 @@ import Feedback from "../pages/Feedback/Feedback.tsx";
 import Help from "../pages/Help/Help.tsx";
 import HowTo from "../pages/Help/HowTo.tsx";
 import DataSources from "../pages/Help/DataSources.tsx";
+import Settings from "../pages/Settings/Settings.tsx";
 import ListMeds from "../pages/ListMeds/ListMeds.tsx";
-
+import UploadFile from "../pages/DocumentManager/UploadFile.tsx";
 const routes = [
   {
     path: "/",
@@ -64,9 +65,17 @@ const routes = [
     element: <AdminPortal />,
   },
   {
+    path: "Settings",
+    element: <Settings />,
+  },
+  {
     path: "medications",
-    element: <ListMeds />
-  }
+    element: <ListMeds />,
+  },
+  {
+    path: "uploadfile",
+    element: <UploadFile />,
+  },
 ];
 
 export default routes;

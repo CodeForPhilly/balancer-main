@@ -1,6 +1,6 @@
 export interface PatientInfo {
   ID?: string;
-  Diagnosis?: string;
+  Diagnosis?: Diagnosis;
   OtherDiagnosis?: string;
   Description?: string;
   Depression?: string;
@@ -25,7 +25,7 @@ export interface PatientInfo {
 
 export interface NewPatientInfo {
   ID?: string;
-  Diagnosis?: string;
+  Diagnosis?: Diagnosis;
   OtherDiagnosis?: string;
   Description?: string;
   Depression?: string;
@@ -42,4 +42,11 @@ export interface NewPatientInfo {
   Suicide: string;
   Kidney: string;
   Liver: string;
+}
+
+export enum Diagnosis {
+  Manic = "Manic",
+  Depressed = "Depressed",
+  Hypomanic = "Hypomanic",
+  Euthymic = "Euthymic",
 }

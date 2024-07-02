@@ -12,9 +12,6 @@ services:
       - POSTGRES_DB=balancer_dev
     ports:
     - "5432:5432"
-    networks:
-      app_net:
-        ipv4_address: 192.168.0.2  
   backend:
     image: balancer-backend
     build:
@@ -37,7 +34,7 @@ services:
         - "3000:3000"
     environment:
         - CHOKIDAR_USEPOLLING=true
-        # - VITE_API_BASE_URL=https://balancertestsite.com/
+        - VITE_API_BASE_URL=https://balancertestsite.com/
     volumes:
         - "./frontend:/usr/src/app:delegated"
         - "/usr/src/app/node_modules/"

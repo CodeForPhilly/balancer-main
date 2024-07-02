@@ -4,7 +4,7 @@ export const FeatureMenuDropDown = () => {
   return (
     <div className="h-50 absolute top-full mb-2 mt-2 flex  flex-row items-center rounded-lg border-2 bg-white font-inter text-sm sm:px-6 md:px-8 lg:px-8 xl:px-6 ">
       <div className="mx-3 my-5 ">
-        <Link to="/">
+        <Link to="/uploadfile">
           <ul className=" cursor-pointer  rounded-lg p-3 transition duration-300 hover:bg-gray-100">
             <span className=" font-bold text-black  ">
               Manage Medication Suggester

@@ -23,8 +23,4 @@ COPY . /usr/src/server
 RUN sed -i 's/\r$//' /usr/src/server/entrypoint.sh && chmod +x /usr/src/server/entrypoint.sh
 
 # run entrypoint.sh
-<<<<<<< HEAD
-ENTRYPOINT ["/usr/src/app/entrypoint.sh"]
-=======
 ENTRYPOINT ["/usr/src/server/entrypoint.sh"]
->>>>>>> origin/listOfMed

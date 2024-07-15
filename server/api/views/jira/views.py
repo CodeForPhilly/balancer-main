@@ -25,11 +25,21 @@ class FeedbackView(APIView):
 
 # TO-DO: Edit/Delete all functions below
 @csrf_exempt
-def create_new_feedback(request: str) -> JsonResponse:
+def create_new_feedback(request: HttpRequest) -> JsonResponse:
     """
     Create a new feedback request in Jira Service Desk.
     """
     token: str = os.environ.get("JIRA_API_KEY")
+
+    try:
+        data: dict[str, str] = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"status": 400, "message": "Invalid JSON payload"})
+
+    required_fields = ["name", "email", "message", "feedbackType"]
+    missing_fields = [field for field in required_fields if field not in data]
+    if missing_fields:
+        return JsonResponse({"status": 400, "message": f"Missing fields: {', '.join(missing_fields)}"})
 
     data: dict[str, str] = json.loads(request.body)
     name: str = data["name"]
@@ -47,7 +57,7 @@ def create_new_feedback(request: str) -> JsonResponse:
             feedback_type_id = 33
         case _:
             return JsonResponse(
-                {"status": 500, "message": "Internal server error"}
+                {"status": 400, "message": "Invalid feedback type"}
             )
 
     url: str = "https://balancer.atlassian.net/rest/servicedeskapi/request"

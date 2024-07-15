@@ -5,6 +5,7 @@ import { object, string } from "yup";
 import axios from "axios";
 
 interface FormValues {
+  feedbackType: "feature request" | "issue" | "general" | "";
   name: string;
   email: string;
   message: string;
@@ -18,6 +19,7 @@ const FeedbackForm = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
 
   const feedbackValidation = object().shape({
+    // TO-DO add validation that feedback type is not ""
     name: string().required("Name is a required field"),
     email: string()
       .email("You have entered an invalid email")
@@ -79,21 +81,25 @@ const FeedbackForm = () => {
   const { errors, handleChange, handleSubmit, resetForm, touched, values } =
     useFormik<FormValues>({
       initialValues: {
+        feedbackType: "",
         name: "",
         email: "",
         message: "",
         image: "",
       },
+      validationSchema: feedbackValidation,
       onSubmit: async (values) => {
         setFeedback("");
         try {
+          const baseUrl = import.meta.env.VITE_API_BASE_URL;
           // Call 1: Create Feedback request
           const response = await axios.post(
-            "http://localhost:8000/api/jira/create_new_feedback/",
+            `${baseUrl}/jira/create_new_feedback`,
             {
               name: values.name,
               email: values.email,
               message: values.message,
+              feedbackType: values.feedbackType,
             },
             {
               headers: {
@@ -151,13 +157,13 @@ const FeedbackForm = () => {
               resetForm();
             }
           } else {
-            setErrorMessage("Error creating a new feedback request.");
+            setErrorMessage(`Error(s): ${response.data.message}`);
           }
         } catch (error) {
           setErrorMessage("An error occurred while submitting the form");
+          console.error(error);
         }
       },
-      validationSchema: feedbackValidation,
     });
 
   return (
@@ -178,40 +184,46 @@ const FeedbackForm = () => {
                 <div className="flex items-center gap-x-3 pr-16">
                   <input
                     id="feature-request"
-                    name="feedback-type"
+                    name="feedbackType"
                     type="radio"
                     className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                    value="Yes"
+                    value="feature request"
+                    onChange={handleChange}
+                    checked={values.feedbackType === "feature request"}
                   />
                   <label
                     className="block text-sm font-medium leading-6 text-gray-900"
-                    htmlFor="psychotic-yes"
+                    htmlFor="feature-request"
                   >
                     Feature request
                   </label>
                   <input
-                    id="bug"
-                    name="feedback-type"
+                    id="issue"
+                    name="feedbackType"
                     type="radio"
                     className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                    value="No"
+                    value="issue"
+                    onChange={handleChange}
+                    checked={values.feedbackType === "issue"}
                   />
                   <label
                     className="block text-sm font-medium leading-6 text-gray-900"
-                    htmlFor="psychotic-no"
+                    htmlFor="issue"
                   >
                     Issue
                   </label>
                   <input
-                    id="general-improvements"
-                    name="feedback-type"
+                    id="general"
+                    name="feedbackType"
                     type="radio"
                     className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                    value="No"
+                    value="general"
+                    onChange={handleChange}
+                    checked={values.feedbackType === "general"}
                   />
                   <label
                     className="block text-sm font-medium leading-6 text-gray-900"
-                    htmlFor="psychotic-no"
+                    htmlFor="general"
                   >
                     General feedback
                   </label>

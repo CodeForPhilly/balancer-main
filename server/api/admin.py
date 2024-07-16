@@ -6,18 +6,23 @@ from .views.ai_settings.models import AI_Settings
 from .views.ai_promptStorage.models import AI_PromptStorage
 from .views.ai_settings.models import AI_Settings
 from .views.ai_promptStorage.models import AI_PromptStorage
+from .views.jira.models import Feedback
+
 
 @admin.register(Medication)
 class MedicationAdmin(admin.ModelAdmin):
     list_display = ['name', 'benefits', 'risks']
 
+
 @admin.register(Diagnosis)
 class DiagnosisAdmin(admin.ModelAdmin):
     list_display = ['state']
 
+
 @admin.register(Suggestion)
 class SuggestionAdmin(admin.ModelAdmin):
     list_display = ['diagnosis', 'medication', 'tier']
+
 
 @admin.register(UploadFile)
 class UploadFile(admin.ModelAdmin):
@@ -37,3 +42,8 @@ class AI_Settings(admin.ModelAdmin):
 @admin.register(AI_PromptStorage)
 class AI_PromptStorage(admin.ModelAdmin):
     list_display = ['id', 'guid', 'PromptText', 'IsActive']
+
+
+@admin.register(Feedback)
+class Feedback(admin.ModelAdmin):
+    list_display = ['feedbacktype']

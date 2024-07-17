@@ -16,14 +16,14 @@ from django.views.decorators.csrf import csrf_exempt
 
 
 class FeedbackView(APIView):
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         serializer = FeedbackSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
+# TO-DO: Edit/Delete all functions below
 @csrf_exempt
 def create_new_feedback(request: str) -> JsonResponse:
     """

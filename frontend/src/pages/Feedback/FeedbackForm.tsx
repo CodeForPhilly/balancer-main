@@ -2,19 +2,34 @@ import { useEffect, useState } from "react";
 import { useFormik } from "formik";
 import { useMutation } from "react-query";
 import { object, string } from "yup";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
+import { handleSubmitFeedback } from "../../apiClient";
 
-interface FormValues {
-  feedbackType: "feature request" | "issue" | "general" | "";
+export interface FormValues {
+  feedbackType: "new_feature" | "issue" | "general" | "";
   name: string;
   email: string;
   message: string;
   image: string;
 }
 
+// Error Message interface and validation
+interface ErrorMessages {
+  [key: string]: string[];
+}
+const isValidErrorMessages = (data: unknown): data is ErrorMessages => {
+  if (typeof data !== "object" || data === null) return false;
+  return Object.entries(data).every(
+    ([key, value]) =>
+      typeof key === "string" &&
+      Array.isArray(value) &&
+      value.every((item) => typeof item === "string")
+  );
+};
+
 const FeedbackForm = () => {
   const [feedback, setFeedback] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
+  const [errorMessages, setErrorMessages] = useState<ErrorMessages>({});
   const [isPressed, setIsPressed] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
 
@@ -35,18 +50,19 @@ const FeedbackForm = () => {
       feedbackMessage.innerText = feedback;
     }
 
+    // TO-DO: Code below may not be necessary
     // Update an error message div after Submit
-    const errorMessageDiv = document.getElementById("error-message");
-    if (errorMessageDiv) {
-      errorMessageDiv.innerText = errorMessage;
-    }
-  }, [feedback, errorMessage]);
+    // const errorMessageDiv = document.getElementById("error-message");
+    // if (errorMessageDiv) {
+    //   errorMessageDiv.innerText = errorMessage;
+    // }
+  }, [feedback, errorMessages]);
 
   //reset the form fields and states when clicking cancel
   const handleCancel = () => {
     resetForm();
     setFeedback("");
-    setErrorMessage("");
+    setErrorMessages({});
   };
 
   const handleMouseDown = () => {
@@ -91,77 +107,87 @@ const FeedbackForm = () => {
       onSubmit: async (values) => {
         setFeedback("");
         try {
-          const baseUrl = import.meta.env.VITE_API_BASE_URL;
           // Call 1: Create Feedback request
-          const response = await axios.post(
-            `${baseUrl}/jira/create_new_feedback`,
-            {
-              name: values.name,
-              email: values.email,
-              message: values.message,
-              feedbackType: values.feedbackType,
-            },
-            {
-              headers: {
-                "Content-Type": "application/json",
-              },
-            }
+          await handleSubmitFeedback(
+            values.feedbackType,
+            values.name,
+            values.email,
+            values.message
           );
 
+          setFeedback("Feedback submitted successfully!");
+          resetForm();
+          setErrorMessages({});
+
+          // TO-DO: Commented code below needs to be updated for image submission
           // check to see if request was successful and get the issue key
-          if (response.data.status === 201) {
-            const issueKey = response.data.issueKey;
+          // if (response.data.status === 201) {
+          //   const issueKey = response.data.issueKey;
 
-            if (values.image) {
-              // Call 2: Upload Image
-              const formData = new FormData();
-              formData.append("issueKey", issueKey);
-              formData.append("attachment", values.image);
+          //   if (values.image) {
+          //     // Call 2: Upload Image
+          //     const formData = new FormData();
+          //     formData.append("issueKey", issueKey);
+          //     formData.append("attachment", values.image);
 
-              const response2 = await axios.post(
-                "http://localhost:8000/api/jira/upload_servicedesk_attachment/",
-                formData,
-                {
-                  headers: {
-                    "Content-Type": "multipart/form-data",
-                  },
-                }
-              );
+          //     const response2 = await axios.post(
+          //       "http://localhost:8000/api/jira/upload_servicedesk_attachment/",
+          //       formData,
+          //       {
+          //         headers: {
+          //           "Content-Type": "multipart/form-data",
+          //         },
+          //       }
+          //     );
 
-              // Check if attachment upload was successful
-              if (response2.data.status === 200) {
-                const attachmentId = response2.data.tempAttachmentId;
+          //     // Check if attachment upload was successful
+          //     if (response2.data.status === 200) {
+          //       const attachmentId = response2.data.tempAttachmentId;
 
-                // Step 3: Attach upload image to feedback request
-                const response3 = await axios.post(
-                  "http://localhost:8000/api/jira/attach_feedback_attachment/",
-                  {
-                    issueKey: issueKey,
-                    tempAttachmentId: attachmentId,
-                  }
-                );
+          //       // Step 3: Attach upload image to feedback request
+          //       const response3 = await axios.post(
+          //         "http://localhost:8000/api/jira/attach_feedback_attachment/",
+          //         {
+          //           issueKey: issueKey,
+          //           tempAttachmentId: attachmentId,
+          //         }
+          //       );
 
-                // Check if the attachment was successfully attached
-                if (response3.status === 200) {
-                  setFeedback("Feedback and image submitted successfully!");
-                  resetForm();
-                } else {
-                  setErrorMessage("Error attaching image");
-                }
-              } else {
-                setErrorMessage("Error uploading the image.");
-                console.log(response2);
-              }
-            } else {
-              setFeedback("Feedback submitted successfully!");
-              resetForm();
-            }
-          } else {
-            setErrorMessage(`Error(s): ${response.data.message}`);
-          }
+          //       // Check if the attachment was successfully attached
+          //       if (response3.status === 200) {
+          //         setFeedback("Feedback and image submitted successfully!");
+          //         resetForm();
+          //       } else {
+          //         setErrorMessage("Error attaching image");
+          //       }
+          //     } else {
+          //       setErrorMessage("Error uploading the image.");
+          //       console.log(response2);
+          //     }
+          //   } else {
+          //     setFeedback("Feedback submitted successfully!");
+          //     resetForm();
+          //   }
+          // } else {
+          //   setErrorMessage(`Error(s): ${response.data.message}`);
+          // }
         } catch (error) {
-          setErrorMessage("An error occurred while submitting the form");
           console.error(error);
+          if (error instanceof AxiosError && error.response) {
+            const data = error.response.data;
+            if (isValidErrorMessages(data)) {
+              // Handle expected error such as missing/invalid form field
+              setErrorMessages(data);
+            } else {
+              // Handle unexpected error such as invalid JWT token
+              setErrorMessages({ "Axios Error": [error.message] });
+            }
+          } else if (error instanceof Error) {
+            setErrorMessages({ Error: [error.message] });
+          } else {
+            // Handle unknown error
+            setErrorMessages({ Error: ["Unknown Error"] });
+          }
         }
       },
     });
@@ -187,9 +213,9 @@ const FeedbackForm = () => {
                     name="feedbackType"
                     type="radio"
                     className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                    value="feature request"
+                    value="new_feature"
                     onChange={handleChange}
-                    checked={values.feedbackType === "feature request"}
+                    checked={values.feedbackType === "new_feature"}
                   />
                   <label
                     className="block text-sm font-medium leading-6 text-gray-900"
@@ -416,7 +442,16 @@ const FeedbackForm = () => {
               </button>
             </div>
             <div id="feedback-message">{feedback}</div>
-            <div id="error-message">{errorMessage}</div>
+            {Object.entries(errorMessages).map(([field, messages], index) => (
+              <div key={index} className="error-message">
+                <strong>{field}:</strong>
+                <ul>
+                  {messages.map((message, idx) => (
+                    <li key={idx}>{message}</li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
         </form>
       </section>

@@ -5,4 +5,4 @@ from .models import Feedback
 class FeedbackSerializer(serializers.ModelSerializer):
     class Meta:
         model = Feedback
-        fields = ['feedbacktype']
+        fields = ['feedbacktype', 'name', 'email', 'message']

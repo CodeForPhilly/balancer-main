@@ -46,4 +46,4 @@ class AI_PromptStorage(admin.ModelAdmin):
 
 @admin.register(Feedback)
 class Feedback(admin.ModelAdmin):
-    list_display = ['feedbacktype']
+    list_display = ['feedbacktype', 'name', 'email', 'message']

@@ -34,7 +34,7 @@ const FeedbackForm = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
 
   const feedbackValidation = object().shape({
-    // TO-DO add validation that feedback type is not ""
+    feedbackType: string().required("You must select a feedback type"),
     name: string().required("Name is a required field"),
     email: string()
       .email("You have entered an invalid email")
@@ -253,6 +253,13 @@ const FeedbackForm = () => {
                   >
                     General feedback
                   </label>
+                </div>
+                <div className="form-error-container">
+                  {touched.feedbackType && errors.feedbackType && (
+                    <p className="text-sm text-red-500">
+                      {errors.feedbackType}
+                    </p>
+                  )}
                 </div>
               </dd>
             </fieldset>

@@ -9,6 +9,18 @@ const api = axios.create({
   },
 });
 
+// Request interceptor to set the Authorization header
+api.interceptors.request.use(
+  (configuration) => {
+    const token = localStorage.getItem("access");
+    if (token) {
+      configuration.headers.Authorization = `JWT ${token}`;
+    }
+    return configuration;
+  },
+  (error) => Promise.reject(error)
+);
+
 const handleSubmitFeedback = async (
   feedbackType: FormValues["feedbackType"],
   name: FormValues["name"],

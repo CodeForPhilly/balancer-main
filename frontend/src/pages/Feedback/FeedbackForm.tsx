@@ -3,7 +3,7 @@ import { useFormik } from "formik";
 import { useMutation } from "react-query";
 import { object, string } from "yup";
 import axios, { AxiosError } from "axios";
-import { handleSubmitFeedback } from "../../apiClient";
+import { handleSubmitFeedback } from "../../api/apiClient";
 
 export interface FormValues {
   feedbackType: "new_feature" | "issue" | "general" | "";
@@ -31,7 +31,7 @@ const FeedbackForm = () => {
   const [feedback, setFeedback] = useState("");
   const [errorMessages, setErrorMessages] = useState<ErrorMessages>({});
   const [isPressed, setIsPressed] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  // const [selectedImage, setSelectedImage] = useState<File | null>(null);
 
   const feedbackValidation = object().shape({
     feedbackType: string().required("You must select a feedback type"),
@@ -345,7 +345,7 @@ const FeedbackForm = () => {
               </fieldset>
             </div>
             <div className="mb-4">
-              <fieldset className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+              {/* <fieldset className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
                 <dt className="flex text-sm font-semibold leading-6 text-gray-900">
                   <label
                     htmlFor="image"
@@ -412,7 +412,7 @@ const FeedbackForm = () => {
                     />
                   </div>
                 </dd>
-              </fieldset>
+              </fieldset> */}
             </div>
             <div className="flex items-center justify-end">
               <div className="flex w-full justify-end">

@@ -1,5 +1,5 @@
 import axios from "axios";
-import { FormValues } from "./pages/Feedback/FeedbackForm";
+import { FormValues } from "../pages/Feedback/FeedbackForm";
 const baseURL = import.meta.env.VITE_API_BASE_URL;
 
 const api = axios.create({

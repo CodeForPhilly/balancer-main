@@ -6,18 +6,28 @@ from .views.ai_settings.models import AI_Settings
 from .views.ai_promptStorage.models import AI_PromptStorage
 from .views.ai_settings.models import AI_Settings
 from .views.ai_promptStorage.models import AI_PromptStorage
+from .models.model_embeddings import Embeddings
+
+
+@admin.register(Embeddings)
+class MedicationAdmin(admin.ModelAdmin):
+    list_display = ['guid']
+
 
 @admin.register(Medication)
 class MedicationAdmin(admin.ModelAdmin):
     list_display = ['name', 'benefits', 'risks']
 
+
 @admin.register(Diagnosis)
 class DiagnosisAdmin(admin.ModelAdmin):
     list_display = ['state']
 
+
 @admin.register(Suggestion)
 class SuggestionAdmin(admin.ModelAdmin):
     list_display = ['diagnosis', 'medication', 'tier']
+
 
 @admin.register(UploadFile)
 class UploadFile(admin.ModelAdmin):

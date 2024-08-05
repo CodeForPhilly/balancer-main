@@ -98,7 +98,7 @@ const Header = (props: LoginFormProps) => {
       >
         <Link to="/">
           <span className="bg-gradient-to-r  from-blue-500 via-blue-700 to-blue-300 bg-clip-text font-quicksand text-xl font-bold text-transparent lg:text-5xl ">
-            Balancer
+            BalancerTest
           </span>
         </Link>
         <nav className="flex font-satoshi text-base lg:gap-2 xl:gap-5">

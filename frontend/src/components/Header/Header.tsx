@@ -110,7 +110,7 @@ const Header = (props: LoginFormProps) => {
         </Link>
         <nav className="flex font-satoshi text-base lg:gap-2 xl:gap-5">
           <Link
-            to="/"
+            to="/" onClick={handleClickBalancer}
             className="mr-5 font-bold text-black hover:border-blue-600 hover:text-blue-600 hover:no-underline"
           >
             Medication Suggester

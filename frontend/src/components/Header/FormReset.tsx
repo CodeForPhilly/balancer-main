@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import { useRef } from 'react';
 import Header from './Header'; // Adjust path as needed
 import NewPatientForm from '../../pages/PatientManager/NewPatientForm';
 

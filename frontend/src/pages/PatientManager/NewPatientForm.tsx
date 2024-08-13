@@ -1,4 +1,4 @@
-import { FormEvent, ChangeEvent, useEffect, useState, useRef } from "react";
+import { FormEvent, ChangeEvent, useEffect, useState } from "react";
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
 import { PatientInfo, Diagnosis } from "./PatientTypes";
@@ -70,8 +70,6 @@ const NewPatientForm = ({
     risk_pregnancy: "No",
   });
 
-  const formRef = useRef<HTMLFormElement>(null);
-
   const handleMouseDown = () => {
     setIsPressed(true);
   };
@@ -95,10 +93,6 @@ const NewPatientForm = ({
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    if (formRef.current){
-      console.log('Form element:', formRef.current);
-    }
 
     // send payload to backend using the new interface
     const payload: PatientInfoInterface = {
@@ -259,7 +253,6 @@ const NewPatientForm = ({
   };
 
   return (
-    <form ref={formRef}>
     <section className="lg:flex lg:items-center lg:justify-center">
       {/* {search} */}
       <div className=" md:mx-0 md:p-0">
@@ -860,9 +853,7 @@ const NewPatientForm = ({
         <br />
       </div>
     </section>
-    </form>
   );
 };
 
 export default NewPatientForm;
- 

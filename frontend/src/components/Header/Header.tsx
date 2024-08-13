@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, Fragment } from "react";
+// import { useState, Fragment } from "react";
 import accountLogo from "../../assets/account.svg";
 import { Link, useNavigate } from "react-router-dom";
 import LoginMenuDropDown from "./LoginMenuDropDown";
@@ -14,13 +15,11 @@ import { HiChevronDown } from "react-icons/hi";
 interface LoginFormProps {
   isAuthenticated: boolean;
   isSuperuser: boolean;
-  onClearForm: () => void;
+  resetForm: () => void;
 }
 
 const Header = (props: LoginFormProps) => {
-  const { isAuthenticated } = props;
-  const { isSuperuser } = props;
-  const { onClearForm } = props;
+  const { isAuthenticated, isSuperuser, resetForm } = props;
   const navigate = useNavigate();
   const [showFeaturesMenu, setShowFeaturesMenu] = useState(false);
   const dropdownRef = useRef(null);
@@ -79,9 +78,9 @@ const Header = (props: LoginFormProps) => {
     };
   }, [delayTimeout]);
 
-  const handleClickBalancer = () => {
-    onClearForm();
-    navigate('/');
+  const handleForm = () => {
+    resetForm();
+    navigate("/");
   }
 
   return (
@@ -102,14 +101,14 @@ const Header = (props: LoginFormProps) => {
           "  hidden h-20  w-full items-center justify-between border-b border-gray-300 bg-white px-96 md:px-20 lg:flex xl:px-60"
         }
       >
-        <Link to="/" onClick={handleClickBalancer}>
+        <Link to="/" onClick={() => handleForm()}>
           <span className="bg-gradient-to-r  from-blue-500 via-blue-700 to-blue-300 bg-clip-text font-quicksand text-xl font-bold text-transparent lg:text-5xl ">
             Balancer
           </span>
         </Link>
         <nav className="flex font-satoshi text-base lg:gap-2 xl:gap-5">
           <Link
-            to="/" onClick={handleClickBalancer}
+            to="/" onClick={() => handleForm()}
             className="mr-5 font-bold text-black hover:border-blue-600 hover:text-blue-600 hover:no-underline"
           >
             Medication Suggester

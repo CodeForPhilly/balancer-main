@@ -11,30 +11,13 @@ import json
 import uuid
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+from ...services.conversions_services import convert_uuids
 
 
 @method_decorator(csrf_exempt, name='dispatch')
 class AskEmbeddingsAPIView(APIView):
 
-    logger = logging.getLogger('api')
     permission_classes = [IsAuthenticated]
-
-    def get(self, request, format=None):
-        """
-        Retrieves the latest AskKnowledgeBaseResults entry based on date_created.
-        """
-        try:
-            user = request.user
-            latest_result = AskKnowledgeBaseResults.objects.filter(
-                created_by=user).order_by('-date_created')[:10]
-            serializer = AskKnowledgeBaseResultsSerializer(
-                latest_result, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except AskKnowledgeBaseResults.DoesNotExist:
-            return Response({"error": "No results found."}, status=status.HTTP_404_NOT_FOUND)
-        except Exception as e:
-            self.logger.error(f"Error retrieving results: {e}")
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def post(self, request, *args, **kwargs):
         try:
@@ -93,16 +76,6 @@ class AskEmbeddingsAPIView(APIView):
             )
 
             answer = response["choices"][0]["message"]["content"]
-            self.logger.info(answer)
-
-            result = AskKnowledgeBaseResults.objects.create(
-                user_message=message,
-                llm_response=answer,
-                embeddings_info=json.dumps(embeddings_results),
-                sent_to_llm=prompt_text,
-                llm_model=model_used,
-                created_by=user
-            )
 
             return Response({
                 "question": message,

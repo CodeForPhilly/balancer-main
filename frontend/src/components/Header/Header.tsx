@@ -18,8 +18,7 @@ interface LoginFormProps {
   resetForm: () => void;
 }
 
-const Header = (props: LoginFormProps) => {
-  const { isAuthenticated, isSuperuser, resetForm } = props;
+const Header: React.FC<LoginFormProps> = ({ isAuthenticated, isSuperuser, resetForm }) => {
   const navigate = useNavigate();
   const [showFeaturesMenu, setShowFeaturesMenu] = useState(false);
   const dropdownRef = useRef(null);

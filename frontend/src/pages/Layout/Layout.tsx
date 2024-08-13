@@ -41,7 +41,9 @@ export const Layout = ({
   const handleLoginMenu = () => {
     setShowLoginMenu(!showLoginMenu);
   };
-
+  const resetForm = () => {
+    resetForm();
+  };
   useAuth();
   return (
     <main>
@@ -55,7 +57,9 @@ export const Layout = ({
             handleLoginMenu={handleLoginMenu}
           />
         )}
-        <Header onClearForm={() => {}} />
+        <Header  
+        resetForm={resetForm}
+        />
         {children}
         <Footer />
       </div>

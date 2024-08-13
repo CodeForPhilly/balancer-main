@@ -865,3 +865,4 @@ const NewPatientForm = ({
 };
 
 export default NewPatientForm;
+ 

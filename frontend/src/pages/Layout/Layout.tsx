@@ -55,7 +55,7 @@ export const Layout = ({
             handleLoginMenu={handleLoginMenu}
           />
         )}
-        <Header onClearForm={}/>
+        <Header onClearForm={() => {}} />
         {children}
         <Footer />
       </div>

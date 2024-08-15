@@ -13,3 +13,8 @@ django-cors-headers>=3.10.0
 djangorestframework-simplejwt
 djoser
 pdfplumber
+pgvector
+sentence_transformers
+PyMuPDF
+Pillow
+pytesseract

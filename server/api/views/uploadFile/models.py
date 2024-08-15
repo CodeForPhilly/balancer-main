@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 import uuid
 
 
@@ -12,7 +13,10 @@ class UploadFile(models.Model):
     size = models.BigIntegerField()
     page_count = models.IntegerField()
     file_type = models.CharField(max_length=50)
-    uploaded_by = models.CharField(max_length=255, blank=True)
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    uploaded_by_email = models.CharField(
+        max_length=255, blank=True)
     source_url = models.CharField(max_length=255, blank=True, null=True)
     analyzed = models.DateTimeField(blank=True, null=True)
     approved = models.DateTimeField(blank=True, null=True)

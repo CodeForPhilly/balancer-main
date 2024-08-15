@@ -24,22 +24,17 @@ export const Layout = ({
   const location = useLocation();
 
   useEffect(() => {
-    // console.log(isAuthenticated);
     if (!isAuthenticated) {
-      setShowLoginMenu(true);
-    }
-    if (location.pathname === "/login" && !isAuthenticated) {
-      setShowLoginMenu(false);
-    } else if (location.pathname === "/resetpassword" && !isAuthenticated) {
-      setShowLoginMenu(false);
-    } else if (
-      (location.pathname.includes("password") ||
-        location.pathname.includes("reset")) &&
-      !isAuthenticated
-    ) {
-      setShowLoginMenu(false);
-    } else if (!isAuthenticated) {
-      setShowLoginMenu(true);
+      if (
+        location.pathname === "/login" ||
+        location.pathname === "/resetpassword" ||
+        location.pathname.includes("password") ||
+        location.pathname.includes("reset")
+      ) {
+        setShowLoginMenu(false);
+      } else {
+        setShowLoginMenu(true);
+      }
     }
   }, [isAuthenticated, location.pathname]);
 
@@ -54,7 +49,7 @@ export const Layout = ({
         <div className="gradient" />
       </div>
       <div className="relative z-10 mx-auto flex w-full flex-col items-center">
-        {!isAuthenticated && (
+        {!isAuthenticated && showLoginMenu && (
           <LoginMenuDropDown
             showLoginMenu={showLoginMenu}
             handleLoginMenu={handleLoginMenu}

@@ -22,8 +22,9 @@ const UploadFile: React.FC = () => {
     formData.append("file", file);
 
     try {
+      const baseUrl = import.meta.env.VITE_API_BASE_URL;
       const response = await axios.post(
-        "http://localhost:8000/v1/api/uploadFile",
+        `${baseUrl}/V1//api/uploadFile`,
         formData,
         {
           headers: {
@@ -66,8 +67,7 @@ const UploadFile: React.FC = () => {
                   d="M3 15a4 4 0 004 4h10a4 4 0 004-4V7a4 4 0 00-4-4H7a4 4 0 00-4 4v8z"
                 />
               </svg>
-              <p className="mt-1 text-sm text-gray-500">Import a file</p>
-              <p className="mt-1 text-sm text-gray-500">PDF or Markdown</p>
+              <p className="mt-1 text-sm text-gray-500">Import a PDF</p>
             </div>
             <div className="mt-4">
               <input
@@ -89,12 +89,6 @@ const UploadFile: React.FC = () => {
                 ) : (
                   "Upload File"
                 )}
-              </button>
-              <button className="mt-2 w-full rounded-md bg-gray-100 px-4 py-2 text-gray-700">
-                Paste URL
-              </button>
-              <button className="mt-2 w-full rounded-md bg-gray-100 px-4 py-2 text-gray-700">
-                Paste text
               </button>
             </div>
           </div>

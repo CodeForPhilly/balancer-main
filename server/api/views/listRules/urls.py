@@ -2,5 +2,5 @@ from django.urls import path
 from api.views.listRules import views
 
 urlpatterns = [
-    path("chatgpt/list_rules", views.rules, name="listRules")
+    path("V1/list_rules", views.list_of_rules, name="listRules")
 ]

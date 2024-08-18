@@ -1,0 +1,1 @@
+#Views: Handle the business logic and interact with models to return responses (usually HTML or JSON).

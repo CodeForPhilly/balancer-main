@@ -18,7 +18,11 @@ interface LoginFormProps {
   resetForm: () => void;
 }
 
-const Header: React.FC<LoginFormProps> = ({ isAuthenticated, isSuperuser, resetForm }) => {
+const Header: React.FC<LoginFormProps> = ({
+  isAuthenticated,
+  isSuperuser,
+  resetForm,
+}) => {
   const navigate = useNavigate();
   const [showFeaturesMenu, setShowFeaturesMenu] = useState(false);
   const dropdownRef = useRef(null);
@@ -80,7 +84,7 @@ const Header: React.FC<LoginFormProps> = ({ isAuthenticated, isSuperuser, resetF
   const handleForm = () => {
     resetForm();
     navigate("/");
-  }
+  };
 
   return (
     <header className="z10 fixed w-full items-center ">
@@ -107,7 +111,8 @@ const Header: React.FC<LoginFormProps> = ({ isAuthenticated, isSuperuser, resetF
         </Link>
         <nav className="flex font-satoshi text-base lg:gap-2 xl:gap-5">
           <Link
-            to="/" onClick={() => handleForm()}
+            to="/"
+            onClick={() => handleForm()}
             className="mr-5 font-bold text-black hover:border-blue-600 hover:text-blue-600 hover:no-underline"
           >
             Medication Suggester

@@ -79,7 +79,7 @@ const PatientSummary = ({
     <section className="lg:flex lg:items-center lg:justify-center">
       <div className=" md:mx-0 md:p-0">
         <br />
-        {patientInfo.Diagnosis && (
+        {patientInfo.ID && (
           <div className=" justify-between lg:w-[860px]">
             {/* <div className="mt-3 flex justify-between"> */}
             {!showSummary && (
@@ -359,12 +359,13 @@ const PatientSummary = ({
                                     : ""
                                 } 
                                 ${
-                                  medication !== "None" ?
-                                  "cursor-pointer" :
-                                  "default"
+                                  medication !== "None"
+                                    ? "cursor-pointer"
+                                    : "default"
                                 }`}
                                   onClick={() => {
-                                    if (medication !== "None") handleMedicationClick(medication)
+                                    if (medication !== "None")
+                                      handleMedicationClick(medication);
                                   }}
                                 >
                                   <div className="flex w-0 flex-1 items-center">
@@ -380,13 +381,13 @@ const PatientSummary = ({
                                       </div>
                                     </div>
                                   </div>
-                                  {medication !== "None" &&
+                                  {medication !== "None" && (
                                     <div className="ml-4 flex-shrink-0">
                                       <span className="font-medium text-indigo-600 hover:text-indigo-500">
                                         Benefits and risks
                                       </span>
                                     </div>
-                                  }
+                                  )}
                                 </li>
                               ))}
                         </ul>

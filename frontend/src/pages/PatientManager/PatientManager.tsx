@@ -4,60 +4,60 @@ import NewPatientForm from "./NewPatientForm.tsx";
 import PatientHistory from "./PatientHistory.tsx";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import PatientSummary from './PatientSummary.tsx';
-import { Diagnosis, PatientInfo } from './PatientTypes.ts';
-import { copy } from '../../assets/index.js';
-import Welcome from '../../components/Welcome/Welcome.tsx';
+import PatientSummary from "./PatientSummary.tsx";
+import { Diagnosis, PatientInfo } from "./PatientTypes.ts";
+import { copy } from "../../assets/index.js";
+import Welcome from "../../components/Welcome/Welcome.tsx";
 
 const PatientManager = () => {
   const [isPatientDeleted, setIsPatientDeleted] = useState<boolean>(false);
 
-    const [patientInfo, setPatientInfo] = useState<PatientInfo>({
-        ID: '',
-        Diagnosis: Diagnosis.Manic,
-        OtherDiagnosis: '',
-        Description: '',
-        CurrentMedications: '',
-        PriorMedications: '',
-        Depression: '',
-        Hypomania: '',
-        Mania: '',
-        Psychotic: '',
-        Suicide: '',
-        Kidney: '',
-        Liver: '',
-        blood_pressure: '',
-        weight_gain: '',
-        Reproductive: '',
-        risk_pregnancy: '',
-        PossibleMedications: {
-            first: '',
-            second: '',
-            third: '',
-        },
-    });
+  const [patientInfo, setPatientInfo] = useState<PatientInfo>({
+    ID: "",
+    Diagnosis: Diagnosis.Manic,
+    OtherDiagnosis: "",
+    Description: "",
+    CurrentMedications: "",
+    PriorMedications: "",
+    Depression: "",
+    Hypomania: "",
+    Mania: "",
+    Psychotic: "",
+    Suicide: "",
+    Kidney: "",
+    Liver: "",
+    blood_pressure: "",
+    weight_gain: "",
+    Reproductive: "",
+    risk_pregnancy: "",
+    PossibleMedications: {
+      first: "",
+      second: "",
+      third: "",
+    },
+  });
 
-    const handlePatientDeleted = (deletedId: string) => {
-        if (patientInfo.ID === deletedId) {
-            setPatientInfo({
-                ID: '',
-                Diagnosis: Diagnosis.Manic,
-                OtherDiagnosis: '',
-                Description: '',
-                CurrentMedications: '',
-                PriorMedications: '',
-                Depression: '',
-                Hypomania: '',
-                Mania: '',
-                Psychotic: '',
-                Suicide: '',
-                Kidney: '',
-                Liver: '',
-                blood_pressure: '',
-                weight_gain: '',
-                Reproductive: '',
-                risk_pregnancy: '',
-            });
+  const handlePatientDeleted = (deletedId: string) => {
+    if (patientInfo.ID === deletedId) {
+      setPatientInfo({
+        ID: "",
+        Diagnosis: Diagnosis.Manic,
+        OtherDiagnosis: "",
+        Description: "",
+        CurrentMedications: "",
+        PriorMedications: "",
+        Depression: "",
+        Hypomania: "",
+        Mania: "",
+        Psychotic: "",
+        Suicide: "",
+        Kidney: "",
+        Liver: "",
+        blood_pressure: "",
+        weight_gain: "",
+        Reproductive: "",
+        risk_pregnancy: "",
+      });
 
       setIsPatientDeleted(true);
     }

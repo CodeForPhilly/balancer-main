@@ -7,6 +7,7 @@ from .views.ai_promptStorage.models import AI_PromptStorage
 from .views.ai_settings.models import AI_Settings
 from .views.ai_promptStorage.models import AI_PromptStorage
 from .models.model_embeddings import Embeddings
+from .views.jira.models import Feedback
 
 
 @admin.register(Embeddings)
@@ -47,3 +48,8 @@ class AI_Settings(admin.ModelAdmin):
 @admin.register(AI_PromptStorage)
 class AI_PromptStorage(admin.ModelAdmin):
     list_display = ['id', 'guid', 'PromptText', 'IsActive']
+
+
+@admin.register(Feedback)
+class Feedback(admin.ModelAdmin):
+    list_display = ['feedbacktype', 'name', 'email', 'message']

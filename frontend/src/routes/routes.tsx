@@ -15,6 +15,7 @@ import Settings from "../pages/Settings/Settings.tsx";
 import ListMeds from "../pages/ListMeds/ListMeds.tsx";
 import UploadFile from "../pages/DocumentManager/UploadFile.tsx";
 import ListofFiles from "../pages/Files/ListOfFiles.tsx";
+
 const routes = [
   {
     path: "/",

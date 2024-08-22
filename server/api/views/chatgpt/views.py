@@ -1,7 +1,9 @@
-
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 from django.http import JsonResponse
 from bs4 import BeautifulSoup
 from nltk.stem import PorterStemmer
@@ -13,7 +15,9 @@ import json
 from api.views.ai_settings.models import AI_Settings
 from api.views.ai_promptStorage.models import AI_PromptStorage
 from django.views.decorators.csrf import csrf_exempt
-
+from django.db import transaction
+from .models import Conversation, Message
+from .serializers import ConversationSerializer, MessageSerializer
 
 @api_view(['POST'])
 def chatgpt1(request) -> Response:
@@ -155,3 +159,108 @@ def diagnosis(request: str) -> JsonResponse:
 
     # Handle the case when data is None
     return JsonResponse({"error": "Invalid request"})
+
+class ConversationViewSet(viewsets.ModelViewSet):
+    serializer_class = ConversationSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Conversation.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        # Add any custom logic here
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    # @action(detail=True, methods=['post'])
+    # def set_default(self, request, pk=None):
+    #     new_default = self.get_object()
+    #     with transaction.atomic():
+    #         # Remove default status from other conversations
+    #         self.get_queryset().filter(is_default=True).update(is_default=False)
+    #         # Set this conversation as default
+    #         new_default.is_default = True
+    #         new_default.save()
+    #     return Response({"status": "Default conversation set"})
+
+    # @action(detail=True, methods=['post'])
+    # def reset(self, request, pk=None):
+    #     conversation = self.get_object()
+    #     if not conversation.is_default:
+    #         return Response({"error": "Can only reset the default conversation"}, status=status.HTTP_400_BAD_REQUEST)
+    #     # Delete all messages but keep the conversation
+    #     conversation.messages.all().delete()
+    #     # Reset the title
+    #     conversation.title = "New Conversation"
+    #     conversation.save()
+    #     return Response({"status": "Conversation reset"})
+
+    @action(detail=True, methods=['post'])
+    def continue_conversation(self, request, pk=None):
+        conversation = self.get_object()
+        user_message = request.data.get('message')
+
+        if not user_message:
+            return Response({"error": "Message is required"}, status=400)
+
+        # Save user message
+        Message.objects.create(conversation=conversation, content=user_message, is_user=True)
+
+        # Get ChatGPT response
+        chatgpt_response = self.get_chatgpt_response(conversation, user_message)
+
+        # Save ChatGPT response
+        Message.objects.create(conversation=conversation, content=chatgpt_response, is_user=False)
+
+        # Generate or update title if it's the first message or empty
+        if conversation.messages.count() <= 2 or not conversation.title:
+            conversation.title = self.generate_title(conversation)
+            conversation.save()
+
+        return Response({"response": chatgpt_response, "title": conversation.title})
+
+    @action(detail=True, methods=['patch'])
+    def update_title(self, request, pk=None):
+        conversation = self.get_object()
+        new_title = request.data.get('title')
+
+        if not new_title:
+            return Response({"error": "New title is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        conversation.title = new_title
+        conversation.save()
+
+        return Response({"status": "Title updated successfully", "title": conversation.title})
+
+    def get_chatgpt_response(self, conversation, user_message):
+        messages = [{"role": "system", "content": "You are a helpful assistant."}]
+        for msg in conversation.messages.all():
+            role = "user" if msg.is_user else "assistant"
+            messages.append({"role": role, "content": msg.content})
+        messages.append({"role": "user", "content": user_message})
+
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=messages
+        )
+
+        return response.choices[0].message['content']
+
+    def generate_title(self, conversation):
+        messages = conversation.messages.all()[:2]  # Get the first two messages
+        context = "\n".join([msg.content for msg in messages])
+        prompt = f"Based on the following conversation, generate a short, descriptive title (max 6 words):\n\n{context}"
+
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant that generates short, descriptive titles."},
+                {"role": "user", "content": prompt}
+            ]
+        )
+
+        return response.choices[0].message['content'].strip()

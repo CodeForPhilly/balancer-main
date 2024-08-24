@@ -9,8 +9,8 @@ import { extractContentFromDOM } from "../../services/domExtraction";
 import { fetchConversations } from "../../api/apiClient";
 
 interface ChatLogItem {
-  isUser: boolean;
-  message: string;
+  is_user: boolean;
+  content: string;
   // date: Date;
 }
 
@@ -31,7 +31,8 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [showConversationList, setShowConversationList] = useState(false);
   const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [activeConversationId, setActiveConversationId] = useState(null);
+  const [activeConversation, setActiveConversation] =
+    useState<Conversation | null>(null);
 
   const suggestionPrompts = [
     "Tell me about treatment options.",
@@ -97,8 +98,8 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
     event.preventDefault();
 
     const newMessage = {
-      message: inputValue,
-      isUser: true,
+      content: inputValue,
+      is_user: true,
     };
 
     const newMessages = [...chatLog, newMessage];
@@ -116,12 +117,12 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
 
     const apiMessages = message.map((messageObject) => {
       let role = "";
-      if (messageObject.isUser) {
+      if (messageObject.is_user) {
         role = "user";
       } else {
         role = "assistant";
       }
-      return { role: role, content: messageObject.message };
+      return { role: role, content: messageObject.content };
     });
 
     systemMessage.content += `If applicable, please use the following content to ask questions. If not applicable,
@@ -140,8 +141,8 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
         setChatLog((prevChatLog) => [
           ...prevChatLog,
           {
-            isUser: false,
-            message: response.data.message.choices[0].message.content,
+            is_user: false,
+            content: response.data.message.choices[0].message.content,
           },
         ]);
         setIsLoading(false);
@@ -150,6 +151,17 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
         setIsLoading(false);
         console.log(error);
       });
+  };
+
+  const handleSelectConversation = (id: Conversation["id"]) => {
+    const selectedConversation = conversations.find(
+      (conversation) => conversation.id === id,
+    );
+
+    if (selectedConversation) {
+      setActiveConversation(selectedConversation);
+      setShowConversationList(false);
+    }
   };
 
   return (
@@ -205,10 +217,14 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
               </div>
             </div>
             {showConversationList ? (
-              <ConversationList conversations={conversations} />
+              <ConversationList
+                conversations={conversations}
+                onSelectConversation={handleSelectConversation}
+              />
             ) : (
               <div className="font_body mt-6 flex flex-grow flex-col space-y-2 p-5 pb-44">
-                {chatLog.length === 0 ? (
+                {activeConversation === null ||
+                activeConversation.messages.length === 0 ? (
                   <>
                     {/* <div className="text-gray-500">
                     Want to know more about a medication or have a question? Ask
@@ -224,11 +240,11 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
                     </div>
                   </>
                 ) : (
-                  chatLog.map((message, index) => (
+                  activeConversation.messages.map((message, index) => (
                     <div
                       key={index}
                       className={`flex ${
-                        message.isUser ? "justify-end" : "justify-start"
+                        message.is_user ? "justify-end" : "justify-start"
                       }`}
                     >
                       <pre
@@ -238,12 +254,12 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
                           wordWrap: "break-word",
                         }}
                         className={`${
-                          message.isUser
+                          message.is_user
                             ? "bg-blue-200 text-black "
                             : "border-2 bg-gray-200 text-black "
                         }rounded-lg max-h-[100%] max-w-[500px] p-2`}
                         dangerouslySetInnerHTML={{
-                          __html: message.message,
+                          __html: message.content,
                         }}
                       ></pre>
                     </div>
@@ -304,11 +320,11 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
 
 interface ConversationListProps {
   conversations: Conversation[];
-  // onSelectConversation: (conversationId: Conversation["id"]) => void;
+  onSelectConversation: (conversationId: Conversation["id"]) => void;
 }
 const ConversationList: React.FC<ConversationListProps> = ({
   conversations,
-  // onSelectConversation,
+  onSelectConversation,
 }) => {
   return (
     <>
@@ -318,7 +334,7 @@ const ConversationList: React.FC<ConversationListProps> = ({
           <li
             key={conversation.id}
             className="conversation-item flex justify-between items-center p-4 bg-white shadow rounded-lg hover:bg-gray-100 cursor-pointer"
-            // onClick={() => onSelectConversation(conversation.id)}
+            onClick={() => onSelectConversation(conversation.id)}
           >
             <span className="conversation-title text-lg font-medium">
               {conversation.title}

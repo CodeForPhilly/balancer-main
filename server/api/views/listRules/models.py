@@ -2,13 +2,13 @@
 from django.db import models # type: ignore
 from listMeds.models import Medication
 from ai.api.views.embeddings.models import Embeddings
-from ai.api.views from Embeddings
+
 
 class Rules(models.Model):
 
     RULE_TYPES = [ ('includes', 'excludes')]
 
-    id = models.CharField(max_length=29)
+    #id = models.CharField(max_length=29) 
     rule = models.CharField(max_length=1000)
     type = models.CharField(max_length=1000, choices=RULE_TYPES)
 
@@ -17,7 +17,7 @@ class Rules(models.Model):
 
 
 class Medication_Rules(models.Model):
-    id = models.CharField(max_length=29)
+    #id = models.CharField(max_length=29)
     rule_id = models.ForeignKey(Rules, on_delete=models.CASCADE)
     is_applicable = models.BooleanField(default=True)
     embeddings = models.ForeignKey(Embeddings, on_delete=models.CASCADE)

@@ -1,6 +1,7 @@
 import axios from "axios";
-import { FormValues } from "../pages/Feedback/FeedbackForm";
 const baseURL = import.meta.env.VITE_API_BASE_URL;
+import { FormValues } from "../pages/Feedback/FeedbackForm";
+import { Conversation } from "../components/Header/Chat";
 
 const api = axios.create({
   baseURL,
@@ -18,14 +19,14 @@ api.interceptors.request.use(
     }
     return configuration;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 const handleSubmitFeedback = async (
   feedbackType: FormValues["feedbackType"],
   name: FormValues["name"],
   email: FormValues["email"],
-  message: FormValues["message"]
+  message: FormValues["message"],
 ) => {
   try {
     const response = await api.post(`/jira/feedback/`, {
@@ -56,4 +57,78 @@ const handleSendDrugSummary = async (
   }
 };
 
-export { handleSubmitFeedback, handleSendDrugSummary };
+
+const fetchConversations = async (): Promise<Conversation[]> => {
+  try {
+    const response = await api.get(`/chatgpt/conversations/`);
+    return response.data;
+  } catch (error) {
+    console.error("Error(s) during getConversations: ", error);
+    throw error;
+  }
+};
+
+const fetchConversation = async (id: string): Promise<Conversation> => {
+  try {
+    const response = await api.get(`/chatgpt/conversations/${id}/`);
+    return response.data;
+  } catch (error) {
+    console.error("Error(s) during getConversation: ", error);
+    throw error;
+  }
+};
+
+const newConversation = async () => {
+  try {
+    const response = await api.post(`/chatgpt/conversations/`);
+    return response.data;
+  } catch (error) {
+    console.error("Error(s) during getConversation: ", error);
+    throw error;
+  }
+};
+
+const continueConversation = async (id: string, message: string) => {
+  try {
+    const response = await api.post(`/chatgpt/conversations/${id}/`, {
+      message,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error(s) during continueConversation: ", error);
+    throw error;
+  }
+};
+
+const deleteConversation = async (id: string) => {
+  try {
+    const response = await api.delete(`/chatgpt/conversations/${id}/`);
+    return response.data;
+  } catch (error) {
+    console.error("Error(s) during deleteConversation: ", error);
+    throw error;
+  }
+};
+
+const updateConversationTitle = async (id: string, title: string) => {
+  try {
+    const response = await api.patch(`/chatgpt/conversations/${id}/`, {
+      title,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error(s) during getConversation: ", error);
+    throw error;
+  }
+};
+
+export {
+  handleSubmitFeedback,
+  handleSendDrugSummary,
+  fetchConversations,
+  fetchConversation,
+  newConversation,
+  continueConversation,
+  deleteConversation,
+  updateConversationTitle,
+};

@@ -3,13 +3,21 @@ import React from "react";
 import "../../components/Header/chat.css";
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import TypingAnimation from "./components/TypingAnimation.tsx";
+import TypingAnimation from "./components/TypingAnimation";
 import chatBubble from "../../assets/chatbubble.svg";
-import { extractContentFromDOM } from "../../services/domExtraction.tsx";
+import { extractContentFromDOM } from "../../services/domExtraction";
+import { fetchConversations } from "../../api/apiClient";
 
 interface ChatLogItem {
-  type: string;
+  isUser: boolean;
   message: string;
+  // date: Date;
+}
+
+export interface Conversation {
+  title: string;
+  messages: ChatLogItem[];
+  id: string;
 }
 
 interface ChatDropDownProps {
@@ -21,6 +29,10 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
   const [inputValue, setInputValue] = useState("");
   const [chatLog, setChatLog] = useState<ChatLogItem[]>([]); // Specify the type as ChatLogItem[]
   const [isLoading, setIsLoading] = useState(false);
+  const [showConversationList, setShowConversationList] = useState(false);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [activeConversationId, setActiveConversationId] = useState(null);
+
   const suggestionPrompts = [
     "Tell me about treatment options.",
     "What are the common side effects?",
@@ -65,12 +77,28 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
     }
   }, [chatLog]);
 
+  const loadConversations = async () => {
+    try {
+      const data = await fetchConversations();
+      console.log("loaded conversations: ");
+      console.log(data);
+      setConversations(data);
+      // setLoading(false);
+    } catch (error) {
+      console.error("Error loading conversations: ", error);
+    }
+  };
+
+  useEffect(() => {
+    loadConversations();
+  }, []);
+
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const newMessage = {
       message: inputValue,
-      type: "user",
+      isUser: true,
     };
 
     const newMessages = [...chatLog, newMessage];
@@ -88,7 +116,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
 
     const apiMessages = message.map((messageObject) => {
       let role = "";
-      if (messageObject.type === "user") {
+      if (messageObject.isUser) {
         role = "user";
       } else {
         role = "assistant";
@@ -112,9 +140,9 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
         setChatLog((prevChatLog) => [
           ...prevChatLog,
           {
-            type: "bot",
-            message: response.data.message.choices[0].message.content
-          }
+            isUser: false,
+            message: response.data.message.choices[0].message.content,
+          },
         ]);
         setIsLoading(false);
       })
@@ -144,9 +172,16 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
             className=" mx-auto flex h-full  flex-col overflow-auto rounded "
           >
             <div
-              className="absolute mt-0 flex h-8 w-full flex-row items-center justify-between rounded-t-lg border-b bg-white p-1  "
+              className="mt-0 flex h-8 w-full flex-row items-center justify-between rounded-t-lg border-b bg-white p-1  "
               style={{ borderBottomColor: "#abcdef" }}
             >
+              <button
+                onClick={() =>
+                  setShowConversationList((prevState) => !prevState)
+                }
+              >
+                {showConversationList ? "Hide" : "Show"}
+              </button>
               <div className=" ml-4  text-black">
                 Question for me? <br />
               </div>
@@ -169,58 +204,60 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
                 </svg>
               </div>
             </div>
-            <div className="font_body mt-6 flex flex-grow flex-col space-y-2 p-5 pb-44">
-              {chatLog.length === 0 ? (
-                <>
-                  {/* <div className="text-gray-500">
+            {showConversationList ? (
+              <ConversationList conversations={conversations} />
+            ) : (
+              <div className="font_body mt-6 flex flex-grow flex-col space-y-2 p-5 pb-44">
+                {chatLog.length === 0 ? (
+                  <>
+                    {/* <div className="text-gray-500">
                     Want to know more about a medication or have a question? Ask
                     Balancer in this chat, and information will be pulled from
                     all over the internet to assist you <br />
                     <br />
                   </div> */}
-                  <div className="max-h-[100%] max-w-[310px] rounded-lg border-2 bg-gray-200 p-2 text-black">
-                    You can ask about the content on this page.
-                  </div>
-                  <div className="max-h-[100%] max-w-[190px] rounded-lg border-2 bg-gray-200 p-2 text-black">
-                    Or questions in general.
-                  </div>
-                </>
-              ) : (
-                chatLog.map((message, index) => (
-                  <div
-                    key={index}
-                    className={`flex ${
-                      message.type === "user" ? "justify-end" : "justify-start"
-                    }`}
-                  >
-                    <pre
-                      style={{
-                        fontFamily: 'inherit',
-                        whiteSpace: "pre-wrap",
-                        wordWrap: "break-word",
-                      }}
-                      className={`${
-                        message.type === "user"
-                          ? "bg-blue-200 text-black "
-                          : "border-2 bg-gray-200 text-black "
-                      }rounded-lg max-h-[100%] max-w-[500px] p-2`}
-                      dangerouslySetInnerHTML={{
-                        __html: message.message
-                      }}
+                    <div className="max-h-[100%] max-w-[310px] rounded-lg border-2 bg-gray-200 p-2 text-black">
+                      You can ask about the content on this page.
+                    </div>
+                    <div className="max-h-[100%] max-w-[190px] rounded-lg border-2 bg-gray-200 p-2 text-black">
+                      Or questions in general.
+                    </div>
+                  </>
+                ) : (
+                  chatLog.map((message, index) => (
+                    <div
+                      key={index}
+                      className={`flex ${
+                        message.isUser ? "justify-end" : "justify-start"
+                      }`}
                     >
-                    </pre>
+                      <pre
+                        style={{
+                          fontFamily: "inherit",
+                          whiteSpace: "pre-wrap",
+                          wordWrap: "break-word",
+                        }}
+                        className={`${
+                          message.isUser
+                            ? "bg-blue-200 text-black "
+                            : "border-2 bg-gray-200 text-black "
+                        }rounded-lg max-h-[100%] max-w-[500px] p-2`}
+                        dangerouslySetInnerHTML={{
+                          __html: message.message,
+                        }}
+                      ></pre>
+                    </div>
+                  ))
+                )}
+                {isLoading && (
+                  <div key={chatLog.length} className="flex justify-between">
+                    <div className="max-w-sm rounded-lg p-4 text-white">
+                      <TypingAnimation />
+                    </div>
                   </div>
-                ))
-              )}
-              {isLoading && (
-                <div key={chatLog.length} className="flex justify-between">
-                  <div className="max-w-sm rounded-lg p-4 text-white">
-                    <TypingAnimation />
-                  </div>
-                </div>
-              )}
-            </div>
-
+                )}
+              </div>
+            )}
             <div className="inside_chat absolute bottom-0 left-0 right-0 rounded-b-lg bg-white p-4">
               <div className="flex  space-x-2 p-2 ">
                 {suggestionPrompts.map((suggestion, index) => (
@@ -261,6 +298,35 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
           </div>
         )}
       </div>
+    </>
+  );
+};
+
+interface ConversationListProps {
+  conversations: Conversation[];
+  // onSelectConversation: (conversationId: Conversation["id"]) => void;
+}
+const ConversationList: React.FC<ConversationListProps> = ({
+  conversations,
+  // onSelectConversation,
+}) => {
+  return (
+    <>
+      <button className="btnBlue m-4 text-lg">New Conversation</button>
+      <ul className="conversation-list space-y-4">
+        {conversations.map((conversation) => (
+          <li
+            key={conversation.id}
+            className="conversation-item flex justify-between items-center p-4 bg-white shadow rounded-lg hover:bg-gray-100 cursor-pointer"
+            // onClick={() => onSelectConversation(conversation.id)}
+          >
+            <span className="conversation-title text-lg font-medium">
+              {conversation.title}
+            </span>
+            <span className="conversation-options text-gray-400">...</span>
+          </li>
+        ))}
+      </ul>
     </>
   );
 };

@@ -1,5 +1,8 @@
 # Models: Define the data structure (usually corresponding to database tables).
-from django.db import models, migrations
+from django.db import models # type: ignore
+from listMeds.models import Medication
+from ai.api.views.embeddings.models import Embeddings
+from ai.api.views from Embeddings
 
 class Rules(models.Model):
 
@@ -17,8 +20,8 @@ class Medication_Rules(models.Model):
     id = models.CharField(max_length=29)
     rule_id = models.ForeignKey(Rules, on_delete=models.CASCADE)
     is_applicable = models.BooleanField(default=True)
-    #embeddings = models.ForeignKey(migrations, on_delete=models.CASCADE)
-    #medication_id = models.ForeignKey()
+    embeddings = models.ForeignKey(Embeddings, on_delete=models.CASCADE)
+    medication_id = models.ForeignKey(Medication, on_delete=models.CASCADE)
     
     def __str__(self):
-        return f'{self.rule} - {self.medication}'
+        return f'{self.rule_id} - {self.medication_id}'

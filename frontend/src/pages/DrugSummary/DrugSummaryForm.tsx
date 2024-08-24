@@ -116,7 +116,7 @@ const DrugSummaryForm = () => {
 
   const sendMessage = (message: ChatLogItem[]) => {
     const baseUrl = import.meta.env.VITE_API_BASE_URL;
-    const url = `${baseUrl}/chatgpt/chat`;
+    const url = `${baseUrl}/v1/api/embeddings/ask_embeddings`;
 
     const apiMessages = message.map((messageObject) => {
       let role = "";
@@ -128,14 +128,13 @@ const DrugSummaryForm = () => {
       return { role: role, content: messageObject.message };
     });
 
+    setIsLoading(true);
     systemMessage.content += `If applicable, please use the following content to ask questions. If not applicable,
       please answer to the best of your ability: ${pageContent}`;
 
     const apiRequestBody = {
-      prompt: [systemMessage, ...apiMessages],
+      message: [apiMessages],
     };
-
-    setIsLoading(true);
 
     axios
       .post(url, apiRequestBody)
@@ -219,9 +218,11 @@ const DrugSummaryForm = () => {
               </div>
             ))
           )}
-          {isLoading && (
+          {!isLoading && (
             <div key={chatLog.length} className="flex justify-between">
-              <div className="max-w-sm rounded-lg p-4 text-white"></div>
+              <div className="items-center justify-center p-1">
+                <span className="thinking">Let's me think</span>
+              </div>
             </div>
           )}
           <div className="h-[100px]"> </div>
@@ -265,7 +266,7 @@ const DrugSummaryForm = () => {
               type="submit"
               className=" h-12 rounded-xl border bg-blue-500 px-3 py-1.5 font-satoshi  text-white hover:bg-blue-400"
             >
-              Send
+              Send.
             </button>
           </div>
         </form>

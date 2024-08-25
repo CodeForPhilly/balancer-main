@@ -88,11 +88,20 @@ const newConversation = async () => {
   }
 };
 
-const continueConversation = async (id: string, message: string) => {
+const continueConversation = async (
+  id: string,
+  message: string,
+  page_context?: string,
+): Promise<{response: string, title: Conversation["title"]}> => {
+  console.log(page_context);
   try {
-    const response = await api.post(`/chatgpt/conversations/${id}/`, {
-      message,
-    });
+    const response = await api.post(
+      `/chatgpt/conversations/${id}/continue_conversation/`,
+      {
+        message,
+        page_context,
+      },
+    );
     return response.data;
   } catch (error) {
     console.error("Error(s) during continueConversation: ", error);

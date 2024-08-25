@@ -2,11 +2,10 @@ import React from "react";
 // import { Link } from "react-router-dom";
 import "../../components/Header/chat.css";
 import { useState, useEffect, useRef } from "react";
-import axios from "axios";
 import TypingAnimation from "./components/TypingAnimation";
 import chatBubble from "../../assets/chatbubble.svg";
 import { extractContentFromDOM } from "../../services/domExtraction";
-import { fetchConversations } from "../../api/apiClient";
+import { fetchConversations, continueConversation } from "../../api/apiClient";
 
 interface ChatLogItem {
   is_user: boolean;
@@ -42,11 +41,6 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
   const [pageContent, setPageContent] = useState("");
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
-  const systemMessage = {
-    role: "system",
-    content: "You are a bot please keep conversation going.",
-  };
-
   useEffect(() => {
     const observer = new MutationObserver(() => {
       const content = extractContentFromDOM();
@@ -81,8 +75,6 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
   const loadConversations = async () => {
     try {
       const data = await fetchConversations();
-      console.log("loaded conversations: ");
-      console.log(data);
       setConversations(data);
       // setLoading(false);
     } catch (error) {
@@ -94,7 +86,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
     loadConversations();
   }, []);
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const newMessage = {
@@ -106,52 +98,88 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
 
     setChatLog(newMessages);
 
-    sendMessage(newMessages);
+    // sendMessage(newMessages);
+    if (activeConversation !== null) {
+      // Update the active conversation's messages array
+      setActiveConversation((prevConversation) => {
+        if (prevConversation === null) return null;
+
+        return {
+          ...prevConversation,
+          messages: [...prevConversation.messages, newMessage],
+        };
+      });
+
+      setIsLoading(true);
+      const data = await continueConversation(
+        activeConversation.id,
+        newMessage.content,
+        pageContent,
+      );
+
+      // Update the active conversation's messages array
+      setActiveConversation((prevConversation) => {
+        if (prevConversation === null) return null;
+
+        return {
+          ...prevConversation,
+          messages: [
+            ...prevConversation.messages,
+            { is_user: false, content: data.response },
+          ],
+        };
+      });
+    }
+    setIsLoading(false);
 
     setInputValue("");
   };
 
-  const sendMessage = (message: ChatLogItem[]) => {
-    const baseUrl = import.meta.env.VITE_API_BASE_URL;
-    const url = `${baseUrl}/chatgpt/chat`;
+  // const systemMessage = {
+  //   role: "system",
+  //   content: "You are a bot please keep conversation going.",
+  // };
+  // const sendMessage = (message: ChatLogItem[]) => {
+  //   const baseUrl = import.meta.env.VITE_API_BASE_URL;
+  //   const url = `${baseUrl}/chatgpt/chat`;
 
-    const apiMessages = message.map((messageObject) => {
-      let role = "";
-      if (messageObject.is_user) {
-        role = "user";
-      } else {
-        role = "assistant";
-      }
-      return { role: role, content: messageObject.content };
-    });
+  //   const apiMessages = message.map((messageObject) => {
+  //     let role = "";
+  //     if (messageObject.is_user) {
+  //       role = "user";
+  //     } else {
+  //       role = "assistant";
+  //     }
+  //     return { role: role, content: messageObject.content };
+  //   });
 
-    systemMessage.content += `If applicable, please use the following content to ask questions. If not applicable,
-      please answer to the best of your ability: ${pageContent}`;
+  //   systemMessage.content += `If applicable, please use the following content to ask questions. If not applicable,
+  //     please answer to the best of your ability: ${pageContent}`;
 
-    const apiRequestBody = {
-      prompt: [systemMessage, ...apiMessages],
-    };
+  //   const apiRequestBody = {
+  //     prompt: [systemMessage, ...apiMessages],
+  //   };
 
-    setIsLoading(true);
+  //   setIsLoading(true);
 
-    axios
-      .post(url, apiRequestBody)
-      .then((response) => {
-        console.log(response);
-        setChatLog((prevChatLog) => [
-          ...prevChatLog,
-          {
-            is_user: false,
-            content: response.data.message.choices[0].message.content,
-          },
-        ]);
-        setIsLoading(false);
-      })
-      .catch((error) => {
-        setIsLoading(false);
-        console.log(error);
-      });
-  };
+  //   axios
+  //     .post(url, apiRequestBody)
+  //     .then((response) => {
+  //       console.log(response);
+  //       setChatLog((prevChatLog) => [
+  //         ...prevChatLog,
+  //         {
+  //           is_user: false,
+  //           content: response.data.message.choices[0].message.content,
+  //         },
+  //       ]);
+  //       setIsLoading(false);
+  //     })
+  //     .catch((error) => {
+  //       setIsLoading(false);
+  //       console.log(error);
+  //     });
+  // };
 
   const handleSelectConversation = (id: Conversation["id"]) => {
     const selectedConversation = conversations.find(

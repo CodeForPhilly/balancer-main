@@ -203,6 +203,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
     def continue_conversation(self, request, pk=None):
         conversation = self.get_object()
         user_message = request.data.get('message')
+        page_context = request.data.get('page_context')
 
         if not user_message:
             return Response({"error": "Message is required"}, status=400)
@@ -211,7 +212,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
         Message.objects.create(conversation=conversation, content=user_message, is_user=True)
 
         # Get ChatGPT response
-        chatgpt_response = self.get_chatgpt_response(conversation, user_message)
+        chatgpt_response = self.get_chatgpt_response(conversation, user_message, page_context)
 
         # Save ChatGPT response
         Message.objects.create(conversation=conversation, content=chatgpt_response, is_user=False)
@@ -236,11 +237,19 @@ class ConversationViewSet(viewsets.ModelViewSet):
 
         return Response({"status": "Title updated successfully", "title": conversation.title})
 
-    def get_chatgpt_response(self, conversation, user_message):
-        messages = [{"role": "system", "content": "You are a helpful assistant."}]
+    def get_chatgpt_response(self, conversation, user_message, page_context=None):
+        messages = [
+            {"role": "system", "content": "You are a helpful assistant. Balancer is a powerful tool for selecting bipolar medication for patients. We are open-source and available for free use. Your primary role is to assist users with information related to Balancer and bipolar medication selection."}
+        ]
+        
+        if page_context:
+            context_message = f"If applicable, please use the following content to ask questions. If not applicable, please answer to the best of your ability: {page_context}"
+            messages.append({"role": "system", "content": context_message})
+
         for msg in conversation.messages.all():
             role = "user" if msg.is_user else "assistant"
             messages.append({"role": role, "content": msg.content})
+
         messages.append({"role": "user", "content": user_message})
 
         response = openai.ChatCompletion.create(

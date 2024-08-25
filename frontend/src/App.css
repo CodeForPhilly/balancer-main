@@ -240,4 +240,34 @@ Tooltip. Please see Tooltip.tsx under components folder
 /*
 Error message. Please see ErrorMessages.tsx under components folder
 */
+@keyframes ellipsis {
+  0%, 20% {
+    content: '';
+  }
+  40% {
+    content: '.';
+  }
+  60% {
+    content: '..';
+  }
+  80%, 100% {
+    content: '...';
+  }
+}
+
+.thinking {
+  display: inline-block;
+  font-size: 16px;
+  vertical-align: middle;
+  animation: ellipsis 1.5s infinite;
+}
+
+.thinking::after {
+  display: inline-block;
+  width: 20px;
+  animation: ellipsis 2s infinite;
+  content: '';
+  font-weight: bold;
+  margin-left: 5px;
+}
 

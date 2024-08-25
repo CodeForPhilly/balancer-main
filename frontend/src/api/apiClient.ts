@@ -36,9 +36,24 @@ const handleSubmitFeedback = async (
     });
     return response.data;
   } catch (error) {
-    console.error("Error(s) during handleSubmitFeeedback: ", error);
+    console.error("Error(s) during handleSubmitFeedback: ", error);
     throw error;
   }
 };
 
-export { handleSubmitFeedback };
+const handleSendDrugSummary = async (
+  message: FormValues["message"]
+) => {
+  try {
+    const response = await api.post(`/v1/api/embeddings/ask_embeddings`, {
+      message,
+    });
+    console.log("Response data:", JSON.stringify(response.data, null, 2));
+    return response.data;
+  } catch (error) {
+    console.error("Error(s) during handleSubmitFeedback: ", error);
+    throw error;
+  }
+};
+
+export { handleSubmitFeedback, handleSendDrugSummary };

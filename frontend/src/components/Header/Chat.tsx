@@ -5,7 +5,11 @@ import { useState, useEffect, useRef } from "react";
 import TypingAnimation from "./components/TypingAnimation";
 import chatBubble from "../../assets/chatbubble.svg";
 import { extractContentFromDOM } from "../../services/domExtraction";
-import { fetchConversations, continueConversation } from "../../api/apiClient";
+import {
+  fetchConversations,
+  continueConversation,
+  newConversation,
+} from "../../api/apiClient";
 
 interface ChatLogItem {
   is_user: boolean;
@@ -82,10 +86,6 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
     }
   };
 
-  useEffect(() => {
-    loadConversations();
-  }, []);
-
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -99,27 +99,38 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
     setChatLog(newMessages);
 
     // sendMessage(newMessages);
-    if (activeConversation !== null) {
-      // Update the active conversation's messages array
-      setActiveConversation((prevConversation) => {
-        if (prevConversation === null) return null;
+    try {
+      let conversation = activeConversation;
+      let conversationCreated = false;
 
-        return {
-          ...prevConversation,
-          messages: [...prevConversation.messages, newMessage],
-        };
+      // Create a new conversation if none exists
+      if (!conversation) {
+        conversation = await newConversation();
+        setActiveConversation(conversation);
+        conversationCreated = true;
+      }
+
+      // Update the conversation with the new user message
+      const updatedMessages = [...conversation.messages, newMessage];
+      setActiveConversation({
+        ...conversation,
+        messages: updatedMessages,
       });
 
       setIsLoading(true);
+
+      // Continue the conversation and update with the bot's response
       const data = await continueConversation(
-        activeConversation.id,
+        conversation.id,
         newMessage.content,
         pageContent,
       );
 
-      // Update the active conversation's messages array
+      // Update the ConversationList component after previous function creates a title
+      if (conversationCreated) loadConversations(); // Note: no 'await' so this can occur in the background
+
       setActiveConversation((prevConversation) => {
-        if (prevConversation === null) return null;
+        if (!prevConversation) return null;
 
         return {
           ...prevConversation,
@@ -129,10 +140,12 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
           ],
         };
       });
+    } catch (error) {
+      console.error("Error(s) handling conversation:", error);
+    } finally {
+      setIsLoading(false);
+      setInputValue("");
     }
-    setIsLoading(false);
-
-    setInputValue("");
   };
 
   // const systemMessage = {
@@ -192,6 +205,15 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
     }
   };
 
+  const handleNewConversation = () => {
+    setActiveConversation(null);
+    setShowConversationList(false);
+  };
+
+  useEffect(() => {
+    loadConversations();
+  }, []);
+
   return (
     <>
       {/* {showChat && (
@@ -248,6 +270,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
               <ConversationList
                 conversations={conversations}
                 onSelectConversation={handleSelectConversation}
+                onNewConversation={handleNewConversation}
               />
             ) : (
               <div className="font_body mt-6 flex flex-grow flex-col space-y-2 p-5 pb-44">
@@ -349,14 +372,18 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
 interface ConversationListProps {
   conversations: Conversation[];
   onSelectConversation: (conversationId: Conversation["id"]) => void;
+  onNewConversation: () => void;
 }
 const ConversationList: React.FC<ConversationListProps> = ({
   conversations,
   onSelectConversation,
+  onNewConversation,
 }) => {
   return (
     <>
-      <button className="btnBlue m-4 text-lg">New Conversation</button>
+      <button className="btnBlue m-4 text-lg" onClick={onNewConversation}>
+        New Conversation
+      </button>
       <ul className="conversation-list space-y-4">
         {conversations.map((conversation) => (
           <li

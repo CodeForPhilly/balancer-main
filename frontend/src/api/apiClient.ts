@@ -78,9 +78,11 @@ const fetchConversation = async (id: string): Promise<Conversation> => {
   }
 };
 
-const newConversation = async () => {
+const newConversation = async (): Promise<Conversation> => {
   try {
-    const response = await api.post(`/chatgpt/conversations/`);
+    const response = await api.post(`/chatgpt/conversations/`, {
+      messages: [],
+    });
     return response.data;
   } catch (error) {
     console.error("Error(s) during getConversation: ", error);
@@ -92,7 +94,7 @@ const continueConversation = async (
   id: string,
   message: string,
   page_context?: string,
-): Promise<{response: string, title: Conversation["title"]}> => {
+): Promise<{ response: string; title: Conversation["title"] }> => {
   console.log(page_context);
   try {
     const response = await api.post(

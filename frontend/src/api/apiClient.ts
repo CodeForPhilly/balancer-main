@@ -42,9 +42,7 @@ const handleSubmitFeedback = async (
   }
 };
 
-const handleSendDrugSummary = async (
-  message: FormValues["message"]
-) => {
+const handleSendDrugSummary = async (message: FormValues["message"]) => {
   try {
     const response = await api.post(`/v1/api/embeddings/ask_embeddings`, {
       message,
@@ -56,7 +54,6 @@ const handleSendDrugSummary = async (
     throw error;
   }
 };
-
 
 const fetchConversations = async (): Promise<Conversation[]> => {
   try {
@@ -121,10 +118,13 @@ const deleteConversation = async (id: string) => {
   }
 };
 
-const updateConversationTitle = async (id: string, title: string) => {
+const updateConversationTitle = async (
+  id: Conversation["id"],
+  newTitle: Conversation["title"],
+): Promise<{status: string, title: Conversation["title"]} | {error: string}> => {
   try {
-    const response = await api.patch(`/chatgpt/conversations/${id}/`, {
-      title,
+    const response = await api.patch(`/chatgpt/conversations/${id}/update_title/`, {
+      title: newTitle,
     });
     return response.data;
   } catch (error) {

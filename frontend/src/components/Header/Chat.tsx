@@ -9,6 +9,7 @@ import {
   fetchConversations,
   continueConversation,
   newConversation,
+  updateConversationTitle,
 } from "../../api/apiClient";
 import ErrorMessage from "../ErrorMessage";
 
@@ -148,7 +149,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
       if (error instanceof Error) {
         setError(error); // Set the error message if it's an instance of Error
       } else {
-        setError(new Error('Error submitting message')); // Convert any other types to string
+        setError(new Error("Error submitting message")); // Convert any other types to string
       }
     } finally {
       setIsLoading(false);
@@ -279,6 +280,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
                 conversations={conversations}
                 onSelectConversation={handleSelectConversation}
                 onNewConversation={handleNewConversation}
+                onSubmitConversationTitle={updateConversationTitle}
               />
             ) : (
               <div className="font_body mt-6 flex flex-grow flex-col space-y-2 p-5 pb-44">
@@ -331,7 +333,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
                     </div>
                   </div>
                 )}
-                {error && <ErrorMessage errors={[error.message]}/>}
+                {error && <ErrorMessage errors={[error.message]} />}
               </div>
             )}
             <div className="inside_chat bottom-0 left-0 right-0 rounded-b-lg bg-white p-4">
@@ -382,28 +384,111 @@ interface ConversationListProps {
   conversations: Conversation[];
   onSelectConversation: (conversationId: Conversation["id"]) => void;
   onNewConversation: () => void;
+  onSubmitConversationTitle: (
+    conversationId: Conversation["id"],
+    newTitle: string,
+  ) => Promise<
+    { status: string; title: Conversation["title"] } | { error: string }
+  >;
 }
 const ConversationList: React.FC<ConversationListProps> = ({
   conversations,
   onSelectConversation,
   onNewConversation,
+  onSubmitConversationTitle,
 }) => {
+  const [isEditingTitle, setIsEditingTitle] = useState<
+    Conversation["id"] | null
+  >(null); // Track which conversation is being edited
+  const [newTitle, setNewTitle] = useState("");
+  const [localConversations, setLocalConversations] = useState(conversations);
+
+  // Ensure that the local conversations state is updated when the prop changes
+  useEffect(() => {
+    setLocalConversations(conversations);
+  }, [conversations]);
+
+  const handleTitleSubmit = async (
+    conversationId: Conversation["id"],
+    newTitle: string,
+  ) => {
+    try {
+      const result = await onSubmitConversationTitle(conversationId, newTitle);
+
+      if ("status" in result) {
+        // Handle success case
+        setLocalConversations(
+          localConversations.map((convo) =>
+            convo.id === conversationId
+              ? { ...convo, title: result.title }
+              : convo,
+          ),
+        );
+      } else if ("error" in result) {
+        // Handle error case
+        console.error("Failed to update conversation title:", result.error);
+      }
+    } catch (error) {
+      console.error("Error updating conversation title: ", error);
+    } finally {
+      setIsEditingTitle(null);
+    }
+  };
+
   return (
     <>
       <button className="btnBlue m-4 text-lg" onClick={onNewConversation}>
         New Conversation
       </button>
       <ul className="conversation-list space-y-4">
-        {conversations.map((conversation) => (
+        {localConversations.map((conversation) => (
           <li
             key={conversation.id}
             className="conversation-item flex justify-between items-center p-4 bg-white shadow rounded-lg hover:bg-gray-100 cursor-pointer"
-            onClick={() => onSelectConversation(conversation.id)}
+            onClick={() => {
+              // Conversation can only be selected while not editing the title
+              if (isEditingTitle !== conversation.id) {
+                onSelectConversation(conversation.id);
+              }
+            }}
           >
-            <span className="conversation-title text-lg font-medium">
-              {conversation.title}
+            <span onClick={() => setIsEditingTitle(conversation.id)}>
+              {isEditingTitle === conversation.id ? (
+                <input
+                  type="text"
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleTitleSubmit(conversation.id, newTitle);
+                    }
+                  }}
+                  autoFocus
+                />
+              ) : (
+                conversation.title
+              )}
             </span>
-            <span className="conversation-options text-gray-400">...</span>
+
+            <div className="flex space-x-2">
+              {/* Edit Icon */}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 cursor-pointer"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevents the click event from bubbling up to the <li> element
+
+                  if (isEditingTitle !== conversation.id) {
+                    setNewTitle(conversation.title);
+                    setIsEditingTitle(conversation.id);
+                  } else handleTitleSubmit(conversation.id, newTitle);
+                }}
+              >
+                <path d="M17.414 2.586a2 2 0 010 2.828l-9.586 9.586a1 1 0 01-.293.207l-4 2a1 1 0 01-1.37-1.37l2-4a1 1 0 01.207-.293l9.586-9.586a2 2 0 012.828 0zM15.707 4L13 6.707 7.707 1.414 10.414 4H15.707zM3 12.414L8.293 7.121 12.879 11.707 7.586 17H4v-3.586l-.293-.293L3 12.414z" />
+              </svg>
+            </div>
           </li>
         ))}
       </ul>

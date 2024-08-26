@@ -10,6 +10,7 @@ import {
   continueConversation,
   newConversation,
 } from "../../api/apiClient";
+import ErrorMessage from "../ErrorMessage";
 
 interface ChatLogItem {
   is_user: boolean;
@@ -36,6 +37,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConversation, setActiveConversation] =
     useState<Conversation | null>(null);
+  const [error, setError] = useState<Error | null>(null);
 
   const suggestionPrompts = [
     "Tell me about treatment options.",
@@ -140,8 +142,14 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
           ],
         };
       });
+      setError(null);
     } catch (error) {
       console.error("Error(s) handling conversation:", error);
+      if (error instanceof Error) {
+        setError(error); // Set the error message if it's an instance of Error
+      } else {
+        setError(new Error('Error submitting message')); // Convert any other types to string
+      }
     } finally {
       setIsLoading(false);
       setInputValue("");
@@ -323,9 +331,10 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
                     </div>
                   </div>
                 )}
+                {error && <ErrorMessage errors={[error.message]}/>}
               </div>
             )}
-            <div className="inside_chat absolute bottom-0 left-0 right-0 rounded-b-lg bg-white p-4">
+            <div className="inside_chat bottom-0 left-0 right-0 rounded-b-lg bg-white p-4">
               <div className="flex  space-x-2 p-2 ">
                 {suggestionPrompts.map((suggestion, index) => (
                   <button

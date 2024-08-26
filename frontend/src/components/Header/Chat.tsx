@@ -112,6 +112,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
       if (!conversation) {
         conversation = await newConversation();
         setActiveConversation(conversation);
+        setShowConversationList(false);
         conversationCreated = true;
       }
 
@@ -143,6 +144,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
             ...prevConversation.messages,
             { is_user: false, content: data.response },
           ],
+          title: data.title
         };
       });
       setError(null);
@@ -245,18 +247,43 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
             className=" mx-auto flex h-full  flex-col overflow-auto rounded "
           >
             <div
-              className="mt-0 flex h-8 w-full flex-row items-center justify-between rounded-t-lg border-b bg-white p-1  "
+              className="sticky top-0 mt-0 flex h-8 w-full flex-row items-center justify-between rounded-t-lg border-b bg-white p-1  "
               style={{ borderBottomColor: "#abcdef" }}
             >
               <button
                 onClick={() =>
                   setShowConversationList((prevState) => !prevState)
                 }
+                className="flex items-center justify-center"
               >
-                {showConversationList ? "Hide" : "Show"}
+                {showConversationList ? (
+                  // Icon for "Hide"
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 512 512"
+                    className="h-5 w-5"
+                    fill="currentColor"
+                  >
+                    <path d="M0 96C0 78.3 14.3 64 32 64l384 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L32 128C14.3 128 0 113.7 0 96zM64 256c0-17.7 14.3-32 32-32l384 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L96 288c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32L32 448c-17.7 0-32-14.3-32-32s14.3-32 32-32l384 0c17.7 0 32 14.3 32 32z" />
+                  </svg>
+                ) : (
+                  // Icon for "Show"
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 448 512"
+                    className="h-5 w-5"
+                    fill="currentColor"
+                  >
+                    <path d="M0 96C0 78.3 14.3 64 32 64l384 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L32 128C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32l384 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L32 288c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32L32 448c-17.7 0-32-14.3-32-32s14.3-32 32-32l384 0c17.7 0 32 14.3 32 32z" />
+                  </svg>
+                )}
               </button>
+
               <div className=" ml-4  text-black">
-                Question for me? <br />
+                {activeConversation !== null && !showConversationList
+                  ? activeConversation.title
+                  : `Question for me?`}{" "}
+                <br />
               </div>
               <div
                 className="delete mr-2 flex h-6 w-8 cursor-pointer items-center justify-center rounded-full bg-white text-black hover:bg-red-500"

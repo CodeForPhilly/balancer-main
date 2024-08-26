@@ -118,7 +118,7 @@ const ConversationList: React.FC<ConversationListProps> = ({
               {/* Edit Icon */}
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 cursor-pointer"
+                className="h-5 w-5 icon-container hover:bg-blue-500 p-1 rounded cursor-pointer"
                 viewBox="0 0 512 512"
                 fill="currentColor"
                 onClick={(e) => {
@@ -136,7 +136,7 @@ const ConversationList: React.FC<ConversationListProps> = ({
               {/* Trash Icon */}
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 cursor-pointer"
+                className="h-5 w-5 icon-container hover:bg-red-500 p-1 rounded cursor-pointer"
                 viewBox="0 0 448 512"
                 fill="currentColor"
                 onClick={(e) => {

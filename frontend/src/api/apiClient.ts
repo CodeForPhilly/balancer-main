@@ -92,7 +92,6 @@ const continueConversation = async (
   message: string,
   page_context?: string,
 ): Promise<{ response: string; title: Conversation["title"] }> => {
-  console.log(page_context);
   try {
     const response = await api.post(
       `/chatgpt/conversations/${id}/continue_conversation/`,

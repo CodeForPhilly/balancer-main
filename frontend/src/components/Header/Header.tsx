@@ -15,11 +15,14 @@ import { HiChevronDown } from "react-icons/hi";
 interface LoginFormProps {
   isAuthenticated: boolean;
   isSuperuser: boolean;
+  resetForm: () => void;
 }
 
-const Header = (props: LoginFormProps) => {
-  const { isAuthenticated } = props;
-  const { isSuperuser } = props;
+const Header: React.FC<LoginFormProps> = ({
+  isAuthenticated,
+  isSuperuser,
+  resetForm,
+}) => {
   const navigate = useNavigate();
   const [showFeaturesMenu, setShowFeaturesMenu] = useState(false);
   const dropdownRef = useRef(null);
@@ -78,6 +81,11 @@ const Header = (props: LoginFormProps) => {
     };
   }, [delayTimeout]);
 
+  const handleForm = () => {
+    resetForm();
+    navigate("/");
+  };
+
   return (
     <header className="z10 fixed w-full items-center ">
       <div className="hidden w-full items-center justify-center border-b border-gray-300 bg-blue-100 p-1 text-center text-sm font-light text-gray-500 lg:flex">
@@ -96,7 +104,7 @@ const Header = (props: LoginFormProps) => {
           "  hidden h-20  w-full items-center justify-between border-b border-gray-300 bg-white px-96 md:px-20 lg:flex xl:px-60"
         }
       >
-        <Link to="/">
+        <Link to="/" onClick={() => handleForm()}>
           <span className="bg-gradient-to-r  from-blue-500 via-blue-700 to-blue-300 bg-clip-text font-quicksand text-xl font-bold text-transparent lg:text-5xl ">
             Balancer
           </span>
@@ -104,6 +112,7 @@ const Header = (props: LoginFormProps) => {
         <nav className="flex font-satoshi text-base lg:gap-2 xl:gap-5">
           <Link
             to="/"
+            onClick={() => handleForm()}
             className="mr-5 font-bold text-black hover:border-blue-600 hover:text-blue-600 hover:no-underline"
           >
             Medication Suggester

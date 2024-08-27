@@ -1,72 +1,19 @@
 import React from "react";
-// import { Link } from "react-router-dom";
 import "../../components/Header/chat.css";
 import { useState, useEffect, useRef } from "react";
-import axios from "axios";
-// import TypingAnimation from "./components/TypingAnimation.tsx";
-// import chatBubble from "../../assets/chatbubble.svg";
-import { extractContentFromDOM } from "../../services/domExtraction.tsx";
 import paperclip from "../../assets/paperclip.svg";
-
-interface ChatLogItem {
-  type: string;
-  message: string;
-}
+import { handleSendDrugSummary } from "../../api/apiClient.ts";
+import { ChatMessageItem, SearchResult } from "./type";
+import ParseStringWithLinks from "../../services/parsing/ParseWithSource.tsx";
 
 const DrugSummaryForm = () => {
   const [inputValue, setInputValue] = useState("");
-  const [chatLog, setChatLog] = useState<ChatLogItem[]>([]); // Specify the type as ChatLogItem[]
+  const [chatLog, setChatLog] = useState<ChatMessageItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  // const suggestionPrompts = [
-  //   "Tell me about treatment options.",
-  //   "What are the common side effects?",
-  //   "How to manage medication schedule?",
-  // ];
-  const [pageContent, setPageContent] = useState("");
+
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const scrollToBottomRef = useRef<HTMLDivElement | null>(null);
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files.length > 0) {
-      const file = event.target.files[0];
-      if (file.type === "application/pdf") {
-        // setSelectedFile(file);
-        setInputValue(file.name);
-        // Update chat log to show a message about the uploaded file
-        // setChatLog([
-        //   ...chatLog,
-        //   { type: "user", message: "PDF file uploaded." },
-        // ]);
-      } else {
-        // Handle non-PDF files or errors
-      }
-    } else {
-      // Handle the case where no file is selected
-    }
-  };
-
-  const systemMessage = {
-    role: "system",
-    content: "You are a bot please keep conversation going.",
-  };
-
-  useEffect(() => {
-    const observer = new MutationObserver(() => {
-      const content = extractContentFromDOM();
-      setPageContent(content);
-    });
-
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true,
-      characterData: true,
-    });
-
-    const extractedContent = extractContentFromDOM();
-    console.log(extractedContent);
-    setPageContent(extractedContent);
-  }, []);
 
   useEffect(() => {
     if (chatContainerRef.current) {
@@ -81,23 +28,7 @@ const DrugSummaryForm = () => {
     }
   }, [chatLog]);
 
-  // const suggestionPrompts = [
-  //   [
-  //     "Tell me about treatment options.",
-  //     "Additional details or related question.",
-  //   ],
-  //   [
-  //     "What are the common side effects?",
-  //     "Additional details or related question.",
-  //   ],
-  //   [
-  //     "How to manage medication schedule?",
-  //     "Additional details or related question.",
-  //   ],
-  //   ["Another question or topic?", "Additional details or related question."],
-  // ];
-
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const newMessage = {
@@ -105,128 +36,116 @@ const DrugSummaryForm = () => {
       type: "user",
     };
 
-    const newMessages = [...chatLog, newMessage];
-
-    setChatLog(newMessages);
-
-    sendMessage(newMessages);
-
+    setChatLog((prevChatLog) => [...prevChatLog, newMessage]);
     setInputValue("");
-  };
-
-  const sendMessage = (message: ChatLogItem[]) => {
-    const baseUrl = import.meta.env.VITE_API_BASE_URL;
-    const url = `${baseUrl}/chatgpt/chat`;
-
-    const apiMessages = message.map((messageObject) => {
-      let role = "";
-      if (messageObject.type === "user") {
-        role = "user";
-      } else {
-        role = "assistant";
-      }
-      return { role: role, content: messageObject.message };
-    });
-
-    systemMessage.content += `If applicable, please use the following content to ask questions. If not applicable,
-      please answer to the best of your ability: ${pageContent}`;
-
-    const apiRequestBody = {
-      prompt: [systemMessage, ...apiMessages],
-    };
-
     setIsLoading(true);
 
-    axios
-      .post(url, apiRequestBody)
-      .then((response) => {
-        console.log(response);
+    try {
+      const response = await handleSendDrugSummary(inputValue);
+      console.log("API Response:", response);
+
+      if (
+        response &&
+        typeof response === "object" &&
+        "llm_response" in response
+      ) {
+        const message: SearchResult = response;
+        console.log("Message object:", message);
+
         setChatLog((prevChatLog) => [
           ...prevChatLog,
           {
             type: "bot",
-            message: response.data.message.choices[0].message.content,
+            message: message,
           },
         ]);
-        setIsLoading(false);
-      })
-      .catch((error) => {
-        setIsLoading(false);
-        console.log(error);
-      });
+      } else {
+        console.error("Invalid response format:", response);
+        throw new Error("Invalid response format");
+      }
+    } catch (error) {
+      console.error("Error sending message:", error);
+      setChatLog((prevChatLog) => [
+        ...prevChatLog,
+        {
+          type: "bot",
+          message: {
+            question: inputValue,
+            llm_response:
+              "I'm sorry, I encountered an error while processing your message. Please try again later.",
+            embeddings_info: [],
+          },
+        },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
   };
-
   return (
     <>
-      <header className=" fixed w-full items-center ">
-        <div
-          className={
-            "   h-20  w-full items-center justify-between border-b border-gray-300 bg-white lg:flex xl:px-72"
-          }
-        ></div>
-      </header>
-
-      <div
-        className={
-          "  fixed h-full  w-60 justify-between border-r border-gray-300 bg-white lg:flex"
-        }
-      >
-        <div>
-          <span className="bg-gradient-to-r  from-blue-500 via-blue-700 to-blue-300 bg-clip-text font-quicksand text-xl font-bold text-transparent lg:text-3xl ">
-            Balancer
-          </span>
-        </div>
-      </div>
-
       <div className="mx-auto  min-h-screen w-full max-w-[810px] overflow-y-auto border">
-        <div className="h-[100px]"> </div>
-        <div
-          ref={chatContainerRef}
-          id="chat_container"
-          className="flex flex-col p-5 "
-        >
-          {chatLog.length === 0 ? (
-            <>
-              <div className="flex  flex-col gap-4 p-3">
-                <div className="max-h-[100%] max-w-[310px] rounded-lg border-2 bg-stone-50 p-2 text-sky-950">
-                  You can ask about the content on this page.
-                </div>
-                <div className="max-h-[100%] max-w-[190px] rounded-lg border-2 bg-stone-50 p-2 text-sky-950">
-                  Or questions in general.
-                </div>
-              </div>
-            </>
-          ) : (
-            chatLog.map((message, index) => (
-              <div className="flex  flex-col gap-4 p-3">
-                <div
-                  key={index}
-                  className={`${
-                    message.type === "user" ? "justify-end" : "justify-start"
-                  }   p-2`}
-                  ref={index === chatLog.length - 1 ? scrollToBottomRef : null}
-                >
-                  <div
-                    className={`${
-                      message.type === "user"
-                        ? "border-2  bg-blue-200 text-neutral-600 "
-                        : " border-2  bg-stone-50 text-sky-950 "
-                    }rounded-lg  p-2`}
-                  >
-                    {message.message}
+        <div className="w-[100%] ">
+          <div
+            ref={chatContainerRef}
+            id="chat_container"
+            className="relative bottom-0 top-0 mt-10 flex h-[calc(100vh-210px)] flex-col overflow-y-auto border-t p-2"
+          >
+            {chatLog.length === 0 ? (
+              <>
+                <div className="flex  flex-col gap-4 p-3">
+                  <div className="max-h-[100%] max-w-[310px] rounded-lg border-2 bg-stone-50 p-2 text-sky-950">
+                    You can ask about the content on this page.
+                  </div>
+                  <div className="max-h-[100%] max-w-[190px] rounded-lg border-2 bg-stone-50 p-2 text-sky-950">
+                    Or questions in general.
                   </div>
                 </div>
-              </div>
-            ))
-          )}
+              </>
+            ) : (
+              chatLog.map((message, index) => (
+                <div key={index} className="flex flex-col gap-4">
+                  <div
+                    className={`${
+                      message.type === "user" ? "justify-end" : "justify-start"
+                    } p-2`}
+                  >
+                    <div
+                      className={`${
+                        message.type === "user"
+                          ? "border-2  font-quicksand text-neutral-600"
+                          : "border-2 bg-stone-50 font-quicksand text-sky-950"
+                      } rounded-lg p-2`}
+                    >
+                      {typeof message.message === "string" ? (
+                        message.message
+                      ) : (
+                        <ParseStringWithLinks
+                          text={message.message.llm_response}
+                          chunkData={message.message.embeddings_info}
+                        />
+                      )}
+                    </div>
+                    {/* <button
+                    onClick={() => copyToClipboard("test")}
+                    className="mt-1 rounded  px-1 py-1 text-sm text-white hover:bg-gray-200"
+                  >
+                    <img src={copy} alt="Send" className="h-5 w-5" />
+                  </button> */}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+        <div className="ml-8 flex h-3 items-center justify-start">
           {isLoading && (
             <div key={chatLog.length} className="flex justify-between">
-              <div className="max-w-sm rounded-lg p-4 text-white"></div>
+              <div className="items-center justify-center p-1">
+                <span className="thinking">Let's me think</span>
+              </div>
             </div>
           )}
-          <div className="h-[100px]"> </div>
         </div>
-
         <form
           onSubmit={handleSubmit}
           className="fixed bottom-0 flex  w-[808px]  bg-white p-5"
@@ -251,21 +170,13 @@ const DrugSummaryForm = () => {
             >
               <img src={paperclip} alt="Upload" className="h-6" />
             </button>
-            <input
-              type="file"
-              id="fileInput"
-              ref={fileInputRef}
-              accept=".pdf"
-              onChange={handleFileChange}
-              className="hidden"
-            />
           </div>
           <div className="ml-5 flex items-center justify-between">
             <button
               type="submit"
               className=" h-12 rounded-xl border bg-blue-500 px-3 py-1.5 font-satoshi  text-white hover:bg-blue-400"
             >
-              Send
+              Send.
             </button>
           </div>
         </form>

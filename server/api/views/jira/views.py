@@ -1,19 +1,45 @@
-from django.http import JsonResponse
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
+from rest_framework import status
+from django.http import JsonResponse, HttpRequest
 from django import forms
 import requests
 import json
 import os
+from .models import Feedback
+from .serializers import FeedbackSerializer
 
 # XXX: remove csrf_exempt usage before production
 from django.views.decorators.csrf import csrf_exempt
 
 
+class FeedbackView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = FeedbackSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# TO-DO: Edit/Delete all functions below
 @csrf_exempt
-def create_new_feedback(request: str) -> JsonResponse:
+def create_new_feedback(request: HttpRequest) -> JsonResponse:
     """
     Create a new feedback request in Jira Service Desk.
     """
     token: str = os.environ.get("JIRA_API_KEY")
+
+    try:
+        data: dict[str, str] = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"status": 400, "message": "Invalid JSON payload"})
+
+    required_fields = ["name", "email", "message", "feedbackType"]
+    missing_fields = [field for field in required_fields if field not in data]
+    if missing_fields:
+        return JsonResponse({"status": 400, "message": f"Missing fields: {', '.join(missing_fields)}"})
 
     data: dict[str, str] = json.loads(request.body)
     name: str = data["name"]
@@ -31,7 +57,7 @@ def create_new_feedback(request: str) -> JsonResponse:
             feedback_type_id = 33
         case _:
             return JsonResponse(
-                {"status": 500, "message": "Internal server error"}
+                {"status": 400, "message": "Invalid feedback type"}
             )
 
     url: str = "https://balancer.atlassian.net/rest/servicedeskapi/request"
@@ -83,7 +109,8 @@ def upload_servicedesk_attachment(request: str) -> JsonResponse:
     Upload file to temporary files in Jira Service Desk.
     """
     token: str = os.environ.get("JIRA_API_KEY")
-    form: UploadAttachmentForm = UploadAttachmentForm(request.POST, request.FILES)
+    form: UploadAttachmentForm = UploadAttachmentForm(
+        request.POST, request.FILES)
     if form.is_valid():
         url: str = f"https://balancer.atlassian.net/rest/servicedeskapi/servicedesk/2/attachTemporaryFile"
 

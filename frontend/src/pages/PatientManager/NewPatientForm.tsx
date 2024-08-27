@@ -689,66 +689,119 @@ const NewPatientForm = ({
                     </div>
                   </dd>
                 </fieldset>
-              </div>
-              <div className="border-b border-gray-900/10 py-6 md:flex ">
-                <div className="w-[300px]">
-                  <legend className="mb-2 flex text-sm font-semibold leading-6 text-gray-900 md:flex">
-                    Reproductive status
-                  </legend>
-                </div>
-                <div className="md:w-[500px] md:pl-16">
-                  <div className="flex md:gap-x-3">
-                    <div className="flex h-6 items-center ">
+                <fieldset className="mt-6 justify-between md:mt-0 md:grid md:grid-cols-3 md:gap-4 md:px-4 md:py-6">
+                  <dt className="flex text-sm font-semibold leading-6 text-gray-900">
+                    Wants to conceive in next 2 years
+                    <Tooltip text="Depakote is known for causing birth defects and will not be included in the suggested medications list for patients interested in becoming pregnant.">
+                      <span className="material-symbols-outlined  ml-1">
+                        info
+                      </span>
+                    </Tooltip>
+                  </dt>
+
+                  <dd className="text-sm text-gray-900 md:col-span-2 md:mt-0 md:pl-24">
+                    <div className="flex items-center gap-x-3 pr-16">
                       <input
-                        id="Reproductive"
-                        name="Reproductive"
-                        type="checkbox"
-                        value="Yes"
-                        onChange={(e) => handleRadioChange(e, "Reproductive")}
-                        className="mr-2 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                      />
-                    </div>
-                    <div className="text-sm leading-6">
-                      <label
-                        htmlFor="comments"
-                        className="font-medium text-gray-900"
-                      >
-                        <Tooltip text="Depakote is known for causing birth defects and will not be included in the suggested medications list for patients at risk of pregnancy. Note: If the patient is on birth control, taking Depakote is less of a risk.">
-                          Any possibility of becoming pregnant
-                          <span className="material-symbols-outlined ml-1">
-                            info
-                          </span>
-                        </Tooltip>
-                      </label>
-                    </div>
-                  </div>
-                  <div className=" mt-2 flex md:gap-x-3">
-                    <div className="flex h-6 items-center">
-                      <input
-                        id="risk_pregnancy"
+                        id="risk_pregnancy-yes"
                         name="risk_pregnancy"
-                        type="checkbox"
+                        type="radio"
                         value="Yes"
                         onChange={(e) => handleRadioChange(e, "risk_pregnancy")}
-                        className="mr-2 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                        className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
                       />
-                    </div>
-                    <div className="text-sm leading-6">
                       <label
-                        htmlFor="candidates"
-                        className="font-medium text-gray-900"
+                        htmlFor="risk_pregnancy-yes"
+                        className="block text-sm font-medium leading-6 text-gray-900"
                       >
-                        <Tooltip text="Depakote is known for causing birth defects and will not be included in the suggested medications list for patients interested in becoming pregnant.">
-                          Wants to conceive in next 2 years
-                          <span className="material-symbols-outlined ml-1">
-                            info
-                          </span>
-                        </Tooltip>
+                        Yes
+                      </label>
+
+                      <input
+                        id="risk_pregnancy-no"
+                        name="risk_pregnancy"
+                        type="radio"
+                        value="No"
+                        onChange={(e) => handleRadioChange(e, "risk_pregnancy")}
+                        className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                      />
+                      <label
+                        htmlFor="risk_pregnancy-no"
+                        className="block text-sm font-medium leading-6 text-gray-900"
+                      >
+                        No
                       </label>
                     </div>
-                  </div>
-                </div>
+                  </dd>
+                </fieldset>
               </div>
+              {/*  
+                            </div>
+                            <div className="border-b border-gray-900/10 py-6 md:flex ">
+                            */}
+
+              {/* <div className="w-[300px]">
+                                    <legend className="mb-2 flex text-sm font-semibold leading-6 text-gray-900 md:flex">
+                                        Reproductive status
+                                    </legend>
+                                </div> */}
+              {/* 
+                            <div className="md:w-[500px] md:pl-16">
+                                <div className="flex md:gap-x-3">
+                                    <div className="flex h-6 items-center ">
+                                        <input
+                                            id="Reproductive"
+                                            name="Reproductive"
+                                            type="checkbox"
+                                            value="Yes"
+                                            onChange={(e) => handleRadioChange(e, "Reproductive")}
+                                            className="mr-2 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                                        />
+                                    </div>
+                                    <div className="text-sm leading-6">
+                                        <label
+                                            htmlFor="comments"
+                                            className="font-medium text-gray-900"
+                                        >
+                                            <Tooltip text="Depakote is known for causing birth defects and will not be included in the suggested medications list for patients at risk of pregnancy. Note: If the patient is on birth control, taking Depakote is less of a risk.">
+                                                Any possibility of becoming pregnant
+                                                <span className="material-symbols-outlined ml-1">
+                                                    info
+                                                </span>
+                                            </Tooltip>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div className=" mt-2 flex md:gap-x-3">
+                                    <div className="flex h-6 items-center">
+                                        <input
+                                            id="risk_pregnancy"
+                                            name="risk_pregnancy"
+                                            type="checkbox"
+                                            value="Yes"
+                                            onChange={(e) => handleRadioChange(e, "risk_pregnancy")}
+                                            className="mr-2 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                                        />
+                                    </div>
+                                    <div className="text-sm leading-6">
+                                        <label
+                                            htmlFor="candidates"
+                                            className="font-medium text-gray-900"
+                                        >
+                                            <Tooltip text="Depakote is known for causing birth defects and will not be included in the suggested medications list for patients interested in becoming pregnant.">
+                                                Wants to conceive in next 2 years
+                                                <span className="material-symbols-outlined ml-1">
+                                                    info
+                                                </span>
+                                            </Tooltip>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                               */}
+
+              {/*  
+                            </div>
+                            */}
               <div className="mt-5 items-center  md:flex">
                 <div className="w-[300px]">
                   <label

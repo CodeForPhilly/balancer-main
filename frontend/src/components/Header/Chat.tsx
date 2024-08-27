@@ -144,7 +144,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
             ...prevConversation.messages,
             { is_user: false, content: data.response },
           ],
-          title: data.title
+          title: data.title,
         };
       });
       setError(null);
@@ -224,8 +224,8 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
   };
 
   useEffect(() => {
-    loadConversations();
-  }, []);
+    if (showChat) loadConversations();
+  }, [showChat]);
 
   return (
     <>
@@ -400,9 +400,12 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
         ) : (
           <div
             onClick={() => setShowChat(true)}
-            className="  absolute bottom-9 right-5 flex h-16 w-16 cursor-pointer items-center justify-center rounded-full   object-contain hover:cursor-pointer hover:border-blue-600 hover:bg-blue-300 md:bottom-20 md:right-20 "
+            className="relative inline-block group absolute bottom-9 right-5 flex h-16 w-16 cursor-pointer items-center justify-center rounded-full   object-contain hover:cursor-pointer hover:border-blue-600 hover:bg-blue-300 md:bottom-20 md:right-20 "
           >
             <img src={chatBubble} alt="logo" className="h-6 md:h-10 md:w-10 " />
+            <div className="absolute hidden group-hover:block bottom-20 mt-2 w-32 bg-gray-700 text-white text-sm rounded py-1 px-2 before:absolute before:-top-2 before:left-1/2 before:transform before:-translate-x-1/2 before:border-8 before:border-transparent before:border-b-gray-700">
+              Any questions? Click here to to chat!
+            </div>
           </div>
         )}
       </div>

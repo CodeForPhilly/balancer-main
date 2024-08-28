@@ -689,6 +689,7 @@ const NewPatientForm = ({
                     </div>
                   </dd>
                 </fieldset>
+
                 <fieldset className="mt-6 justify-between md:mt-0 md:grid md:grid-cols-3 md:gap-4 md:px-4 md:py-6">
                   <dt className="flex text-sm font-semibold leading-6 text-gray-900">
                     Wants to conceive in next 2 years
@@ -733,6 +734,44 @@ const NewPatientForm = ({
                     </div>
                   </dd>
                 </fieldset>
+                // ... existing code ...
+
+                <fieldset className="mt-6 justify-between md:mt-0 md:grid md:grid-cols-3 md:gap-4 md:px-4 md:py-6">
+                  <dt className="flex text-sm font-semibold leading-6 text-gray-900">
+                    Any possibility of becoming pregnant
+                    <Tooltip text="Depakote is known for causing birth defects and will not be included in the suggested medications list for patients interested in becoming pregnant.">
+                      <span className="material-symbols-outlined ml-1">info</span>
+                    </Tooltip>
+                  </dt>
+                  <dd className="text-sm text-gray-900 md:col-span-2 md:mt-0 md:pl-24">
+                    <div className="flex items-center gap-x-3 pr-16">
+                      <input
+                        id="any_pregnancy-yes"
+                        name="any_pregnancy"
+                        type="radio"
+                        value="Yes"
+                        onChange={(e) => handleRadioChange(e, "any_pregnancy")}
+                        className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                      />
+                      <label htmlFor="any_pregnancy-yes" className="block text-sm font-medium leading-6 text-gray-900">
+                        Yes
+                      </label>
+
+                      <input
+                        id="any_pregnancy-no"
+                        name="any_pregnancy"
+                        type="radio"
+                        value="No"
+                        onChange={(e) => handleRadioChange(e, "any_pregnancy")}
+                        className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                      />
+                      <label htmlFor="any_pregnancy-no" className="block text-sm font-medium leading-6 text-gray-900">
+                        No
+                      </label>
+                    </div>
+                  </dd>
+                </fieldset>
+
               </div>
               {/*  
                             </div>
@@ -878,14 +917,12 @@ const NewPatientForm = ({
                 </div>
                 <button
                   type="submit"
-                  className={`btnBlue  ${
-                    isPressed &&
+                  className={`btnBlue  ${isPressed &&
                     "transition-transform focus:outline-none focus:ring focus:ring-blue-200"
-                  }${
-                    isLoading
+                    }${isLoading
                       ? "bg-white-600 transition-transform focus:outline-none focus:ring focus:ring-blue-500"
                       : ""
-                  }`}
+                    }`}
                   onMouseDown={handleMouseDown}
                   onMouseUp={handleMouseUp}
                   disabled={isLoading} // Disable the button while loading

@@ -29,7 +29,7 @@ const handleSubmitFeedback = async (
   message: FormValues["message"],
 ) => {
   try {
-    const response = await api.post(`/jira/feedback/`, {
+    const response = await api.post(`/v1/api/feedback/`, {
       feedbacktype: feedbackType,
       name,
       email,

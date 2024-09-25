@@ -18,7 +18,7 @@ urlpatterns = [
 ]
 
 # List of application names for which URL patterns will be dynamically added
-urls = ['chatgpt', 'jira', 'listDrugs', 'listMeds', 'risk',
+urls = ['conversations', 'feedback', 'listMeds', 'risk',
         'uploadFile', 'ai_promptStorage', 'ai_settings', 'embeddings']
 
 # Loop through each application name and dynamically import and add its URL patterns

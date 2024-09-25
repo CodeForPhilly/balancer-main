@@ -120,10 +120,10 @@ const NewPatientForm = ({
 
     try {
       const baseUrl = import.meta.env.VITE_API_BASE_URL;
-      const url = `${baseUrl}/chatgpt`;
+      const url = `${baseUrl}`;
       console.log(payload);
 
-      const { data } = await axios.post(url + `/list_meds`, payload);
+      const { data } = await axios.post(url + `/chatgpt/list_meds`, payload);
 
       const categorizedMedications = {
         first: data.first ?? [],

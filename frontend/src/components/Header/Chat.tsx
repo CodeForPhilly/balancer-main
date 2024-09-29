@@ -68,18 +68,21 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
   }, []);
 
   // useEffect(() => {
-  //   const chatContainer = document.getElementById("chat_container");
-  //   if (chatContainer && showChat) {
+  //   if (chatContainerRef.current) {
+  //     const chatContainer = chatContainerRef.current;
   //     chatContainer.scrollTop = chatContainer.scrollHeight;
   //   }
-  // }, [showChat, chatLog]);
+  // }, [chatLog]);
 
   useEffect(() => {
-    if (chatContainerRef.current) {
+    if (chatContainerRef.current && activeConversation) {
       const chatContainer = chatContainerRef.current;
-      chatContainer.scrollTop = chatContainer.scrollHeight;
+      // Use setTimeout to ensure the new message has been rendered
+      setTimeout(() => {
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      }, 0);
     }
-  }, [chatLog]);
+  }, [activeConversation?.messages]);
 
   const loadConversations = async () => {
     try {
@@ -248,8 +251,12 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
             id="chat_container"
             className=" mx-auto flex h-full  flex-col overflow-auto rounded "
           >
-            <div
+            {/* <div
               className="sticky top-0 mt-0 flex h-8 w-full flex-row items-center justify-between rounded-t-lg border-b bg-white p-1  "
+              style={{ borderBottomColor: "#abcdef" }}
+            > */}
+            <div
+              className="absolute mt-0 flex h-8 w-full flex-row items-center justify-between rounded-t-lg border-b bg-white p-1  "
               style={{ borderBottomColor: "#abcdef" }}
             >
               <button
@@ -315,7 +322,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
                 onDeleteConversation={deleteConversation}
               />
             ) : (
-              <div className="font_body mt-6 flex flex-grow flex-col space-y-2 p-5 pb-44">
+              <div className="font_body mt-6 flex flex-grow flex-col space-y-2 p-5 pb-52">
                 {activeConversation === null ||
                 activeConversation.messages.length === 0 ? (
                   <>
@@ -368,7 +375,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
                 {error && <ErrorMessage errors={[error.message]} />}
               </div>
             )}
-            <div className="inside_chat bottom-0 left-0 right-0 rounded-b-lg bg-white p-4">
+            <div className="inside_chat absolute bottom-0 left-0 right-0 rounded-b-lg bg-white p-4">
               <div className="flex  space-x-2 p-2 ">
                 {suggestionPrompts.map((suggestion, index) => (
                   <button

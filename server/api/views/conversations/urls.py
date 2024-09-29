@@ -1,5 +1,5 @@
 from django.urls import path, include
-from api.views.chatgpt import views
+from api.views.conversations import views
 from rest_framework.routers import DefaultRouter
 # from views import ConversationViewSet
 

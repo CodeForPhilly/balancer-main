@@ -7,7 +7,7 @@ from .views.ai_promptStorage.models import AI_PromptStorage
 from .views.ai_settings.models import AI_Settings
 from .views.ai_promptStorage.models import AI_PromptStorage
 from .models.model_embeddings import Embeddings
-from .views.jira.models import Feedback
+from .views.feedback.models import Feedback
 
 
 @admin.register(Embeddings)

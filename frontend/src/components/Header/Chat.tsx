@@ -129,7 +129,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
       const data = await continueConversation(
         conversation.id,
         newMessage.content,
-        pageContent,
+        pageContent
       );
 
       // Update the ConversationList component after previous function creates a title
@@ -209,7 +209,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
 
   const handleSelectConversation = (id: Conversation["id"]) => {
     const selectedConversation = conversations.find(
-      (conversation) => conversation.id === id,
+      (conversation) => conversation.id === id
     );
 
     if (selectedConversation) {
@@ -237,8 +237,10 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
       )} */}
       <div
         className={`fixed bottom-0 right-0 rounded md:bottom-3 md:right-4 ${
-          showChat ? "show_chat border-1bg-white ring-slate-1000/10" : "h-12 "
-        } shadow `}
+          showChat
+            ? "show_chat border-1bg-white ring-slate-1000/10 shadow"
+            : "h-12 "
+        } `}
       >
         {showChat ? (
           <div
@@ -400,10 +402,10 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
         ) : (
           <div
             onClick={() => setShowChat(true)}
-            className="relative inline-block group absolute bottom-9 right-5 flex h-16 w-16 cursor-pointer items-center justify-center rounded-full   object-contain hover:cursor-pointer hover:border-blue-600 hover:bg-blue-300 md:bottom-20 md:right-20 "
+            className="group absolute relative bottom-9 right-5 inline-block flex h-16 w-16 cursor-pointer items-center justify-center rounded-full   object-contain hover:cursor-pointer hover:border-blue-600 hover:bg-blue-300 md:bottom-20 md:right-20 "
           >
             <img src={chatBubble} alt="logo" className="h-6 md:h-10 md:w-10 " />
-            <div className="absolute hidden group-hover:block bottom-20 mt-2 w-32 bg-gray-700 text-white text-sm rounded py-1 px-2 before:absolute before:-top-2 before:left-1/2 before:transform before:-translate-x-1/2 before:border-8 before:border-transparent before:border-b-gray-700">
+            <div className="absolute bottom-20 mt-2 hidden w-32 rounded bg-gray-700 px-2 py-1 text-sm text-white before:absolute before:-top-2 before:left-1/2 before:-translate-x-1/2 before:transform before:border-8 before:border-transparent before:border-b-gray-700 group-hover:block">
               Any questions? Click here to to chat!
             </div>
           </div>

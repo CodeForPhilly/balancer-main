@@ -22,17 +22,15 @@ class AskEmbeddingsAPIView(APIView):
     def post(self, request, *args, **kwargs):
         try:
             user = request.user
-
+            guid = request.query_params.get('guid')
             print("AskEmbeddingsAPIView")
             request_data = request.data.get('message', None)
             if not request_data:
                 return Response({"error": "Message data is required."}, status=status.HTTP_400_BAD_REQUEST)
             message = [request_data][0]
 
-            embeddings_results = get_closest_embeddings(
-                user=user,
-                message_data=message
-            )
+            embeddings_results = get_closest_embeddings(user=request.user,
+                                                        message_data=message, guid=guid)
 
             embeddings_results = convert_uuids(embeddings_results)
 

@@ -5,12 +5,13 @@ import paperclip from "../../assets/paperclip.svg";
 import { handleSendDrugSummary } from "../../api/apiClient.ts";
 import { ChatMessageItem, SearchResult } from "./type";
 import ParseStringWithLinks from "../../services/parsing/ParseWithSource.tsx";
+import { useLocation } from "react-router-dom";
 
 const DrugSummaryForm = () => {
   const [inputValue, setInputValue] = useState("");
   const [chatLog, setChatLog] = useState<ChatMessageItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-
+  const location = useLocation();
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const scrollToBottomRef = useRef<HTMLDivElement | null>(null);
@@ -31,6 +32,9 @@ const DrugSummaryForm = () => {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    const params = new URLSearchParams(location.search);
+    const guid = params.get("guid") || ``;
+
     const newMessage = {
       message: inputValue,
       type: "user",
@@ -41,7 +45,7 @@ const DrugSummaryForm = () => {
     setIsLoading(true);
 
     try {
-      const response = await handleSendDrugSummary(inputValue);
+      const response = await handleSendDrugSummary(inputValue, guid);
       console.log("API Response:", response);
 
       if (

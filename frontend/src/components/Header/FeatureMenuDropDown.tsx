@@ -6,14 +6,14 @@ export const FeatureMenuDropDown = () => {
       <div className="mx-3 my-5 ">
         <Link to="/AdminPortal">
           <ul className=" cursor-pointer  rounded-lg p-3 transition duration-300 hover:bg-gray-100">
-            <span className=" font-bold text-black  ">Admin Portal</span>
+            <span className=" font-bold text-black  ">Manage files</span>
 
             <div className="mt-1 font-satoshi text-sm text-gray-400">
-              Set the settings for the Medication Suggester.
+              Upload and chat with files.
             </div>
           </ul>
         </Link>
-
+        {/* 
         <Link to="/drugSummary">
           <ul className=" cursor-pointer rounded-lg p-3 transition duration-300 hover:bg-gray-100">
             <span className=" font-bold text-black ">Manage Prompts</span>
@@ -30,7 +30,7 @@ export const FeatureMenuDropDown = () => {
               Control Settings for the Balancer-AI.
             </div>
           </ul>
-        </Link>
+        </Link> */}
 
         {/* <div
           className="mr-9 text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"

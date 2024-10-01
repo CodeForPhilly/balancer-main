@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Layout from "../Layout/Layout";
-// import { Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 interface File {
   id: number;
@@ -59,9 +59,14 @@ function ListOfFiles() {
           <ul>
             {files.map((file) => (
               <li key={file.id} className="border-b p-4">
-                <p>
-                  <strong>File Name:</strong> {file.file_name}
-                </p>
+                <Link
+                  to={`/drugsummary?guid=${file.guid}`}
+                  className="text-blue-500 hover:underline"
+                >
+                  <p>
+                    <strong>File Name:</strong> {file.file_name}
+                  </p>
+                </Link>
                 <p>
                   <strong>Date of Upload:</strong>{" "}
                   {new Date(file.date_of_upload).toLocaleString()}

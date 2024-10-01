@@ -17,7 +17,7 @@ function ListMeds() {
   useEffect(() => {
     const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
-    fetch(`${baseUrl}/V1/medications/`)
+    fetch(`${baseUrl}/v1/api/get_fulL_list_med`)
       .then((res) => {
         if (!res.ok) {
           throw new Error("Could not get medications list");

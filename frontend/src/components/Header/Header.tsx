@@ -40,8 +40,12 @@ const Header: React.FC<LoginFormProps> = ({
 
   const guestLinks = () => (
     <nav onClick={handleLoginMenu} className=" flex cursor-pointer  ">
-      <img src={accountLogo} alt="logo" className="mr-5 h-5  object-contain " />
-      <span className=" text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline">
+      <img
+        src={accountLogo}
+        alt="logo"
+        className="mr-5 h-5  object-contain lg:h-4 "
+      />
+      <span className=" text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline lg:text-sm xl:text-lg">
         Sign in
       </span>
     </nav>
@@ -50,7 +54,7 @@ const Header: React.FC<LoginFormProps> = ({
   const authLinks = () => (
     <nav onClick={logout_user} className="  flex  cursor-pointer ">
       <img src={accountLogo} alt="logo" className="mr-5 h-5  object-contain " />
-      <span className=" text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline">
+      <span className=" text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline lg:text-sm xl:text-lg">
         Sign out
       </span>
     </nav>
@@ -101,44 +105,44 @@ const Header: React.FC<LoginFormProps> = ({
       </div>
       <div
         className={
-          "  hidden h-20  w-full items-center justify-between border-b border-gray-300 bg-white px-96 md:px-20 lg:flex xl:px-60"
+          "  hidden h-20  w-full items-center justify-between border-b border-gray-300 bg-white px-96 md:px-20 lg:flex lg:px-10 xl:px-60"
         }
       >
         <Link to="/" onClick={() => handleForm()}>
-          <span className="bg-gradient-to-r  from-blue-500 via-blue-700 to-blue-300 bg-clip-text font-quicksand text-xl font-bold text-transparent lg:text-5xl ">
+          <span className="bg-gradient-to-r  from-blue-500 via-blue-700 to-blue-300 bg-clip-text font-quicksand text-xl font-bold text-transparent lg:text-2xl xl:text-5xl">
             Balancer
           </span>
         </Link>
-        <nav className="flex font-satoshi text-base lg:gap-2 xl:gap-5">
+        <nav className=" flex space-x-2 font-satoshi lg:space-x-3 xl:gap-3 xl:font-bold ">
           <Link
             to="/"
             onClick={() => handleForm()}
-            className="mr-5 font-bold text-black hover:border-blue-600 hover:text-blue-600 hover:no-underline"
+            className="  text-black hover:border-blue-600 hover:text-blue-600 hover:no-underline"
           >
             Medication Suggester
           </Link>
           <>
             <Link
               to="/medications"
-              className="mr-5 font-bold text-black hover:border-blue-600 hover:text-blue-600 hover:no-underline"
+              className=" text-black hover:border-blue-600 hover:text-blue-600 hover:no-underline"
             >
               Medication List
             </Link>
             <Link
               to="/about"
-              className="mr-5 font-bold text-black hover:border-blue-600 hover:text-blue-600 hover:no-underline"
+              className="  text-black hover:border-blue-600 hover:text-blue-600 hover:no-underline"
             >
               About
             </Link>
             <Link
               to="/help"
-              className="mr-5 font-bold text-black hover:border-blue-600 hover:text-blue-600 hover:no-underline"
+              className=" text-black hover:border-blue-600 hover:text-blue-600 hover:no-underline"
             >
               Help
             </Link>
             <Link
               to="/feedback"
-              className="mr-5 font-bold text-black hover:border-blue-600 hover:text-blue-600 hover:no-underline"
+              className=" text-black hover:border-blue-600 hover:text-blue-600 hover:no-underline"
             >
               Leave Feedback
             </Link>
@@ -150,7 +154,7 @@ const Header: React.FC<LoginFormProps> = ({
                 className=""
               >
                 <span
-                  className={` mr-9 font-bold text-black ${
+                  className={` text-black ${
                     showFeaturesMenu
                       ? "mx-4 cursor-pointer border-b-2 border-blue-600 hover:border-b-2 hover:border-blue-600 hover:text-blue-600 hover:no-underline"
                       : "mx-4 cursor-pointer hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"

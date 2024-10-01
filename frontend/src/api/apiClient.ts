@@ -42,9 +42,11 @@ const handleSubmitFeedback = async (
   }
 };
 
-const handleSendDrugSummary = async (message: FormValues["message"]) => {
+const handleSendDrugSummary = async (message: FormValues["message"], guid: string) => {
   try {
-    const response = await api.post(`/v1/api/embeddings/ask_embeddings`, {
+
+    const endpoint = guid ? `/v1/api/embeddings/ask_embeddings?guid=${guid}` : '/v1/api/embeddings/ask_embeddings';
+    const response = await api.post(endpoint, {
       message,
     });
     console.log("Response data:", JSON.stringify(response.data, null, 2));

@@ -17,9 +17,11 @@ function AdminPortal() {
               List of Files
             </button>
           </Link>
-          <button className="px-18 mt-1 w-80 rounded-xl bg-blue-500 py-2  text-xl text-white hover:bg-blue-600">
-            Create process
-          </button>
+          <Link to="/drugSummary">
+            <button className="px-18 mt-1 w-80 rounded-xl bg-blue-500 py-2  text-xl text-white hover:bg-blue-600">
+              Ask all papers
+            </button>
+          </Link>
         </div>
         {/* <div className="mt-8 text-sm text-gray-600">
           <p>API status | Help & support</p>

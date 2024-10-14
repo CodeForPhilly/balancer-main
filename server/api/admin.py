@@ -8,6 +8,12 @@ from .views.ai_settings.models import AI_Settings
 from .views.ai_promptStorage.models import AI_PromptStorage
 from .models.model_embeddings import Embeddings
 from .views.feedback.models import Feedback
+from .models.model_medRule import MedRule
+
+
+@admin.register(MedRule)
+class MedicationAdmin(admin.ModelAdmin):
+    list_display = ['medication']
 
 
 @admin.register(Embeddings)

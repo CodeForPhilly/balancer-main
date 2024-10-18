@@ -132,7 +132,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
       const data = await continueConversation(
         conversation.id,
         newMessage.content,
-        pageContent
+        pageContent,
       );
 
       // Update the ConversationList component after previous function creates a title
@@ -212,7 +212,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
 
   const handleSelectConversation = (id: Conversation["id"]) => {
     const selectedConversation = conversations.find(
-      (conversation) => conversation.id === id
+      (conversation) => conversation.id === id,
     );
 
     if (selectedConversation) {
@@ -322,89 +322,91 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
                 onDeleteConversation={deleteConversation}
               />
             ) : (
-              <div className="font_body mt-6 flex flex-grow flex-col space-y-2 p-5 pb-52">
-                {activeConversation === null ||
-                activeConversation.messages.length === 0 ? (
-                  <>
-                    {/* <div className="text-gray-500">
+              <>
+                <div className="font_body mt-6 flex flex-grow flex-col space-y-2 p-5 pb-52">
+                  {activeConversation === null ||
+                  activeConversation.messages.length === 0 ? (
+                    <>
+                      {/* <div className="text-gray-500">
                     Want to know more about a medication or have a question? Ask
                     Balancer in this chat, and information will be pulled from
                     all over the internet to assist you <br />
                     <br />
                   </div> */}
-                    <div className="max-h-[100%] max-w-[310px] rounded-lg border-2 bg-gray-200 p-2 text-black">
-                      You can ask about the content on this page.
+                      <div className="max-h-[100%] max-w-[310px] rounded-lg border-2 bg-gray-200 p-2 text-black">
+                        You can ask about the content on this page.
+                      </div>
+                      <div className="max-h-[100%] max-w-[190px] rounded-lg border-2 bg-gray-200 p-2 text-black">
+                        Or questions in general.
+                      </div>
+                    </>
+                  ) : (
+                    activeConversation.messages.map((message, index) => (
+                      <div
+                        key={index}
+                        className={`flex ${
+                          message.is_user ? "justify-end" : "justify-start"
+                        }`}
+                      >
+                        <pre
+                          style={{
+                            fontFamily: "inherit",
+                            whiteSpace: "pre-wrap",
+                            wordWrap: "break-word",
+                          }}
+                          className={`${
+                            message.is_user
+                              ? "bg-blue-200 text-black "
+                              : "border-2 bg-gray-200 text-black "
+                          }rounded-lg max-h-[100%] max-w-[500px] p-2`}
+                          dangerouslySetInnerHTML={{
+                            __html: message.content,
+                          }}
+                        ></pre>
+                      </div>
+                    ))
+                  )}
+                  {isLoading && (
+                    <div key={chatLog.length} className="flex justify-between">
+                      <div className="max-w-sm rounded-lg p-4 text-white">
+                        <TypingAnimation />
+                      </div>
                     </div>
-                    <div className="max-h-[100%] max-w-[190px] rounded-lg border-2 bg-gray-200 p-2 text-black">
-                      Or questions in general.
-                    </div>
-                  </>
-                ) : (
-                  activeConversation.messages.map((message, index) => (
-                    <div
-                      key={index}
-                      className={`flex ${
-                        message.is_user ? "justify-end" : "justify-start"
-                      }`}
-                    >
-                      <pre
-                        style={{
-                          fontFamily: "inherit",
-                          whiteSpace: "pre-wrap",
-                          wordWrap: "break-word",
-                        }}
-                        className={`${
-                          message.is_user
-                            ? "bg-blue-200 text-black "
-                            : "border-2 bg-gray-200 text-black "
-                        }rounded-lg max-h-[100%] max-w-[500px] p-2`}
-                        dangerouslySetInnerHTML={{
-                          __html: message.content,
-                        }}
-                      ></pre>
-                    </div>
-                  ))
-                )}
-                {isLoading && (
-                  <div key={chatLog.length} className="flex justify-between">
-                    <div className="max-w-sm rounded-lg p-4 text-white">
-                      <TypingAnimation />
-                    </div>
+                  )}
+                  {error && <ErrorMessage errors={[error.message]} />}
+                </div>
+                <div className="inside_chat absolute bottom-0 left-0 right-0 rounded-b-lg bg-white p-4">
+                  <div className="flex  space-x-2 p-2 ">
+                    {suggestionPrompts.map((suggestion, index) => (
+                      <button
+                        type="button"
+                        key={index}
+                        className="rounded-md border p-2 text-sm text-black hover:bg-blue-200"
+                        onClick={() => setInputValue(suggestion)}
+                      >
+                        {suggestion}
+                      </button>
+                    ))}
                   </div>
-                )}
-                {error && <ErrorMessage errors={[error.message]} />}
-              </div>
+                  <form onSubmit={handleSubmit} className="mb-1 flex">
+                    <div className="ml-2 flex-grow">
+                      <input
+                        type="ani_input"
+                        className="input w-full"
+                        placeholder="Talk to me..."
+                        value={inputValue}
+                        onChange={(e) => setInputValue(e.target.value)}
+                      />
+                    </div>
+                    <div className="ml-5">
+                      <button type="submit" className="btnBlue">
+                        Send
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </>
             )}
-            <div className="inside_chat absolute bottom-0 left-0 right-0 rounded-b-lg bg-white p-4">
-              <div className="flex  space-x-2 p-2 ">
-                {suggestionPrompts.map((suggestion, index) => (
-                  <button
-                    type="button"
-                    key={index}
-                    className="rounded-md border p-2 text-sm text-black hover:bg-blue-200"
-                    onClick={() => setInputValue(suggestion)}
-                  >
-                    {suggestion}
-                  </button>
-                ))}
-              </div>
-              <form onSubmit={handleSubmit} className="mb-1 flex">
-                <div className="ml-2 flex-grow">
-                  <input
-                    type="ani_input"
-                    className="input w-full"
-                    placeholder="Talk to me..."
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                  />
-                </div>
-                <div className="ml-5">
-                  <button type="submit" className="btnBlue">
-                    Send
-                  </button>
-                </div>
-              </form>
-            </div>
           </div>
         ) : (
           <div

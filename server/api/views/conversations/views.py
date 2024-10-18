@@ -15,9 +15,11 @@ import json
 from api.views.ai_settings.models import AI_Settings
 from api.views.ai_promptStorage.models import AI_PromptStorage
 from django.views.decorators.csrf import csrf_exempt
-from django.db import transaction
+from django.db import transaction, connection
 from .models import Conversation, Message
 from .serializers import ConversationSerializer, MessageSerializer
+from ...services.tools.tools import tools, execute_tool
+from ...services.tools.database import get_database_info
 
 
 @csrf_exempt
@@ -126,7 +128,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
 
     def get_chatgpt_response(self, conversation, user_message, page_context=None):
         messages = [
-            {"role": "system", "content": "You are a helpful assistant. Balancer is a powerful tool for selecting bipolar medication for patients. We are open-source and available for free use. Your primary role is to assist users with information related to Balancer and bipolar medication selection."}
+            {"role": "system", "content": "You are a helpful assistant. Balancer is a powerful tool for selecting bipolar medication for patients. We are open-source and available for free use. Your primary role is to assist users with information related to Balancer and bipolar medication selection. If applicable, use the supplied tools to assist the user."}
         ]
 
         if page_context:
@@ -138,13 +140,37 @@ class ConversationViewSet(viewsets.ModelViewSet):
             messages.append({"role": role, "content": msg.content})
 
         messages.append({"role": "user", "content": user_message})
+        print(tools)
 
         response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=messages
+            model="gpt-4o",
+            messages=messages,
+            tools=tools,
+            tool_choice="auto"
         )
 
-        return response.choices[0].message['content']
+        response_message = response.choices[0].message
+        print(response_message)
+        tool_calls = response_message.get('tool_calls', [])
+        print(tool_calls)
+
+        all_results = []
+
+        if tool_calls:
+            for tool_call in tool_calls:
+                tool_call_id = tool_call.get('id')
+                tool_function_name = tool_call['function'].get('name')
+                tool_arguments = json.loads(tool_call['function'].get('arguments', '{}'))
+
+                # Execute the tool and collect results
+                results = execute_tool(tool_function_name, tool_arguments)
+                all_results.append(results)
+            
+            # Combine the tool call results into a single string or structure
+            combined_results = "\n".join(all_results)
+            return combined_results
+        else:
+            return response.choices[0].message['content']
 
     def generate_title(self, conversation):
         # Get the first two messages

@@ -124,7 +124,7 @@ const NewPatientForm = ({
       console.log(payload);
 
       const { data } = await axios.post(
-        url + `v1/api/get_med_recommend`,
+        url + `/v1/api/get_med_recommend`,
         payload
       );
 

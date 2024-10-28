@@ -123,7 +123,10 @@ const NewPatientForm = ({
       const url = `${baseUrl}`;
       console.log(payload);
 
-      const { data } = await axios.post(url + `/chatgpt/list_meds`, payload);
+      const { data } = await axios.post(
+        url + `v1/api/get_med_recommend`,
+        payload
+      );
 
       const categorizedMedications = {
         first: data.first ?? [],

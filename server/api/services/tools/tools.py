@@ -33,7 +33,20 @@ tools = [
         "type": "function",
         "function": {
             "name": "ask_database",
-            "description": "Use this function to answer user questions about medication in the Balancer database. Input should be a fully formed SQL query.",
+            "description": """
+                Use this function to answer user questions about medication in the Balancer database. 
+                The Balancer medication database stores medications by their official medical (generic) names, not brand names.
+                Therefore:
+                  - Brand names should be converted to their official medical names before querying.
+                  - Queries should be case-insensitive to handle any variation in how medication names are stored (e.g., "Lurasidone", "lurasidone").
+
+                Input should be a fully formed SQL query.
+
+                Important guidelines:
+                  - Always use case-insensitive matching in queries by converting both the database column and the input to lowercase.
+                    For example, in SQL:
+                      - PostgreSQL: `LOWER(name) = LOWER('lurasidone')`
+            """,
             "parameters": {
                 "type": "object",
                 "properties": {

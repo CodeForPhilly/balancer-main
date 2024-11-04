@@ -132,7 +132,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
       const data = await continueConversation(
         conversation.id,
         newMessage.content,
-        pageContent
+        pageContent,
       );
 
       // Update the ConversationList component after previous function creates a title
@@ -212,7 +212,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
 
   const handleSelectConversation = (id: Conversation["id"]) => {
     const selectedConversation = conversations.find(
-      (conversation) => conversation.id === id
+      (conversation) => conversation.id === id,
     );
 
     if (selectedConversation) {
@@ -288,12 +288,20 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
                 )}
               </button>
 
-              <div className=" ml-4  text-black">
+              <div
+                className="ml-4 text-black truncate"
+                title={
+                  activeConversation !== null && !showConversationList
+                    ? activeConversation.title
+                    : `Question for me?`
+                }
+              >
                 {activeConversation !== null && !showConversationList
                   ? activeConversation.title
-                  : `Question for me?`}{" "}
+                  : `Question for me?`}
                 <br />
               </div>
+
               <div
                 className="delete mr-2 flex h-6 w-8 cursor-pointer items-center justify-center rounded-full bg-white text-black hover:bg-red-500"
                 onClick={() => setShowChat(false)}

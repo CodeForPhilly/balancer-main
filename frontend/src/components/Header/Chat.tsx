@@ -256,7 +256,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
               style={{ borderBottomColor: "#abcdef" }}
             > */}
             <div
-              className="absolute mt-0 flex h-8 w-full flex-row items-center justify-between rounded-t-lg border-b bg-white p-1  "
+              className="sticky top-0 mt-0 flex h-8 w-full flex-row items-center justify-between rounded-t-lg border-b bg-white p-1  "
               style={{ borderBottomColor: "#abcdef" }}
             >
               <button
@@ -330,7 +330,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
                 onDeleteConversation={deleteConversation}
               />
             ) : (
-              <div className="font_body mt-6 flex flex-grow flex-col space-y-2 p-5 pb-52">
+              <div className="font_body mt-6 flex flex-grow flex-col space-y-2 p-5">
                 {activeConversation === null ||
                 activeConversation.messages.length === 0 ? (
                   <>
@@ -383,8 +383,8 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
                 {error && <ErrorMessage errors={[error.message]} />}
               </div>
             )}
-            <div className="inside_chat absolute bottom-0 left-0 right-0 rounded-b-lg bg-white p-4">
-              <div className="flex md:flex-col lg:flex-row gap-1 p-2 ">
+            <div className="inside_chat rounded-b-lg bg-white p-4">
+              <div className="flex md:flex-col gap-1 p-2 ">
                 {suggestionPrompts.map((suggestion, index) => (
                   <button
                     type="button"

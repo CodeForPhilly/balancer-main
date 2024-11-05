@@ -96,7 +96,10 @@ const ConversationList: React.FC<ConversationListProps> = ({
               }
             }}
           >
-            <span onClick={() => setIsEditingTitle(conversation.id)}>
+            <span
+              onClick={() => setIsEditingTitle(conversation.id)}
+              className="block w-full"
+            >
               {isEditingTitle === conversation.id ? (
                 <input
                   type="text"
@@ -108,13 +111,14 @@ const ConversationList: React.FC<ConversationListProps> = ({
                     }
                   }}
                   autoFocus
+                  className="w-full flex-grow"
                 />
               ) : (
                 conversation.title
               )}
             </span>
 
-            <div className="flex space-x-2">
+            <div className="flex space-x-2 self-end">
               {/* Edit Icon */}
               <svg
                 xmlns="http://www.w3.org/2000/svg"

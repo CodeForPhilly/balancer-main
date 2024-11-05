@@ -384,7 +384,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
               </div>
             )}
             <div className="inside_chat absolute bottom-0 left-0 right-0 rounded-b-lg bg-white p-4">
-              <div className="flex  space-x-2 p-2 ">
+              <div className="flex md:flex-col lg:flex-row gap-1 p-2 ">
                 {suggestionPrompts.map((suggestion, index) => (
                   <button
                     type="button"

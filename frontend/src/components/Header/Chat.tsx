@@ -132,7 +132,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
       const data = await continueConversation(
         conversation.id,
         newMessage.content,
-        pageContent
+        pageContent,
       );
 
       // Update the ConversationList component after previous function creates a title
@@ -212,7 +212,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
 
   const handleSelectConversation = (id: Conversation["id"]) => {
     const selectedConversation = conversations.find(
-      (conversation) => conversation.id === id
+      (conversation) => conversation.id === id,
     );
 
     if (selectedConversation) {
@@ -256,7 +256,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
               style={{ borderBottomColor: "#abcdef" }}
             > */}
             <div
-              className="absolute mt-0 flex h-8 w-full flex-row items-center justify-between rounded-t-lg border-b bg-white p-1  "
+              className="sticky top-0 mt-0 flex h-8 w-full flex-row items-center justify-between rounded-t-lg border-b bg-white p-1  "
               style={{ borderBottomColor: "#abcdef" }}
             >
               <button
@@ -288,12 +288,20 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
                 )}
               </button>
 
-              <div className=" ml-4  text-black">
+              <div
+                className="ml-4 text-black truncate"
+                title={
+                  activeConversation !== null && !showConversationList
+                    ? activeConversation.title
+                    : `Question for me?`
+                }
+              >
                 {activeConversation !== null && !showConversationList
                   ? activeConversation.title
-                  : `Question for me?`}{" "}
+                  : `Question for me?`}
                 <br />
               </div>
+
               <div
                 className="delete mr-2 flex h-6 w-8 cursor-pointer items-center justify-center rounded-full bg-white text-black hover:bg-red-500"
                 onClick={() => setShowChat(false)}
@@ -322,7 +330,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
                 onDeleteConversation={deleteConversation}
               />
             ) : (
-              <div className="font_body mt-6 flex flex-grow flex-col space-y-2 p-5 pb-52">
+              <div className="font_body mt-6 flex flex-grow flex-col space-y-2 p-5">
                 {activeConversation === null ||
                 activeConversation.messages.length === 0 ? (
                   <>
@@ -375,8 +383,8 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
                 {error && <ErrorMessage errors={[error.message]} />}
               </div>
             )}
-            <div className="inside_chat absolute bottom-0 left-0 right-0 rounded-b-lg bg-white p-4">
-              <div className="flex  space-x-2 p-2 ">
+            <div className="inside_chat rounded-b-lg bg-white p-4">
+              <div className="flex md:flex-col gap-1 p-2 ">
                 {suggestionPrompts.map((suggestion, index) => (
                   <button
                     type="button"

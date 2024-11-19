@@ -255,135 +255,137 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
               className="sticky top-0 mt-0 flex h-8 w-full flex-row items-center justify-between rounded-t-lg border-b bg-white p-1  "
               style={{ borderBottomColor: "#abcdef" }}
             > */}
-            <div
-              className="sticky top-0 mt-0 flex h-8 w-full flex-row items-center justify-between rounded-t-lg border-b bg-white p-1  "
-              style={{ borderBottomColor: "#abcdef" }}
-            >
-              <button
-                onClick={() =>
-                  setShowConversationList((prevState) => !prevState)
-                }
-                className="flex items-center justify-center"
-              >
-                {showConversationList ? (
-                  // Icon for "Hide"
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 512 512"
-                    className="h-5 w-5"
-                    fill="currentColor"
-                  >
-                    <path d="M0 96C0 78.3 14.3 64 32 64l384 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L32 128C14.3 128 0 113.7 0 96zM64 256c0-17.7 14.3-32 32-32l384 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L96 288c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32L32 448c-17.7 0-32-14.3-32-32s14.3-32 32-32l384 0c17.7 0 32 14.3 32 32z" />
-                  </svg>
-                ) : (
-                  // Icon for "Show"
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 448 512"
-                    className="h-5 w-5"
-                    fill="currentColor"
-                  >
-                    <path d="M0 96C0 78.3 14.3 64 32 64l384 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L32 128C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32l384 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L32 288c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32L32 448c-17.7 0-32-14.3-32-32s14.3-32 32-32l384 0c17.7 0 32 14.3 32 32z" />
-                  </svg>
-                )}
-              </button>
-
+            <div className="flex-grow overflow-y-auto">
               <div
-                className="ml-4 text-black truncate"
-                title={
-                  activeConversation !== null && !showConversationList
-                    ? activeConversation.title
-                    : `Question for me?`
-                }
+                className="sticky top-0 mt-0 flex h-8 w-full flex-row items-center justify-between rounded-t-lg border-b bg-white p-1  "
+                style={{ borderBottomColor: "#abcdef" }}
               >
-                {activeConversation !== null && !showConversationList
-                  ? activeConversation.title
-                  : `Question for me?`}
-                <br />
-              </div>
-
-              <div
-                className="delete mr-2 flex h-6 w-8 cursor-pointer items-center justify-center rounded-full bg-white text-black hover:bg-red-500"
-                onClick={() => setShowChat(false)}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  aria-hidden="true"
+                <button
+                  onClick={() =>
+                    setShowConversationList((prevState) => !prevState)
+                  }
+                  className="flex items-center justify-center"
                 >
-                  <path
-                    fillRule="evenodd"
-                    d="M15.293 4.293a1 1 0 011.414 1.414L11.414 12l5.293 5.293a1 1 0 01-1.414 1.414L10 13.414l-5.293 5.293a1 1 0 01-1.414-1.414L8.586 12 3.293 6.707a1 1 0 111.414-1.414L10 10.586l5.293-5.293z"
-                    clipRule="evenodd"
-                  />
-                </svg>
+                  {showConversationList ? (
+                    // Icon for "Hide"
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 512 512"
+                      className="h-5 w-5"
+                      fill="currentColor"
+                    >
+                      <path d="M0 96C0 78.3 14.3 64 32 64l384 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L32 128C14.3 128 0 113.7 0 96zM64 256c0-17.7 14.3-32 32-32l384 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L96 288c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32L32 448c-17.7 0-32-14.3-32-32s14.3-32 32-32l384 0c17.7 0 32 14.3 32 32z" />
+                    </svg>
+                  ) : (
+                    // Icon for "Show"
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 448 512"
+                      className="h-5 w-5"
+                      fill="currentColor"
+                    >
+                      <path d="M0 96C0 78.3 14.3 64 32 64l384 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L32 128C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32l384 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L32 288c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32L32 448c-17.7 0-32-14.3-32-32s14.3-32 32-32l384 0c17.7 0 32 14.3 32 32z" />
+                    </svg>
+                  )}
+                </button>
+
+                <div
+                  className="ml-4 text-black truncate"
+                  title={
+                    activeConversation !== null && !showConversationList
+                      ? activeConversation.title
+                      : `Question for me?`
+                  }
+                >
+                  {activeConversation !== null && !showConversationList
+                    ? activeConversation.title
+                    : `Question for me?`}
+                  <br />
+                </div>
+
+                <div
+                  className="delete mr-2 flex h-6 w-8 cursor-pointer items-center justify-center rounded-full bg-white text-black hover:bg-red-500"
+                  onClick={() => setShowChat(false)}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M15.293 4.293a1 1 0 011.414 1.414L11.414 12l5.293 5.293a1 1 0 01-1.414 1.414L10 13.414l-5.293 5.293a1 1 0 01-1.414-1.414L8.586 12 3.293 6.707a1 1 0 111.414-1.414L10 10.586l5.293-5.293z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
               </div>
-            </div>
-            {showConversationList ? (
-              <ConversationList
-                conversations={conversations}
-                onSelectConversation={handleSelectConversation}
-                onNewConversation={handleNewConversation}
-                onSubmitConversationTitle={updateConversationTitle}
-                onDeleteConversation={deleteConversation}
-              />
-            ) : (
-              <div className="font_body mt-6 flex flex-grow flex-col space-y-2 p-5">
-                {activeConversation === null ||
-                activeConversation.messages.length === 0 ? (
-                  <>
-                    {/* <div className="text-gray-500">
+              {showConversationList ? (
+                <ConversationList
+                  conversations={conversations}
+                  onSelectConversation={handleSelectConversation}
+                  onNewConversation={handleNewConversation}
+                  onSubmitConversationTitle={updateConversationTitle}
+                  onDeleteConversation={deleteConversation}
+                />
+              ) : (
+                <div className="font_body mt-6 flex flex-grow flex-col space-y-2 p-5">
+                  {activeConversation === null ||
+                  activeConversation.messages.length === 0 ? (
+                    <>
+                      {/* <div className="text-gray-500">
                     Want to know more about a medication or have a question? Ask
                     Balancer in this chat, and information will be pulled from
                     all over the internet to assist you <br />
                     <br />
                   </div> */}
-                    <div className="max-h-[100%] max-w-[310px] rounded-lg border-2 bg-gray-200 p-2 text-black">
-                      You can ask about the content on this page.
+                      <div className="max-h-[100%] max-w-[310px] rounded-lg border-2 bg-gray-200 p-2 text-black">
+                        You can ask about the content on this page.
+                      </div>
+                      <div className="max-h-[100%] max-w-[190px] rounded-lg border-2 bg-gray-200 p-2 text-black">
+                        Or questions in general.
+                      </div>
+                    </>
+                  ) : (
+                    activeConversation.messages.map((message, index) => (
+                      <div
+                        key={index}
+                        className={`flex ${
+                          message.is_user ? "justify-end" : "justify-start"
+                        }`}
+                      >
+                        <pre
+                          style={{
+                            fontFamily: "inherit",
+                            whiteSpace: "pre-wrap",
+                            wordWrap: "break-word",
+                          }}
+                          className={`${
+                            message.is_user
+                              ? "bg-blue-200 text-black "
+                              : "border-2 bg-gray-200 text-black "
+                          }rounded-lg max-h-[100%] max-w-[500px] p-2`}
+                          dangerouslySetInnerHTML={{
+                            __html: message.content,
+                          }}
+                        ></pre>
+                      </div>
+                    ))
+                  )}
+                  {isLoading && (
+                    <div key={chatLog.length} className="flex justify-between">
+                      <div className="max-w-sm rounded-lg p-4 text-white">
+                        <TypingAnimation />
+                      </div>
                     </div>
-                    <div className="max-h-[100%] max-w-[190px] rounded-lg border-2 bg-gray-200 p-2 text-black">
-                      Or questions in general.
-                    </div>
-                  </>
-                ) : (
-                  activeConversation.messages.map((message, index) => (
-                    <div
-                      key={index}
-                      className={`flex ${
-                        message.is_user ? "justify-end" : "justify-start"
-                      }`}
-                    >
-                      <pre
-                        style={{
-                          fontFamily: "inherit",
-                          whiteSpace: "pre-wrap",
-                          wordWrap: "break-word",
-                        }}
-                        className={`${
-                          message.is_user
-                            ? "bg-blue-200 text-black "
-                            : "border-2 bg-gray-200 text-black "
-                        }rounded-lg max-h-[100%] max-w-[500px] p-2`}
-                        dangerouslySetInnerHTML={{
-                          __html: message.content,
-                        }}
-                      ></pre>
-                    </div>
-                  ))
-                )}
-                {isLoading && (
-                  <div key={chatLog.length} className="flex justify-between">
-                    <div className="max-w-sm rounded-lg p-4 text-white">
-                      <TypingAnimation />
-                    </div>
-                  </div>
-                )}
-                {error && <ErrorMessage errors={[error.message]} />}
-              </div>
-            )}
-            <div className="inside_chat rounded-b-lg bg-white p-4">
+                  )}
+                  {error && <ErrorMessage errors={[error.message]} />}
+                </div>
+              )}
+            </div>
+            <div className="inside_chat rounded-b-lg bg-white p-4 sticky bottom-0 left-0 right-0 z-50 ">
               <div className="flex md:flex-col gap-1 p-2 ">
                 {suggestionPrompts.map((suggestion, index) => (
                   <button

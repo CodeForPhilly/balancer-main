@@ -6,6 +6,7 @@ import { handleSendDrugSummary } from "../../api/apiClient.ts";
 import { ChatMessageItem, SearchResult } from "./type";
 import ParseStringWithLinks from "../../services/parsing/ParseWithSource.tsx";
 import { useLocation } from "react-router-dom";
+import PDFViewer from "./PDFViewer";
 
 const DrugSummaryForm = () => {
   const [inputValue, setInputValue] = useState("");
@@ -87,103 +88,110 @@ const DrugSummaryForm = () => {
   };
   return (
     <>
-      <div className="mx-auto  min-h-screen w-full max-w-[810px] overflow-y-auto border">
-        <div className="w-[100%] ">
-          <div
-            ref={chatContainerRef}
-            id="chat_container"
-            className="relative bottom-0 top-0 mt-10 flex h-[calc(100vh-210px)] flex-col overflow-y-auto border-t p-2"
-          >
-            {chatLog.length === 0 ? (
-              <>
-                <div className="flex  flex-col gap-4 p-3">
-                  <div className="max-h-[100%] max-w-[310px] rounded-lg border-2 bg-stone-50 p-2 text-sky-950">
-                    You can ask about the content on this page.
+      <div className="mx-auto  min-h-screen w-full  flex-grow flex overflow-y-auto border">
+        <div className=" mb-4">
+          <PDFViewer />
+        </div>
+        <div>
+          <div className=" w-[808px] ">
+            <div
+              ref={chatContainerRef}
+              id="chat_container"
+              className="relative bottom-0  top-0 mt-10 flex h-[calc(100vh-210px)] flex-col overflow-y-auto border-t p-2"
+            >
+              {chatLog.length === 0 ? (
+                <>
+                  <div className="flex  flex-col gap-4 p-3">
+                    <div className="max-h-[100%] rounded-lg border-2 bg-stone-50 p-2 text-sky-950">
+                      You can ask about the content on this page.
+                    </div>
+                    <div className="max-h-[100%]  rounded-lg border-2 bg-stone-50 p-2 text-sky-950">
+                      Or questions in general.
+                    </div>
                   </div>
-                  <div className="max-h-[100%] max-w-[190px] rounded-lg border-2 bg-stone-50 p-2 text-sky-950">
-                    Or questions in general.
-                  </div>
-                </div>
-              </>
-            ) : (
-              chatLog.map((message, index) => (
-                <div key={index} className="flex flex-col gap-4">
-                  <div
-                    className={`${
-                      message.type === "user" ? "justify-end" : "justify-start"
-                    } p-2`}
-                  >
+                </>
+              ) : (
+                chatLog.map((message, index) => (
+                  <div key={index} className="flex flex-col gap-4">
                     <div
                       className={`${
                         message.type === "user"
-                          ? "border-2  font-quicksand text-neutral-600"
-                          : "border-2 bg-stone-50 font-quicksand text-sky-950"
-                      } rounded-lg p-2`}
+                          ? "justify-end"
+                          : "justify-start"
+                      } p-2`}
                     >
-                      {typeof message.message === "string" ? (
-                        message.message
-                      ) : (
-                        <ParseStringWithLinks
-                          text={message.message.llm_response}
-                          chunkData={message.message.embeddings_info}
-                        />
-                      )}
-                    </div>
-                    {/* <button
+                      <div
+                        className={`${
+                          message.type === "user"
+                            ? "border-2  font-quicksand text-neutral-600"
+                            : "border-2 bg-stone-50 font-quicksand text-sky-950"
+                        } rounded-lg p-2`}
+                      >
+                        {typeof message.message === "string" ? (
+                          message.message
+                        ) : (
+                          <ParseStringWithLinks
+                            text={message.message.llm_response}
+                            chunkData={message.message.embeddings_info}
+                          />
+                        )}
+                      </div>
+                      {/* <button
                     onClick={() => copyToClipboard("test")}
                     className="mt-1 rounded  px-1 py-1 text-sm text-white hover:bg-gray-200"
                   >
                     <img src={copy} alt="Send" className="h-5 w-5" />
                   </button> */}
+                    </div>
                   </div>
+                ))
+              )}
+            </div>
+          </div>
+          <div className="ml-8 flex h-3 items-center justify-start">
+            {isLoading && (
+              <div key={chatLog.length} className="flex justify-between">
+                <div className="items-center justify-center p-1">
+                  <span className="thinking">Let's me think</span>
                 </div>
-              ))
+              </div>
             )}
           </div>
-        </div>
-        <div className="ml-8 flex h-3 items-center justify-start">
-          {isLoading && (
-            <div key={chatLog.length} className="flex justify-between">
-              <div className="items-center justify-center p-1">
-                <span className="thinking">Let's me think</span>
-              </div>
-            </div>
-          )}
-        </div>
-        <form
-          onSubmit={handleSubmit}
-          className="fixed bottom-0 flex  w-[808px]  bg-white p-5"
-        >
-          <div className="relative flex w-full  items-center ">
-            <input
-              type="text"
-              className="w-full rounded-md border border-gray-300 py-3 pl-10 pr-3"
-              placeholder="Talk to me..."
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-            />
+          <form
+            onSubmit={handleSubmit}
+            className="fixed bottom-0 flex  w-[808px]  bg-white p-5"
+          >
+            <div className="relative flex w-full  items-center ">
+              <input
+                type="text"
+                className="w-full rounded-md border border-gray-300 py-3 pl-10 pr-3"
+                placeholder="Talk to me..."
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+              />
 
-            <button
-              type="button"
-              className="absolute left-0 ml-2"
-              onClick={() => {
-                if (fileInputRef.current) {
-                  fileInputRef.current.click();
-                }
-              }}
-            >
-              <img src={paperclip} alt="Upload" className="h-6" />
-            </button>
-          </div>
-          <div className="ml-5 flex items-center justify-between">
-            <button
-              type="submit"
-              className=" h-12 rounded-xl border bg-blue-500 px-3 py-1.5 font-satoshi  text-white hover:bg-blue-400"
-            >
-              Send.
-            </button>
-          </div>
-        </form>
+              <button
+                type="button"
+                className="absolute left-0 ml-2"
+                onClick={() => {
+                  if (fileInputRef.current) {
+                    fileInputRef.current.click();
+                  }
+                }}
+              >
+                <img src={paperclip} alt="Upload" className="h-6" />
+              </button>
+            </div>
+            <div className="ml-5 flex items-center justify-between">
+              <button
+                type="submit"
+                className=" h-12 rounded-xl border bg-blue-500 px-3 py-1.5 font-satoshi  text-white hover:bg-blue-400"
+              >
+                Send.
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </>
   );

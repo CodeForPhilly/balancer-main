@@ -159,6 +159,7 @@ class RetrieveUploadFileView(APIView):
 
     def get(self, request, guid, format=None):
         try:
+            print("yesy")
             file = UploadFile.objects.get(
                 guid=guid, uploaded_by=request.user.id)
             response = HttpResponse(file.file, content_type='application/pdf')

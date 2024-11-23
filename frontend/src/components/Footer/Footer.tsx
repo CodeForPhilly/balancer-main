@@ -24,10 +24,10 @@ function Footer() {
             Home
           </Link>
           <Link
-            to='/'
+            to="/"
             onClick={(e) => {
-                window.location.href = 'mailto:balancerteam@codeforphilly.org';
-                e.preventDefault();
+              window.location.href = "mailto:balancerteam@codeforphilly.org";
+              e.preventDefault();
             }}
             className="flex justify-center text-black hover:border-blue-600 hover:text-blue-600 hover:no-underline"
           >
@@ -84,7 +84,7 @@ function Footer() {
           </div>
         </div>
         <div className="flex justify-center rounded  px-4 py-2 ">
-          © 2024 Balancer. All rights reserved.
+          © 2024 Balancer. All rights reserved. V11.19.2024
         </div>
       </footer>
     </div>

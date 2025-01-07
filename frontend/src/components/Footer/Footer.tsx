@@ -6,25 +6,25 @@ import "../../App.css"; // Import the common Tailwind CSS styles
 
 function Footer() {
   const [isPressed, setIsPressed] = useState(false);
-  const emailInputRef =useRef<HTMLInputElement>(null);
+  const emailInputRef = useRef<HTMLInputElement>(null);
 
-  const handleKeyDown = (event:KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Enter') {
+  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
       event.preventDefault();
-      document.getElementById('submitButton')?.click();
+      document.getElementById("submitButton")?.click();
     }
   };
 
   //TODO - actually add email addresses to a mailing list, when available. for now, just logging in console, then clearing the input.
   const handleSubmit = () => {
     const email = emailInputRef.current?.value;
-    if (email){
-      setIsPressed(true) //TODO - any async function that would require us to display "Loading..."
+    if (email) {
+      setIsPressed(true); //TODO - any async function that would require us to display "Loading..."
       console.log(email);
-      emailInputRef.current.value = '';
-      setIsPressed(false)
+      emailInputRef.current.value = "";
+      setIsPressed(false);
     }
-  }
+  };
 
   return (
     // <div className="xl:px-50 mx-auto hidden h-20 items-center justify-between border-t border-gray-300 bg-white  px-4 sm:px-6 md:px-8 lg:flex lg:px-8 2xl:px-56">
@@ -102,7 +102,7 @@ function Footer() {
           </div>
         </div>
         <div className="flex justify-center rounded  px-4 py-2 ">
-          © 2024 Balancer. All rights reserved. V11.19.2024
+          © 2025 Balancer. All rights reserved. V1 01072025
         </div>
       </footer>
     </div>

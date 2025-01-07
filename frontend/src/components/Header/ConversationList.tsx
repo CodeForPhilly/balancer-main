@@ -80,8 +80,8 @@ const ConversationList: React.FC<ConversationListProps> = ({
   };
 
   return (
-    <>
-      <button className="btnBlue m-4 text-lg" onClick={onNewConversation}>
+    <div className="flex flex-col gap-1 p-1">
+      <button className="btnBlue w-full text-lg" onClick={onNewConversation}>
         New Conversation
       </button>
       <ul className="conversation-list space-y-4">
@@ -158,7 +158,7 @@ const ConversationList: React.FC<ConversationListProps> = ({
           </li>
         ))}
       </ul>
-    </>
+    </div>
   );
 };
 

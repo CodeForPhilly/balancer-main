@@ -48,12 +48,14 @@ const LoginMenuDropDown: React.FC<LoginMenuDropDownProps> = ({
           gmail or Facebook account.
         </p> */}
 
-        <button
-          type="submit"
-          className="rounded-xl w-full bg-blue-500 font-bold text-xl md:text-lg px-24 py-2 text-white hover:bg-blue-600 text-nowrap"
-        >
-          <Link to="/login">Sign In</Link>
-        </button>
+        <Link to="/login">
+          <button
+            type="submit"
+            className="rounded-xl w-full bg-blue-500 font-bold text-xl md:text-lg px-24 py-2 text-white hover:bg-blue-600 text-nowrap"
+          >
+            Log in
+          </button>
+        </Link>
         {/* <Link to="/register">
               <button
                 type="submit"

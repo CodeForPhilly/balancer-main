@@ -7,6 +7,7 @@ import ErrorMessage from "../ErrorMessage";
 import ConversationList from "./ConversationList";
 import chatBubble from "../../assets/chatbubble.svg";
 import { extractContentFromDOM } from "../../services/domExtraction";
+import axios from "axios";
 import {
   fetchConversations,
   continueConversation,
@@ -153,11 +154,14 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
       setError(null);
     } catch (error) {
       console.error("Error(s) handling conversation:", error);
+      let errorMessage = "Error submitting message";
       if (error instanceof Error) {
-        setError(error); // Set the error message if it's an instance of Error
-      } else {
-        setError(new Error("Error submitting message")); // Convert any other types to string
+        errorMessage = error.message;
+        if (axios.isAxiosError(error) && error.response && error.response.data && error.response.data.error) {
+          errorMessage = error.response.data.error;
+        }
       }
+      setError(new Error(errorMessage));
     } finally {
       setIsLoading(false);
       setInputValue("");

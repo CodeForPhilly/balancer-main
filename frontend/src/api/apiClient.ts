@@ -3,7 +3,7 @@ import { FormValues } from "../pages/Feedback/FeedbackForm";
 import { Conversation } from "../components/Header/Chat";
 const baseURL = import.meta.env.VITE_API_BASE_URL;
 
-const api = axios.create({
+export const api = axios.create({
   baseURL,
   headers: {
     Authorization: `JWT ${localStorage.getItem("access")}`,

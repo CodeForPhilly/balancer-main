@@ -19,7 +19,7 @@ import {
 interface ChatLogItem {
   is_user: boolean;
   content: string;
-  // date: Date;
+  timestamp: string; // EX: 2025-01-16T16:21:14.981090Z
 }
 
 export interface Conversation {
@@ -101,6 +101,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
     const newMessage = {
       content: inputValue,
       is_user: true,
+      timestamp: new Date().toISOString(),
     };
 
     const newMessages = [...chatLog, newMessage];
@@ -146,7 +147,11 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
           ...prevConversation,
           messages: [
             ...prevConversation.messages,
-            { is_user: false, content: data.response },
+            {
+              is_user: false,
+              content: data.response,
+              timestamp: new Date().toISOString(),
+            },
           ],
           title: data.title,
         };
@@ -157,7 +162,12 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
       let errorMessage = "Error submitting message";
       if (error instanceof Error) {
         errorMessage = error.message;
-        if (axios.isAxiosError(error) && error.response && error.response.data && error.response.data.error) {
+        if (
+          axios.isAxiosError(error) &&
+          error.response &&
+          error.response.data &&
+          error.response.data.error
+        ) {
           errorMessage = error.response.data.error;
         }
       }
@@ -251,7 +261,6 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
       >
         {showChat ? (
           <div
-            ref={chatContainerRef}
             id="chat_container"
             className=" mx-auto flex h-full  flex-col overflow-auto rounded "
           >
@@ -259,7 +268,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
               className="sticky top-0 mt-0 flex h-8 w-full flex-row items-center justify-between rounded-t-lg border-b bg-white p-1  "
               style={{ borderBottomColor: "#abcdef" }}
             > */}
-            <div className="flex-grow overflow-y-auto">
+            <div className="flex-grow overflow-y-auto" ref={chatContainerRef}>
               <div
                 className="sticky top-0 mt-0 flex h-8 w-full flex-row items-center justify-between rounded-t-lg border-b bg-white p-1  "
                 style={{ borderBottomColor: "#abcdef" }}
@@ -353,30 +362,37 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
                       </div>
                     </>
                   ) : (
-                    activeConversation.messages.map((message, index) => (
-                      <div
-                        key={index}
-                        className={`flex ${
-                          message.is_user ? "justify-end" : "justify-start"
-                        }`}
-                      >
-                        <pre
-                          style={{
-                            fontFamily: "inherit",
-                            whiteSpace: "pre-wrap",
-                            wordWrap: "break-word",
-                          }}
-                          className={`${
-                            message.is_user
-                              ? "bg-blue-200 text-black "
-                              : "border-2 bg-gray-200 text-black "
-                          }rounded-lg max-h-[100%] max-w-[500px] p-2`}
-                          dangerouslySetInnerHTML={{
-                            __html: message.content,
-                          }}
-                        ></pre>
-                      </div>
-                    ))
+                    activeConversation.messages
+                      .slice()
+                      .sort(
+                        (a, b) =>
+                          new Date(a.timestamp).getTime() -
+                          new Date(b.timestamp).getTime(),
+                      )
+                      .map((message, index) => (
+                        <div
+                          key={index}
+                          className={`flex ${
+                            message.is_user ? "justify-end" : "justify-start"
+                          }`}
+                        >
+                          <pre
+                            style={{
+                              fontFamily: "inherit",
+                              whiteSpace: "pre-wrap",
+                              wordWrap: "break-word",
+                            }}
+                            className={`${
+                              message.is_user
+                                ? "bg-blue-200 text-black "
+                                : "border-2 bg-gray-200 text-black "
+                            }rounded-lg max-h-[100%] max-w-[500px] p-2`}
+                            dangerouslySetInnerHTML={{
+                              __html: message.content,
+                            }}
+                          ></pre>
+                        </div>
+                      ))
                   )}
                   {isLoading && (
                     <div key={chatLog.length} className="flex justify-between">

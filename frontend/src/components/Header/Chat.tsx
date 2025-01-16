@@ -387,10 +387,9 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
                                 ? "bg-blue-200 text-black "
                                 : "border-2 bg-gray-200 text-black "
                             }rounded-lg max-h-[100%] max-w-[500px] p-2`}
-                            dangerouslySetInnerHTML={{
-                              __html: message.content,
-                            }}
-                          ></pre>
+                          >
+                            {message.content}
+                          </pre>
                         </div>
                       ))
                   )}

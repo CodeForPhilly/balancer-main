@@ -4,6 +4,7 @@ from rest_framework.decorators import api_view
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import APIException
 from django.http import JsonResponse
 from bs4 import BeautifulSoup
 from nltk.stem import PorterStemmer
@@ -12,6 +13,7 @@ import openai
 import tiktoken
 import os
 import json
+import logging
 from api.views.ai_settings.models import AI_Settings
 from api.views.ai_promptStorage.models import AI_PromptStorage
 from django.views.decorators.csrf import csrf_exempt
@@ -66,6 +68,18 @@ def get_tokens(string: str, encoding_name: str) -> str:
     output_string = encoding.decode(tokens)
     return output_string
 
+class OpenAIAPIException(APIException):
+    """Custom exception for OpenAI API errors."""
+    status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+    default_detail = "An error occurred while communicating with the OpenAI API."
+    default_code = "openai_api_error"
+
+    def __init__(self, detail=None, code=None):
+        if detail is not None:
+            self.detail = {"error": detail}
+        else:
+            self.detail = {"error": self.default_detail}
+        self.status_code = code or self.status_code
 
 class ConversationViewSet(viewsets.ModelViewSet):
     serializer_class = ConversationSerializer
@@ -139,12 +153,18 @@ class ConversationViewSet(viewsets.ModelViewSet):
 
         messages.append({"role": "user", "content": user_message})
 
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=messages
-        )
-
-        return response.choices[0].message['content']
+        try:
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=messages
+            )
+            return response.choices[0].message['content']
+        except openai.error.OpenAIError as e:
+            logging.error("OpenAI API Error: %s", str(e))
+            raise OpenAIAPIException(detail=str(e))
+        except Exception as e:
+            logging.error("Unexpected Error: %s", str(e))
+            raise OpenAIAPIException(detail="An unexpected error occurred.")
 
     def generate_title(self, conversation):
         # Get the first two messages

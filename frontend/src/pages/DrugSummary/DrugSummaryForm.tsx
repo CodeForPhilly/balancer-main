@@ -10,12 +10,14 @@ import PDFViewer from "./PDFViewer";
 
 const DrugSummaryForm = () => {
   const [inputValue, setInputValue] = useState("");
+  const [inputHeight, setInputHeight] = useState(50); // Initial height in pixels
   const [chatLog, setChatLog] = useState<ChatMessageItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const location = useLocation();
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const scrollToBottomRef = useRef<HTMLDivElement | null>(null);
+  const maxInputHeight = 150; // Maximum height in pixels
 
   useEffect(() => {
     if (chatContainerRef.current) {
@@ -43,6 +45,7 @@ const DrugSummaryForm = () => {
 
     setChatLog((prevChatLog) => [...prevChatLog, newMessage]);
     setInputValue("");
+    setInputHeight(50); // Reset input height
     setIsLoading(true);
 
     try {
@@ -86,44 +89,58 @@ const DrugSummaryForm = () => {
       setIsLoading(false);
     }
   };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInputValue(e.target.value);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault(); // Prevent default Enter behavior
+      handleSubmit(e as unknown as React.FormEvent<HTMLFormElement>);
+    } else if (e.key === "Enter" && e.shiftKey) {
+      e.preventDefault(); // Prevent form submission on Shift + Enter
+      setInputHeight((prevHeight) => {
+        const newHeight = Math.min(prevHeight + 20, maxInputHeight); // Increase by 20px, up to max height
+        return newHeight;
+      });
+    }
+  };
+
   return (
     <>
-      <div className="mx-auto  min-h-screen w-full  flex-grow flex overflow-y-auto border">
-        <div className=" mb-4">
+      <div className="mx-auto min-h-screen w-full flex-grow flex overflow-y-auto border">
+        <div className="mb-4">
           <PDFViewer />
         </div>
         <div>
-          <div className=" w-[808px] ">
+          <div className="w-[808px]">
             <div
               ref={chatContainerRef}
               id="chat_container"
-              className="relative bottom-0  top-0 mt-10 flex h-[calc(100vh-210px)] flex-col overflow-y-auto border-t p-2"
+              className="relative bottom-0 top-0 mt-10 flex h-[calc(100vh-210px)] flex-col overflow-y-auto border-t p-2"
             >
               {chatLog.length === 0 ? (
-                <>
-                  <div className="flex  flex-col gap-4 p-3">
-                    <div className="max-h-[100%] rounded-lg border-2 bg-stone-50 p-2 text-sky-950">
-                      You can ask about the content on this page.
-                    </div>
-                    <div className="max-h-[100%]  rounded-lg border-2 bg-stone-50 p-2 text-sky-950">
-                      Or questions in general.
-                    </div>
+                <div className="flex flex-col gap-4 p-3">
+                  <div className="max-h-[100%] rounded-lg border-2 bg-stone-50 p-2 text-sky-950">
+                    You can ask about the content on this page.
                   </div>
-                </>
+                  <div className="max-h-[100%] rounded-lg border-2 bg-stone-50 p-2 text-sky-950">
+                    Or questions in general.
+                  </div>
+                </div>
               ) : (
                 chatLog.map((message, index) => (
                   <div key={index} className="flex flex-col gap-4">
                     <div
                       className={`${
-                        message.type === "user"
-                          ? "justify-end"
-                          : "justify-start"
+                        message.type === "user" ? "justify-end" : "justify-start"
                       } p-2`}
                     >
                       <div
                         className={`${
                           message.type === "user"
-                            ? "border-2  font-quicksand text-neutral-600"
+                            ? "border-2 font-quicksand text-neutral-600"
                             : "border-2 bg-stone-50 font-quicksand text-sky-950"
                         } rounded-lg p-2`}
                       >
@@ -136,12 +153,6 @@ const DrugSummaryForm = () => {
                           />
                         )}
                       </div>
-                      {/* <button
-                    onClick={() => copyToClipboard("test")}
-                    className="mt-1 rounded  px-1 py-1 text-sm text-white hover:bg-gray-200"
-                  >
-                    <img src={copy} alt="Send" className="h-5 w-5" />
-                  </button> */}
                     </div>
                   </div>
                 ))
@@ -152,24 +163,24 @@ const DrugSummaryForm = () => {
             {isLoading && (
               <div key={chatLog.length} className="flex justify-between">
                 <div className="items-center justify-center p-1">
-                  <span className="thinking">Let's me think</span>
+                  <span className="thinking">Let me think</span>
                 </div>
               </div>
             )}
           </div>
           <form
             onSubmit={handleSubmit}
-            className="fixed bottom-0 flex  w-[808px]  bg-white p-5"
+            className="fixed bottom-0 flex w-[808px] bg-white p-5"
           >
-            <div className="relative flex w-full  items-center ">
-              <input
-                type="text"
-                className="w-full rounded-md border border-gray-300 py-3 pl-10 pr-3"
+            <div className="relative flex w-full items-center">
+              <textarea
+                className="w-full rounded-md border border-gray-300 py-3 pl-10 pr-3 resize-none"
                 placeholder="Talk to me..."
                 value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-              />
-
+                style={{ height: `${inputHeight}px` }}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
+              ></textarea>
               <button
                 type="button"
                 className="absolute left-0 ml-2"
@@ -185,7 +196,7 @@ const DrugSummaryForm = () => {
             <div className="ml-5 flex items-center justify-between">
               <button
                 type="submit"
-                className=" h-12 rounded-xl border bg-blue-500 px-3 py-1.5 font-satoshi  text-white hover:bg-blue-400"
+                className="h-12 rounded-xl border bg-blue-500 px-3 py-1.5 font-satoshi text-white hover:bg-blue-400"
               >
                 Send.
               </button>

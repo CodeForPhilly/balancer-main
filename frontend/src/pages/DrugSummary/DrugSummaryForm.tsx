@@ -121,21 +121,22 @@ const DrugSummaryForm = () => {
               className="relative bottom-0  top-0 mt-10 flex h-[calc(100vh-210px)] flex-col overflow-y-auto border-t p-2"
             >
               {chatLog.length === 0 ? (
-                <div className="flex flex-col gap-4 p-3">
+                <>
+                <div className="flex  flex-col gap-4 p-3">
                   <div className="max-h-[100%] rounded-lg border-2 bg-stone-50 p-2 text-sky-950">
                     You can ask about the content on this page.
                   </div>
-                  <div className="max-h-[100%] rounded-lg border-2 bg-stone-50 p-2 text-sky-950">
+                  <div className="max-h-[100%]  rounded-lg border-2 bg-stone-50 p-2 text-sky-950">
                     Or questions in general.
                   </div>
-                </div>
+                  </>
               ) : (
                 chatLog.map((message, index) => (
                   <div key={index} className="flex flex-col gap-4">
                     <div
                       className={`${
-                        message.type === "user" 
-                          ? "justify-end" 
+                        message.type === "user"
+                          ? "justify-end"
                           : "justify-start"
                       } p-2`}
                     >

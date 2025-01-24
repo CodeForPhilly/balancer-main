@@ -109,16 +109,16 @@ const DrugSummaryForm = () => {
 
   return (
     <>
-      <div className="mx-auto min-h-screen w-full flex-grow flex overflow-y-auto border">
-        <div className="mb-4">
+      <div className="mx-auto  min-h-screen w-full  flex-grow flex overflow-y-auto border">
+        <div className=" mb-4">
           <PDFViewer />
         </div>
         <div>
-          <div className="w-[808px]">
+          <div className=" w-[808px] ">
             <div
               ref={chatContainerRef}
               id="chat_container"
-              className="relative bottom-0 top-0 mt-10 flex h-[calc(100vh-210px)] flex-col overflow-y-auto border-t p-2"
+              className="relative bottom-0  top-0 mt-10 flex h-[calc(100vh-210px)] flex-col overflow-y-auto border-t p-2"
             >
               {chatLog.length === 0 ? (
                 <div className="flex flex-col gap-4 p-3">
@@ -134,13 +134,15 @@ const DrugSummaryForm = () => {
                   <div key={index} className="flex flex-col gap-4">
                     <div
                       className={`${
-                        message.type === "user" ? "justify-end" : "justify-start"
+                        message.type === "user" 
+                          ? "justify-end" 
+                          : "justify-start"
                       } p-2`}
                     >
                       <div
                         className={`${
                           message.type === "user"
-                            ? "border-2 font-quicksand text-neutral-600"
+                            ? "border-2  font-quicksand text-neutral-600"
                             : "border-2 bg-stone-50 font-quicksand text-sky-950"
                         } rounded-lg p-2`}
                       >
@@ -170,7 +172,7 @@ const DrugSummaryForm = () => {
           </div>
           <form
             onSubmit={handleSubmit}
-            className="fixed bottom-0 flex w-[808px] bg-white p-5"
+            className="fixed bottom-0 flex  w-[808px]  bg-white p-5"
           >
             <div className="relative flex w-full items-center">
               <textarea
@@ -196,7 +198,7 @@ const DrugSummaryForm = () => {
             <div className="ml-5 flex items-center justify-between">
               <button
                 type="submit"
-                className="h-12 rounded-xl border bg-blue-500 px-3 py-1.5 font-satoshi text-white hover:bg-blue-400"
+                className=" h-12 rounded-xl border bg-blue-500 px-3 py-1.5 font-satoshi  text-white hover:bg-blue-400"
               >
                 Send.
               </button>

@@ -1,9 +1,8 @@
 from django.urls import path
-from api.views.listMeds import views
-
+from .views import GetMedication, ListOrDetailMedication, AddMedication, DeleteMedication
 urlpatterns = [
-    path("v1/api/get_med_recommend",
-         views.get_medication, name="get_medication_recommendation"),
-    path('v1/api/get_fulL_list_med', views.list_or_detail_medication,
-         name='get_list_medications'),
+    path('v1/api/get_fulL_list_med', ListOrDetailMedication.as_view(), name='list_or_detail_medication'),
+    path('v1/api/get_med_recommend', GetMedication.as_view(), name='get_medication'),
+    path('v1/api/add_medication', AddMedication.as_view(), name='add_medication'),  # New POST endpoint
+    path('v1/api/delete_med', DeleteMedication.as_view(),name='delete_medication'), # New DELETE endpoint
 ]

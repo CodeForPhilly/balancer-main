@@ -4,6 +4,7 @@ from rest_framework.decorators import api_view
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import APIException
 from django.http import JsonResponse
 from bs4 import BeautifulSoup
 from nltk.stem import PorterStemmer
@@ -12,6 +13,7 @@ import openai
 import tiktoken
 import os
 import json
+import logging
 from api.views.ai_settings.models import AI_Settings
 from api.views.ai_promptStorage.models import AI_PromptStorage
 from django.views.decorators.csrf import csrf_exempt
@@ -68,6 +70,18 @@ def get_tokens(string: str, encoding_name: str) -> str:
     output_string = encoding.decode(tokens)
     return output_string
 
+class OpenAIAPIException(APIException):
+    """Custom exception for OpenAI API errors."""
+    status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+    default_detail = "An error occurred while communicating with the OpenAI API."
+    default_code = "openai_api_error"
+
+    def __init__(self, detail=None, code=None):
+        if detail is not None:
+            self.detail = {"error": detail}
+        else:
+            self.detail = {"error": self.default_detail}
+        self.status_code = code or self.status_code
 
 class ConversationViewSet(viewsets.ModelViewSet):
     serializer_class = ConversationSerializer
@@ -142,51 +156,57 @@ class ConversationViewSet(viewsets.ModelViewSet):
 
         messages.append({"role": "user", "content": user_message})
 
-        response = openai.ChatCompletion.create(
-            model="gpt-4o-mini",
-            messages=messages,
-            tools=tools,
-            tool_choice="auto"
-        )
+        try:
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=messages,
+                tools=tools,
+                tool_choice="auto"
+            )
 
-        response_message = response.choices[0].message
-        tool_calls = response_message.get('tool_calls', [])
+            response_message = response.choices[0].message
+            tool_calls = response_message.get('tool_calls', [])
 
-        if not tool_calls:
-            return response_message['content']
+            if not tool_calls:
+                return response_message['content']
 
 
-        # Handle tool calls
-        # Add the assistant's message with tool calls to the conversation
-        messages.append({
-            "role": "assistant",
-            "content": response_message.get('content', ''),
-            "tool_calls": tool_calls
-        })
-        
-        # Process each tool call
-        for tool_call in tool_calls:
-            tool_call_id = tool_call['id']
-            tool_function_name = tool_call['function']['name']
-            tool_arguments = json.loads(tool_call['function'].get('arguments', '{}'))
-            
-            # Execute the tool
-            results = execute_tool(tool_function_name, tool_arguments)
-            
-            # Add the tool response message
+            # Handle tool calls
+            # Add the assistant's message with tool calls to the conversation
             messages.append({
-                "role": "tool",
-                "content": str(results),  # Convert results to string
-                "tool_call_id": tool_call_id
+                "role": "assistant",
+                "content": response_message.get('content', ''),
+                "tool_calls": tool_calls
             })
-        
-        # Final API call with tool results
-        final_response = openai.ChatCompletion.create(
-            model="gpt-4o-mini",
-            messages=messages
-        )
-        
-        return final_response.choices[0].message['content']
+            
+            # Process each tool call
+            for tool_call in tool_calls:
+                tool_call_id = tool_call['id']
+                tool_function_name = tool_call['function']['name']
+                tool_arguments = json.loads(tool_call['function'].get('arguments', '{}'))
+                
+                # Execute the tool
+                results = execute_tool(tool_function_name, tool_arguments)
+                
+                # Add the tool response message
+                messages.append({
+                    "role": "tool",
+                    "content": str(results),  # Convert results to string
+                    "tool_call_id": tool_call_id
+                })
+            
+            # Final API call with tool results
+            final_response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                    messages=messages
+                )
+            return final_response.choices[0].message['content']
+        except openai.error.OpenAIError as e:
+            logging.error("OpenAI API Error: %s", str(e))
+            raise OpenAIAPIException(detail=str(e))
+        except Exception as e:
+            logging.error("Unexpected Error: %s", str(e))
+            raise OpenAIAPIException(detail="An unexpected error occurred.")
 
     def generate_title(self, conversation):
         # Get the first two messages

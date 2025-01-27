@@ -105,7 +105,7 @@ const Header: React.FC<LoginFormProps> = ({
       </div>
       <div
         className={
-          "  hidden h-20  w-full items-center justify-between border-b border-gray-300 bg-white px-96 md:px-20 lg:flex lg:px-10 xl:px-60"
+          "  hidden h-20  w-full items-center justify-between border-b border-gray-300 bg-white px-96 md:px-20 lg:flex lg:px-10 xl:px-28"
         }
       >
         <Link to="/" onClick={() => handleForm()}>

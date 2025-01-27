@@ -1,8 +1,8 @@
 import { FormEvent, ChangeEvent, useEffect, useState } from "react";
-import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
 import { PatientInfo, Diagnosis } from "./PatientTypes";
 import Tooltip from "../../components/Tooltip";
+import { api } from "../../api/apiClient";
 // import ErrorMessage from "../../components/ErrorMessage";
 
 // create new interface for refactor and to work with backend
@@ -123,7 +123,10 @@ const NewPatientForm = ({
       const url = `${baseUrl}`;
       console.log(payload);
 
-      const { data } = await axios.post(url + `/chatgpt/list_meds`, payload);
+      const { data } = await api.post(
+        url + `/v1/api/get_med_recommend`,
+        payload
+      );
 
       const categorizedMedications = {
         first: data.first ?? [],
@@ -853,14 +856,12 @@ const NewPatientForm = ({
                 </div>
                 <button
                   type="submit"
-                  className={`btnBlue  ${
-                    isPressed &&
+                  className={`btnBlue  ${isPressed &&
                     "transition-transform focus:outline-none focus:ring focus:ring-blue-200"
-                  }${
-                    isLoading
+                    }${isLoading
                       ? "bg-white-600 transition-transform focus:outline-none focus:ring focus:ring-blue-500"
                       : ""
-                  }`}
+                    }`}
                   onMouseDown={handleMouseDown}
                   onMouseUp={handleMouseUp}
                   disabled={isLoading} // Disable the button while loading

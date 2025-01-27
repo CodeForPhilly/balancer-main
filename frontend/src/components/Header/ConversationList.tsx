@@ -80,8 +80,8 @@ const ConversationList: React.FC<ConversationListProps> = ({
   };
 
   return (
-    <>
-      <button className="btnBlue m-4 text-lg" onClick={onNewConversation}>
+    <div className="flex flex-col gap-1 p-1">
+      <button className="btnBlue w-full text-lg" onClick={onNewConversation}>
         New Conversation
       </button>
       <ul className="conversation-list space-y-4">
@@ -96,7 +96,10 @@ const ConversationList: React.FC<ConversationListProps> = ({
               }
             }}
           >
-            <span onClick={() => setIsEditingTitle(conversation.id)}>
+            <span
+              onClick={() => setIsEditingTitle(conversation.id)}
+              className="block w-full"
+            >
               {isEditingTitle === conversation.id ? (
                 <input
                   type="text"
@@ -108,13 +111,14 @@ const ConversationList: React.FC<ConversationListProps> = ({
                     }
                   }}
                   autoFocus
+                  className="w-full flex-grow"
                 />
               ) : (
                 conversation.title
               )}
             </span>
 
-            <div className="flex space-x-2">
+            <div className="flex space-x-2 self-end">
               {/* Edit Icon */}
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -154,7 +158,7 @@ const ConversationList: React.FC<ConversationListProps> = ({
           </li>
         ))}
       </ul>
-    </>
+    </div>
   );
 };
 

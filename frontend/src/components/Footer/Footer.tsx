@@ -1,14 +1,30 @@
 // Footer.js
 
-import { useState } from "react";
+import { useState, useRef, KeyboardEvent } from "react";
 import { Link } from "react-router-dom";
 import "../../App.css"; // Import the common Tailwind CSS styles
 
 function Footer() {
   const [isPressed, setIsPressed] = useState(false);
+  const emailInputRef = useRef<HTMLInputElement>(null);
 
-  const handleMouseDown = () => setIsPressed(true);
-  const handleMouseUp = () => setIsPressed(false);
+  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      document.getElementById("submitButton")?.click();
+    }
+  };
+
+  //TODO - actually add email addresses to a mailing list, when available. for now, just logging in console, then clearing the input.
+  const handleSubmit = () => {
+    const email = emailInputRef.current?.value;
+    if (email) {
+      setIsPressed(true); //TODO - any async function that would require us to display "Loading..."
+      console.log(email);
+      emailInputRef.current.value = "";
+      setIsPressed(false);
+    }
+  };
 
   return (
     // <div className="xl:px-50 mx-auto hidden h-20 items-center justify-between border-t border-gray-300 bg-white  px-4 sm:px-6 md:px-8 lg:flex lg:px-8 2xl:px-56">
@@ -24,10 +40,10 @@ function Footer() {
             Home
           </Link>
           <Link
-            to='/'
+            to="/"
             onClick={(e) => {
-                window.location.href = 'mailto:balancerteam@codeforphilly.org';
-                e.preventDefault();
+              window.location.href = "mailto:balancerteam@codeforphilly.org";
+              e.preventDefault();
             }}
             className="flex justify-center text-black hover:border-blue-600 hover:text-blue-600 hover:no-underline"
           >
@@ -58,19 +74,21 @@ function Footer() {
             <input
               type="email"
               id="email"
+              ref={emailInputRef}
               className="input md:w-[570px]"
               placeholder="Subscribe to our newsletter for the latest updates and insights."
+              onKeyDown={handleKeyDown}
             />
           </div>
           <div className="ml-2 ">
             <button
+              id="submitButton"
               type="submit"
               className={`btnBlue ${
                 isPressed &&
                 "transition-transform focus:outline-none focus:ring focus:ring-blue-200"
               }`}
-              onMouseDown={handleMouseDown}
-              onMouseUp={handleMouseUp}
+              onClick={handleSubmit}
             >
               {isPressed ? (
                 <div className="flex items-center justify-center">
@@ -84,7 +102,7 @@ function Footer() {
           </div>
         </div>
         <div className="flex justify-center rounded  px-4 py-2 ">
-          © 2024 Balancer. All rights reserved.
+          © 2025 Balancer. All rights reserved. V1 01072025
         </div>
       </footer>
     </div>

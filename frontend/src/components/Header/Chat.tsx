@@ -7,6 +7,7 @@ import ErrorMessage from "../ErrorMessage";
 import ConversationList from "./ConversationList";
 import chatBubble from "../../assets/chatbubble.svg";
 import { extractContentFromDOM } from "../../services/domExtraction";
+import axios from "axios";
 import {
   fetchConversations,
   continueConversation,
@@ -18,7 +19,7 @@ import {
 interface ChatLogItem {
   is_user: boolean;
   content: string;
-  // date: Date;
+  timestamp: string; // EX: 2025-01-16T16:21:14.981090Z
 }
 
 export interface Conversation {
@@ -100,6 +101,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
     const newMessage = {
       content: inputValue,
       is_user: true,
+      timestamp: new Date().toISOString(),
     };
 
     const newMessages = [...chatLog, newMessage];
@@ -145,7 +147,11 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
           ...prevConversation,
           messages: [
             ...prevConversation.messages,
-            { is_user: false, content: data.response },
+            {
+              is_user: false,
+              content: data.response,
+              timestamp: new Date().toISOString(),
+            },
           ],
           title: data.title,
         };
@@ -153,11 +159,19 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
       setError(null);
     } catch (error) {
       console.error("Error(s) handling conversation:", error);
+      let errorMessage = "Error submitting message";
       if (error instanceof Error) {
-        setError(error); // Set the error message if it's an instance of Error
-      } else {
-        setError(new Error("Error submitting message")); // Convert any other types to string
+        errorMessage = error.message;
+        if (
+          axios.isAxiosError(error) &&
+          error.response &&
+          error.response.data &&
+          error.response.data.error
+        ) {
+          errorMessage = error.response.data.error;
+        }
       }
+      setError(new Error(errorMessage));
     } finally {
       setIsLoading(false);
       setInputValue("");
@@ -247,7 +261,6 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
       >
         {showChat ? (
           <div
-            ref={chatContainerRef}
             id="chat_container"
             className=" mx-auto flex h-full  flex-col overflow-auto rounded "
           >
@@ -256,7 +269,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
               style={{ borderBottomColor: "#abcdef" }}
             > */}
             <div
-              className="absolute mt-0 flex h-8 w-full flex-row items-center justify-between rounded-t-lg border-b bg-white p-1  "
+              className="sticky top-0 mt-0 flex h-8 w-full flex-row items-center justify-between rounded-t-lg border-b bg-white p-1  "
               style={{ borderBottomColor: "#abcdef" }}
             >
               <button
@@ -288,12 +301,20 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
                 )}
               </button>
 
-              <div className=" ml-4  text-black">
+              <div
+                className="ml-4 text-black truncate"
+                title={
+                  activeConversation !== null && !showConversationList
+                    ? activeConversation.title
+                    : `Question for me?`
+                }
+              >
                 {activeConversation !== null && !showConversationList
                   ? activeConversation.title
-                  : `Question for me?`}{" "}
+                  : `Question for me?`}
                 <br />
               </div>
+
               <div
                 className="delete mr-2 flex h-6 w-8 cursor-pointer items-center justify-center rounded-full bg-white text-black hover:bg-red-500"
                 onClick={() => setShowChat(false)}
@@ -313,17 +334,17 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
                 </svg>
               </div>
             </div>
-            {showConversationList ? (
-              <ConversationList
-                conversations={conversations}
-                onSelectConversation={handleSelectConversation}
-                onNewConversation={handleNewConversation}
-                onSubmitConversationTitle={updateConversationTitle}
-                onDeleteConversation={deleteConversation}
-              />
-            ) : (
-              <>
-                <div className="font_body mt-6 flex flex-grow flex-col space-y-2 p-5 pb-52">
+            <div className="flex-grow overflow-y-auto" ref={chatContainerRef}>
+              {showConversationList ? (
+                <ConversationList
+                  conversations={conversations}
+                  onSelectConversation={handleSelectConversation}
+                  onNewConversation={handleNewConversation}
+                  onSubmitConversationTitle={updateConversationTitle}
+                  onDeleteConversation={deleteConversation}
+                />
+              ) : (
+                <div className="font_body mt-6 flex flex-grow flex-col space-y-2 p-5">
                   {activeConversation === null ||
                   activeConversation.messages.length === 0 ? (
                     <>
@@ -341,30 +362,36 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
                       </div>
                     </>
                   ) : (
-                    activeConversation.messages.map((message, index) => (
-                      <div
-                        key={index}
-                        className={`flex ${
-                          message.is_user ? "justify-end" : "justify-start"
-                        }`}
-                      >
-                        <pre
-                          style={{
-                            fontFamily: "inherit",
-                            whiteSpace: "pre-wrap",
-                            wordWrap: "break-word",
-                          }}
-                          className={`${
-                            message.is_user
-                              ? "bg-blue-200 text-black "
-                              : "border-2 bg-gray-200 text-black "
-                          }rounded-lg max-h-[100%] max-w-[500px] p-2`}
-                          dangerouslySetInnerHTML={{
-                            __html: message.content,
-                          }}
-                        ></pre>
-                      </div>
-                    ))
+                    activeConversation.messages
+                      .slice()
+                      .sort(
+                        (a, b) =>
+                          new Date(a.timestamp).getTime() -
+                          new Date(b.timestamp).getTime(),
+                      )
+                      .map((message, index) => (
+                        <div
+                          key={index}
+                          className={`flex ${
+                            message.is_user ? "justify-end" : "justify-start"
+                          }`}
+                        >
+                          <pre
+                            style={{
+                              fontFamily: "inherit",
+                              whiteSpace: "pre-wrap",
+                              wordWrap: "break-word",
+                            }}
+                            className={`${
+                              message.is_user
+                                ? "bg-blue-200 text-black "
+                                : "border-2 bg-gray-200 text-black "
+                            }rounded-lg max-h-[100%] max-w-[500px] p-2`}
+                          >
+                            {message.content}
+                          </pre>
+                        </div>
+                      ))
                   )}
                   {isLoading && (
                     <div key={chatLog.length} className="flex justify-between">
@@ -375,38 +402,38 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
                   )}
                   {error && <ErrorMessage errors={[error.message]} />}
                 </div>
-                <div className="inside_chat absolute bottom-0 left-0 right-0 rounded-b-lg bg-white p-4">
-                  <div className="flex  space-x-2 p-2 ">
-                    {suggestionPrompts.map((suggestion, index) => (
-                      <button
-                        type="button"
-                        key={index}
-                        className="rounded-md border p-2 text-sm text-black hover:bg-blue-200"
-                        onClick={() => setInputValue(suggestion)}
-                      >
-                        {suggestion}
-                      </button>
-                    ))}
-                  </div>
-                  <form onSubmit={handleSubmit} className="mb-1 flex">
-                    <div className="ml-2 flex-grow">
-                      <input
-                        type="ani_input"
-                        className="input w-full"
-                        placeholder="Talk to me..."
-                        value={inputValue}
-                        onChange={(e) => setInputValue(e.target.value)}
-                      />
-                    </div>
-                    <div className="ml-5">
-                      <button type="submit" className="btnBlue">
-                        Send
-                      </button>
-                    </div>
-                  </form>
+              )}
+            </div>
+            <div className="inside_chat rounded-b-lg bg-white p-4 sticky bottom-0 left-0 right-0 z-50 ">
+              <div className="flex md:flex-col gap-1 p-2 ">
+                {suggestionPrompts.map((suggestion, index) => (
+                  <button
+                    type="button"
+                    key={index}
+                    className="rounded-md border p-2 text-sm text-black hover:bg-blue-200"
+                    onClick={() => setInputValue(suggestion)}
+                  >
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
+              <form onSubmit={handleSubmit} className="mb-1 flex">
+                <div className="ml-2 flex-grow">
+                  <input
+                    type="ani_input"
+                    className="input w-full"
+                    placeholder="Talk to me..."
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                  />
                 </div>
-              </>
-            )}
+                <div className="ml-5">
+                  <button type="submit" className="btnBlue">
+                    Send
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         ) : (
           <div

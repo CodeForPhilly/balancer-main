@@ -1,6 +1,5 @@
 import Layout from "../Layout/Layout";
 import Welcome from "../../components/Welcome/Welcome";
-import HourglassSpinner from "../../components/HourglassSpinner/HourglassSpinner";
 import ErrorMessage from "../../components/ErrorMessage";
 // import { MedData } from "./MedTypes";
 import { useState, useEffect } from "react";

@@ -14,6 +14,8 @@ MED_EXCLUDE = {
     'bloodPressureHistory': ['Asenapine', 'Lurasidone', 'Olanzapine', 'Paliperidone', 'Quetiapine', 'Risperidone', 'Ziprasidone', 'Aripiprazole', 'Cariprazine'],
     'weightGainConcern': ['Quetiapine', 'Risperidone', 'Aripiprazole', 'Olanzapine']
 }
+
+
 class GetMedication(APIView):
     def post(self, request):
         data = request.data
@@ -26,7 +28,8 @@ class GetMedication(APIView):
         for condition in MED_EXCLUDE:
             if data.get(condition, False):
                 # Remove any medication from include list that is in the exclude list
-                include_result = [med for med in include_result if med not in MED_EXCLUDE[condition]]
+                include_result = [
+                    med for med in include_result if med not in MED_EXCLUDE[condition]]
                 exclude_result.extend(MED_EXCLUDE[condition])
         diag_query = Diagnosis.objects.filter(state=state_query)
         if diag_query.count() <= 0:
@@ -48,6 +51,8 @@ class GetMedication(APIView):
                     meds[line] += suggestion.medication.name + ", "
             meds[line] = meds[line][:-2] if meds[line] else 'None'
         return Response(meds)
+
+
 class ListOrDetailMedication(APIView):
     def get(self, request):
         name_query = request.query_params.get('name', None)
@@ -62,6 +67,7 @@ class ListOrDetailMedication(APIView):
             medications = Medication.objects.all()
             serializer = MedicationSerializer(medications, many=True)
             return Response(serializer.data)
+
     def post(self, request):
         # Implement logic for adding new medications (if needed)
         # If adding medications, you would check if the medication already exists before creating it
@@ -77,10 +83,13 @@ class ListOrDetailMedication(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 class AddMedication(APIView):
     """
     API endpoint to add a medication to the database with its risks and benefits.
     """
+
     def post(self, request):
         data = request.data
         name = data.get('name', '').strip()
@@ -102,9 +111,11 @@ class AddMedication(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-print("ok vin")
+
+
 class DeleteMedication(APIView):
     "API endpoint to delete medication if medication in database"
+
     def delete(self, request):
         data = request.data
         name = data.get('name', '').strip()
@@ -114,14 +125,14 @@ class DeleteMedication(APIView):
             return Response({'error': 'Medication name is required'}, status=status.HTTP_400_BAD_REQUEST)
        # Check if medication exists
         if Medication.objects.filter(name=name).exists():
-            #return f'Medication "{name}" exists'
-        # Get the medication object
+            # return f'Medication "{name}" exists'
+            # Get the medication object
             medication = Medication.objects.get(name=name)
         # Delete the medication
             medication.delete()
-            return Response({'success':"medication exists and will now be deleted"}, status=status.HTTP_201_CREATED)
+            return Response({'success': "medication exists and will now be deleted"}, status=status.HTTP_201_CREATED)
         else:
             return Response({'error': 'Medication does not exist'}, status=status.HTTP_400_BAD_REQUEST)
-        #ask user if sure to delete?
-        #delete med from database
-        #Medication.objects.filter(name=name)
+        # ask user if sure to delete?
+        # delete med from database
+        # Medication.objects.filter(name=name)

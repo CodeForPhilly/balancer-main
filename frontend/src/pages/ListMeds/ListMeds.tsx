@@ -112,9 +112,7 @@ function ListMeds() {
             <div className="mb-6 space-y-4">{medsList}</div>
           </div>
         ) : (
-          <div className="mt-6 flex items-center justify-center">
-            <HourglassSpinner />
-          </div>
+          <div className="mt-6 flex items-center justify-center"></div>
         )}
       </div>
     </Layout>

@@ -1,9 +1,9 @@
 import Layout from "../Layout/Layout";
 import Welcome from "../../components/Welcome/Welcome";
-import HourglassSpinner from "../../components/HourglassSpinner/HourglassSpinner";
 import ErrorMessage from "../../components/ErrorMessage";
 // import { MedData } from "./MedTypes";
 import { useState, useEffect } from "react";
+import { api } from "../../api/apiClient";
 
 function ListMeds() {
   interface MedData {
@@ -14,34 +14,39 @@ function ListMeds() {
   const [medications, setMedications] = useState<MedData[]>([]);
   const [errors, setErrors] = useState<string[]>([]);
 
-  useEffect(() => {
-    const baseUrl = import.meta.env.VITE_API_BASE_URL;
+  const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
-    fetch(`${baseUrl}/v1/api/get_fulL_list_med`)
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error("Could not get medications list");
-        } else {
-          return res.json();
+  const fetchMedications = async () => {
+    try {
+      const url = `${baseUrl}/v1/api/get_full_list_med`;
+
+      const { data } = await api.get(url);
+
+      data.sort((a: MedData, b: MedData) => {
+        const nameA = a.name.toUpperCase();
+        const nameB = b.name.toUpperCase();
+        if (nameA < nameB) {
+          return -1;
         }
-      })
-      .then((data: MedData[]) => {
-        data.sort((a, b) => {
-          const nameA = a.name.toUpperCase();
-          const nameB = b.name.toUpperCase();
-          if (nameA < nameB) {
-            return -1;
-          }
-          if (nameA > nameB) {
-            return 1;
-          }
+        if (nameA > nameB) {
+          return 1;
+        }
 
-          return 0;
-        });
+        return 0;
+      });
 
-        setMedications(data);
-      })
-      .catch((e) => setErrors((prev) => [...prev, e.message]));
+      setMedications(data);
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        setErrors((prev) => [...prev, e.message]);
+      } else {
+        setErrors((prev) => [...prev, "An unknown error occurred"]);
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchMedications();
   }, []);
 
   const medsList = medications.map((med) => {
@@ -106,9 +111,7 @@ function ListMeds() {
             <div className="mb-6 space-y-4">{medsList}</div>
           </div>
         ) : (
-          <div className="mt-6 flex items-center justify-center">
-            <HourglassSpinner />
-          </div>
+          <div className="mt-6 flex items-center justify-center"></div>
         )}
       </div>
     </Layout>

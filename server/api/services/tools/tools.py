@@ -1,5 +1,6 @@
 from django.db import connection
-from typing import Dict, Any, Callable
+from typing import Dict, Any, Callable, List
+from dataclasses import dataclass
 from .database import ask_database, get_database_info
 
 database_schema_dict = get_database_info(connection)
@@ -10,47 +11,64 @@ database_schema_string = "\n".join(
     ]
 )
 
-# Dictionary to map function names to their corresponding functions
-tool_functions: Dict[str, Callable] = {
-    'ask_database': ask_database,
-}
+@dataclass
+class ToolFunction:
+    name: str
+    func: Callable
+    description: str
+    parameters: Dict[str, Any]
 
-tools = [
-    {
+def create_tool_dict(tool: ToolFunction) -> Dict[str, Any]:
+    return {
         "type": "function",
         "function": {
-            "name": "ask_database",
-            "description": """
-                Use this function to answer user questions about medication in the Balancer database. 
-                The Balancer medication database stores medications by their official medical (generic) names, not brand names.
-                Therefore:
-                  - Brand names should be converted to their official medical names before querying.
-                  - Queries should be case-insensitive to handle any variation in how medication names are stored (e.g., "Lurasidone", "lurasidone").
-
-                Input should be a fully formed SQL query.
-
-                Important guidelines:
-                  - Always use case-insensitive matching in queries by converting both the database column and the input to lowercase.
-                    For example, in SQL:
-                      - PostgreSQL: `LOWER(name) = LOWER('lurasidone')`
-            """,
+            "name": tool.name,
+            "description": tool.description,
             "parameters": {
                 "type": "object",
-                "properties": {
-                    "query": {
-                        "type": "string",
-                        "description": f"""
-                                SQL query extracting info to answer the user's question.
-                                SQL should be written using this database schema:
-                                {database_schema_string}
-                                The query should be returned in plain text, not in JSON.
-                                """,
-                    }
-                },
-                "required": ["query"],
-            },
+                "properties": tool.parameters,
+                "required": list(tool.parameters.keys()),
+            }
         }
     }
+
+TOOL_FUNCTIONS = [
+    ToolFunction(
+        name="ask_database",
+        func=ask_database,
+        description="""
+        Use this function to answer user questions about medication in the Balancer database.
+        The Balancer medication database stores medications by their official medical (generic) names, not brand names.
+        Therefore:
+        - Brand names should be converted to their official medical names before querying.
+        - Queries should be case-insensitive to handle any variation in how medication names are stored (e.g., "Lurasidone", "lurasidone").
+        Input should be a fully formed SQL query.
+        Important guidelines:
+        - Always use case-insensitive matching in queries by converting both the database column and the input to lowercase.
+        For example, in SQL:
+        - PostgreSQL: `LOWER(name) = LOWER('lurasidone')`
+        """,
+        parameters={
+            "query": {
+                "type": "string",
+                "description": f"""
+                SQL query extracting info to answer the user's question.
+                SQL should be written using this database schema:
+                {database_schema_string}
+                The query should be returned in plain text, not in JSON.
+                """
+            }
+        }
+    ),
+]
+
+# Automatically generate the tool_functions dictionary and tools list
+tool_functions: Dict[str, Callable] = {
+    tool.name: tool.func for tool in TOOL_FUNCTIONS
+}
+
+tools: List[Dict[str, Any]] = [
+    create_tool_dict(tool) for tool in TOOL_FUNCTIONS
 ]
 
 def validate_tool_inputs(tool_function_name, tool_arguments):

@@ -143,8 +143,8 @@ class ConversationViewSet(viewsets.ModelViewSet):
     def get_chatgpt_response(self, conversation, user_message, page_context=None):
         messages = [{
             "role": "system", 
-            "content": "You are a helpful assistant. Balancer is a powerful tool for selecting bipolar medication for patients. We are open-source and available for free use. Your primary role is to assist users with information related to Balancer and bipolar medication selection. If applicable, use the supplied tools to assist the user."}
-        ]
+            "content": "You are a knowledgeable assistant. Balancer is a powerful tool for selecting bipolar medication for patients. We are open-source and available for free use. Your primary role is to assist licensed clinical professionals with information related to Balancer and bipolar medication selection. If applicable, use the supplied tools to assist the professional."
+        }]
 
         if page_context:
             context_message = f"If applicable, please use the following content to ask questions. If not applicable, please answer to the best of your ability: {page_context}"

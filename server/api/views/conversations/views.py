@@ -17,9 +17,11 @@ import logging
 from api.views.ai_settings.models import AI_Settings
 from api.views.ai_promptStorage.models import AI_PromptStorage
 from django.views.decorators.csrf import csrf_exempt
-from django.db import transaction
+from django.db import transaction, connection
 from .models import Conversation, Message
 from .serializers import ConversationSerializer, MessageSerializer
+from ...services.tools.tools import tools, execute_tool
+from ...services.tools.database import get_database_info
 
 
 @csrf_exempt
@@ -139,9 +141,10 @@ class ConversationViewSet(viewsets.ModelViewSet):
         return Response({"status": "Title updated successfully", "title": conversation.title})
 
     def get_chatgpt_response(self, conversation, user_message, page_context=None):
-        messages = [
-            {"role": "system", "content": "You are a helpful assistant. Balancer is a powerful tool for selecting bipolar medication for patients. We are open-source and available for free use. Your primary role is to assist users with information related to Balancer and bipolar medication selection."}
-        ]
+        messages = [{
+            "role": "system", 
+            "content": "You are a knowledgeable assistant. Balancer is a powerful tool for selecting bipolar medication for patients. We are open-source and available for free use. Your primary role is to assist licensed clinical professionals with information related to Balancer and bipolar medication selection. If applicable, use the supplied tools to assist the professional."
+        }]
 
         if page_context:
             context_message = f"If applicable, please use the following content to ask questions. If not applicable, please answer to the best of your ability: {page_context}"
@@ -156,9 +159,48 @@ class ConversationViewSet(viewsets.ModelViewSet):
         try:
             response = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
-                messages=messages
+                messages=messages,
+                tools=tools,
+                tool_choice="auto"
             )
-            return response.choices[0].message['content']
+
+            response_message = response.choices[0].message
+            tool_calls = response_message.get('tool_calls', [])
+
+            if not tool_calls:
+                return response_message['content']
+
+
+            # Handle tool calls
+            # Add the assistant's message with tool calls to the conversation
+            messages.append({
+                "role": "assistant",
+                "content": response_message.get('content', ''),
+                "tool_calls": tool_calls
+            })
+            
+            # Process each tool call
+            for tool_call in tool_calls:
+                tool_call_id = tool_call['id']
+                tool_function_name = tool_call['function']['name']
+                tool_arguments = json.loads(tool_call['function'].get('arguments', '{}'))
+                
+                # Execute the tool
+                results = execute_tool(tool_function_name, tool_arguments)
+                
+                # Add the tool response message
+                messages.append({
+                    "role": "tool",
+                    "content": str(results),  # Convert results to string
+                    "tool_call_id": tool_call_id
+                })
+            
+            # Final API call with tool results
+            final_response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                    messages=messages
+                )
+            return final_response.choices[0].message['content']
         except openai.error.OpenAIError as e:
             logging.error("OpenAI API Error: %s", str(e))
             raise OpenAIAPIException(detail=str(e))

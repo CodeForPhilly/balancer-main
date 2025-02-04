@@ -1,7 +1,7 @@
 import React from "react";
 import "../../components/Header/chat.css";
 import { useState, useEffect, useRef } from "react";
-import paperclip from "../../assets/paperclip.svg";
+// import paperclip from "../../assets/paperclip.svg";
 import { handleSendDrugSummary } from "../../api/apiClient.ts";
 import { ChatMessageItem, SearchResult } from "./type";
 import ParseStringWithLinks from "../../services/parsing/ParseWithSource.tsx";
@@ -15,7 +15,7 @@ const DrugSummaryForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const location = useLocation();
   const chatContainerRef = useRef<HTMLDivElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  // const fileInputRef = useRef<HTMLInputElement>(null);
   const scrollToBottomRef = useRef<HTMLDivElement | null>(null);
   const maxInputHeight = 150; // Maximum height in pixels
 
@@ -185,7 +185,7 @@ const DrugSummaryForm = () => {
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
               ></textarea>
-              <button
+              {/* <button
                 type="button"
                 className="absolute left-0 ml-2"
                 onClick={() => {
@@ -195,14 +195,14 @@ const DrugSummaryForm = () => {
                 }}
               >
                 <img src={paperclip} alt="Upload" className="h-6" />
-              </button>
+              </button> */}
             </div>
             <div className="ml-5 flex items-center justify-between">
               <button
                 type="submit"
                 className=" h-12 rounded-xl border bg-blue-500 px-3 py-1.5 font-satoshi  text-white hover:bg-blue-400"
               >
-                Send.
+                Send
               </button>
             </div>
           </form>

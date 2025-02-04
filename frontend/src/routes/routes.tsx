@@ -15,7 +15,7 @@ import Settings from "../pages/Settings/Settings.tsx";
 import ListMeds from "../pages/ListMeds/ListMeds.tsx";
 import UploadFile from "../pages/DocumentManager/UploadFile.tsx";
 import ListofFiles from "../pages/Files/ListOfFiles.tsx";
-
+import ListofRules from "../pages/ListRules/ListRules.tsx";
 const routes = [
   {
     path: "/",
@@ -25,6 +25,11 @@ const routes = [
   {
     path: "listoffiles",
     element: <ListofFiles />,
+    errorElement: <RouteError />,
+  },
+  {
+    path: "listrules",
+    element: <ListofRules />,
     errorElement: <RouteError />,
   },
   {

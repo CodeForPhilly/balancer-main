@@ -9,7 +9,16 @@ export const FeatureMenuDropDown = () => {
             <span className=" font-bold text-black  ">Manage files</span>
 
             <div className="mt-1 font-satoshi text-sm text-gray-400">
-              Upload and chat with files.
+              Mange and chat with files.
+            </div>
+          </ul>
+        </Link>
+        <Link to="/ListRules">
+          <ul className=" cursor-pointer  rounded-lg p-3 transition duration-300 hover:bg-gray-100">
+            <span className=" font-bold text-black  ">Manage rules</span>
+
+            <div className="mt-1 font-satoshi text-sm text-gray-400">
+              Manage list of rules
             </div>
           </ul>
         </Link>

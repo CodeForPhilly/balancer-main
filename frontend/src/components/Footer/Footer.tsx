@@ -102,7 +102,7 @@ function Footer() {
           </div>
         </div>
         <div className="flex justify-center rounded  px-4 py-2 ">
-          © 2025 Balancer. All rights reserved. V1 01072025
+          © 2025 Balancer. All rights reserved. V1 2-04-2025
         </div>
       </footer>
     </div>

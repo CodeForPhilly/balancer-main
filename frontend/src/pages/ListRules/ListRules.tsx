@@ -1,7 +1,7 @@
+import React, { useState, useEffect } from "react";
 import Layout from "../Layout/Layout";
 import Welcome from "../../components/Welcome/Welcome";
 import ErrorMessage from "../../components/ErrorMessage";
-import { useState, useEffect } from "react";
 import { api } from "../../api/apiClient";
 
 interface Medication {
@@ -17,7 +17,9 @@ interface MedRule {
   history_type: string;
   reason: string;
   label: string;
-  medication: Medication;
+  medications: Medication[];
+  sources: any[];
+  explanation: string | null;
 }
 
 interface MedRulesResponse {
@@ -26,81 +28,151 @@ interface MedRulesResponse {
   results: MedRule[];
 }
 
+// Error boundary component
+class ErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="p-4 text-red-600">
+          Something went wrong. Please try refreshing the page.
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 function ListMeds() {
   const [medRules, setMedRules] = useState<MedRule[]>([]);
   const [errors, setErrors] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
-  const fetchMedRules = async () => {
-    try {
-      const url = `${baseUrl}/v1/api/medRules`;
-      const { data } = await api.get<MedRulesResponse>(url);
-      setMedRules(data.results);
-    } catch (e: unknown) {
-      if (e instanceof Error) {
-        setErrors((prev) => [...prev, e.message]);
-      } else {
-        setErrors((prev) => [...prev, "An unknown error occurred"]);
-      }
-    }
-  };
-
   useEffect(() => {
+    const fetchMedRules = async () => {
+      try {
+        const url = `${baseUrl}/v1/api/medRules`;
+        const { data } = await api.get<MedRulesResponse>(url);
+
+        // Validate response structure
+        if (!data || !Array.isArray(data.results)) {
+          throw new Error("Invalid response format");
+        }
+
+        setMedRules(data.results);
+      } catch (e: unknown) {
+        const errorMessage =
+          e instanceof Error ? e.message : "An unknown error occurred";
+        setErrors((prev) => [...prev, errorMessage]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     fetchMedRules();
-  }, []);
+  }, [baseUrl]);
 
-  const rulesList = medRules.map((rule) => {
-    const benefitsList = rule.medication.benefits
-      .split(", ")
-      .map((benefit, index) => (
-        <li className="text-sm" key={index}>
-          {benefit}
-        </li>
-      ));
-
-    const risksList = rule.medication.risks.split(", ").map((risk, index) => (
-      <li className="text-sm" key={index}>
-        {risk}
-      </li>
-    ));
+  const renderMedicationDetails = (medication: Medication | undefined) => {
+    if (!medication) {
+      return null;
+    }
 
     return (
-      <details key={rule.id}>
-        <summary className="w-fit font-semibold leading-6 text-gray-900 hover:cursor-pointer">
-          {rule.medication.name} - {rule.label}
+      <div key={medication.id} className="mb-6 border-t pt-4">
+        <h4 className="mb-2 text-sm font-medium">{medication.name}</h4>
+        <div className="flex flex-col md:flex-row">
+          <div className="flex-1">
+            <h5 className="mb-4 mt-4 text-sm font-medium text-indigo-600">
+              Benefits:
+            </h5>
+            {medication.benefits ? (
+              <ul className="list-disc space-y-3 px-4">
+                {medication.benefits.split(", ").map((benefit, index) => (
+                  <li
+                    key={`${medication.id}-benefit-${index}`}
+                    className="text-sm"
+                  >
+                    {benefit}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-gray-500">No benefits listed</p>
+            )}
+          </div>
+          <div className="flex-1">
+            <h5 className="mb-4 mt-4 text-sm font-medium text-indigo-600">
+              Risks:
+            </h5>
+            {medication.risks ? (
+              <ul className="list-disc space-y-3 px-4">
+                {medication.risks.split(", ").map((risk, index) => (
+                  <li
+                    key={`${medication.id}-risk-${index}`}
+                    className="text-sm"
+                  >
+                    {risk}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-gray-500">No risks listed</p>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderRule = (rule: MedRule) => {
+    if (!rule) return null;
+
+    return (
+      <details key={rule.id} className="mb-4">
+        <summary className="w-fit cursor-pointer rounded-md bg-gray-50 p-3 font-semibold leading-6 text-gray-900 hover:bg-gray-100">
+          {rule.label || "Unnamed Rule"}
         </summary>
-        <div className="mb-5 ml-6">
-          <div className="mb-4">
-            <h3 className="mb-2 text-sm font-medium text-indigo-600">
-              Rule Type:
-            </h3>
-            <p className="text-sm">{rule.rule_type}</p>
+        <div className="mt-4 space-y-4 px-4">
+          <div>
+            <h3 className="text-sm font-medium text-indigo-600">Rule Type:</h3>
+            <p className="mt-1 text-sm">{rule.rule_type}</p>
           </div>
-          <div className="mb-4">
-            <h3 className="mb-2 text-sm font-medium text-indigo-600">
-              Reason:
-            </h3>
-            <p className="text-sm">{rule.reason}</p>
+          <div>
+            <h3 className="text-sm font-medium text-indigo-600">Reason:</h3>
+            <p className="mt-1 text-sm">{rule.reason}</p>
           </div>
-          <div className="flex">
-            <div className="flex-1">
-              <h3 className="mb-4 mt-4 text-sm font-medium text-indigo-600">
-                Benefits:
-              </h3>
-              <ul className="list-disc space-y-3 px-4">{benefitsList}</ul>
-            </div>
-            <div className="flex-1">
-              <h3 className="mb-4 mt-4 text-sm font-medium text-indigo-600">
-                Risks:
-              </h3>
-              <ul className="list-disc space-y-3 px-4">{risksList}</ul>
+          <div>
+            <h3 className="text-sm font-medium text-indigo-600">
+              Medications:
+            </h3>
+            <div className="mt-2">
+              {Array.isArray(rule.medications) &&
+              rule.medications.length > 0 ? (
+                rule.medications.map((med) => renderMedicationDetails(med))
+              ) : (
+                <p className="text-sm text-gray-500">
+                  No medications associated with this rule
+                </p>
+              )}
             </div>
           </div>
         </div>
       </details>
     );
-  });
+  };
 
   if (errors.length > 0) {
     return (
@@ -113,23 +185,33 @@ function ListMeds() {
   }
 
   return (
-    <Layout>
-      <div className="mx-auto mt-24 w-full max-w-6xl">
-        <Welcome
-          subHeader="Medication Rules"
-          descriptionText="Check out the medication rules and their associated benefits and risks."
-        />
-        {medRules.length > 0 ? (
-          <div className="font_body mx-auto mt-0 mt-4 w-[90%] rounded-md border bg-white p-2 px-3 ring-1 hover:ring-slate-300 md:mt-0 md:mt-4 md:w-[75%] md:p-4 md:px-8">
-            <div className="mb-6 space-y-4">{rulesList}</div>
+    <ErrorBoundary>
+      <Layout>
+        <div className="mx-auto mt-24 w-full max-w-6xl">
+          <Welcome
+            subHeader="Medication Rules"
+            descriptionText="Check out the medication rules and their associated benefits and risks."
+          />
+          <div className="mx-auto mt-8 w-full max-w-4xl rounded-lg border bg-white p-6 shadow-sm">
+            {isLoading ? (
+              <div className="flex items-center justify-center p-4">
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
+              </div>
+            ) : medRules.length > 0 ? (
+              <div className="space-y-4">
+                {medRules.map((rule) => renderRule(rule))}
+              </div>
+            ) : (
+              <div className="flex items-center justify-center p-4">
+                <span className="text-sm text-gray-500">
+                  No medication rules found
+                </span>
+              </div>
+            )}
           </div>
-        ) : (
-          <div className="mt-6 flex items-center justify-center">
-            <p>Loading...</p>
-          </div>
-        )}
-      </div>
-    </Layout>
+        </div>
+      </Layout>
+    </ErrorBoundary>
   );
 }
 

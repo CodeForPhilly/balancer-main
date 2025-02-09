@@ -13,8 +13,6 @@ class MedRules(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, format=None):
-        print("MedRules, get list")
-
         # Get all med rules
         med_rules = MedRule.objects.all()
 

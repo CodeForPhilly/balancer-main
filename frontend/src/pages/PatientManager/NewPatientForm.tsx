@@ -34,6 +34,10 @@ interface PatientInfoInterface {
 // TODO: refactor with Formik
 
 export interface NewPatientFormProps {
+  enterNewPatient: boolean;
+  setEnterNewPatient: React.Dispatch<React.SetStateAction<boolean>>;
+  isEditing: boolean;
+  setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
   patientInfo: PatientInfo;
   setPatientInfo: React.Dispatch<React.SetStateAction<PatientInfo>>;
   allPatientInfo: PatientInfo[];
@@ -41,16 +45,21 @@ export interface NewPatientFormProps {
 }
 
 const NewPatientForm = ({
+  isEditing,
+  setIsEditing,
   setPatientInfo,
   allPatientInfo,
   setAllPatientInfo,
+  patientInfo,
+  enterNewPatient,
+  setEnterNewPatient
 }: NewPatientFormProps) => {
   const [isPressed, setIsPressed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   // const [errors, setErrors] = useState<string[]>([]);
 
-  const [newPatientInfo, setNewPatientInfo] = useState<PatientInfo>({
+  const nullPatient = {
     ID: "",
     Diagnosis: Diagnosis.Manic,
     OtherDiagnosis: "",
@@ -68,7 +77,12 @@ const NewPatientForm = ({
     blood_pressure: "No",
     Reproductive: "No",
     risk_pregnancy: "No",
-  });
+    any_pregnancy: "No"
+  };
+
+  const defaultPatientInfo: PatientInfo = isEditing ? { ...patientInfo } : nullPatient;
+
+  const [newPatientInfo, setNewPatientInfo] = useState<PatientInfo>(defaultPatientInfo);
 
   const handleMouseDown = () => {
     setIsPressed(true);
@@ -114,19 +128,14 @@ const NewPatientForm = ({
       reproductive: newPatientInfo.Reproductive == "Yes",
       riskPregnancy: newPatientInfo.risk_pregnancy == "Yes",
     };
-    console.log(newPatientInfo);
 
     setIsLoading(true); // Start loading
 
     try {
       const baseUrl = import.meta.env.VITE_API_BASE_URL;
-      const url = `${baseUrl}`;
-      console.log(payload);
+      const url = `${baseUrl}/v1/api/get_med_recommend`;
 
-      const { data } = await api.post(
-        url + `/v1/api/get_med_recommend`,
-        payload
-      );
+      const { data } = await api.post(url, payload);
 
       const categorizedMedications = {
         first: data.first ?? [],
@@ -134,42 +143,44 @@ const NewPatientForm = ({
         third: data.third ?? [],
       };
 
-      // console.log(categorizedMedications.first);
-      // console.log(categorizedMedications.second);
+      let patientID = newPatientInfo.ID;
 
-      setPatientInfo((prev) => ({
-        ...prev,
-        PossibleMedications: categorizedMedications,
-      }));
-
-      const generatedGuid = uuidv4();
-      const firstFiveCharacters = generatedGuid.substring(0, 5);
-
-      setPatientInfo({ ...newPatientInfo, ID: firstFiveCharacters });
-
-      if (data) {
-        const newDescription = {
-          ...newPatientInfo,
-          ID: firstFiveCharacters,
-          PossibleMedications: categorizedMedications,
-        };
-
-        const updatedAllPatientInfo = [newDescription, ...allPatientInfo];
-        setPatientInfo(newDescription);
-        setAllPatientInfo(updatedAllPatientInfo);
-
-        localStorage.setItem(
-          "patientInfos",
-          JSON.stringify(updatedAllPatientInfo)
-        );
-      } else {
-        console.log("No description came back");
+      // Ensure ID is never blank
+      if (!patientID) {
+        const generatedGuid = uuidv4();
+        patientID = generatedGuid.substring(0, 5);
       }
+
+      const updatedPatientInfo = {
+        ...newPatientInfo,
+        ID: patientID, // Assign or preserve ID
+        PossibleMedications: categorizedMedications,
+      };
+
+      let updatedAllPatientInfo = [...allPatientInfo];
+
+      // Check if patient exists and update, otherwise add as new
+      const existingPatientIndex = updatedAllPatientInfo.findIndex(
+        (patient) => patient.ID === patientID
+      );
+
+      if (existingPatientIndex !== -1) {
+        updatedAllPatientInfo[existingPatientIndex] = updatedPatientInfo;
+      } else {
+        updatedAllPatientInfo = [updatedPatientInfo, ...allPatientInfo];
+      }
+
+      // Update state and localStorage
+      setPatientInfo(updatedPatientInfo);
+      setAllPatientInfo(updatedAllPatientInfo);
+      localStorage.setItem("patientInfos", JSON.stringify(updatedAllPatientInfo));
+
     } catch (error) {
-      console.log("Error5 occurred:", error);
+      console.error("Error occurred:", error);
     } finally {
+      setIsEditing(false);
       setEnterNewPatient(false);
-      setIsLoading(false); // Stop loading
+      setIsLoading(false);
       handleClickNewPatient();
       window.scrollTo({ top: 0 });
     }
@@ -208,6 +219,7 @@ const NewPatientForm = ({
     }));
 
     setEnterNewPatient(!enterNewPatient);
+    setIsEditing(false)
   };
 
   const handleClickNewPatient = () => {
@@ -255,6 +267,12 @@ const NewPatientForm = ({
     }));
   };
 
+  useEffect(() => {
+    if (isEditing) {
+      setNewPatientInfo(patientInfo);
+    }
+  }, [isEditing, patientInfo]);
+
   return (
     <section className="lg:flex lg:items-center lg:justify-center">
       {/* {search} */}
@@ -300,7 +318,7 @@ const NewPatientForm = ({
                 className=" cursor-pointer items-center"
               >
                 <h2 className="header_logo cursor-pointer font-satoshi text-xl font-bold text-gray-600  hover:text-blue-600 ">
-                  Enter Patient Details
+                  {isEditing ? `Edit Patient ${patientInfo.ID} Details` : "Enter Patient Details"}
                   {/* <span className="blue_gradient">Details</span> */}
                 </h2>
               </div>
@@ -445,6 +463,7 @@ const NewPatientForm = ({
                         name="psychotic"
                         type="radio"
                         value="Yes"
+                        checked={newPatientInfo.Psychotic === "Yes"}
                         onChange={(e) => handleRadioChange(e, "Psychotic")}
                         className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
                       />
@@ -460,6 +479,7 @@ const NewPatientForm = ({
                         name="psychotic"
                         type="radio"
                         value="No"
+                        checked={newPatientInfo.Psychotic === "No"}
                         onChange={(e) => handleRadioChange(e, "Psychotic")}
                         className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
                       />
@@ -488,6 +508,7 @@ const NewPatientForm = ({
                         id="suicide"
                         name="suicide"
                         type="radio"
+                        checked={newPatientInfo.Suicide === "Yes"}
                         value="Yes"
                         onChange={(e) => handleRadioChange(e, "Suicide")}
                         className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
@@ -503,7 +524,7 @@ const NewPatientForm = ({
                         id="suicide"
                         name="suicide"
                         type="radio"
-                        value="No"
+                        checked={newPatientInfo.Suicide === "No"}
                         onChange={(e) => handleRadioChange(e, "Suicide")}
                         className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
                       />
@@ -532,6 +553,7 @@ const NewPatientForm = ({
                         name="Kidney"
                         type="radio"
                         value="Yes"
+                        checked={newPatientInfo.Kidney === "Yes"}
                         onChange={(e) => handleRadioChange(e, "Kidney")}
                         className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
                       />
@@ -547,6 +569,7 @@ const NewPatientForm = ({
                         name="Kidney"
                         type="radio"
                         value="No"
+                        checked={newPatientInfo.Kidney === "No"}
                         onChange={(e) => handleRadioChange(e, "Kidney")}
                         className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
                       />
@@ -575,6 +598,7 @@ const NewPatientForm = ({
                         name="Liver"
                         type="radio"
                         value="Yes"
+                        checked={newPatientInfo.Liver === "Yes"}
                         onChange={(e) => handleRadioChange(e, "Liver")}
                         className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
                       />
@@ -590,6 +614,7 @@ const NewPatientForm = ({
                         name="Liver"
                         type="radio"
                         value="No"
+                        checked={newPatientInfo.Liver === "No"}
                         onChange={(e) => handleRadioChange(e, "Liver")}
                         className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
                       />
@@ -621,6 +646,7 @@ const NewPatientForm = ({
                         name="blood_pressure"
                         type="radio"
                         value="Yes"
+                        checked={newPatientInfo.blood_pressure === "Yes"}
                         onChange={(e) => handleRadioChange(e, "blood_pressure")}
                         className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
                       />
@@ -636,6 +662,7 @@ const NewPatientForm = ({
                         name="blood_pressure"
                         type="radio"
                         value="No"
+                        checked={newPatientInfo.blood_pressure === "No"}
                         onChange={(e) => handleRadioChange(e, "blood_pressure")}
                         className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
                       />
@@ -664,6 +691,7 @@ const NewPatientForm = ({
                         id="weight_gain"
                         name="weight_gain"
                         type="radio"
+                        checked={newPatientInfo.weight_gain === "Yes"}
                         value="Yes"
                         onChange={(e) => handleRadioChange(e, "weight_gain")}
                         className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
@@ -680,6 +708,7 @@ const NewPatientForm = ({
                         name="weight_gain"
                         type="radio"
                         value="No"
+                        checked={newPatientInfo.weight_gain === "No"}
                         onChange={(e) => handleRadioChange(e, "weight_gain")}
                         className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
                       />
@@ -709,6 +738,7 @@ const NewPatientForm = ({
                         name="risk_pregnancy"
                         type="radio"
                         value="Yes"
+                        checked={newPatientInfo.risk_pregnancy === "Yes"}
                         onChange={(e) => handleRadioChange(e, "risk_pregnancy")}
                         className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
                       />
@@ -724,6 +754,7 @@ const NewPatientForm = ({
                         name="risk_pregnancy"
                         type="radio"
                         value="No"
+                        checked={newPatientInfo.risk_pregnancy === "No"}
                         onChange={(e) => handleRadioChange(e, "risk_pregnancy")}
                         className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
                       />
@@ -752,6 +783,7 @@ const NewPatientForm = ({
                         name="any_pregnancy"
                         type="radio"
                         value="Yes"
+                        checked={newPatientInfo.any_pregnancy === "Yes"}
                         onChange={(e) => handleRadioChange(e, "any_pregnancy")}
                         className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
                       />
@@ -765,6 +797,7 @@ const NewPatientForm = ({
                         id="any_pregnancy-no"
                         name="any_pregnancy"
                         type="radio"
+                        checked={newPatientInfo.any_pregnancy === "No"}
                         value="No"
                         onChange={(e) => handleRadioChange(e, "any_pregnancy")}
                         className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
@@ -872,7 +905,7 @@ const NewPatientForm = ({
                       <p>Loading...</p>
                     </div>
                   ) : (
-                    <p>Submit</p>
+                    <p>{isEditing ? "Edit" : "Submit" }</p>
                   )}
                 </button>
               </div>

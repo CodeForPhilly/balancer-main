@@ -3,8 +3,12 @@ import axios from "axios";
 import { PatientInfo } from "./PatientTypes";
 import Tooltip from "../../components/Tooltip";
 import TypingAnimation from "../../components/Header/components/TypingAnimation.tsx";
+import { FaPencilAlt, FaMinus } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 interface PatientSummaryProps {
+  setEnterNewPatient: (isEnteringNewPatient: boolean) => void;
+  setIsEditing: (isEditing: boolean) => void;
   patientInfo: PatientInfo;
   isPatientDeleted: boolean;
   setPatientInfo: React.Dispatch<React.SetStateAction<PatientInfo>>;
@@ -32,7 +36,7 @@ const MedicationItem = ({
     return (
       <li className="flex items-center justify-between py-4 pl-4 pr-5 text-sm leading-4">
         <div className="flex w-0 flex-1 items-center">
-          <div className="ml-4 flex min-w-0 flex-1 gap-2">
+          <div className="flex flex-1 min-w-0 gap-2 ml-4">
             <span className="truncate font-medium">{medication}</span>
           </div>
         </div>
@@ -133,10 +137,14 @@ const MedicationTier = ({
 );
 
 const PatientSummary = ({
+  showSummary,
+  setShowSummary,
+  setEnterNewPatient,
+  setIsEditing,
   patientInfo,
   isPatientDeleted,
 }: PatientSummaryProps) => {
-  const [showSummary, setShowSummary] = useState(true);
+  
   const [loading, setLoading] = useState(false);
   const [riskData, setRiskData] = useState<RiskData | null>(null);
   const [clickedMedication, setClickedMedication] = useState<string | null>(
@@ -182,6 +190,13 @@ const PatientSummary = ({
       setLoading(false);
     }
   };
+
+  const handlePatientEdit = () => {
+    setIsEditing(true);
+    setEnterNewPatient(true);
+    handleClickSummary();
+    console.log({editingPatient: patientInfo})
+  }
 
   const renderMedicationsSection = () => (
     <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
@@ -266,34 +281,24 @@ const PatientSummary = ({
               </div>
             )}
             {showSummary && (
-              <div className="font_body rounded-md border bg-white p-2 px-3 ring-1 hover:ring-slate-300 md:p-4 md:px-8">
+              <div className="p-2 px-3 bg-white border rounded-md font_body ring-1 hover:ring-slate-300 md:p-4 md:px-8">
                 <div>
                   <div
-                    onClick={handleClickSummary}
-                    className="flex items-center justify-between"
+                    className="flex items-center justify-between text-xl"
                   >
-                    <h2 className="header_logo cursor-pointer font-satoshi text-xl font-bold text-gray-600 hover:text-blue-600">
+                    <h2 className="font-bold text-gray-600 cursor-pointer header_logo font-satoshi hover:text-blue-600">
                       Summary
                     </h2>
-                    <div
-                      onClick={handleClickSummary}
-                      className="cursor-pointer items-center"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-4 w-4"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M6 12h12"
-                        />
-                      </svg>
-                    </div>
+                    <aside className="flex items-center gap-4">
+                      <button onClick={handlePatientEdit} className="p-3 text-sm text-gray-900 border rounded-lg hover:text-gray-800">
+                        <FaPencilAlt className="inline-block" /> Edit 
+                      </button>
+                      <button
+                        onClick={handleClickSummary}
+                        className="p-3 text-sm text-gray-900 border rounded-lg hover:text-gray-800">
+                        <FaMinus className="inline-block" /> Hide
+                      </button>
+                    </aside>
                   </div>
                 </div>
                 <div className="mt-2 border-b border-gray-900/10">
@@ -301,13 +306,13 @@ const PatientSummary = ({
                     <label className="font-semibold">Patient ID:</label>{" "}
                     {patientInfo.ID}
                   </h3>
-                  <p className="mt-1 max-w-2xl text-sm leading-6 text-gray-500">
+                  <p className="max-w-2xl mt-1 text-sm leading-6 text-gray-500">
                     Patient details and application
                   </p>
                 </div>
                 <div className="mt-3">
                   <dl>
-                    <div className="flex-row justify-between border-b border-gray-900/10 py-6 md:flex">
+                    <div className="flex-row justify-between py-6 border-b border-gray-900/10 md:flex">
                       <div className="flex w-full md:p-0">
                         <dt className="w-1/2 text-sm font-medium leading-6 text-gray-900">
                           Current State:
@@ -318,25 +323,25 @@ const PatientSummary = ({
                       </div>
                     </div>
                     <div className="border-b border-gray-900/10 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0 md:py-6">
-                      <dt className="mt-3 flex text-sm font-medium leading-6 text-gray-900">
+                      <dt className="flex mt-3 text-sm font-medium leading-6 text-gray-900">
                         Risk Assessment:
                       </dt>
                       <dd className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
                         <ul
                           role="list"
-                          className="divide-y divide-gray-100 rounded-md border border-gray-200"
+                          className="border border-gray-200 divide-y divide-gray-100 rounded-md"
                         >
                           {/* Risk Assessment Items */}
                           {patientInfo.Psychotic === "Yes" && (
-                            <li className="flex items-center justify-between border-b border-gray-900/10 py-4 pl-4 pr-5 text-sm leading-4 hover:bg-indigo-100">
+                            <li className="flex items-center justify-between py-4 pl-4 pr-5 text-sm leading-4 border-b border-gray-900/10 hover:bg-indigo-100">
                               Currently psychotic
                             </li>
                           )}
                           {patientInfo.Suicide === "Yes" && (
-                            <li className="flex items-center justify-between border-b border-gray-900/10 py-4 pl-4 pr-5 text-sm leading-4 hover:bg-indigo-100">
+                            <li className="flex items-center justify-between py-4 pl-4 pr-5 text-sm leading-4 border-b border-gray-900/10 hover:bg-indigo-100">
                               <Tooltip text="Lithium is the only medication on the market that has been proven to reduce suicidality in patients with bipolar disorder, so it will be shown at the top of the suggested medications list.">
                                 Patient has a history of suicide attempts
-                                <span className="material-symbols-outlined ml-1">
+                                <span className="ml-1 material-symbols-outlined">
                                   info
                                 </span>
                               </Tooltip>
@@ -346,16 +351,16 @@ const PatientSummary = ({
                         </ul>
                       </dd>
                     </div>
-                    <div className="flex flex-col justify-between border-b border-gray-900/10 py-6 sm:px-0 md:flex-row">
+                    <div className="flex flex-col justify-between py-6 border-b border-gray-900/10 sm:px-0 md:flex-row">
                       <br />
                       <div className="flex w-full">
                         <label
                           htmlFor="current-state"
-                          className="block flex w-1/2 text-sm font-medium leading-6 text-gray-900"
+                          className="flex block w-1/2 text-sm font-medium leading-6 text-gray-900"
                         >
                           Prior medications
                           <Tooltip text="Any bipolar medications entered here will not appear in the list of suggested medications, as they have already been tried without success.">
-                            <span className="material-symbols-outlined ml-1">
+                            <span className="ml-1 material-symbols-outlined">
                               info
                             </span>
                           </Tooltip>

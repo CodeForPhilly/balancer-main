@@ -54,7 +54,7 @@ class ErrorBoundary extends React.Component<
   }
 }
 
-function ListMeds() {
+function RulesManager() {
   const [medRules, setMedRules] = useState<MedRule[]>([]);
   const [errors, setErrors] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -215,4 +215,4 @@ function ListMeds() {
   );
 }
 
-export default ListMeds;
+export default RulesManager;

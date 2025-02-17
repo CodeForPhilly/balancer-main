@@ -6,6 +6,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from ...models.model_medRule import MedRule
 from .serializers import MedRuleSerializer  # You'll need to create this
+from ..listMeds.models import Medication
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -13,7 +14,7 @@ class MedRules(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, format=None):
-        # Get all med rules
+        # Get all med rules00
         med_rules = MedRule.objects.all()
 
         # Serialize the data

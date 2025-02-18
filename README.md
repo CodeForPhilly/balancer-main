@@ -25,14 +25,14 @@ Tools used for for Balancer development:
 
 1. `Docker and docker-compose`
 2. `OpenAI API`: Ask for the API key and add it to `config/env/env.dev`
-3. `pgAdmin`: The email and password are set in `balancer-main/docker-compose.yml`
+3. `pgAdmin`: The email and password are specified in `balancer-main/docker-compose.yml`
 4. `Postman`: Ask to get invited to the Balancer Postman team `balancer_dev`
 
 ### Running Balancer for development
 
 Start Docker Desktop and run `docker compose up --build` 
 
-The email and password are set in: `server/api/management/commands/createsu.py`
+The email and password are set in `server/api/management/commands/createsu.py`
 
 ## Architecture
 
@@ -42,10 +42,10 @@ The Balancer website is a Django, React, and Postgres project
 
 Important files and directories in `balancer-main/`:
 
-- `docker-compose.yml` : Used to run docker compose 
-- `server` : Django backend
+- `docker-compose.yml`: Used to run docker compose 
+- `server`: Django backend
 - `frontend`: React frontend
 
 ## License 
 
-[AGPL-3.0 license](https://choosealicense.com/licenses/agpl-3.0/)
+Balancer is licensed under the [AGPL-3.0 license](https://choosealicense.com/licenses/agpl-3.0/)

@@ -1,48 +1,51 @@
 # Balancer
 
-## Start project
+Balancer is a website of digital tools designed to help prescribers choose the most suitable medications
+for patients with bipolar disorder, helping them shorten their journey to stability and well-being
 
-1) You will need to clone the repos.
-2) Start docker desktop
-3) Type in terminal Docker-Compose up --build
+## Usage
 
-Reach out to Tai to get API key for ChatGPT.
+You can view the current build of the website here: [https://balancertestsite.com](https://balancertestsite.com/)
 
-## Current Draft
+## Contributing 
 
-You can view the current [build of the website here](https://balancertestsite.com).
+### Join the Balancer community
 
-![image](https://github.com/CodeForPhilly/balancer-main/assets/26842253/fb9691ff-6f49-4b62-903e-971c19fa1c3e)
+Balancer is a [Code for Philly](https://www.codeforphilly.org/) project 
 
-![image](https://github.com/CodeForPhilly/balancer-main/assets/26842253/92c5d6e3-2aaf-4d28-9095-0ea22fa87791)
+Join the [Code for Philly Slack and introduce yourself](https://codeforphilly.org/projects/balancer) in the #balancer channel
 
-Likewise, you can view the first iteration [build of the website here](https://64861cae18fa9449694ad5ef--deft-tapioca-dd7777.netlify.app/).
+The project kanban board is [on GitHub here](https://github.com/orgs/CodeForPhilly/projects/2)
 
-## Project Updates
-[Release V1.02272024]
+### Setting up a development environment   
 
-1) Updated Help Page. Thank you @kristo_baricevic
-2) Make 'Contact us' a mailto link. Thank you @greggaleg
-3) Improve Chat Response Formatting in UI. Thank you @greggaleg
+Get the code using git by either forking or cloning `CodeForPhilly/balancer-main`
 
+Tools used for for Balancer development: 
 
-## Current Tasks
+1. `Docker and docker-compose`
+2. `OpenAI API`: Ask for the API key and add it to `config/env/env.dev`
+3. `pgAdmin`: The email and password are set in `balancer-main/docker-compose.yml`
+4. `Postman`: Ask to get invited to the Balancer Postman team `balancer_dev`
 
-1) Official Deployment System:  @joshgerstein.
-2) Prompt Creations:  @erinc.
-3) Additional Business Logic for New Patient Form: @tomdoan.
-4) Backend for Feedback Form: @dattali.
-5) Redesign of AI Architecture.
-6) Add logging to the backend for debugging.
-7) Documentations of Forking and merging branches.
+### Running Balancer for development
 
-## Languages/Frameworks
+Start Docker Desktop and run `docker compose up --build` 
 
-Django, React, PostGres
+The email and password are set in: `server/api/management/commands/createsu.py`
 
-## Contribution
+## Architecture
 
+The Balancer website is a Django, React, and Postgres project
 
+### Source code layout
 
+Important files and directories in `balancer-main/`:
 
+- `docker-compose.yml` : Used to run docker compose 
+- `server` : Django backend
+- `frontend`: React frontend
 
+## License 
+
+[AGPL-3.0 license](https://choosealicense.com/licenses/agpl-3.0/)

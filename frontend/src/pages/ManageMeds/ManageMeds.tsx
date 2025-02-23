@@ -1,7 +1,7 @@
+import { useState, useEffect } from "react";
 import Layout from "../Layout/Layout";
 import Welcome from "../../components/Welcome/Welcome";
 import ErrorMessage from "../../components/ErrorMessage";
-import { useState, useEffect } from "react";
 import { api } from "../../api/apiClient";
 
 function ManageMedications() {
@@ -16,6 +16,8 @@ function ManageMedications() {
   const [errors, setErrors] = useState<string[]>([]);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [newMedName, setNewMedName] = useState("");
+  const [newMedBenefits, setNewMedBenefits] = useState("");
+  const [newMedRisks, setNewMedRisks] = useState("");
   const [showAddMed, setShowAddMed] = useState(false);
   const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
@@ -44,12 +46,23 @@ function ManageMedications() {
 
   // Handle Add Medication
   const handleAddMedication = async () => {
-    if (!newMedName.trim()) return;
+    if (!newMedName.trim() || !newMedBenefits.trim() || !newMedRisks.trim()) {
+      setErrors((prev) => [...prev, "All fields (Name, Benefits, Risks) are required"]);
+      return;
+    }
+
     try {
-      await api.post(`${baseUrl}/v1/api/add_medication`, { name: newMedName });
+      await api.post(`${baseUrl}/v1/api/add_medication`, {
+        name: newMedName,
+        benefits: newMedBenefits,
+        risks: newMedRisks,
+      });
+
       setNewMedName("");
+      setNewMedBenefits("");
+      setNewMedRisks("");
       setShowAddMed(false);
-      fetchMedications();
+      fetchMedications(); // Refresh the list after adding
     } catch (e: unknown) {
       setErrors((prev) => [...prev, e instanceof Error ? e.message : "An error occurred while adding medication"]);
     }
@@ -78,26 +91,42 @@ function ManageMedications() {
           </div>
 
           {showAddMed && (
-            <div className="mb-4 flex space-x-2">
+            <div className="mb-4 space-y-2">
               <input
                 type="text"
-                className="px-3 py-1 border rounded-md"
+                className="w-full px-3 py-1 border rounded-md"
                 placeholder="Enter medication name"
                 value={newMedName}
                 onChange={(e) => setNewMedName(e.target.value)}
               />
-              <button
-                className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-                onClick={handleAddMedication}
-              >
-                Submit
-              </button>
-              <button
-                className="px-3 py-1 bg-gray-500 text-white rounded-md hover:bg-gray-600"
-                onClick={() => setShowAddMed(false)}
-              >
-                Cancel
-              </button>
+              <input
+                type="text"
+                className="w-full px-3 py-1 border rounded-md"
+                placeholder="Enter benefits"
+                value={newMedBenefits}
+                onChange={(e) => setNewMedBenefits(e.target.value)}
+              />
+              <input
+                type="text"
+                className="w-full px-3 py-1 border rounded-md"
+                placeholder="Enter risks"
+                value={newMedRisks}
+                onChange={(e) => setNewMedRisks(e.target.value)}
+              />
+              <div className="flex space-x-2">
+                <button
+                  className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                  onClick={handleAddMedication}
+                >
+                  Submit
+                </button>
+                <button
+                  className="px-3 py-1 bg-gray-500 text-white rounded-md hover:bg-gray-600"
+                  onClick={() => setShowAddMed(false)}
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           )}
 
@@ -107,40 +136,39 @@ function ManageMedications() {
               <p className="text-gray-500">No medications available.</p>
             ) : (
               medications.map((med) => (
-<div key={med.id} className="w-full flex justify-between items-center border-b pb-2 mb-2">
-  <span className="text-lg font-bold leading-6 text-gray-900">{med.name}</span>
-  <div>
-    {confirmDelete === med.name ? (
-      // Show only "Confirm Delete" and "Cancel" when confirming deletion
-      <div className="flex space-x-2">
-        <button
-          className="px-3 py-1 bg-gray-500 text-white text-sm font-medium rounded-md hover:bg-gray-600"
-          onClick={() => setConfirmDelete(null)}
-        >
-          Cancel
-        </button>
-        <button
-          className="px-3 py-1 bg-red-700 text-white text-sm font-medium rounded-md hover:bg-red-800"
-          onClick={() => handleDelete(med.name)}
-        >
-          Confirm Delete
-        </button>
-      </div>
-    ) : (
-      // Show only "Delete" when not in confirmation mode
-      <button
-        className="ml-4 px-3 py-1 bg-red-500 text-white text-sm font-medium rounded-md hover:bg-red-600"
-        onClick={(e) => {
-          e.stopPropagation();
-          setConfirmDelete(med.name);
-        }}
-      >
-        Delete
-      </button>
-    )}
-  </div>
-</div>
-
+                <div key={med.id} className="w-full flex justify-between items-center border-b pb-2 mb-2">
+                  <span className="text-lg font-bold leading-6 text-gray-900">{med.name}</span>
+                  <div>
+                    {confirmDelete === med.name ? (
+                      // Show only "Confirm Delete" and "Cancel" when confirming deletion
+                      <div className="flex space-x-2">
+                        <button
+                          className="px-3 py-1 bg-gray-500 text-white text-sm font-medium rounded-md hover:bg-gray-600"
+                          onClick={() => setConfirmDelete(null)}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          className="px-3 py-1 bg-red-700 text-white text-sm font-medium rounded-md hover:bg-red-800"
+                          onClick={() => handleDelete(med.name)}
+                        >
+                          Confirm Delete
+                        </button>
+                      </div>
+                    ) : (
+                      // Show only "Delete" when not in confirmation mode
+                      <button
+                        className="ml-4 px-3 py-1 bg-red-500 text-white text-sm font-medium rounded-md hover:bg-red-600"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setConfirmDelete(med.name);
+                        }}
+                      >
+                        Delete
+                      </button>
+                    )}
+                  </div>
+                </div>
               ))
             )}
           </div>

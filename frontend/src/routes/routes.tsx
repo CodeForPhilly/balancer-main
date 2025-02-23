@@ -16,6 +16,8 @@ import ListMeds from "../pages/ListMeds/ListMeds.tsx";
 import UploadFile from "../pages/DocumentManager/UploadFile.tsx";
 import ListofFiles from "../pages/Files/ListOfFiles.tsx";
 import ListofRules from "../pages/ListRules/ListRules.tsx";
+import ManageMeds from "../pages/ManageMeds/ManageMeds.tsx";
+
 const routes = [
   {
     path: "/",
@@ -87,6 +89,10 @@ const routes = [
   {
     path: "medications",
     element: <ListMeds />,
+  },
+  {
+    path: "managemeds",
+    element: <ManageMeds />,
   },
 ];
 

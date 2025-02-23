@@ -17,7 +17,7 @@ from ...services.conversions_services import convert_uuids
 @method_decorator(csrf_exempt, name='dispatch')
 class AskEmbeddingsAPIView(APIView):
 
-    permission_classes = [IsAuthenticated]c
+    permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
         try:

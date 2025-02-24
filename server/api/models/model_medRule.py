@@ -1,22 +1,27 @@
 from django.db import models
 from ..views.listMeds.models import Medication
+from django.db.models import CASCADE
+from ..models.model_embeddings import Embeddings
 
 
 class MedRule(models.Model):
-    """
-    MedRule model represents the inclusion or exclusion of a medication based on specific medical history.
-    """
-    RULE_CHOICES = [
-        ('INCLUDE', 'Include'),
-        ('EXCLUDE', 'Exclude'),
-    ]
-
-    medication = models.ForeignKey(Medication, on_delete=models.CASCADE)
-    rule_type = models.CharField(max_length=7, choices=RULE_CHOICES)
-    # e.g., kidneyHistory, liverHistory
+    rule_type = models.CharField(
+        max_length=7,
+        choices=[('INCLUDE', 'Include'), ('EXCLUDE', 'Exclude')]
+    )
     history_type = models.CharField(max_length=255)
     reason = models.TextField(blank=True, null=True)
     label = models.CharField(max_length=255, blank=True, null=True)
+    medications = models.ManyToManyField(Medication, related_name='med_rules')
+    sources = models.ManyToManyField(
+        Embeddings,
+        related_name='med_rules',
+        blank=True
+    )
+    explanation = models.TextField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'api_medrule'
 
     def __str__(self):
-        return f'{self.rule_type} {self.medication} for {self.history_type}'
+        return f"{self.rule_type} - {self.label}"

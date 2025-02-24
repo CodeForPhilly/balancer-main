@@ -12,8 +12,10 @@ from .models.model_medRule import MedRule
 
 
 @admin.register(MedRule)
-class MedicationAdmin(admin.ModelAdmin):
-    list_display = ['medication']
+class MedRuleAdmin(admin.ModelAdmin):
+    list_display = ['rule_type', 'history_type', 'label']
+    filter_horizontal = ['medications', 'sources']
+    search_fields = ['label', 'history_type', 'reason']
 
 
 @admin.register(Embeddings)

@@ -6,6 +6,8 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from ...models.model_medRule import MedRule
 from .serializers import MedRuleSerializer  # You'll need to create this
+from ..listMeds.models import Medication
+from ..listMeds.serializers import MedicationSerializer
 
 
 @method_decorator(csrf_exempt, name='dispatch')

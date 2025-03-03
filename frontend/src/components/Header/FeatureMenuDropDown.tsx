@@ -13,7 +13,7 @@ export const FeatureMenuDropDown = () => {
             </div>
           </ul>
         </Link>
-        <Link to="/ListRules">
+        <Link to="/rulesmanager">
           <ul className=" cursor-pointer  rounded-lg p-3 transition duration-300 hover:bg-gray-100">
             <span className=" font-bold text-black  ">Manage rules</span>
 

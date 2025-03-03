@@ -22,6 +22,7 @@ class MedRule(models.Model):
 
     class Meta:
         db_table = 'api_medrule'
+        unique_together = ['rule_type', 'history_type']
 
     def __str__(self):
         return f"{self.rule_type} - {self.label}"

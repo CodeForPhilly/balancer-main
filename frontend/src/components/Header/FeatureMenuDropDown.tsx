@@ -22,6 +22,15 @@ export const FeatureMenuDropDown = () => {
             </div>
           </ul>
         </Link>
+        <Link to="/ManageMeds">
+          <ul className=" cursor-pointer  rounded-lg p-3 transition duration-300 hover:bg-gray-100">
+            <span className=" font-bold text-black  ">Manage meds</span>
+
+            <div className="mt-1 font-satoshi text-sm text-gray-400">
+              Manage list of meds
+            </div>
+          </ul>
+        </Link>
         {/* 
         <Link to="/drugSummary">
           <ul className=" cursor-pointer rounded-lg p-3 transition duration-300 hover:bg-gray-100">

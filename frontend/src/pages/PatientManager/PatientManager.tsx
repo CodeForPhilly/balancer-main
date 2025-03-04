@@ -35,6 +35,7 @@ const PatientManager = () => {
       second: "",
       third: "",
     },
+    any_pregnancy: ""
   });
 
   const handlePatientDeleted = (deletedId: string) => {
@@ -57,6 +58,7 @@ const PatientManager = () => {
         weight_gain: "",
         Reproductive: "",
         risk_pregnancy: "",
+        any_pregnancy: ""
       });
 
       setIsPatientDeleted(true);
@@ -87,7 +89,7 @@ const PatientManager = () => {
   );
 
   return (
-    <div className="mt-24 flex w-full max-w-6xl flex-col items-center  md:mt-28">
+    <div className="flex flex-col items-center w-full max-w-6xl mt-24 md:mt-28">
       <Welcome
         subHeader="Designed to assist prescribers"
         descriptionEl={descriptionEl}

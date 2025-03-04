@@ -4,9 +4,10 @@ import { PatientInfo } from "./PatientTypes";
 import Tooltip from "../../components/Tooltip";
 import TypingAnimation from "../../components/Header/components/TypingAnimation.tsx";
 import { FaPencilAlt, FaMinus } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
 
 interface PatientSummaryProps {
+  showSummary: boolean;
+  setShowSummary: (state: boolean) => void;
   setEnterNewPatient: (isEnteringNewPatient: boolean) => void;
   setIsEditing: (isEditing: boolean) => void;
   patientInfo: PatientInfo;
@@ -35,9 +36,9 @@ const MedicationItem = ({
   if (medication === "None") {
     return (
       <li className="flex items-center justify-between py-4 pl-4 pr-5 text-sm leading-4">
-        <div className="flex w-0 flex-1 items-center">
+        <div className="flex items-center flex-1 w-0">
           <div className="flex flex-1 min-w-0 gap-2 ml-4">
-            <span className="truncate font-medium">{medication}</span>
+            <span className="font-medium truncate">{medication}</span>
           </div>
         </div>
       </li>
@@ -51,17 +52,17 @@ const MedicationItem = ({
           ${isClicked ? "bg-indigo-100" : ""} cursor-pointer`}
         onClick={onClick}
       >
-        <div className="flex w-0 flex-1 items-center">
-          <div className="ml-4 flex min-w-0 flex-1 gap-2">
-            <span className="truncate font-medium">{medication}</span>
+        <div className="flex items-center flex-1 w-0">
+          <div className="flex flex-1 min-w-0 gap-2 ml-4">
+            <span className="font-medium truncate">{medication}</span>
             {loading && isClicked && (
-              <div className="ml-3 mt-0 flex max-w-sm items-start text-white">
+              <div className="flex items-start max-w-sm mt-0 ml-3 text-white">
                 <TypingAnimation />
               </div>
             )}
           </div>
         </div>
-        <div className="ml-4 flex-shrink-0">
+        <div className="flex-shrink-0 ml-4">
           <span className="font-medium text-indigo-600 hover:text-indigo-500">
             Benefits and risks
           </span>
@@ -69,7 +70,7 @@ const MedicationItem = ({
       </li>
 
       {isClicked && riskData && (
-        <div className="bg-gray-50 px-6 py-4">
+        <div className="px-6 py-4 bg-gray-50">
           <div className="flex">
             <div className="w-1/2 pr-4">
               <h4 className="mb-3 text-sm font-medium text-indigo-600">
@@ -118,10 +119,10 @@ const MedicationTier = ({
   onMedicationClick: (medication: string) => void;
 }) => (
   <>
-    <dt className="ml-2 flex text-sm font-medium leading-6 text-gray-900">
+    <dt className="flex ml-2 text-sm font-medium leading-6 text-gray-900">
       {title}:
     </dt>
-    <ul className="divide-y divide-gray-100 rounded-md border border-gray-200">
+    <ul className="border border-gray-200 divide-y divide-gray-100 rounded-md">
       {medications.map((medication) => (
         <MedicationItem
           key={medication}
@@ -258,13 +259,13 @@ const PatientSummary = ({
                   onClick={handleClickSummary}
                   className="flex items-center justify-between"
                 >
-                  <h2 className="header_logo cursor-pointer font-satoshi text-xl font-bold text-gray-600 hover:text-blue-600">
+                  <h2 className="text-xl font-bold text-gray-600 cursor-pointer header_logo font-satoshi hover:text-blue-600">
                     Patient Summary
                   </h2>
-                  <div className="cursor-pointer items-center">
+                  <div className="items-center cursor-pointer">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4"
+                      className="w-4 h-4"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"

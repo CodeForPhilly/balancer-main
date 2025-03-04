@@ -21,6 +21,7 @@ export interface PatientInfo {
   weight_gain: string;
   Reproductive: string;
   risk_pregnancy: string;
+  any_pregnancy: string;
 }
 
 export interface NewPatientInfo {

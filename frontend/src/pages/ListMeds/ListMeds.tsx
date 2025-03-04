@@ -1,6 +1,5 @@
 import Layout from "../Layout/Layout";
 import Welcome from "../../components/Welcome/Welcome";
-import HourglassSpinner from "../../components/HourglassSpinner/HourglassSpinner";
 import ErrorMessage from "../../components/ErrorMessage";
 // import { MedData } from "./MedTypes";
 import { useState, useEffect } from "react";
@@ -69,21 +68,21 @@ function ListMeds() {
 
     return (
       <details>
-        <summary className="w-fit font-semibold leading-6 text-gray-900 hover:cursor-pointer">
+        <summary className="font-semibold leading-6 text-gray-900 w-fit hover:cursor-pointer">
           {med.name}
         </summary>
-        <div className="mb-5 ml-6 flex">
+        <div className="flex mb-5 ml-6">
           <div className="flex-1">
-            <h3 className="mb-4 mt-4 text-sm font-medium text-indigo-600">
+            <h3 className="mt-4 mb-4 text-sm font-medium text-indigo-600">
               Benefits:
             </h3>
-            <ul className="list-disc space-y-3 px-4">{benefitsList}</ul>
+            <ul className="px-4 space-y-3 list-disc">{benefitsList}</ul>
           </div>
           <div className="flex-1">
-            <h3 className="mb-4 mt-4 text-sm font-medium text-indigo-600">
+            <h3 className="mt-4 mb-4 text-sm font-medium text-indigo-600">
               Risks:
             </h3>
-            <ul className="list-disc space-y-3 px-4">{risksList}</ul>
+            <ul className="px-4 space-y-3 list-disc">{risksList}</ul>
           </div>
         </div>
       </details>
@@ -102,7 +101,7 @@ function ListMeds() {
 
   return (
     <Layout>
-      <div className="mx-auto mt-24 w-full max-w-6xl">
+      <div className="w-full max-w-6xl mx-auto mt-24">
         <Welcome
           subHeader="Medications"
           descriptionText="Check out the benefits and risks of medications."
@@ -112,7 +111,7 @@ function ListMeds() {
             <div className="mb-6 space-y-4">{medsList}</div>
           </div>
         ) : (
-          <div className="mt-6 flex items-center justify-center"></div>
+          <div className="flex items-center justify-center mt-6"></div>
         )}
       </div>
     </Layout>

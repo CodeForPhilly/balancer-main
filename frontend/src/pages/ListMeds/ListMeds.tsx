@@ -68,21 +68,21 @@ function ListMeds() {
 
     return (
       <details>
-        <summary className="font-semibold leading-6 text-gray-900 w-fit hover:cursor-pointer">
+        <summary className="w-fit font-semibold leading-6 text-gray-900 hover:cursor-pointer">
           {med.name}
         </summary>
-        <div className="flex mb-5 ml-6">
+        <div className="mb-5 ml-6 flex">
           <div className="flex-1">
-            <h3 className="mt-4 mb-4 text-sm font-medium text-indigo-600">
+            <h3 className="mb-4 mt-4 text-sm font-medium text-indigo-600">
               Benefits:
             </h3>
-            <ul className="px-4 space-y-3 list-disc">{benefitsList}</ul>
+            <ul className="list-disc space-y-3 px-4">{benefitsList}</ul>
           </div>
           <div className="flex-1">
-            <h3 className="mt-4 mb-4 text-sm font-medium text-indigo-600">
+            <h3 className="mb-4 mt-4 text-sm font-medium text-indigo-600">
               Risks:
             </h3>
-            <ul className="px-4 space-y-3 list-disc">{risksList}</ul>
+            <ul className="list-disc space-y-3 px-4">{risksList}</ul>
           </div>
         </div>
       </details>
@@ -101,7 +101,7 @@ function ListMeds() {
 
   return (
     <Layout>
-      <div className="w-full max-w-6xl mx-auto mt-24">
+      <div className="mx-auto mt-24 w-full max-w-6xl">
         <Welcome
           subHeader="Medications"
           descriptionText="Check out the benefits and risks of medications."
@@ -111,7 +111,7 @@ function ListMeds() {
             <div className="mb-6 space-y-4">{medsList}</div>
           </div>
         ) : (
-          <div className="flex items-center justify-center mt-6"></div>
+          <div className="mt-6 flex items-center justify-center"></div>
         )}
       </div>
     </Layout>

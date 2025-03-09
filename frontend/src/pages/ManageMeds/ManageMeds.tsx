@@ -3,7 +3,6 @@ import Layout from "../Layout/Layout";
 import Welcome from "../../components/Welcome/Welcome";
 import ErrorMessage from "../../components/ErrorMessage";
 import { api } from "../../api/apiClient";
-
 function ManageMedications() {
   interface MedData {
     id: string;
@@ -11,7 +10,6 @@ function ManageMedications() {
     benefits: string;
     risks: string;
   }
-
   const [medications, setMedications] = useState<MedData[]>([]);
   const [errors, setErrors] = useState<string[]>([]);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
@@ -19,8 +17,8 @@ function ManageMedications() {
   const [newMedBenefits, setNewMedBenefits] = useState("");
   const [newMedRisks, setNewMedRisks] = useState("");
   const [showAddMed, setShowAddMed] = useState(false);
+  const [hoveredMed, setHoveredMed] = useState<string | null>(null);
   const baseUrl = import.meta.env.VITE_API_BASE_URL;
-
   // Fetch Medications
   const fetchMedications = async () => {
     try {
@@ -29,10 +27,12 @@ function ManageMedications() {
       data.sort((a: MedData, b: MedData) => a.name.localeCompare(b.name));
       setMedications(data);
     } catch (e: unknown) {
-      setErrors((prev) => [...prev, e instanceof Error ? e.message : "An unknown error occurred"]);
+      setErrors((prev) => [
+        ...prev,
+        e instanceof Error ? e.message : "An unknown error occurred",
+      ]);
     }
   };
-
   // Handle Delete Medication
   const handleDelete = async (name: string) => {
     try {
@@ -40,45 +40,52 @@ function ManageMedications() {
       setMedications((prev) => prev.filter((med) => med.name !== name));
       setConfirmDelete(null);
     } catch (e: unknown) {
-      setErrors((prev) => [...prev, e instanceof Error ? e.message : "An error occurred while deleting"]);
+      setErrors((prev) => [
+        ...prev,
+        e instanceof Error ? e.message : "An error occurred while deleting",
+      ]);
     }
   };
-
   // Handle Add Medication
   const handleAddMedication = async () => {
     if (!newMedName.trim() || !newMedBenefits.trim() || !newMedRisks.trim()) {
-      setErrors((prev) => [...prev, "All fields (Name, Benefits, Risks) are required"]);
+      setErrors((prev) => [
+        ...prev,
+        "All fields (Name, Benefits, Risks) are required",
+      ]);
       return;
     }
-
     try {
       await api.post(`${baseUrl}/v1/api/add_medication`, {
         name: newMedName,
         benefits: newMedBenefits,
         risks: newMedRisks,
       });
-
       setNewMedName("");
       setNewMedBenefits("");
       setNewMedRisks("");
       setShowAddMed(false);
       fetchMedications(); // Refresh the list after adding
     } catch (e: unknown) {
-      setErrors((prev) => [...prev, e instanceof Error ? e.message : "An error occurred while adding medication"]);
+      setErrors((prev) => [
+        ...prev,
+        e instanceof Error
+          ? e.message
+          : "An error occurred while adding medication",
+      ]);
     }
   };
-
   useEffect(() => {
     fetchMedications();
   }, []);
-
   return (
     <Layout>
       <div className="mx-auto mt-24 w-full max-w-6xl">
-        <Welcome subHeader="Medications" descriptionText="Check out the benefits and risks of medications." />
-
+        <Welcome
+          subHeader="Medications"
+          descriptionText="Check out the benefits and risks of medications."
+        />
         <div className="font_body mx-auto mt-4 w-[90%] rounded-md border bg-white p-2 px-3 ring-1 hover:ring-slate-300 md:w-[75%] md:p-4 md:px-8">
-          
           {/* Add Medication Section */}
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-bold">New Medication...?</h2>
@@ -89,7 +96,6 @@ function ManageMedications() {
               Add Medication
             </button>
           </div>
-
           {showAddMed && (
             <div className="mb-4 space-y-2">
               <input
@@ -129,15 +135,21 @@ function ManageMedications() {
               </div>
             </div>
           )}
-
           {/* Medications List */}
           <div className="mb-6 space-y-4">
             {medications.length === 0 ? (
               <p className="text-gray-500">No medications available.</p>
             ) : (
               medications.map((med) => (
-                <div key={med.id} className="w-full flex justify-between items-center border-b pb-2 mb-2">
-                  <span className="text-lg font-bold leading-6 text-gray-900">{med.name}</span>
+                <div
+                  key={med.id}
+                  className="w-full flex justify-between items-center border-b pb-2 mb-2"
+                  onMouseEnter={() => setHoveredMed(med.name)}
+                  onMouseLeave={() => setHoveredMed(null)}
+                >
+                  <span className="text-lg font-bold leading-6 text-gray-900">
+                    {med.name}
+                  </span>
                   <div>
                     {confirmDelete === med.name ? (
                       // Show only "Confirm Delete" and "Cancel" when confirming deletion
@@ -156,16 +168,18 @@ function ManageMedications() {
                         </button>
                       </div>
                     ) : (
-                      // Show only "Delete" when not in confirmation mode
-                      <button
-                        className="ml-4 px-3 py-1 bg-red-500 text-white text-sm font-medium rounded-md hover:bg-red-600"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setConfirmDelete(med.name);
-                        }}
-                      >
-                        Delete
-                      </button>
+                      // Show delete button only when hovering over the medication
+                      hoveredMed === med.name && (
+                        <button
+                          className="ml-4 px-3 py-1 bg-red-500 text-white text-sm font-medium rounded-md hover:bg-red-600 transition-opacity duration-200"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setConfirmDelete(med.name);
+                          }}
+                        >
+                          Delete
+                        </button>
+                      )
                     )}
                   </div>
                 </div>
@@ -174,7 +188,6 @@ function ManageMedications() {
           </div>
         </div>
       </div>
-
       {/* Error Messages */}
       {errors.length > 0 && (
         <div className="mt-32">
@@ -184,5 +197,10 @@ function ManageMedications() {
     </Layout>
   );
 }
-
 export default ManageMedications;
+
+
+
+
+
+

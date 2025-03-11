@@ -18,7 +18,7 @@ interface File {
   approved: boolean | null;
   uploaded_by: number;
 }
-function ListOfFiles() {
+function ListOfFiles({fileNameOnly = false}) {
   const [files, setFiles] = useState<File[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   //   const [error, setError] = useState<string | null>(null);
@@ -52,38 +52,58 @@ function ListOfFiles() {
   if (isLoading) {
     return <div>Loading...</div>;
   }
+
+  if (fileNameOnly) {
+    return (
+      <ul className="list-disc space-y-3">
+        {files.map((file) => (
+            <li key={file.id}>
+                <p>
+                  <Link
+                    to={`/drugsummary?guid=${file.guid}`}
+                    className="text-blue-500 hover:underline"
+                  >
+                    {file.file_name.replace(/\.[^/.]+$/, "")}
+                  </Link>
+                </p>
+            </li>
+        ))}
+      </ul>
+    );
+  }
+
   return (
     <Layout>
       <div className="font_body mt-48 flex w-full flex-col items-center justify-center rounded-md border bg-white p-4 px-8 ring-1 hover:ring-slate-300 md:max-w-6xl">
         <div className="mt-8 text-sm text-gray-600">
           <ul>
             {files.map((file) => (
-              <li key={file.id} className="border-b p-4">
-                <Link
-                  to={`/drugsummary?guid=${file.guid}`}
-                  className="text-blue-500 hover:underline"
-                >
+                <li key={file.id} className="border-b p-4">
+                  <Link
+                    to={`/drugsummary?guid=${file.guid}`}
+                    className="text-blue-500 hover:underline"
+                  >
+                    <p>
+                      <strong>File Name:</strong> {file.file_name}
+                    </p>
+                  </Link>
                   <p>
-                    <strong>File Name:</strong> {file.file_name}
+                    <strong>Date of Upload:</strong>{" "}
+                    {new Date(file.date_of_upload).toLocaleString()}
                   </p>
-                </Link>
-                <p>
-                  <strong>Date of Upload:</strong>{" "}
-                  {new Date(file.date_of_upload).toLocaleString()}
-                </p>
-                <p>
-                  <strong>Size:</strong> {file.size} bytes
-                </p>
-                <p>
-                  <strong>Page Count:</strong> {file.page_count}
-                </p>
-                <p>
-                  <strong>File Type:</strong> {file.file_type}
-                </p>
-                <p>
-                  <strong>Uploaded By:</strong> {file.uploaded_by_email}
-                </p>
-              </li>
+                  <p>
+                    <strong>Size:</strong> {file.size} bytes
+                  </p>
+                  <p>
+                    <strong>Page Count:</strong> {file.page_count}
+                  </p>
+                  <p>
+                    <strong>File Type:</strong> {file.file_type}
+                  </p>
+                  <p>
+                    <strong>Uploaded By:</strong> {file.uploaded_by_email}
+                  </p>
+                </li>
             ))}
           </ul>
         </div>

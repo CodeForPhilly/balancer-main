@@ -1,5 +1,6 @@
 import Layout from "../Layout/Layout";
 import LineChart from "./Icons/LineChart";
+import ListOfFiles from "../Files/ListOfFiles.tsx";
 
 interface DataProps {
   title: string;
@@ -13,7 +14,7 @@ const data: DataProps = {
     "publicly available peer-reviewed medical research, as well as " +
     "through extensive interviews with physicians and medical professionals " +
     "who treat patients with bipolar disorder.",
-    "Check back soon for more comprehensive information on our data sources."
+    "See below for our data sources:"
   ],
 
 };
@@ -38,6 +39,9 @@ function HowTo() {
             <p className="font-satoshi text-sm text-gray-700">
               {data.paragraph[1]}
             </p>
+          </div>
+          <div className="flex flex-col px-6 py-2 font-satoshi text-sm text-gray-700">
+            <ListOfFiles fileNameOnly={true} />
           </div>
         </div>
       </div>

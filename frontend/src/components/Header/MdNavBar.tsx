@@ -31,7 +31,7 @@ const MdNavBar = (props: LoginFormProps) => {
         </Link> */}
         <Link to="/">
           <span className="bg-gradient-to-r  from-blue-500 via-blue-700 to-blue-300 bg-clip-text font-quicksand text-2xl font-bold text-transparent md:text-3xl ">
-            Balancers
+            Balancer
           </span>
         </Link>
       </nav>

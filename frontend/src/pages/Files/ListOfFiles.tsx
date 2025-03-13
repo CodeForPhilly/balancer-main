@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import Layout from "../Layout/Layout";
 import { Link } from "react-router-dom";
+import Table from "../../components/Table/Table.tsx";
 
 interface File {
   id: number;
@@ -18,7 +19,7 @@ interface File {
   approved: boolean | null;
   uploaded_by: number;
 }
-function ListOfFiles({fileNameOnly = false}) {
+function ListOfFiles({showTable = false}) {
   const [files, setFiles] = useState<File[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   //   const [error, setError] = useState<string | null>(null);
@@ -53,23 +54,53 @@ function ListOfFiles({fileNameOnly = false}) {
     return <div>Loading...</div>;
   }
 
-  if (fileNameOnly) {
+  if (showTable) {
+    const columns = [
+      { Header: 'Date of Upload', accessor: 'date_of_upload' },
+      { Header: 'File Name', accessor: 'file_name' },
+      { Header: '', accessor: 'file_open' },
+    ];
+
+    const data = files.map((file) => (
+      {
+        date_of_upload: new Date(file.date_of_upload).toLocaleString('en-US').split(',')[0],
+        file_name: file.file_name.replace(/\.[^/.]+$/, ""),
+        page_count: file.page_count,
+        file_open:
+          <Link
+            to={`/drugsummary?guid=${file.guid}`}
+            className="text-blue-500 hover:underline"
+          >
+            <b>View</b>
+          </Link>
+      }
+    ));
+
+    console.log(columns, data);
+
     return (
-      <ul className="list-disc space-y-3">
-        {files.map((file) => (
-            <li key={file.id}>
-                <p>
-                  <Link
-                    to={`/drugsummary?guid=${file.guid}`}
-                    className="text-blue-500 hover:underline"
-                  >
-                    {file.file_name.replace(/\.[^/.]+$/, "")}
-                  </Link>
-                </p>
-            </li>
-        ))}
-      </ul>
+      <div className="container mx-auto md:w-[50%]">
+        <h6 className="mb-4"></h6>
+        <Table columns={columns} data={data} />
+      </div>
     );
+
+    // return (
+    //   <ul className="list-disc space-y-3">
+    //     {files.map((file) => (
+    //         <li key={file.id}>
+    //             <p>
+    //               <Link
+    //                 to={`/drugsummary?guid=${file.guid}`}
+    //                 className="text-blue-500 hover:underline"
+    //               >
+    //                 {file.file_name.replace(/\.[^/.]+$/, "")}
+    //               </Link>
+    //             </p>
+    //         </li>
+    //     ))}
+    //   </ul>
+    // );
   }
 
   return (

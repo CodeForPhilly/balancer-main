@@ -1,4 +1,3 @@
-//import Welcome from "../../components/Welcome/Welcome.tsx";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Layout from "../Layout/Layout";
@@ -19,10 +18,11 @@ interface File {
   approved: boolean | null;
   uploaded_by: number;
 }
-function ListOfFiles({showTable = false}) {
+
+function ListOfFiles({ showTable = false }) {
   const [files, setFiles] = useState<File[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  //   const [error, setError] = useState<string | null>(null);
+  const [downloading, setDownloading] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchFiles = async () => {
@@ -50,31 +50,70 @@ function ListOfFiles({showTable = false}) {
     fetchFiles();
   }, []);
 
+  const handleDownload = async (guid: string, fileName: string) => {
+    try {
+      setDownloading(guid);
+      const baseUrl = import.meta.env.VITE_API_BASE_URL;
+      const response = await axios.get(`${baseUrl}/v1/api/uploadFile/${guid}`, {
+        headers: {
+          Authorization: `JWT ${localStorage.getItem("access")}`,
+        },
+        responseType: "blob", // Important for handling binary data
+      });
+
+      // Create a blob URL and trigger download
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error downloading file:", error);
+      alert("Failed to download the file. Please try again.");
+    } finally {
+      setDownloading(null);
+    }
+  };
+
   if (isLoading) {
     return <div>Loading...</div>;
   }
 
   if (showTable) {
     const columns = [
-      { Header: 'Date of Upload', accessor: 'date_of_upload' },
-      { Header: 'File Name', accessor: 'file_name' },
-      { Header: '', accessor: 'file_open' },
+      { Header: "Date of Upload", accessor: "date_of_upload" },
+      { Header: "File Name", accessor: "file_name" },
+      { Header: "", accessor: "file_open" },
+      { Header: "", accessor: "file_download" },
     ];
 
-    const data = files.map((file) => (
-      {
-        date_of_upload: new Date(file.date_of_upload).toLocaleString('en-US').split(',')[0],
-        file_name: file.file_name.replace(/\.[^/.]+$/, ""),
-        page_count: file.page_count,
-        file_open:
-          <Link
-            to={`/drugsummary?guid=${file.guid}`}
-            className="text-blue-500 hover:underline"
-          >
-            <b>View</b>
-          </Link>
-      }
-    ));
+    const data = files.map((file) => ({
+      date_of_upload: new Date(file.date_of_upload)
+        .toLocaleString("en-US")
+        .split(",")[0],
+      file_name: file.file_name.replace(/\.[^/.]+$/, ""),
+      page_count: file.page_count,
+      file_open: (
+        <Link
+          to={`/drugsummary?guid=${file.guid}`}
+          className="text-blue-500 hover:underline"
+        >
+          <b>View</b>
+        </Link>
+      ),
+      file_download: (
+        <button
+          onClick={() => handleDownload(file.guid, file.file_name)}
+          disabled={downloading === file.guid}
+          className="rounded bg-blue-500 px-3 py-1 text-white hover:bg-blue-600 disabled:bg-gray-400"
+        >
+          {downloading === file.guid ? "..." : "Download"}
+        </button>
+      ),
+    }));
 
     console.log(columns, data);
 
@@ -84,23 +123,6 @@ function ListOfFiles({showTable = false}) {
         <Table columns={columns} data={data} />
       </div>
     );
-
-    // return (
-    //   <ul className="list-disc space-y-3">
-    //     {files.map((file) => (
-    //         <li key={file.id}>
-    //             <p>
-    //               <Link
-    //                 to={`/drugsummary?guid=${file.guid}`}
-    //                 className="text-blue-500 hover:underline"
-    //               >
-    //                 {file.file_name.replace(/\.[^/.]+$/, "")}
-    //               </Link>
-    //             </p>
-    //         </li>
-    //     ))}
-    //   </ul>
-    // );
   }
 
   return (
@@ -109,7 +131,8 @@ function ListOfFiles({showTable = false}) {
         <div className="mt-8 text-sm text-gray-600">
           <ul>
             {files.map((file) => (
-                <li key={file.id} className="border-b p-4">
+              <li key={file.id} className="border-b p-4">
+                <div className="flex items-center justify-between">
                   <Link
                     to={`/drugsummary?guid=${file.guid}`}
                     className="text-blue-500 hover:underline"
@@ -118,23 +141,33 @@ function ListOfFiles({showTable = false}) {
                       <strong>File Name:</strong> {file.file_name}
                     </p>
                   </Link>
-                  <p>
-                    <strong>Date of Upload:</strong>{" "}
-                    {new Date(file.date_of_upload).toLocaleString()}
-                  </p>
-                  <p>
-                    <strong>Size:</strong> {file.size} bytes
-                  </p>
-                  <p>
-                    <strong>Page Count:</strong> {file.page_count}
-                  </p>
-                  <p>
-                    <strong>File Type:</strong> {file.file_type}
-                  </p>
-                  <p>
-                    <strong>Uploaded By:</strong> {file.uploaded_by_email}
-                  </p>
-                </li>
+                  <button
+                    onClick={() => handleDownload(file.guid, file.file_name)}
+                    disabled={downloading === file.guid}
+                    className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 disabled:bg-gray-400"
+                  >
+                    {downloading === file.guid
+                      ? "Downloading..."
+                      : "Download PDF"}
+                  </button>
+                </div>
+                <p>
+                  <strong>Date of Upload:</strong>{" "}
+                  {new Date(file.date_of_upload).toLocaleString()}
+                </p>
+                <p>
+                  <strong>Size:</strong> {file.size} bytes
+                </p>
+                <p>
+                  <strong>Page Count:</strong> {file.page_count}
+                </p>
+                <p>
+                  <strong>File Type:</strong> {file.file_type}
+                </p>
+                <p>
+                  <strong>Uploaded By:</strong> {file.uploaded_by_email}
+                </p>
+              </li>
             ))}
           </ul>
         </div>

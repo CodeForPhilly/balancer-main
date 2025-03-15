@@ -13,10 +13,9 @@ const data: DataProps = {
     "Balancer is a free and open-source tool that utilizes data from " +
     "publicly available peer-reviewed medical research, as well as " +
     "through extensive interviews with physicians and medical professionals " +
-    "who treat patients with bipolar disorder.",
-    "See below for our data sources:"
+    "who treat patients with bipolar disorder." +
+    " You may use this table to view all of our data sources."
   ],
-
 };
 
 function HowTo() {
@@ -35,13 +34,8 @@ function HowTo() {
               {data.paragraph[0]}
             </p>
           </div>
-          <div className="flex flex-col px-2 py-2">
-            <p className="font-satoshi text-sm text-gray-700">
-              {data.paragraph[1]}
-            </p>
-          </div>
           <div className="flex flex-col px-6 py-2 font-satoshi text-sm text-gray-700">
-            <ListOfFiles fileNameOnly={true} />
+            <ListOfFiles showTable={true} />
           </div>
         </div>
       </div>

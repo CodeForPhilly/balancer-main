@@ -2,12 +2,17 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Layout from "../Layout/Layout";
 import FileRow from "./FileRow";
+import Table from "../../components/Table/Table";
+import { Link } from "react-router-dom";
 
 interface File {
   id: number;
   guid: string;
   file_name: string;
-  date_of_upload: string;
+  title: string | null;
+  publication: string | null;
+  publication_date: string | null;
+  date_of_upload: string | null;
   size: number;
   page_count: number;
   file_type: string;
@@ -86,26 +91,37 @@ const ListOfFiles: React.FC<{ showTable?: boolean }> = ({
 
   // Use the showTable prop to conditionally render different layouts if desired
   if (showTable) {
+    const columns = [
+      { Header: 'Name', accessor: 'file_name' },
+      { Header: 'Publication', accessor: 'publication' },
+      { Header: 'Date Published', accessor: 'publication_date' },
+      { Header: '', accessor: 'file_open' },
+    ];
+    const data = files.map((file) => (
+      {
+        file_name: file?.title || file.file_name.replace(/\.[^/.]+$/, ""),
+        publication: file?.publication || '',
+        publication_date: file?.publication_date || '',
+        file_open:
+          <Link
+            to={`/drugsummary?guid=${file.guid}`}
+            className="text-blue-500 hover:underline"
+          >
+            <b>View</b>
+          </Link>
+      }
+    ));
     return (
-      <div className="container mx-auto md:w-[50%]">
-        <h6 className="mb-4">File List (Table View)</h6>
-        <ul>
-          {files.map((file) => (
-            <FileRow
-              key={file.id}
-              file={file}
-              onUpdate={updateFileName}
-              onDownload={handleDownload}
-              downloading={downloading === file.guid}
-            />
-          ))}
-        </ul>
+      <div className ="container mx-auto md:w-[50%]">
+        <h6 className="mb-4"></h6>
+        <Table columns={columns} data={data} />
       </div>
-    );
-  } else {
+    )
+  }
+  else {
     return (
       <Layout>
-        <div className="font_body mt-48 flex w-full flex-col items-center justify-center rounded-md border bg-white p-4 px-8 ring-1 hover:ring-slate-300 md:max-w-6xl">
+        <div className="font_body mt-48 flex flex-col items-center justify-center rounded-md border bg-white p-4 px-8 ring-1 hover:ring-slate-300 md:max-w-6xl">
           <div className="mt-8 text-sm text-gray-600">
             <ul>
               {files.map((file) => (

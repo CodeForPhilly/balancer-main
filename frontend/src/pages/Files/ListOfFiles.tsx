@@ -20,7 +20,7 @@ interface File {
   source_url: string | null;
   analyzed: boolean | null;
   approved: boolean | null;
-  uploaded_by: number;
+  uploaded_by: string;
 }
 
 const ListOfFiles: React.FC<{ showTable?: boolean }> = ({
@@ -52,10 +52,11 @@ const ListOfFiles: React.FC<{ showTable?: boolean }> = ({
     fetchFiles();
   }, []);
 
-  const updateFileName = (guid: string, newFileName: string) => {
+  // Update the file name and use Partial<File> to match the onUpdate signature
+  const updateFileName = (guid: string, updatedFile: Partial<File>) => {
     setFiles((prevFiles) =>
       prevFiles.map((file) =>
-        file.guid === guid ? { ...file, file_name: newFileName } : file
+        file.guid === guid ? { ...file, ...updatedFile } : file
       )
     );
   };
@@ -128,7 +129,7 @@ const ListOfFiles: React.FC<{ showTable?: boolean }> = ({
                 <FileRow
                   key={file.id}
                   file={file}
-                  onUpdate={updateFileName}
+                  onUpdate={updateFileName} // This will now work correctly
                   onDownload={handleDownload}
                   downloading={downloading === file.guid}
                 />

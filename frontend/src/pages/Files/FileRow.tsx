@@ -16,7 +16,7 @@ interface File {
   source_url: string | null;
   analyzed: boolean | null;
   approved: boolean | null;
-  uploaded_by: number;
+  uploaded_by: string;
 }
 
 interface FileRowProps {
@@ -34,15 +34,15 @@ const FileRow: React.FC<FileRowProps> = ({
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [fileName, setFileName] = useState(file.file_name);
-  const [title, setTitle] = useState(file.title);
-  const [publication, setPublication] = useState(file.publication);
-  const [publicationDate, setPublicationDate] = useState(file.publication_date);
+  const [title, setTitle] = useState(file.title ?? '');
+  const [publication, setPublication] = useState(file.publication ?? '');
+  const [publicationDate, setPublicationDate] = useState(file.publication_date ?? '');
   const [loading, setLoading] = useState(false);
 
   const handleSave = async () => {
     setLoading(true);
     try {
-      const baseUrl = import.meta.env.VITE_API_BASE_URL;
+      const baseUrl = import.meta.env.VITE_API_BASE_URL as string;
       await fetch(`${baseUrl}/v1/api/editmetadata/${file.guid}`, {
         method: "PATCH",
         headers: {
@@ -56,7 +56,14 @@ const FileRow: React.FC<FileRowProps> = ({
           publication_date: publicationDate,
         }),
       });
-      onUpdate(file.guid, { file_name: fileName, title: title, publication: publication, publication_date: publicationDate });
+
+      onUpdate(file.guid, {
+        file_name: fileName,
+        title: title,
+        publication: publication,
+        publication_date: publicationDate
+      });
+
       setIsEditing(false);
     } catch (error) {
       console.error("Error updating file:", error);
@@ -68,9 +75,9 @@ const FileRow: React.FC<FileRowProps> = ({
 
   const handleCancel = () => {
     setFileName(file.file_name);
-    setTitle(file.title);
-    setPublication(file.publication);
-    setPublicationDate(file.publication_date);
+    setTitle(file.title ?? '');
+    setPublication(file.publication ?? '');
+    setPublicationDate(file.publication_date ?? '');
     setIsEditing(false);
   };
 
@@ -147,7 +154,7 @@ const FileRow: React.FC<FileRowProps> = ({
                 placeholder="Title"
               />
             ) : (
-              file.title
+              file.title || 'N/A' // Fallback for null title
             )}
           </p>
         </div>
@@ -167,7 +174,7 @@ const FileRow: React.FC<FileRowProps> = ({
                 placeholder="Publication"
               />
             ) : (
-              file.publication
+              file.publication || 'N/A' // Fallback for null publication
             )}
           </p>
         </div>
@@ -187,7 +194,7 @@ const FileRow: React.FC<FileRowProps> = ({
                 placeholder="Publication Date"
               />
             ) : (
-              file.publication_date
+              file.publication_date || 'N/A' // Fallback for null publication_date
             )}
           </p>
         </div>
@@ -195,7 +202,7 @@ const FileRow: React.FC<FileRowProps> = ({
 
       <p>
         <strong>Date of Upload:</strong>{" "}
-        {new Date(file.date_of_upload).toLocaleString()}
+        {file.date_of_upload ? new Date(file.date_of_upload).toLocaleString() : "N/A"}
       </p>
       <p>
         <strong>Size:</strong> {file.size} bytes

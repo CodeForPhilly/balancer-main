@@ -3,7 +3,6 @@ import axios from "axios";
 import Layout from "../Layout/Layout";
 import FileRow from "./FileRow";
 import Table from "../../components/Table/Table";
-import { Link } from "react-router-dom";
 
 interface File {
   id: number;
@@ -29,6 +28,7 @@ const ListOfFiles: React.FC<{ showTable?: boolean }> = ({
   const [files, setFiles] = useState<File[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [downloading, setDownloading] = useState<string | null>(null);
+  const [opening, setOpening] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchFiles = async () => {
@@ -52,7 +52,6 @@ const ListOfFiles: React.FC<{ showTable?: boolean }> = ({
     fetchFiles();
   }, []);
 
-  // Update the file name and use Partial<File> to match the onUpdate signature
   const updateFileName = (guid: string, updatedFile: Partial<File>) => {
     setFiles((prevFiles) =>
       prevFiles.map((file) =>
@@ -88,9 +87,30 @@ const ListOfFiles: React.FC<{ showTable?: boolean }> = ({
     }
   };
 
+  const handleOpen = async (guid: string) => {
+    try {
+      setOpening(guid);
+      const baseUrl = import.meta.env.VITE_API_BASE_URL;
+      const response = await axios.get(`${baseUrl}/v1/api/uploadFile/${guid}`, {
+        headers: {
+          Authorization: `JWT ${localStorage.getItem("access")}`,
+        },
+        responseType: "arraybuffer",
+      });
+
+      const file = new Blob([response.data], { type: 'application/pdf' });
+      const fileURL = window.URL.createObjectURL(file);
+      window.open(fileURL);
+    } catch (error) {
+      console.error("Error opening file:", error);
+      alert("Failed to open the file. Please try again.");
+    } finally {
+      setOpening(null);
+    }
+  };
+
   if (isLoading) return <div>Loading...</div>;
 
-  // Use the showTable prop to conditionally render different layouts if desired
   if (showTable) {
     const columns = [
       { Header: 'Name', accessor: 'file_name' },
@@ -102,24 +122,34 @@ const ListOfFiles: React.FC<{ showTable?: boolean }> = ({
       {
         file_name: file?.title || file.file_name.replace(/\.[^/.]+$/, ""),
         publication: file?.publication || '',
-        publication_date: file?.publication_date || '',
+        publication_date: file.publication_date
+          ? new Intl.DateTimeFormat("en-US", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit"
+          }).format(new Date(file.publication_date))
+          : "",
         file_open:
-          <Link
-            to={`/drugsummary?guid=${file.guid}`}
-            className="text-blue-500 hover:underline"
-          >
-            <b>View</b>
-          </Link>
+        <a
+          key={file.guid}
+          href="#"
+          onClick={(e) => {
+            if (opening) e.preventDefault(); // Prevent action if opening is in progress
+            else handleOpen(file.guid);
+          }}
+          className={`text-blue-500 font-bold hover:underline ${opening ? 'cursor-not-allowed opacity-50' : ''}`}
+        >
+          View
+        </a>
       }
     ));
     return (
-      <div className ="container mx-auto md:w-[50%]">
+      <div className="container mx-auto md:w-[50%]">
         <h6 className="mb-4"></h6>
         <Table columns={columns} data={data} />
       </div>
-    )
-  }
-  else {
+    );
+  } else {
     return (
       <Layout>
         <div className="font_body mt-48 flex flex-col items-center justify-center rounded-md border bg-white p-4 px-8 ring-1 hover:ring-slate-300 md:max-w-6xl">
@@ -129,7 +159,7 @@ const ListOfFiles: React.FC<{ showTable?: boolean }> = ({
                 <FileRow
                   key={file.id}
                   file={file}
-                  onUpdate={updateFileName} // This will now work correctly
+                  onUpdate={updateFileName}
                   onDownload={handleDownload}
                   downloading={downloading === file.guid}
                 />

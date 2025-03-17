@@ -53,7 +53,7 @@ const FileRow: React.FC<FileRowProps> = ({
           file_name: fileName,
           title: title,
           publication: publication,
-          publication_date: publicationDate,
+          publication_date: publicationDate.replace('///g', '-'),
         }),
       });
 
@@ -186,7 +186,7 @@ const FileRow: React.FC<FileRowProps> = ({
             <strong>Publication Date:</strong>{" "}
             {isEditing ? (
               <input
-                type="text"
+                type="date"
                 value={publicationDate || ''}
                 onChange={(e) => setPublicationDate(e.target.value)}
                 className="border p-1 w-full"
@@ -194,7 +194,13 @@ const FileRow: React.FC<FileRowProps> = ({
                 placeholder="Publication Date"
               />
             ) : (
-              file.publication_date || 'N/A' // Fallback for null publication_date
+              file.publication_date
+              ? new Intl.DateTimeFormat("en-US", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit"
+              }).format(new Date(file.publication_date))
+              : "N/A"
             )}
           </p>
         </div>
@@ -202,7 +208,12 @@ const FileRow: React.FC<FileRowProps> = ({
 
       <p>
         <strong>Date of Upload:</strong>{" "}
-        {file.date_of_upload ? new Date(file.date_of_upload).toLocaleString() : "N/A"}
+        {file.date_of_upload
+          ? new Intl.DateTimeFormat("en-US", {
+            dateStyle: "short",
+            timeStyle: "medium"
+          }).format(new Date(file.date_of_upload))
+          : "N/A"}
       </p>
       <p>
         <strong>Size:</strong> {file.size} bytes

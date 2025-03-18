@@ -34,6 +34,10 @@ interface PatientInfoInterface {
 // TODO: refactor with Formik
 
 export interface NewPatientFormProps {
+  enterNewPatient: boolean;
+  setEnterNewPatient: React.Dispatch<React.SetStateAction<boolean>>;
+  isEditing: boolean;
+  setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
   patientInfo: PatientInfo;
   setPatientInfo: React.Dispatch<React.SetStateAction<PatientInfo>>;
   allPatientInfo: PatientInfo[];
@@ -41,16 +45,21 @@ export interface NewPatientFormProps {
 }
 
 const NewPatientForm = ({
+  isEditing,
+  setIsEditing,
   setPatientInfo,
   allPatientInfo,
   setAllPatientInfo,
+  patientInfo,
+  enterNewPatient,
+  setEnterNewPatient
 }: NewPatientFormProps) => {
   const [isPressed, setIsPressed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   // const [errors, setErrors] = useState<string[]>([]);
 
-  const [newPatientInfo, setNewPatientInfo] = useState<PatientInfo>({
+  const nullPatient = {
     ID: "",
     Diagnosis: Diagnosis.Manic,
     OtherDiagnosis: "",
@@ -68,7 +77,12 @@ const NewPatientForm = ({
     blood_pressure: "No",
     Reproductive: "No",
     risk_pregnancy: "No",
-  });
+    any_pregnancy: "No"
+  };
+
+  const defaultPatientInfo: PatientInfo = isEditing ? { ...patientInfo } : nullPatient;
+
+  const [newPatientInfo, setNewPatientInfo] = useState<PatientInfo>(defaultPatientInfo);
 
   const handleMouseDown = () => {
     setIsPressed(true);
@@ -77,7 +91,6 @@ const NewPatientForm = ({
   const handleMouseUp = () => {
     setIsPressed(false);
   };
-  const [enterNewPatient, setEnterNewPatient] = useState(true);
 
   useEffect(() => {
     const patientInfoFromLocalStorage = JSON.parse(
@@ -114,19 +127,14 @@ const NewPatientForm = ({
       reproductive: newPatientInfo.Reproductive == "Yes",
       riskPregnancy: newPatientInfo.risk_pregnancy == "Yes",
     };
-    console.log(newPatientInfo);
 
     setIsLoading(true); // Start loading
 
     try {
       const baseUrl = import.meta.env.VITE_API_BASE_URL;
-      const url = `${baseUrl}`;
-      console.log(payload);
+      const url = `${baseUrl}/v1/api/get_med_recommend`;
 
-      const { data } = await api.post(
-        url + `/v1/api/get_med_recommend`,
-        payload
-      );
+      const { data } = await api.post(url, payload);
 
       const categorizedMedications = {
         first: data.first ?? [],
@@ -134,42 +142,44 @@ const NewPatientForm = ({
         third: data.third ?? [],
       };
 
-      // console.log(categorizedMedications.first);
-      // console.log(categorizedMedications.second);
+      let patientID = newPatientInfo.ID;
 
-      setPatientInfo((prev) => ({
-        ...prev,
-        PossibleMedications: categorizedMedications,
-      }));
-
-      const generatedGuid = uuidv4();
-      const firstFiveCharacters = generatedGuid.substring(0, 5);
-
-      setPatientInfo({ ...newPatientInfo, ID: firstFiveCharacters });
-
-      if (data) {
-        const newDescription = {
-          ...newPatientInfo,
-          ID: firstFiveCharacters,
-          PossibleMedications: categorizedMedications,
-        };
-
-        const updatedAllPatientInfo = [newDescription, ...allPatientInfo];
-        setPatientInfo(newDescription);
-        setAllPatientInfo(updatedAllPatientInfo);
-
-        localStorage.setItem(
-          "patientInfos",
-          JSON.stringify(updatedAllPatientInfo)
-        );
-      } else {
-        console.log("No description came back");
+      // Ensure ID is never blank
+      if (!patientID) {
+        const generatedGuid = uuidv4();
+        patientID = generatedGuid.substring(0, 5);
       }
+
+      const updatedPatientInfo = {
+        ...newPatientInfo,
+        ID: patientID, // Assign or preserve ID
+        PossibleMedications: categorizedMedications,
+      };
+
+      let updatedAllPatientInfo = [...allPatientInfo];
+
+      // Check if patient exists and update, otherwise add as new
+      const existingPatientIndex = updatedAllPatientInfo.findIndex(
+        (patient) => patient.ID === patientID
+      );
+
+      if (existingPatientIndex !== -1) {
+        updatedAllPatientInfo[existingPatientIndex] = updatedPatientInfo;
+      } else {
+        updatedAllPatientInfo = [updatedPatientInfo, ...allPatientInfo];
+      }
+
+      // Update state and localStorage
+      setPatientInfo(updatedPatientInfo);
+      setAllPatientInfo(updatedAllPatientInfo);
+      localStorage.setItem("patientInfos", JSON.stringify(updatedAllPatientInfo));
+
     } catch (error) {
-      console.log("Error5 occurred:", error);
+      console.error("Error occurred:", error);
     } finally {
+      setIsEditing(false);
       setEnterNewPatient(false);
-      setIsLoading(false); // Stop loading
+      setIsLoading(false);
       handleClickNewPatient();
       window.scrollTo({ top: 0 });
     }
@@ -208,6 +218,7 @@ const NewPatientForm = ({
     }));
 
     setEnterNewPatient(!enterNewPatient);
+    setIsEditing(false)
   };
 
   const handleClickNewPatient = () => {
@@ -255,6 +266,12 @@ const NewPatientForm = ({
     }));
   };
 
+  useEffect(() => {
+    if (isEditing) {
+      setNewPatientInfo(patientInfo);
+    }
+  }, [isEditing, patientInfo]);
+
   return (
     <section className="lg:flex lg:items-center lg:justify-center">
       {/* {search} */}
@@ -266,17 +283,17 @@ const NewPatientForm = ({
               className="flex items-center justify-between"
               onClick={handleClickSummary}
             >
-              <h2 className="header_logo cursor-pointer font-satoshi text-xl font-bold text-gray-600  hover:text-blue-600  ">
+              <h2 className="text-xl font-bold text-gray-600 cursor-pointer header_logo font-satoshi hover:text-blue-600 ">
                 Click To Enter New Patient
               </h2>
 
               <div
                 onClick={handleClickSummary}
-                className=" cursor-pointer items-center"
+                className="items-center cursor-pointer "
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4"
+                  className="w-4 h-4"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -293,19 +310,19 @@ const NewPatientForm = ({
           </div>
         )}
         {enterNewPatient && (
-          <div className="font_body rounded-md  border bg-white p-2 px-3 ring-1 hover:ring-slate-300 md:p-4 md:px-8">
+          <div className="p-2 px-3 bg-white border rounded-md font_body ring-1 hover:ring-slate-300 md:p-4 md:px-8">
             <div className="flex items-center justify-between">
               <div
                 onClick={handleClickSummary}
-                className=" cursor-pointer items-center"
+                className="items-center cursor-pointer "
               >
-                <h2 className="header_logo cursor-pointer font-satoshi text-xl font-bold text-gray-600  hover:text-blue-600 ">
-                  Enter Patient Details
+                <h2 className="text-xl font-bold text-gray-600 cursor-pointer header_logo font-satoshi hover:text-blue-600 ">
+                  {isEditing ? `Edit Patient ${patientInfo.ID} Details` : "Enter Patient Details"}
                   {/* <span className="blue_gradient">Details</span> */}
                 </h2>
               </div>
               <button
-                className="rounded bg-transparent text-2xl text-black hover:text-gray-600 focus:border-none focus:outline-none"
+                className="text-2xl text-black bg-transparent rounded hover:text-gray-600 focus:border-none focus:outline-none"
                 aria-label="Close"
                 onClick={handleClickSummary}
               >
@@ -314,11 +331,11 @@ const NewPatientForm = ({
             </div>
             <form onSubmit={handleSubmit} className="mt-2 ">
               {/* <ErrorMessage errors={errors} /> */}
-              <div className="flex flex-row justify-between border-b border-gray-900/10 py-6 md:items-center  ">
+              <div className="flex flex-row justify-between py-6 border-b border-gray-900/10 md:items-center ">
                 <div className="mr-5 md:mr-0 md:w-[300px]">
                   <label
                     htmlFor="current-state"
-                    className="block text-sm font-semibold leading-6  text-gray-900"
+                    className="block text-sm font-semibold leading-6 text-gray-900"
                   >
                     Current state
                   </label>
@@ -344,20 +361,20 @@ const NewPatientForm = ({
                 )} */}
               </div>
 
-              {/* <div className="flex justify-between border-b border-gray-900/10 px-0  py-6 md:grid md:grid-cols-3 md:gap-4">
+              {/* <div className="flex justify-between px-0 py-6 border-b border-gray-900/10 md:grid md:grid-cols-3 md:gap-4">
                 <div>
                   <legend className="text-sm font-semibold leading-6 text-gray-900">
                     Bipolar history
                   </legend>
                 </div>
                 <div className="pr-10 md:pl-24 md:pr-0">
-                  <div className=" flex gap-x-3">
-                    <div className="flex h-6 items-center ">
+                  <div className="flex  gap-x-3">
+                    <div className="flex items-center h-6 ">
                       <input
                         id="Mania"
                         name="Mania"
                         type="checkbox"
-                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                        className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-600"
                         onChange={(e) => handleCheckboxChange(e, "Mania")}
                       />
                     </div>
@@ -370,13 +387,13 @@ const NewPatientForm = ({
                       </label>
                     </div>
                   </div>
-                  <div className=" flex gap-x-3">
-                    <div className="flex h-6 items-center">
+                  <div className="flex  gap-x-3">
+                    <div className="flex items-center h-6">
                       <input
                         id="Depression"
                         name="Depression"
                         type="checkbox"
-                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                        className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-600"
                         onChange={(e) => handleCheckboxChange(e, "Depression")}
                       />
                     </div>
@@ -389,13 +406,13 @@ const NewPatientForm = ({
                       </label>
                     </div>
                   </div>
-                  <div className=" flex gap-x-3">
-                    <div className="flex h-6 items-center">
+                  <div className="flex  gap-x-3">
+                    <div className="flex items-center h-6">
                       <input
                         id="Hypomania"
                         name="Hypomania"
                         type="checkbox"
-                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                        className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-600"
                         onChange={(e) => handleCheckboxChange(e, "Hypomania")}
                       />
                     </div>
@@ -408,13 +425,13 @@ const NewPatientForm = ({
                       </label>
                     </div>
                   </div>
-                  <div className=" flex gap-x-3">
-                    <div className="flex h-6 items-center">
+                  <div className="flex  gap-x-3">
+                    <div className="flex items-center h-6">
                       <input
                         id="Mixed"
                         name="Mixed"
                         type="checkbox"
-                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                        className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-600"
                         onChange={(e) => handleCheckboxChange(e, "Mixed")}
                       />
                     </div>
@@ -429,24 +446,25 @@ const NewPatientForm = ({
                   </div>
                 </div>
               </div> */}
-              <div className="border-b border-gray-900/10 py-6 ">
-                <p className=" text-sm leading-6 text-gray-600">
+              <div className="py-6 border-b border-gray-900/10 ">
+                <p className="text-sm leading-6 text-gray-600 ">
                   Select patient characteristics
                 </p>
-                <fieldset className="mt-6 justify-between md:mt-0 md:grid md:grid-cols-3 md:gap-4 md:px-4 md:py-6">
-                  <dt className=" flex text-sm font-semibold leading-6 text-gray-900">
+                <fieldset className="justify-between mt-6 md:mt-0 md:grid md:grid-cols-3 md:gap-4 md:px-4 md:py-6">
+                  <dt className="flex text-sm font-semibold leading-6 text-gray-900 ">
                     Currently psychotic
                   </dt>
 
                   <dd className="text-sm text-gray-900 md:col-span-2 md:mt-0 md:pl-24">
-                    <div className="flex items-center gap-x-3 pr-16">
+                    <div className="flex items-center pr-16 gap-x-3">
                       <input
                         id="psychotic"
                         name="psychotic"
                         type="radio"
                         value="Yes"
+                        checked={newPatientInfo.Psychotic === "Yes"}
                         onChange={(e) => handleRadioChange(e, "Psychotic")}
-                        className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                        className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-600"
                       />
                       <label
                         htmlFor="push-everything"
@@ -460,8 +478,9 @@ const NewPatientForm = ({
                         name="psychotic"
                         type="radio"
                         value="No"
+                        checked={newPatientInfo.Psychotic === "No"}
                         onChange={(e) => handleRadioChange(e, "Psychotic")}
-                        className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                        className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-600"
                       />
                       <label
                         htmlFor="push-email"
@@ -472,25 +491,26 @@ const NewPatientForm = ({
                     </div>
                   </dd>
                 </fieldset>
-                <fieldset className="mt-6 justify-between md:mt-0 md:grid md:grid-cols-3 md:gap-4 md:px-4 md:py-6">
+                <fieldset className="justify-between mt-6 md:mt-0 md:grid md:grid-cols-3 md:gap-4 md:px-4 md:py-6">
                   <dt className="flex text-sm font-semibold leading-6 text-gray-900">
                     History of suicide attempt(s)
                     <Tooltip text="Lithium is the only medication on the market that has been proven to reduce suicidality in patients with bipolar disorder, so it will be shown at the top of the suggested medications list.">
-                      <span className="material-symbols-outlined  ml-1">
+                      <span className="ml-1 material-symbols-outlined">
                         info
                       </span>
                     </Tooltip>
                   </dt>
 
                   <dd className="text-sm text-gray-900 md:col-span-2 md:mt-0 md:pl-24">
-                    <div className="flex items-center gap-x-3 pr-16">
+                    <div className="flex items-center pr-16 gap-x-3">
                       <input
                         id="suicide"
                         name="suicide"
                         type="radio"
+                        checked={newPatientInfo.Suicide === "Yes"}
                         value="Yes"
                         onChange={(e) => handleRadioChange(e, "Suicide")}
-                        className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                        className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-600"
                       />
                       <label
                         htmlFor="push-everything"
@@ -503,9 +523,9 @@ const NewPatientForm = ({
                         id="suicide"
                         name="suicide"
                         type="radio"
-                        value="No"
+                        checked={newPatientInfo.Suicide === "No"}
                         onChange={(e) => handleRadioChange(e, "Suicide")}
-                        className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                        className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-600"
                       />
                       <label
                         htmlFor="push-email"
@@ -516,24 +536,25 @@ const NewPatientForm = ({
                     </div>
                   </dd>
                 </fieldset>
-                <fieldset className="mt-6 justify-between md:mt-0 md:grid md:grid-cols-3 md:gap-4 md:px-4 md:py-6">
+                <fieldset className="justify-between mt-6 md:mt-0 md:grid md:grid-cols-3 md:gap-4 md:px-4 md:py-6">
                   <dt className="flex text-sm font-semibold leading-6 text-gray-900">
                     History or risk of kidney disease
                     <Tooltip text="Lithium can affect kidney function, so it will not be included in the suggested medication list for patients with a risk or history of kidney disease.">
-                      <span className="material-symbols-outlined  ml-1">
+                      <span className="ml-1 material-symbols-outlined">
                         info
                       </span>
                     </Tooltip>
                   </dt>
                   <dd className="text-sm text-gray-900 md:col-span-2 md:mt-0 md:pl-24">
-                    <div className="flex items-center gap-x-3 pr-16">
+                    <div className="flex items-center pr-16 gap-x-3">
                       <input
                         id="Kidney"
                         name="Kidney"
                         type="radio"
                         value="Yes"
+                        checked={newPatientInfo.Kidney === "Yes"}
                         onChange={(e) => handleRadioChange(e, "Kidney")}
-                        className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                        className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-600"
                       />
                       <label
                         htmlFor="push-everything"
@@ -547,8 +568,9 @@ const NewPatientForm = ({
                         name="Kidney"
                         type="radio"
                         value="No"
+                        checked={newPatientInfo.Kidney === "No"}
                         onChange={(e) => handleRadioChange(e, "Kidney")}
-                        className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                        className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-600"
                       />
                       <label
                         htmlFor="push-email"
@@ -559,24 +581,25 @@ const NewPatientForm = ({
                     </div>
                   </dd>
                 </fieldset>
-                <fieldset className="mt-6 justify-between md:mt-0 md:grid md:grid-cols-3 md:gap-4 md:px-4 md:py-6">
+                <fieldset className="justify-between mt-6 md:mt-0 md:grid md:grid-cols-3 md:gap-4 md:px-4 md:py-6">
                   <dt className="flex text-sm font-semibold leading-6 text-gray-900">
                     History or risk of liver disease
                     <Tooltip text="Depakote is processed through the liver, so it will not be included in the suggested medication list for patients with a risk or history of liver disease.">
-                      <span className="material-symbols-outlined  ml-1">
+                      <span className="ml-1 material-symbols-outlined">
                         info
                       </span>
                     </Tooltip>
                   </dt>
                   <dd className="text-sm text-gray-900 md:col-span-2 md:mt-0 md:pl-24">
-                    <div className="flex items-center gap-x-3 pr-16">
+                    <div className="flex items-center pr-16 gap-x-3">
                       <input
                         id="Liver"
                         name="Liver"
                         type="radio"
                         value="Yes"
+                        checked={newPatientInfo.Liver === "Yes"}
                         onChange={(e) => handleRadioChange(e, "Liver")}
-                        className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                        className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-600"
                       />
                       <label
                         htmlFor="push-everything"
@@ -590,8 +613,9 @@ const NewPatientForm = ({
                         name="Liver"
                         type="radio"
                         value="No"
+                        checked={newPatientInfo.Liver === "No"}
                         onChange={(e) => handleRadioChange(e, "Liver")}
-                        className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                        className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-600"
                       />
                       <label
                         htmlFor="push-email"
@@ -603,26 +627,27 @@ const NewPatientForm = ({
                   </dd>
                 </fieldset>
 
-                <fieldset className="mt-6 justify-between md:mt-0 md:grid md:grid-cols-3 md:gap-4 md:px-4 md:py-6">
+                <fieldset className="justify-between mt-6 md:mt-0 md:grid md:grid-cols-3 md:gap-4 md:px-4 md:py-6">
                   <dt className="flex text-sm font-semibold leading-6 text-gray-900">
                     <Tooltip text="Second-generation antipsychotics can cause low blood pressure upon standing, putting the patient at risk of passing out and hitting their head, so they will not be included in suggested medication list for patients with a risk or history of low blood pressure.">
                       History or risk of low blood pressure, or concern for
                       falls
-                      <span className="material-symbols-outlined  ml-1">
+                      <span className="ml-1 material-symbols-outlined">
                         info
                       </span>
                     </Tooltip>
                   </dt>
 
                   <dd className="text-sm text-gray-900 md:col-span-2 md:mt-0 md:pl-24">
-                    <div className="flex items-center gap-x-3 pr-16">
+                    <div className="flex items-center pr-16 gap-x-3">
                       <input
                         id="blood_pressure"
                         name="blood_pressure"
                         type="radio"
                         value="Yes"
+                        checked={newPatientInfo.blood_pressure === "Yes"}
                         onChange={(e) => handleRadioChange(e, "blood_pressure")}
-                        className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                        className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-600"
                       />
                       <label
                         htmlFor="blood_pressure"
@@ -636,8 +661,9 @@ const NewPatientForm = ({
                         name="blood_pressure"
                         type="radio"
                         value="No"
+                        checked={newPatientInfo.blood_pressure === "No"}
                         onChange={(e) => handleRadioChange(e, "blood_pressure")}
-                        className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                        className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-600"
                       />
                       <label
                         htmlFor="blood_pressure"
@@ -648,25 +674,26 @@ const NewPatientForm = ({
                     </div>
                   </dd>
                 </fieldset>
-                <fieldset className="mt-6 justify-between md:mt-0 md:grid md:grid-cols-3 md:gap-4 md:px-4 md:py-6">
+                <fieldset className="justify-between mt-6 md:mt-0 md:grid md:grid-cols-3 md:gap-4 md:px-4 md:py-6">
                   <dt className="flex text-sm font-semibold leading-6 text-gray-900">
                     Has weight gain concerns
                     <Tooltip text="Seroquel, Risperdal, Abilify, and Zyprexa are known for causing weight gain, so they will not be included in the suggested medications list for patients with concerns about weight gain.">
-                      <span className="material-symbols-outlined  ml-1">
+                      <span className="ml-1 material-symbols-outlined">
                         info
                       </span>
                     </Tooltip>
                   </dt>
 
                   <dd className="text-sm text-gray-900 md:col-span-2 md:mt-0 md:pl-24">
-                    <div className="flex items-center gap-x-3 pr-16">
+                    <div className="flex items-center pr-16 gap-x-3">
                       <input
                         id="weight_gain"
                         name="weight_gain"
                         type="radio"
+                        checked={newPatientInfo.weight_gain === "Yes"}
                         value="Yes"
                         onChange={(e) => handleRadioChange(e, "weight_gain")}
-                        className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                        className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-600"
                       />
                       <label
                         htmlFor="weight_gain"
@@ -680,8 +707,9 @@ const NewPatientForm = ({
                         name="weight_gain"
                         type="radio"
                         value="No"
+                        checked={newPatientInfo.weight_gain === "No"}
                         onChange={(e) => handleRadioChange(e, "weight_gain")}
-                        className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                        className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-600"
                       />
                       <label
                         htmlFor="weight_gain"
@@ -692,25 +720,26 @@ const NewPatientForm = ({
                     </div>
                   </dd>
                 </fieldset>
-                <fieldset className="mt-6 justify-between md:mt-0 md:grid md:grid-cols-3 md:gap-4 md:px-4 md:py-6">
+                <fieldset className="justify-between mt-6 md:mt-0 md:grid md:grid-cols-3 md:gap-4 md:px-4 md:py-6">
                   <dt className="flex text-sm font-semibold leading-6 text-gray-900">
                     Wants to conceive in next 2 years
                     <Tooltip text="Depakote is known for causing birth defects and will not be included in the suggested medications list for patients interested in becoming pregnant.">
-                      <span className="material-symbols-outlined  ml-1">
+                      <span className="ml-1 material-symbols-outlined">
                         info
                       </span>
                     </Tooltip>
                   </dt>
 
                   <dd className="text-sm text-gray-900 md:col-span-2 md:mt-0 md:pl-24">
-                    <div className="flex items-center gap-x-3 pr-16">
+                    <div className="flex items-center pr-16 gap-x-3">
                       <input
                         id="risk_pregnancy-yes"
                         name="risk_pregnancy"
                         type="radio"
                         value="Yes"
+                        checked={newPatientInfo.risk_pregnancy === "Yes"}
                         onChange={(e) => handleRadioChange(e, "risk_pregnancy")}
-                        className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                        className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-600"
                       />
                       <label
                         htmlFor="risk_pregnancy-yes"
@@ -724,8 +753,9 @@ const NewPatientForm = ({
                         name="risk_pregnancy"
                         type="radio"
                         value="No"
+                        checked={newPatientInfo.risk_pregnancy === "No"}
                         onChange={(e) => handleRadioChange(e, "risk_pregnancy")}
-                        className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                        className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-600"
                       />
                       <label
                         htmlFor="risk_pregnancy-no"
@@ -736,24 +766,25 @@ const NewPatientForm = ({
                     </div>
                   </dd>
                 </fieldset>
-                <fieldset className="mt-6 justify-between md:mt-0 md:grid md:grid-cols-3 md:gap-4 md:px-4 md:py-6">
+                <fieldset className="justify-between mt-6 md:mt-0 md:grid md:grid-cols-3 md:gap-4 md:px-4 md:py-6">
                   <dt className="flex text-sm font-semibold leading-6 text-gray-900">
                     Any possibility of becoming pregnant
                     <Tooltip text="Depakote is known for causing birth defects and will not be included in the suggested medications list for patients interested in becoming pregnant.">
-                      <span className="material-symbols-outlined ml-1">
+                      <span className="ml-1 material-symbols-outlined">
                         info
                       </span>
                     </Tooltip>
                   </dt>
                   <dd className="text-sm text-gray-900 md:col-span-2 md:mt-0 md:pl-24">
-                    <div className="flex items-center gap-x-3 pr-16">
+                    <div className="flex items-center pr-16 gap-x-3">
                       <input
                         id="any_pregnancy-yes"
                         name="any_pregnancy"
                         type="radio"
                         value="Yes"
+                        checked={newPatientInfo.any_pregnancy === "Yes"}
                         onChange={(e) => handleRadioChange(e, "any_pregnancy")}
-                        className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                        className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-600"
                       />
                       <label
                         htmlFor="any_pregnancy-yes"
@@ -765,9 +796,10 @@ const NewPatientForm = ({
                         id="any_pregnancy-no"
                         name="any_pregnancy"
                         type="radio"
+                        checked={newPatientInfo.any_pregnancy === "No"}
                         value="No"
                         onChange={(e) => handleRadioChange(e, "any_pregnancy")}
-                        className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                        className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-600"
                       />
                       <label
                         htmlFor="any_pregnancy-no"
@@ -780,7 +812,7 @@ const NewPatientForm = ({
                 </fieldset>
               </div>
 
-              {/* <div className="mt-5 items-center  md:flex">
+              {/* <div className="items-center mt-5 md:flex">
                 <div className="w-[300px]">
                   <label
                     htmlFor="current-state"
@@ -809,15 +841,15 @@ const NewPatientForm = ({
                   />
                 </div>
               </div> */}
-              <div className="mt-5 items-center  md:flex ">
+              <div className="items-center mt-5 md:flex ">
                 <div className=" w-[300px]">
                   <label
                     htmlFor="current-state"
-                    className="block flex text-sm font-semibold leading-6 text-gray-900"
+                    className="flex block text-sm font-semibold leading-6 text-gray-900"
                   >
                     Prior medications to exclude
                     <Tooltip text="Any bipolar medications entered here will not appear in the list of suggested medications, as they have already been tried without success.">
-                      <span className="material-symbols-outlined  ml-1">
+                      <span className="ml-1 material-symbols-outlined">
                         info
                       </span>
                     </Tooltip>
@@ -844,11 +876,11 @@ const NewPatientForm = ({
                 </div>
               </div>
 
-              <div className="mt-7 flex justify-end">
-                <div className="flex w-full justify-end">
+              <div className="flex justify-end mt-7">
+                <div className="flex justify-end w-full">
                   <button
                     type="button"
-                    className="btnGray mr-5"
+                    className="mr-5 btnGray"
                     onClick={handleClickNewPatient}
                   >
                     Clear Form
@@ -867,12 +899,12 @@ const NewPatientForm = ({
                   disabled={isLoading} // Disable the button while loading
                 >
                   {isLoading ? ( // Render loading icon if loading
-                    <div className="flex items-center  justify-center">
-                      <div className="mr-2 h-4 w-4 animate-ping rounded-full bg-white"></div>
+                    <div className="flex items-center justify-center">
+                      <div className="w-4 h-4 mr-2 bg-white rounded-full animate-ping"></div>
                       <p>Loading...</p>
                     </div>
                   ) : (
-                    <p>Submit</p>
+                    <p>{isEditing ? "Edit" : "Submit" }</p>
                   )}
                 </button>
               </div>

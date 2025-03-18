@@ -1,8 +1,7 @@
-//import Welcome from "../../components/Welcome/Welcome.tsx";
-import { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Layout from "../Layout/Layout";
-import { Link } from "react-router-dom";
+import FileRow from "./FileRow";
 
 interface File {
   id: number;
@@ -18,10 +17,13 @@ interface File {
   approved: boolean | null;
   uploaded_by: number;
 }
-function ListOfFiles() {
+
+const ListOfFiles: React.FC<{ showTable?: boolean }> = ({
+  showTable = false,
+}) => {
   const [files, setFiles] = useState<File[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  //   const [error, setError] = useState<string | null>(null);
+  const [downloading, setDownloading] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchFiles = async () => {
@@ -29,18 +31,14 @@ function ListOfFiles() {
         const baseUrl = import.meta.env.VITE_API_BASE_URL;
         const response = await axios.get(`${baseUrl}/v1/api/uploadFile`, {
           headers: {
-            Authorization: `JWT ${localStorage.getItem("access")}`, // Assuming JWT is used for auth
+            Authorization: `JWT ${localStorage.getItem("access")}`,
           },
         });
-        console.log("Response data:", response.data);
         if (Array.isArray(response.data)) {
           setFiles(response.data);
-        } else {
-          //   setError("Unexpected response format");
         }
       } catch (error) {
         console.error("Error fetching files", error);
-        // setError("Error fetching files");
       } finally {
         setIsLoading(false);
       }
@@ -49,47 +47,82 @@ function ListOfFiles() {
     fetchFiles();
   }, []);
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-  return (
-    <Layout>
-      <div className="font_body mt-48 flex w-full flex-col items-center justify-center rounded-md border bg-white p-4 px-8 ring-1 hover:ring-slate-300 md:max-w-6xl">
-        <div className="mt-8 text-sm text-gray-600">
-          <ul>
-            {files.map((file) => (
-              <li key={file.id} className="border-b p-4">
-                <Link
-                  to={`/drugsummary?guid=${file.guid}`}
-                  className="text-blue-500 hover:underline"
-                >
-                  <p>
-                    <strong>File Name:</strong> {file.file_name}
-                  </p>
-                </Link>
-                <p>
-                  <strong>Date of Upload:</strong>{" "}
-                  {new Date(file.date_of_upload).toLocaleString()}
-                </p>
-                <p>
-                  <strong>Size:</strong> {file.size} bytes
-                </p>
-                <p>
-                  <strong>Page Count:</strong> {file.page_count}
-                </p>
-                <p>
-                  <strong>File Type:</strong> {file.file_type}
-                </p>
-                <p>
-                  <strong>Uploaded By:</strong> {file.uploaded_by_email}
-                </p>
-              </li>
-            ))}
-          </ul>
-        </div>
+  const updateFileName = (guid: string, newFileName: string) => {
+    setFiles((prevFiles) =>
+      prevFiles.map((file) =>
+        file.guid === guid ? { ...file, file_name: newFileName } : file
+      )
+    );
+  };
+
+  const handleDownload = async (guid: string, fileName: string) => {
+    try {
+      setDownloading(guid);
+      const baseUrl = import.meta.env.VITE_API_BASE_URL;
+      const response = await axios.get(`${baseUrl}/v1/api/uploadFile/${guid}`, {
+        headers: {
+          Authorization: `JWT ${localStorage.getItem("access")}`,
+        },
+        responseType: "blob",
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error downloading file:", error);
+      alert("Failed to download the file. Please try again.");
+    } finally {
+      setDownloading(null);
+    }
+  };
+
+  if (isLoading) return <div>Loading...</div>;
+
+  // Use the showTable prop to conditionally render different layouts if desired
+  if (showTable) {
+    return (
+      <div className="container mx-auto md:w-[50%]">
+        <h6 className="mb-4">File List (Table View)</h6>
+        <ul>
+          {files.map((file) => (
+            <FileRow
+              key={file.id}
+              file={file}
+              onUpdate={updateFileName}
+              onDownload={handleDownload}
+              downloading={downloading === file.guid}
+            />
+          ))}
+        </ul>
       </div>
-    </Layout>
-  );
-}
+    );
+  } else {
+    return (
+      <Layout>
+        <div className="font_body mt-48 flex w-full flex-col items-center justify-center rounded-md border bg-white p-4 px-8 ring-1 hover:ring-slate-300 md:max-w-6xl">
+          <div className="mt-8 text-sm text-gray-600">
+            <ul>
+              {files.map((file) => (
+                <FileRow
+                  key={file.id}
+                  file={file}
+                  onUpdate={updateFileName}
+                  onDownload={handleDownload}
+                  downloading={downloading === file.guid}
+                />
+              ))}
+            </ul>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+};
 
 export default ListOfFiles;

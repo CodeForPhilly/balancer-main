@@ -35,6 +35,7 @@ const PatientManager = () => {
       second: "",
       third: "",
     },
+    any_pregnancy: ""
   });
 
   const handlePatientDeleted = (deletedId: string) => {
@@ -57,6 +58,7 @@ const PatientManager = () => {
         weight_gain: "",
         Reproductive: "",
         risk_pregnancy: "",
+        any_pregnancy: ""
       });
 
       setIsPatientDeleted(true);
@@ -64,6 +66,9 @@ const PatientManager = () => {
   };
 
   const [allPatientInfo, setAllPatientInfo] = useState<PatientInfo[]>([]);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [enterNewPatient, setEnterNewPatient] = useState(true);
+  const [showSummary, setShowSummary] = useState(true);
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
@@ -84,18 +89,26 @@ const PatientManager = () => {
   );
 
   return (
-    <div className="mt-24 flex w-full max-w-6xl flex-col items-center  md:mt-28">
+    <div className="flex flex-col items-center w-full max-w-6xl mt-24 md:mt-28">
       <Welcome
         subHeader="Designed to assist prescribers"
         descriptionEl={descriptionEl}
       />
       <div className="mt-0 flex w-[90%] flex-col md:mt-4 md:w-[75%] ">
         <PatientSummary
+          showSummary={showSummary}
+          setShowSummary={setShowSummary}
+          setEnterNewPatient={setEnterNewPatient}
+          setIsEditing={setIsEditing}
           patientInfo={patientInfo}
           isPatientDeleted={isPatientDeleted}
           setPatientInfo={setPatientInfo}
         />
         <NewPatientForm
+          enterNewPatient={enterNewPatient}
+          setEnterNewPatient={setEnterNewPatient}
+          setIsEditing={setIsEditing}
+          isEditing={isEditing}
           patientInfo={patientInfo}
           setPatientInfo={setPatientInfo}
           allPatientInfo={allPatientInfo}

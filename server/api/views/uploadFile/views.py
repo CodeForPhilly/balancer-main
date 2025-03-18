@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.generics import UpdateAPIView
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 import pdfplumber
@@ -159,7 +160,6 @@ class RetrieveUploadFileView(APIView):
 
     def get(self, request, guid, format=None):
         try:
-            print("yesy")
             file = UploadFile.objects.get(
                 guid=guid, uploaded_by=request.user.id)
             response = HttpResponse(file.file, content_type='application/pdf')
@@ -168,3 +168,15 @@ class RetrieveUploadFileView(APIView):
             return response
         except UploadFile.DoesNotExist:
             return Response({"message": "No file found or access denied."}, status=status.HTTP_404_NOT_FOUND)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class EditFileMetadataView(UpdateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = UploadFileSerializer
+    lookup_field = 'guid'
+
+    def get_queryset(self):
+
+        # Ensure that users can only edit files they uploaded
+        return UploadFile.objects.filter(uploaded_by=self.request.user)

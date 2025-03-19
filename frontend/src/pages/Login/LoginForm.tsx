@@ -6,6 +6,7 @@ import { connect, useDispatch } from "react-redux";
 import { RootState } from "../../services/actions/types";
 import { useState, useEffect } from "react";
 import ErrorMessage from "../../components/ErrorMessage";
+import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
 
 interface LoginFormProps {
   isAuthenticated: boolean;
@@ -16,6 +17,7 @@ function LoginForm({ isAuthenticated, loginError }: LoginFormProps) {
   // const { isAuthenticated } = props;
   const dispatch = useDispatch<AppDispatch>();
   const [errors, setErrors] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -35,6 +37,7 @@ function LoginForm({ isAuthenticated, loginError }: LoginFormProps) {
     },
     onSubmit: async (values, { setSubmitting }) => {
       try {
+        setLoading(true)
         await dispatch(login(values.email, values.password));
         // Login successful, navigate or do something here
       } catch (error) {
@@ -43,6 +46,7 @@ function LoginForm({ isAuthenticated, loginError }: LoginFormProps) {
           error instanceof Error ? error.message : "An error occurred";
         setErrors([errorMessage]);
       } finally {
+        setLoading(false);
         setSubmitting(false); // Ensures form can be submitted again
       }
     },
@@ -107,6 +111,8 @@ function LoginForm({ isAuthenticated, loginError }: LoginFormProps) {
           </div>
         </form>
       </section>
+      { loading &&  <LoadingSpinner /> }
+
       {/* <p>
         Don't have an account?{" "}
         <Link to="/register" className="font-bold hover:text-blue-600">

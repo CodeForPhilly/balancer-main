@@ -39,7 +39,7 @@ const Header: React.FC<LoginFormProps> = ({
   };
 
   const guestLinks = () => (
-    <nav onClick={handleLoginMenu} className=" flex cursor-pointer  ">
+    <nav onClick={handleLoginMenu} className="flex cursor-pointer items-center">
       <img
         src={accountLogo}
         alt="logo"
@@ -52,7 +52,7 @@ const Header: React.FC<LoginFormProps> = ({
   );
 
   const authLinks = () => (
-    <nav onClick={logout_user} className="  flex  cursor-pointer ">
+    <nav onClick={logout_user} className="flex cursor-pointer items-center">
       <img src={accountLogo} alt="logo" className="mr-5 h-5  object-contain " />
       <span className=" text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline lg:text-sm xl:text-lg">
         Sign out

@@ -278,7 +278,7 @@ const NewPatientForm = ({
       <div className=" md:mx-0 md:p-0">
         <br />
         {!enterNewPatient && (
-          <div className="font_body rounded-md  border bg-white p-2 px-3 ring-1 hover:ring-slate-300 md:p-4 md:px-8 lg:w-[860px]">
+          <div className="font_body rounded-md  border bg-white p-2 px-3 ring-1 hover:ring-slate-300 md:p-4 md:px-8 lg:w-[860px] no-print">
             <div
               className="flex items-center justify-between"
               onClick={handleClickSummary}

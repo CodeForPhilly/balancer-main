@@ -3,7 +3,7 @@ import axios from "axios";
 import { PatientInfo } from "./PatientTypes";
 import Tooltip from "../../components/Tooltip";
 import TypingAnimation from "../../components/Header/components/TypingAnimation.tsx";
-import { FaPencilAlt, FaMinus } from "react-icons/fa";
+import { FaPencilAlt, FaPrint, FaMinus } from "react-icons/fa";
 
 interface PatientSummaryProps {
   showSummary: boolean;
@@ -145,7 +145,7 @@ const PatientSummary = ({
   patientInfo,
   isPatientDeleted,
 }: PatientSummaryProps) => {
-  
+
   const [loading, setLoading] = useState(false);
   const [riskData, setRiskData] = useState<RiskData | null>(null);
   const [clickedMedication, setClickedMedication] = useState<string | null>(
@@ -197,6 +197,11 @@ const PatientSummary = ({
     setEnterNewPatient(true);
     handleClickSummary();
     console.log({editingPatient: patientInfo})
+  }
+
+  const handlePatientPrint = (e: any) => {
+    e.preventDefault();
+    window.print();
   }
 
   const renderMedicationsSection = () => (
@@ -291,12 +296,15 @@ const PatientSummary = ({
                       Summary
                     </h2>
                     <aside className="flex items-center gap-4">
-                      <button onClick={handlePatientEdit} className="p-3 text-sm text-gray-900 border rounded-lg hover:text-gray-800">
-                        <FaPencilAlt className="inline-block" /> Edit 
+                      <button onClick={handlePatientPrint} className="p-3 text-sm text-gray-900 border rounded-lg hover:text-gray-800 no-print">
+                        <FaPrint className="inline-block" /> Print
+                      </button>
+                      <button onClick={handlePatientEdit} className="p-3 text-sm text-gray-900 border rounded-lg hover:text-gray-800 no-print">
+                        <FaPencilAlt className="inline-block" /> Edit
                       </button>
                       <button
                         onClick={handleClickSummary}
-                        className="p-3 text-sm text-gray-900 border rounded-lg hover:text-gray-800">
+                        className="p-3 text-sm text-gray-900 border rounded-lg hover:text-gray-800 no-print">
                         <FaMinus className="inline-block" /> Hide
                       </button>
                     </aside>

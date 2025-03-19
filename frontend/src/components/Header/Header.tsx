@@ -88,6 +88,9 @@ const Header: React.FC<LoginFormProps> = ({
   const handleForm = () => {
     resetForm();
     navigate("/");
+    useEffect(() => {
+      window.scrollTo(0, 0)
+    }, [])
   };
 
   return (

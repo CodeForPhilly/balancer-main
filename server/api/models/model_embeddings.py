@@ -11,9 +11,9 @@ class Embeddings(models.Model):
     # This is a new unique GUID for each Embedding
     guid = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)
-    title = models.CharField(max_length=255)
-    publication = models.CharField(max_length=255)
-    publication_date = models.DateTimeField(blank=True)
+    title = models.CharField(max_length=255, null=True)
+    publication = models.CharField(max_length=255, blank=True, null=True)
+    publication_date = models.DateTimeField(blank=True, null=True)
     text = models.TextField()
     page_num = models.IntegerField(default=1)
     chunk_number = models.IntegerField()

@@ -36,7 +36,7 @@ const PatientHistory = ({
       <div className=" md:mx-0 md:p-0 ">
         <br />
         {allPatientInfo.length > 0 && (
-          <h2 className="header_logo cursor-pointer font-satoshi text-xl font-bold text-gray-600  hover:text-blue-600 ">
+          <h2 className="header_logo cursor-pointer font-satoshi text-xl font-bold text-gray-600  hover:text-blue-600 no-print">
             List of Patients
             {/* <span className="blue_gradient">Patients</span> */}
           </h2>
@@ -48,7 +48,7 @@ const PatientHistory = ({
               setPatientInfo(item);
               window.scrollTo(0, 0); // This line makes the page scroll to the top
             }}
-            className="font_body mb-3 flex cursor-pointer rounded-md border bg-white p-3 px-3 py-2.5 pl-5 ring-1 hover:ring-slate-300 md:p-4 md:px-8 lg:w-[860px]"
+            className="font_body mb-3 flex cursor-pointer rounded-md border bg-white p-3 px-3 py-2.5 pl-5 ring-1 hover:ring-slate-300 md:p-4 md:px-8 lg:w-[860px] no-print"
           >
             <div className="copy_btn">
               <img

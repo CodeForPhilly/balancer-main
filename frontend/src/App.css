@@ -13,6 +13,13 @@
   }
 }
 
+@media print {
+  .no-print,
+  button {
+    display: none !important;
+  }
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -23,8 +30,8 @@
   }
 }
 
-/* 
-  Note: The styles for this gradient grid background is heavily inspired by the creator of this amazing site (https://dub.sh) – all credits go to them! 
+/*
+  Note: The styles for this gradient grid background is heavily inspired by the creator of this amazing site (https://dub.sh) – all credits go to them!
 */
 
 .main {
@@ -105,8 +112,8 @@
   }
 }
 
-/* 
-  Note: This is layout for the whole site. 
+/*
+  Note: This is layout for the whole site.
 */
 
 /* Layout For Whole Site */
@@ -115,8 +122,8 @@
   @apply relative z-10 mx-auto flex w-full flex-col items-center;
 }
 
-/* 
-This is the wording logo in the nav bar 
+/*
+This is the wording logo in the nav bar
 */
 
 .header_logo {
@@ -125,7 +132,7 @@ This is the wording logo in the nav bar
 
 /* Tailwind Styles */
 
-/* 
+/*
 Font for body
 */
 
@@ -151,15 +158,15 @@ Button
 
 .btnGray {
   @apply h-12 rounded-xl border bg-gray-500 px-3 py-1.5 font-satoshi text-sm  text-white  hover:bg-blue-400;
-}  
+}
 
 .btnRed {
   @apply h-12 rounded-xl border bg-red-700 px-3 py-1.5 font-satoshi text-sm  text-white  hover:bg-blue-400;
-}  
+}
 
 
-/* 
-The heading directly under the nav bar. 
+/*
+The heading directly under the nav bar.
 */
 
 .head_text {
@@ -175,15 +182,15 @@ The heading directly under the nav bar.
   letter-spacing: 0.03em;
 }
 
-/* 
-Input field. 
+/*
+Input field.
 */
 
 .input {
   @apply block  rounded-md border-0 bg-white py-3 pl-5 pr-5 font-satoshi text-base ring-1 transition duration-200  hover:border-0 hover:ring-1 hover:ring-sky-500   focus:outline-none focus:ring-2  focus:ring-sky-500;
 }
 
-/* 
+/*
 This is for when the input field is loading
 */
 
@@ -191,8 +198,8 @@ This is for when the input field is loading
   @apply block w-full rounded-md border border-gray-300  bg-gray-300 bg-opacity-50 py-3 pl-5 pr-5 font-satoshi text-base font-medium shadow-lg focus:border-black focus:outline-none focus:ring-0;
 }
 
-/* 
-Dropdown field. 
+/*
+Dropdown field.
 */
 
 .dropdown {
@@ -203,7 +210,7 @@ Dropdown field.
   @apply flex cursor-pointer items-center justify-between rounded-md border  bg-white p-3 py-2.5 pl-5   ring-1 hover:bg-indigo-100;
 }
 
-/* 
+/*
 Circle background for logos
 */
 
@@ -234,7 +241,7 @@ Tooltip. Please see Tooltip.tsx under components folder
 }
 
 .material-symbols-outlined {
-  font-size: 18px; 
+  font-size: 18px;
 }
 
 /*

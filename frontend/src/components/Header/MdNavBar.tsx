@@ -5,6 +5,8 @@ import Chat from "./Chat";
 // import logo from "../../assets/balancer.png";
 import closeLogo from "../../assets/close.svg";
 import hamburgerLogo from "../../assets/hamburger.svg";
+import { useDispatch } from "react-redux";
+import { logout, AppDispatch } from "../../services/actions/auth";
 
 interface LoginFormProps {
   isAuthenticated: boolean;
@@ -17,6 +19,12 @@ const MdNavBar = (props: LoginFormProps) => {
   const { isAuthenticated } = props;
   const handleNav = () => {
     setNav(!nav);
+  };
+
+  const dispatch = useDispatch<AppDispatch>();
+
+  const logout_user = () => {
+    dispatch(logout());
   };
 
   return (
@@ -116,6 +124,16 @@ const MdNavBar = (props: LoginFormProps) => {
               Leave Feedback
             </Link>
           </li>
+          {isAuthenticated &&
+            <li className="border-b border-gray-300 p-4">
+              <a
+                onClick={logout_user}
+                className="mr-9 text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
+              >
+                Sign Out
+              </a>
+            </li>
+          }
         </ul>
       </div>
       {isAuthenticated && (

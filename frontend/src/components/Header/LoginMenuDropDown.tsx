@@ -16,7 +16,7 @@ const LoginMenuDropDown: React.FC<LoginMenuDropDownProps> = ({
 
       <div
         className={classNames(
-          "flex flex-col items-center justify-center gap-y-3 text-md",
+          "flex flex-col items-center justify-center gap-y-3 text-md no-print",
           showLoginMenu
             ? "fixed right-0 top-0 z-40 h-full w-[100%] border-l border-l-gray-900 bg-white p-16 duration-1000 ease-in-out md:w-[65%] lg:w-[35%]"
             : "fixed right-[-500%] duration-500 ease-in-out md:right-[-500%]"

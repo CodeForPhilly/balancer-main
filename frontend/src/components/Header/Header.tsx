@@ -39,7 +39,7 @@ const Header: React.FC<LoginFormProps> = ({
   };
 
   const guestLinks = () => (
-    <nav onClick={handleLoginMenu} className=" flex cursor-pointer  ">
+    <nav onClick={handleLoginMenu} className="flex cursor-pointer items-center">
       <img
         src={accountLogo}
         alt="logo"
@@ -52,7 +52,7 @@ const Header: React.FC<LoginFormProps> = ({
   );
 
   const authLinks = () => (
-    <nav onClick={logout_user} className="  flex  cursor-pointer ">
+    <nav onClick={logout_user} className="flex cursor-pointer items-center">
       <img src={accountLogo} alt="logo" className="mr-5 h-5  object-contain " />
       <span className=" text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline lg:text-sm xl:text-lg">
         Sign out
@@ -88,10 +88,13 @@ const Header: React.FC<LoginFormProps> = ({
   const handleForm = () => {
     resetForm();
     navigate("/");
+    useEffect(() => {
+      window.scrollTo(0, 0)
+    }, [])
   };
 
   return (
-    <header className="z10 fixed w-full items-center ">
+    <header className="z10 fixed w-full items-center no-print">
       <div className="hidden w-full items-center justify-center border-b border-gray-300 bg-blue-100 p-1 text-center text-sm font-light text-gray-500 lg:flex">
         <p className="">
           This app is currently in its beta testing phase. The information and

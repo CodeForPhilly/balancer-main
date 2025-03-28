@@ -2,8 +2,10 @@ import "./TypingAnimation.css";
 
 const TypingAnimation = () => {
   return (
-    <div className="flex  h-full justify-center">
-      <div className="h-4 w-4 animate-spin rounded-full border-t-4 border-slate-500"></div>
+    <div className="flex flex-row gap-2">
+      <div className="w-2 h-2 rounded-full bg-blue-300 animate-bounce [animation-delay:.7s]"></div>
+      <div className="w-2 h-2 rounded-full bg-blue-500 animate-bounce [animation-delay:.3s]"></div>
+      <div className="w-2 h-2 rounded-full bg-blue-700 animate-bounce [animation-delay:.7s]"></div>
     </div>
   );
 };

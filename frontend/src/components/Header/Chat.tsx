@@ -84,7 +84,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
 
   const handleScroll = (event: React.UIEvent<HTMLElement>) => {
     const target = event.target as HTMLElement;
-    const bottom = target.scrollHeight - target.scrollTop === target.clientHeight;
+    const bottom = target.scrollHeight - Math.round(target.scrollTop) === target.clientHeight;
     setBottom(bottom)
   };
 

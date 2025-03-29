@@ -436,7 +436,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
             <form onSubmit={handleSubmit} className="chat_footer">
               <input
                 type="text"
-                className="input w-full ring-grey-200"
+                className="input w-full"
                 placeholder={`Ask ${CHATBOT_NAME} a question`}
                 value={inputValue}
                 onChange={(event) => setInputValue(event.target.value)}

@@ -5,7 +5,6 @@ import { useState, useEffect, useRef } from "react";
 import TypingAnimation from "./components/TypingAnimation";
 import ErrorMessage from "../ErrorMessage";
 import ConversationList from "./ConversationList";
-import chatBubble from "../../assets/chatbubble.svg";
 import { extractContentFromDOM } from "../../services/domExtraction";
 import axios from "axios";
 import { FaPlus, FaMinus, FaTimes, FaComment, FaComments, FaPills, FaLightbulb, FaArrowCircleDown } from "react-icons/fa";

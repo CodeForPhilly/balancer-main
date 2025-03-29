@@ -5,7 +5,6 @@ import { useState, useEffect, useRef } from "react";
 import TypingAnimation from "./components/TypingAnimation";
 import ErrorMessage from "../ErrorMessage";
 import ConversationList from "./ConversationList";
-import chatBubble from "../../assets/chatbubble.svg";
 import { extractContentFromDOM } from "../../services/domExtraction";
 import axios from "axios";
 import { FaPlus, FaMinus, FaTimes, FaComment, FaComments, FaPills, FaLightbulb, FaArrowCircleDown } from "react-icons/fa";
@@ -84,7 +83,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
 
   const handleScroll = (event: React.UIEvent<HTMLElement>) => {
     const target = event.target as HTMLElement;
-    const bottom = target.scrollHeight - target.scrollTop === target.clientHeight;
+    const bottom = target.scrollHeight - Math.round(target.scrollTop) === target.clientHeight;
     setBottom(bottom)
   };
 
@@ -437,7 +436,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
             <form onSubmit={handleSubmit} className="chat_footer">
               <input
                 type="text"
-                className="input w-full ring-grey-200"
+                className="input w-full"
                 placeholder={`Ask ${CHATBOT_NAME} a question`}
                 value={inputValue}
                 onChange={(event) => setInputValue(event.target.value)}
@@ -448,9 +447,9 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
       ) : (
         <div
           onClick={() => setShowChat(true)}
-          className="fixed bottom-9 left-10 inline-block h-16 w-16 cursor-pointer flex items-center justify-center rounded-full object-contain hover:cursor-pointer hover:border-blue-600 hover:bg-blue-300 md:bottom-20 md:right-20 no-print"
+          className="fixed bottom-9 left-10 h-16 w-16 inline-block cursor-pointer flex items-center justify-center rounded-full bg-blue-500 object-contain hover:cursor-pointer hover:bg-blue-300 md:bottom-20 md:right-20 no-print"
         >
-          <img src={chatBubble} alt="logo" className="h-6 md:h-10 md:w-10 " />
+          <FaComments className="text-white h-10 w-10" />
           <div className="absolute bottom-20 mt-2 hidden w-32 rounded bg-gray-700 px-2 py-1 text-sm text-white before:absolute before:-top-2 before:left-1/2 before:-translate-x-1/2 before:transform before:border-8 before:border-transparent before:border-b-gray-700 group-hover:block">
             Any questions? Click here to to chat!
           </div>

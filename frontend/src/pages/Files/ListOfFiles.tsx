@@ -144,7 +144,7 @@ const ListOfFiles: React.FC<{ showTable?: boolean }> = ({
       }
     ));
     return (
-      <div className="container mx-auto md:w-[50%]">
+      <div className="mx-auto md:w-[50%]">
         <h6 className="mb-4"></h6>
         <Table columns={columns} data={data} />
       </div>

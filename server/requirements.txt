@@ -18,3 +18,4 @@ sentence_transformers
 PyMuPDF==1.24.0
 Pillow
 pytesseract
+anthropic

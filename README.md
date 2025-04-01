@@ -34,6 +34,8 @@ Start Docker Desktop and run `docker compose up --build`
 
 The email and password are set in `server/api/management/commands/createsu.py`
 
+Download a sample of papers to upload from [https://balancertestsite.com](https://balancertestsite.com/) 
+
 ## Architecture
 
 The Balancer website is a Django, React, and Postgres project

@@ -96,27 +96,28 @@ const DrugSummaryForm = () => {
     const params = new URLSearchParams(location.search);
     const guid = params.get("guid") || ``;
 
+    setIsLoading(true);
+
     try {
 
       const response = await handleClickDrugSummary(guid);
 
       console.log("API Response:", response);
 
+      setChatLog((prevChatLog) => [...prevChatLog, {type: "bot", message: response['texts']}]);
+      setChatLog((prevChatLog) => [...prevChatLog, {type: "bot", message: response['cited_texts']}]);
 
     } catch (error) {
 
-      console.error("Error sending message:", error);
+      console.error("Error:", error);
 
     } finally {
-      // Reset Loading State: Ensure isLoading isset to false, whether the API call success or fails
+      // Ensure isLoading is set to false whether the API call success or fails
       setIsLoading(false);
     }
   
 
   };
-
-
-
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInputValue(e.target.value);

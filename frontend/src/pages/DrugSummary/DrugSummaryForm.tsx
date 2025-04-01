@@ -2,7 +2,7 @@ import React from "react";
 import "../../components/Header/chat.css";
 import { useState, useEffect, useRef } from "react";
 // import paperclip from "../../assets/paperclip.svg";
-import { handleSendDrugSummary } from "../../api/apiClient.ts";
+import { handleSendDrugSummary, handleClickDrugSummary } from "../../api/apiClient.ts";
 import { ChatMessageItem, SearchResult } from "./type";
 import ParseStringWithLinks from "../../services/parsing/ParseWithSource.tsx";
 import { useLocation } from "react-router-dom";
@@ -89,6 +89,34 @@ const DrugSummaryForm = () => {
       setIsLoading(false);
     }
   };
+
+
+  const handleClick = async () => {
+
+    const params = new URLSearchParams(location.search);
+    const guid = params.get("guid") || ``;
+
+    try {
+
+      const response = await handleClickDrugSummary(guid);
+
+      console.log("API Response:", response);
+
+
+    } catch (error) {
+
+      console.error("Error sending message:", error);
+
+    } finally {
+      // Reset Loading State: Ensure isLoading isset to false, whether the API call success or fails
+      setIsLoading(false);
+    }
+  
+
+  };
+
+
+
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInputValue(e.target.value);
@@ -206,6 +234,14 @@ const DrugSummaryForm = () => {
               </button>
             </div>
           </form>
+          <div className="ml-5 flex items-center justify-between">
+              <button
+                onClick={handleClick}
+                className=" h-12 rounded-xl border bg-blue-500 px-3 py-1.5 font-satoshi  text-white hover:bg-blue-400"
+              >
+                Extract Medication Rules
+              </button>
+            </div>
         </div>
       </div>
     </>

@@ -21,12 +21,12 @@ The project kanban board is [on GitHub here](https://github.com/orgs/CodeForPhil
 
 Get the code using git by either forking or cloning `CodeForPhilly/balancer-main`
 
-Tools used for for Balancer development: 
+Tools used for  Balancer development: 
 
-1. `Docker and docker-compose`
+1. `Docker`: Install Docker Desktop
 2. `OpenAI API`: Ask for the API key and add it to `config/env/env.dev`
-3. `pgAdmin`: The email and password are specified in `balancer-main/docker-compose.yml`
-4. `Postman`: Ask to get invited to the Balancer Postman team `balancer_dev`
+3. `Postman`: Ask to get invited to the Balancer Postman team `balancer_dev`
+4. `pgAdmin`: The email and password are specified in `balancer-main/docker-compose.yml`
 
 ### Running Balancer for development
 

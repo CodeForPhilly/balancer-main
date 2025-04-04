@@ -29,12 +29,12 @@ Tools used for Balancer development:
 1. `Postman`: Ask to get invited to the Balancer Postman team `balancer_dev`
 2. `pgAdmin`: The email and password are specified in `balancer-main/docker-compose.yml`
 
-The first time you use `pgAdmin` after building the Docker containers you will need to register the server:
-- The `Host name/address`, `Username` and `Password` are specified in  `balancer-main/docker-compose.yml`
 
 ### Running Balancer for development
 
 Start Docker Desktop and run `docker compose up --build` 
+
+The first time you use `pgAdmin` after building the Docker containers you will need to register the server. The `Host name/address`, `Username` and `Password` are specified in  `balancer-main/docker-compose.yml`
 
 The email and password are set in `server/api/management/commands/createsu.py`
 

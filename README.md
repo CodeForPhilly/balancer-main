@@ -50,6 +50,7 @@ Important files and directories in `balancer-main/`:
 
 - `docker-compose.yml`: Used to run docker compose 
 - `server`: Django backend
+    - `entrypoint.sh`: Migrations, Create superuser, Populate database on start up  
 - `frontend`: React frontend
 
 ## License 

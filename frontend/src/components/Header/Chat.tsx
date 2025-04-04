@@ -7,7 +7,7 @@ import ErrorMessage from "../ErrorMessage";
 import ConversationList from "./ConversationList";
 import { extractContentFromDOM } from "../../services/domExtraction";
 import axios from "axios";
-import { FaPlus, FaMinus, FaTimes, FaComment, FaComments, FaPills, FaLightbulb, FaArrowCircleDown } from "react-icons/fa";
+import { FaPlus, FaMinus, FaTimes, FaComment, FaComments, FaPills, FaLightbulb, FaArrowCircleDown, FaExpandAlt, FaExpandArrowsAlt } from "react-icons/fa";
 import {
   fetchConversations,
   continueConversation,
@@ -72,13 +72,6 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
     setPageContent(extractedContent);
   }, []);
 
-  // useEffect(() => {
-  //   if (chatContainerRef.current) {
-  //     const chatContainer = chatContainerRef.current;
-  //     chatContainer.scrollTop = chatContainer.scrollHeight;
-  //   }
-  // }, [chatLog]);
-
   const [bottom, setBottom] = useState(false);
 
   const handleScroll = (event: React.UIEvent<HTMLElement>) => {
@@ -86,6 +79,8 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
     const bottom = target.scrollHeight - Math.round(target.scrollTop) === target.clientHeight;
     setBottom(bottom)
   };
+
+  const [expandChat, setExpandChat] = useState(false);
 
   useEffect(() => {
     if (chatContainerRef.current && activeConversation) {
@@ -204,52 +199,6 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
     }
   };
 
-  // const systemMessage = {
-  //   role: "system",
-  //   content: "You are a bot please keep conversation going.",
-  // };
-  // const sendMessage = (message: ChatLogItem[]) => {
-  //   const baseUrl = import.meta.env.VITE_API_BASE_URL;
-  //   const url = `${baseUrl}/chatgpt/chat`;
-
-  //   const apiMessages = message.map((messageObject) => {
-  //     let role = "";
-  //     if (messageObject.is_user) {
-  //       role = "user";
-  //     } else {
-  //       role = "assistant";
-  //     }
-  //     return { role: role, content: messageObject.content };
-  //   });
-
-  //   systemMessage.content += `If applicable, please use the following content to ask questions. If not applicable,
-  //     please answer to the best of your ability: ${pageContent}`;
-
-  //   const apiRequestBody = {
-  //     prompt: [systemMessage, ...apiMessages],
-  //   };
-
-  //   setIsLoading(true);
-
-  //   axios
-  //     .post(url, apiRequestBody)
-  //     .then((response) => {
-  //       console.log(response);
-  //       setChatLog((prevChatLog) => [
-  //         ...prevChatLog,
-  //         {
-  //           is_user: false,
-  //           content: response.data.message.choices[0].message.content,
-  //         },
-  //       ]);
-  //       setIsLoading(false);
-  //     })
-  //     .catch((error) => {
-  //       setIsLoading(false);
-  //       console.log(error);
-  //     });
-  // };
-
   const handleSelectConversation = (id: Conversation["id"]) => {
     const selectedConversation = conversations.find(
       (conversation: any) => conversation.id === id,
@@ -267,13 +216,25 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
   };
 
   useEffect(() => {
-    if (showChat) loadConversations();
+    if (showChat) {
+      loadConversations();
+
+      const resizeObserver = new ResizeObserver(() => {
+        const target = chatContainerRef.current;
+        if (target) {
+          const bottom = target.scrollHeight - Math.round(target.scrollTop) === target.clientHeight;
+          setBottom(bottom);
+        }
+      });
+      resizeObserver.observe(chatContainerRef.current);
+      return () => resizeObserver.disconnect(); // clean up
+    }
   }, [showChat]);
 
   return (
     <>
       {showChat ? (
-        <div className="show_chat ring-slate-1000/10 shadow">
+        <div className={`show_chat ring-slate-1000/10 shadow ${expandChat ? 'full-screen' : 'windowed'}`}>
           <div
             id="chat_container"
             className=" mx-auto flex h-full  flex-col overflow-auto rounded "
@@ -311,12 +272,28 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
                 <br />
               </div>
 
-              <button
-                className="delete flex items-center justify-center"
-                onClick={() => setShowChat(false)}
-              >
-                <FaTimes className="chat_icon" />
-              </button>
+              <div className="flex space-x-2">
+                <button
+                  onClick={() =>
+                    setExpandChat((prevState) => !prevState)
+                  }
+                  className="flex items-center justify-center"
+                >
+                  {expandChat ? (
+                    // Icon for "Shrink"
+                    <FaExpandAlt className="chat_icon" />
+                  ) : (
+                    // Icon for "expand"
+                    <FaExpandArrowsAlt className="chat_icon" />
+                  )}
+                </button>
+                <button
+                  className="delete flex items-center justify-center"
+                  onClick={() => setShowChat(false)}
+                >
+                  <FaTimes className="chat_icon" />
+                </button>
+              </div>
             </div>
             <div id="inside_chat" onScroll={handleScroll} className="inside_chat" style={{scrollbarWidth: "thin", scrollBehavior: "smooth"}} ref={chatContainerRef}>
               <button id="scroll_down" className="scroll_down animate-bounce" onClick={handleScrollDown} style={{ visibility: bottom ? 'hidden' : 'visible' }}>

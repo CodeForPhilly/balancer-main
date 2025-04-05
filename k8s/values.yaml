@@ -21,20 +21,6 @@ backend:
     debug: "1"
     apiBaseUrl: "https://balancertestsite.com/"
     allowedHosts: "*"
-  secrets:
-    # Choose one of these methods
-    useSealedSecrets: true  # Use Sealed Secrets
-    useExternalSecrets: false  # Use External Secrets Operator
-    
-    # For Sealed Secrets (encrypted values)
-    secretKey: ""  # Encrypted value from kubeseal
-    emailPassword: ""  # Encrypted value from kubeseal
-    databasePassword: ""  # Encrypted value from kubeseal
-    openaiApiKey: ""  # Encrypted value from kubeseal
-    
-    # For External Secrets
-    externalSecretStore: "balancer-secret-store"
-    externalSecretPath: "balancer/backend"
 
 frontend:
   replicaCount: 1
@@ -86,11 +72,3 @@ database:
 
 email:
   hostUser: balancer-noreply@codeforphilly.org
-
-# Sealed Secrets configuration
-# These values should be encrypted using kubeseal before being committed
-sealedSecrets:
-  secretKey: ""  # Example encrypted value
-  emailPassword: ""  # Example encrypted value
-  databasePassword: ""  # Example encrypted value
-  openaiApiKey: ""  # Example encrypted value

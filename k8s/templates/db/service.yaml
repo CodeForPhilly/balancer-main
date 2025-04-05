@@ -1,0 +1,19 @@
+{{- if .Values.database.internal }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-db
+  labels:
+    {{- include "balancer.labels" . | nindent 4 }}
+    app.kubernetes.io/component: database
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5432
+      targetPort: postgres
+      protocol: TCP
+      name: postgres
+  selector:
+    {{- include "balancer.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: database
+{{- end }} 

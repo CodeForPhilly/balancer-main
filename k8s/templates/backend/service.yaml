@@ -15,4 +15,3 @@ spec:
   selector:
     {{- include "balancer.selectorLabels" . | nindent 4 }}
     app.kubernetes.io/component: backend
----

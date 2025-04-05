@@ -33,43 +33,61 @@ spec:
                   key: secret-key
             - name: DEBUG
               value: {{ .Values.backend.config.debug | default "1" | quote }}
-            - name: SQL_USER
-              value: {{ .Values.database.user | default "balancer" | quote }}
             - name: VITE_API_BASE_URL
               value: {{ .Values.backend.config.apiBaseUrl | default "https://balancertestsite.com/" | quote }}
             - name: DJANGO_ALLOWED_HOSTS
               value: {{ .Values.backend.config.allowedHosts | default "*" | quote }}
             - name: DATABASE
-              value: {{ .Values.database.type | default "postgres" | quote }}
+              value: "postgres"
             - name: EMAIL_HOST_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ .Release.Name }}-balancer-secrets
                   key: email-password
-            - name: SQL_ENGINE
-              value: {{ .Values.database.engine | default "django.db.backends.postgresql" | quote }}
-            - name: SQL_PORT
-              value: {{ .Values.database.port | default "5432" | quote }}
             - name: EMAIL_HOST_USER
               value: {{ .Values.email.hostUser | default "balancer-noreply@codeforphilly.org" | quote }}
-            - name: SQL_DATABASE
-              value: {{ .Values.database.name | default "balancer_dev" | quote }}
-            - name: SQL_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Release.Name }}-balancer-secrets
-                  key: database-password
             - name: OPENAI_API_KEY
               valueFrom:
                 secretKeyRef:
                   name: {{ .Release.Name }}-balancer-secrets
                   key: openai-api-key
+            - name: SQL_USER
+              value: {{ .Values.database.user | default "balancer" | quote }}
+            - name: SQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-balancer-secrets
+                  key: database-password
+            - name: SQL_ENGINE
+              value: "django.db.backends.postgresql"
             - name: SQL_HOST
-              value: {{ .Values.database.host | quote }}
+              value: {{ if .Values.database.internal }}{{ printf "%s-db.%s.svc.cluster.local" .Release.Name .Release.Namespace | quote }}{{ else }}{{ .Values.database.host | quote }}{{ end }}
+            - name: SQL_PORT
+              value: {{ .Values.database.port | default "5432" | quote }}
+            - name: SQL_DATABASE
+              value: {{ .Values.database.name | default "balancer_dev" | quote }}
           resources:
             requests:
               cpu: {{ .Values.backend.resources.requests.cpu | default "500m" }}
               memory: {{ .Values.backend.resources.requests.memory | default "1Gi" }}
             limits:
               cpu: {{ .Values.backend.resources.limits.cpu | default "1024m" }}
-              memory: {{ .Values.backend.resources.limits.memory | default "3Gi" }} 
+              memory: {{ .Values.backend.resources.limits.memory | default "3Gi" }}
+          readinessProbe:
+            httpGet:
+              path: /health/
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health/
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 15
+          startupProbe:
+            httpGet:
+              path: /health/
+              port: http
+            failureThreshold: 30
+            periodSeconds: 10 

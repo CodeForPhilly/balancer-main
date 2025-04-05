@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-frontend
+  labels:
+    {{- include "balancer.labels" . | nindent 4 }}
+    app.kubernetes.io/component: frontend
+spec:
+  replicas: {{ .Values.frontend.replicaCount | default 1 }}
+  selector:
+    matchLabels:
+      {{- include "balancer.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: frontend
+  template:
+    metadata:
+      labels:
+        {{- include "balancer.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: "{{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.frontend.image.pullPolicy | default "IfNotPresent" }}
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+          env:
+            - name: CHOKIDAR_USEPOLLING
+              value: "true"
+            - name: VITE_API_BASE_URL
+              value: {{ .Values.frontend.config.apiBaseUrl | default "https://balancertestsite.com/" | quote }}
+          resources:
+            requests:
+              cpu: {{ .Values.frontend.resources.requests.cpu | default "100m" }}
+              memory: {{ .Values.frontend.resources.requests.memory | default "256Mi" }}
+            limits:
+              cpu: {{ .Values.frontend.resources.limits.cpu | default "500m" }}
+              memory: {{ .Values.frontend.resources.limits.memory | default "512Mi" }} 

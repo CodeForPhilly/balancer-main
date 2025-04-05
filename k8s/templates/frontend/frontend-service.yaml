@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-frontend
+  labels:
+    {{- include "balancer.labels" . | nindent 4 }}
+    app.kubernetes.io/component: frontend
+spec:
+  type: {{ .Values.frontend.service.type | default "ClusterIP" }}
+  ports:
+    - port: {{ .Values.frontend.service.port | default 3000 }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "balancer.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: frontend 

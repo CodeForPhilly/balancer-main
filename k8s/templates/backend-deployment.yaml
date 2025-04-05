@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-backend
+  labels:
+    {{- include "balancer.labels" . | nindent 4 }}
+    app.kubernetes.io/component: backend
+spec:
+  replicas: {{ .Values.backend.replicaCount | default 1 }}
+  selector:
+    matchLabels:
+      {{- include "balancer.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: backend
+  template:
+    metadata:
+      labels:
+        {{- include "balancer.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: backend
+    spec:
+      containers:
+        - name: backend
+          image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.backend.image.pullPolicy | default "IfNotPresent" }}
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          env:
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-balancer-secrets
+                  key: secret-key
+            - name: DEBUG
+              value: {{ .Values.backend.config.debug | default "1" | quote }}
+            - name: SQL_USER
+              value: {{ .Values.database.user | default "balancer" | quote }}
+            - name: VITE_API_BASE_URL
+              value: {{ .Values.backend.config.apiBaseUrl | default "https://balancertestsite.com/" | quote }}
+            - name: DJANGO_ALLOWED_HOSTS
+              value: {{ .Values.backend.config.allowedHosts | default "*" | quote }}
+            - name: DATABASE
+              value: {{ .Values.database.type | default "postgres" | quote }}
+            - name: EMAIL_HOST_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-balancer-secrets
+                  key: email-password
+            - name: SQL_ENGINE
+              value: {{ .Values.database.engine | default "django.db.backends.postgresql" | quote }}
+            - name: SQL_PORT
+              value: {{ .Values.database.port | default "5432" | quote }}
+            - name: EMAIL_HOST_USER
+              value: {{ .Values.email.hostUser | default "balancer-noreply@codeforphilly.org" | quote }}
+            - name: SQL_DATABASE
+              value: {{ .Values.database.name | default "balancer_dev" | quote }}
+            - name: SQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-balancer-secrets
+                  key: database-password
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-balancer-secrets
+                  key: openai-api-key
+            - name: SQL_HOST
+              value: {{ .Values.database.host | quote }}
+          resources:
+            requests:
+              cpu: {{ .Values.backend.resources.requests.cpu | default "500m" }}
+              memory: {{ .Values.backend.resources.requests.memory | default "1Gi" }}
+            limits:
+              cpu: {{ .Values.backend.resources.limits.cpu | default "1024m" }}
+              memory: {{ .Values.backend.resources.limits.memory | default "3Gi" }} 

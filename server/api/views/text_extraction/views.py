@@ -50,8 +50,9 @@ def anthropic_citations(client, content_chunks, user_prompt):
     for content in message.to_dict()['content']:
         text.append(content['text'])
         if 'citations' in content.keys():
-            cited_text.append(" ".join([citation['cited_text'] for citation in content['citations']]))
-    
+            text.append(" ".join([f"<{citation['start_block_index']} - {citation['end_block_index']}>" for citation in content['citations']]))
+            cited_text.append(" ".join([f"<{citation['start_block_index']} - {citation['end_block_index']}> {citation['cited_text']}" for citation in content['citations']]))
+
     texts = " ".join(text)
     cited_texts = " ".join(cited_text)
 

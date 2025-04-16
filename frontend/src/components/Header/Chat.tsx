@@ -390,7 +390,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
                               style={{
                                 fontFamily: "inherit",
                                 whiteSpace: "pre-wrap",
-                                wordWrap: "break-word",
+                                wordWrap: "anywhere",
                               }}
                             >
                               {message.content}

@@ -1,6 +1,6 @@
 const Table = ({ columns, data }: any) => {
   return (
-    <table className="min-w-full bg-white border border-gray-200">
+    <table className="min-w-full bg-white rounded-md border border-gray-200">
       <thead className="bg-gray-200">
         <tr>
           {columns.map((column: any) => (

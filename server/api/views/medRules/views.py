@@ -8,7 +8,8 @@ from ...models.model_medRule import MedRule
 from .serializers import MedRuleSerializer  # You'll need to create this
 from ..listMeds.models import Medication
 from ..listMeds.serializers import MedicationSerializer
-
+from ..uploadFile.models import UploadFile
+from ...models.model_embeddings import Embeddings
 
 @method_decorator(csrf_exempt, name='dispatch')
 class MedRules(APIView):
@@ -33,10 +34,39 @@ class MedRules(APIView):
 
         data = request.data
 
-        serializer = MedRuleSerializer(data=data, many=True)
+        # medications
+        # Return an error if  the query doesn't return any rows
+
+        # SELECT * FROM public.api_medication
+        # WHERE id = '1'
+
+        import pdb; pdb.set_trace()
+
+        Medication.objects.filter(id__in=data['medications']).values('id', 'name', 'benefits', 'risks')   
+
+        # sources
+        # Return an error if the query doesn't return any rows
+
+        # SELECT id, guid FROM public.api_uploadfile
+        # WHERE guid = '50c05484-d905-4383-9e5a-d8b62743afb6'
+
+        UploadFile.objects.filter(guid=data['file_guid']).values('id', 'guid') 
+
+
+        # # Return an error if the query doesn't return any rows
+        # SELECT id FROM public.api_embeddings
+        # WHERE upload_file_id =12 and chunk_number in (44,45,46)
+
+        Embeddings.objects.filter(upload_file_id=12, chunk_number__in=data['sources']).values('id')
+
+
+        # Insert medications and sources into the below Django model  with HTTP POST method
+        # serializer = MedRuleSerializer(data=, many=True)
         
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        # if serializer.is_valid():
+        #     serializer.save()
+        #     return Response(serializer.data, status=status.HTTP_201_CREATED)
+        # else:
+        #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        return data

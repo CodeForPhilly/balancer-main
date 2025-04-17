@@ -33,23 +33,25 @@ class MedRules(APIView):
     def post(self, request):
 
         data = request.data
-
-        #TODO: Add validation for the incoming data
-                           
-        #TODO: Optimize the database queries
-        if set(data['medication_names']) - set(Medication.objects.values_list('name', flat=True)):
-            return Response({'error': 'No medications found for the provided medication names.'}, status=status.HTTP_404_NOT_FOUND)
+        
+        for field in ['rule_type', 'history_type', 'reason', 'label', 'medication_names', 'chunk_ids', 'file_guid', 'explanation']:
+            if field not in data:
+                return Response({'error': f'Missing required field: {field}'}, status=status.HTTP_400_BAD_REQUEST)
+    
+        # The exists() method only checks for existence making it more efficient than loading all values into memory and performing set operations
+        if any(not Medication.objects.filter(name=name).exists() for name in data['medication_names']):
+            return Response({'error': 'One or more specified medication names do not exist in the database'}, status=status.HTTP_404_NOT_FOUND)
         
         medication_ids = Medication.objects.filter(name__in=data['medication_names']).values_list('id', flat=True)
 
-        
         if not UploadFile.objects.filter(guid=data['file_guid']).exists():
-            return Response({'error': 'No upload file found for the provided GUID.'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error': 'No uploaded file found in the database for the provided GUID.'}, status=status.HTTP_404_NOT_FOUND)
 
         upload_file_id = UploadFile.objects.get(guid=data['file_guid']).id
 
-        if set(data['chunk_ids']) - set(Embeddings.objects.filter(upload_file_id=upload_file_id).values_list('chunk_number', flat=True)):
-            return Response({'error': 'No embeddings found for the provided upload file ID and chunk numbers.'}, status=status.HTTP_404_NOT_FOUND)
+        # The exists() method only checks for existence making it more efficient than loading all values into memory and performing set operations
+        if any(not Embeddings.objects.filter(upload_file_id=upload_file_id, chunk_number=chunk).exists() for chunk in data['chunk_ids']):
+            return Response({'error': 'One or more embeddings were not found for the given file and chunk numbers in the database'}, status=status.HTTP_404_NOT_FOUND)
 
         embeddings_ids = Embeddings.objects.filter(upload_file_id=upload_file_id, chunk_number__in=data['chunk_ids']).values_list('id', flat=True)
 
@@ -77,8 +79,6 @@ class MedRules(APIView):
             
             # Save the instance again to persist the relationships
             med_rule_instance.save()
-
-
             
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:

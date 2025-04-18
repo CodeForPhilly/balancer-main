@@ -4,7 +4,7 @@ import { PatientInfo } from "./PatientTypes";
 import Tooltip from "../../components/Tooltip";
 import TypingAnimation from "../../components/Header/components/TypingAnimation.tsx";
 import { FaPencilAlt, FaPrint, FaMinus, FaBug } from "react-icons/fa";
-import FeedbackForm from "../Feedback/FeedbackForm"
+import FeedbackForm from "../Feedback/FeedbackForm";
 import Modal from "../../components/Modal/Modal";
 
 interface PatientSummaryProps {
@@ -147,23 +147,22 @@ const PatientSummary = ({
   patientInfo,
   isPatientDeleted,
 }: PatientSummaryProps) => {
-
   const [loading, setLoading] = useState(false);
   const [riskData, setRiskData] = useState<RiskData | null>(null);
   const [clickedMedication, setClickedMedication] = useState<string | null>(
     null
   );
 
-  const [isModalOpen, setIsModalOpen] = useState({status: false, id: ''});
+  const [isModalOpen, setIsModalOpen] = useState({ status: false, id: "" });
 
   const handleOpenModal = (id: string, event: React.MouseEvent) => {
     event.stopPropagation();
-    setIsModalOpen({status: true, id: id});
+    setIsModalOpen({ status: true, id: id });
   };
 
   const handleCloseModal = (event: React.MouseEvent) => {
     event.stopPropagation();
-    setIsModalOpen({status: false, id: ''});
+    setIsModalOpen({ status: false, id: "" });
   };
 
   useEffect(() => {
@@ -210,13 +209,13 @@ const PatientSummary = ({
     setIsEditing(true);
     setEnterNewPatient(true);
     handleClickSummary();
-    console.log({editingPatient: patientInfo})
-  }
+    console.log({ editingPatient: patientInfo });
+  };
 
   const handlePatientPrint = (e: any) => {
     e.preventDefault();
     window.print();
-  }
+  };
 
   const renderMedicationsSection = () => (
     <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
@@ -304,22 +303,27 @@ const PatientSummary = ({
               {showSummary && (
                 <div className="p-2 px-3 bg-white border rounded-md font_body ring-1 hover:ring-slate-300 md:p-4 md:px-8">
                   <div>
-                    <div
-                      className="flex items-center justify-between text-xl"
-                    >
+                    <div className="flex items-center justify-between text-xl">
                       <h2 className="font-bold text-gray-600 cursor-pointer header_logo font-satoshi hover:text-blue-600">
                         Summary
                       </h2>
                       <aside className="flex items-center gap-4">
-                        <button onClick={handlePatientPrint} className="p-3 text-sm text-gray-900 border rounded-lg hover:text-gray-800 no-print">
+                        <button
+                          onClick={handlePatientPrint}
+                          className="p-3 text-sm text-gray-900 border rounded-lg hover:text-gray-800 no-print"
+                        >
                           <FaPrint className="inline-block" /> Print
                         </button>
-                        <button onClick={handlePatientEdit} className="p-3 text-sm text-gray-900 border rounded-lg hover:text-gray-800 no-print">
+                        <button
+                          onClick={handlePatientEdit}
+                          className="p-3 text-sm text-gray-900 border rounded-lg hover:text-gray-800 no-print"
+                        >
                           <FaPencilAlt className="inline-block" /> Edit
                         </button>
                         <button
                           onClick={handleClickSummary}
-                          className="p-3 text-sm text-gray-900 border rounded-lg hover:text-gray-800 no-print">
+                          className="p-3 text-sm text-gray-900 border rounded-lg hover:text-gray-800 no-print"
+                        >
                           <FaMinus className="inline-block" /> Hide
                         </button>
                         <button
@@ -328,7 +332,8 @@ const PatientSummary = ({
                             if (patientInfo.ID) {
                               handleOpenModal(patientInfo.ID, event);
                             }
-                          }}>
+                          }}
+                        >
                           <FaBug className="inline-block" /> Report Issue
                         </button>
                       </aside>
@@ -389,7 +394,7 @@ const PatientSummary = ({
                         <div className="flex w-full">
                           <label
                             htmlFor="current-state"
-                            className="flex block w-1/2 text-sm font-medium leading-6 text-gray-900"
+                            className="flex block w-1/3 text-sm font-medium leading-6 text-gray-900"
                           >
                             Prior medications
                             <Tooltip text="Any bipolar medications entered here will not appear in the list of suggested medications, as they have already been tried without success.">
@@ -399,7 +404,9 @@ const PatientSummary = ({
                             </Tooltip>
                           </label>
                           <dt className="text-sm leading-6 text-gray-700">
-                            {patientInfo.PriorMedications}
+                            {patientInfo.PriorMedications?.split(",").join(
+                              ", "
+                            )}
                           </dt>
                         </div>
                       </div>
@@ -409,7 +416,7 @@ const PatientSummary = ({
                 </div>
               )}
             </div>
-            <Modal isOpen={isModalOpen.status} onClose={handleCloseModal} >
+            <Modal isOpen={isModalOpen.status} onClose={handleCloseModal}>
               <FeedbackForm id={isModalOpen.id} />
             </Modal>
           </>

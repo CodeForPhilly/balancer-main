@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
@@ -19,6 +19,11 @@ const PDFViewer = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pdfData, setPdfData] = useState<Uint8Array | null>(null);
+  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
+
+  const headerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const location = useLocation();
   const params = new URLSearchParams(location.search);
@@ -30,6 +35,34 @@ const PDFViewer = () => {
     () => (guid ? `${baseURL}/v1/api/uploadFile/${guid}` : null),
     [guid, baseURL]
   );
+
+  // Calculate container size to make PDF responsive
+  useEffect(() => {
+    const calculateSize = () => {
+      if (containerRef.current && headerRef.current && contentRef.current) {
+        const headerHeight = headerRef.current.offsetHeight;
+        const contentPadding = 32;
+
+        // Get the available height and width for the PDF
+        const availableHeight =
+          containerRef.current.clientHeight - headerHeight - contentPadding;
+        const availableWidth = contentRef.current.clientWidth - contentPadding;
+
+        setContainerSize({
+          width: availableWidth,
+          height: availableHeight,
+        });
+      }
+    };
+
+    calculateSize();
+
+    // Recalculate on resize
+    window.addEventListener("resize", calculateSize);
+    return () => {
+      window.removeEventListener("resize", calculateSize);
+    };
+  }, []);
 
   // Memoize PDF options
   const pdfOptions = useMemo(
@@ -144,71 +177,86 @@ const PDFViewer = () => {
   }
 
   return (
-    <div className="w-full bg-white rounded-lg shadow-sm border">
-      <div className="p-4">
-        <div className="flex justify-between items-center mb-4 p-2 bg-gray-50 rounded">
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={() => setPageNumber((prev) => Math.max(prev - 1, 1))}
-              disabled={pageNumber <= 1}
-              className="px-3 py-1 bg-white border rounded hover:bg-gray-50 disabled:opacity-50"
-            >
-              ←
-            </button>
-            <span className="text-sm">
-              Page {pageNumber} of {numPages || "-"}
-            </span>
-            <button
-              onClick={() =>
-                setPageNumber((prev) => Math.min(prev + 1, numPages || prev))
-              }
-              disabled={pageNumber >= (numPages || 1)}
-              className="px-3 py-1 bg-white border rounded hover:bg-gray-50 disabled:opacity-50"
-            >
-              →
-            </button>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={() => setScale((prev) => Math.max(prev - 0.1, 0.5))}
-              className="px-3 py-1 bg-white border rounded hover:bg-gray-50"
-            >
-              −
-            </button>
-            <span className="text-sm">{Math.round(scale * 100)}%</span>
-            <button
-              onClick={() => setScale((prev) => Math.min(prev + 0.1, 2.0))}
-              className="px-3 py-1 bg-white border rounded hover:bg-gray-50"
-            >
-              +
-            </button>
-          </div>
+    <div
+      ref={containerRef}
+      className="w-full h-full flex flex-col bg-white border-r border-gray-30"
+    >
+      <div
+        ref={headerRef}
+        className="flex justify-between items-center p-2 bg-gray-50 border-b"
+      >
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={() => setPageNumber((prev) => Math.max(prev - 1, 1))}
+            disabled={pageNumber <= 1}
+            className="px-3 py-1 bg-white border rounded hover:bg-gray-50 disabled:opacity-50"
+          >
+            ←
+          </button>
+          <span className="text-sm">
+            Page {pageNumber} of {numPages || "-"}
+          </span>
+          <button
+            onClick={() =>
+              setPageNumber((prev) => Math.min(prev + 1, numPages || prev))
+            }
+            disabled={pageNumber >= (numPages || 1)}
+            className="px-3 py-1 bg-white border rounded hover:bg-gray-50 disabled:opacity-50"
+          >
+            →
+          </button>
         </div>
 
-        <div className="border rounded bg-gray-50 p-4 min-h-[600px] relative">
-          {loading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
-            </div>
-          )}
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={() => setScale((prev) => Math.max(prev - 0.1, 0.5))}
+            className="px-3 py-1 bg-white border rounded hover:bg-gray-50"
+          >
+            −
+          </button>
+          <span className="text-sm">{Math.round(scale * 100)}%</span>
+          <button
+            onClick={() => setScale((prev) => Math.min(prev + 0.1, 2.0))}
+            className="px-3 py-1 bg-white border rounded hover:bg-gray-50"
+          >
+            +
+          </button>
+        </div>
+      </div>
 
-          {error && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-red-500 text-center p-4">
-                <p className="font-medium">Error</p>
-                <p className="text-sm">{error}</p>
-                <button
-                  onClick={fetchPdf}
-                  className="mt-2 px-4 py-2 bg-white border rounded hover:bg-gray-50"
-                >
-                  Retry
-                </button>
-              </div>
-            </div>
-          )}
+      <div
+        ref={contentRef}
+        className="flex-grow overflow-auto p-4 w-full flex items-center justify-center"
+        style={{
+          transform: "none",
+        }} /* Important to prevent zoom from affecting the container */
+      >
+        {loading && (
+          <div className="flex items-center justify-center h-full w-full">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
+          </div>
+        )}
 
-          {file && !loading && !error && (
+        {error && (
+          <div className="flex items-center justify-center h-full w-full">
+            <div className="text-red-500 text-center p-4">
+              <p className="font-medium">Error</p>
+              <p className="text-sm">{error}</p>
+              <button
+                onClick={fetchPdf}
+                className="mt-2 px-4 py-2 bg-white border rounded hover:bg-gray-50"
+              >
+                Retry
+              </button>
+            </div>
+          </div>
+        )}
+
+        {file && !loading && !error && (
+          <div
+            className="pdf-document-container"
+            style={{ maxHeight: containerSize.height }}
+          >
             <Document
               file={file}
               onLoadSuccess={onDocumentLoadSuccess}
@@ -226,10 +274,16 @@ const PDFViewer = () => {
                 renderTextLayer={true}
                 renderAnnotationLayer={true}
                 className="shadow-lg"
+                height={
+                  containerSize.height > 0 ? containerSize.height : undefined
+                }
+                width={
+                  containerSize.width > 0 ? containerSize.width - 50 : undefined
+                }
               />
             </Document>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

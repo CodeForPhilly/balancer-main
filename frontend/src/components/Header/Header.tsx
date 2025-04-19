@@ -85,12 +85,13 @@ const Header: React.FC<LoginFormProps> = ({
     };
   }, [delayTimeout]);
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [navigate]);
+
   const handleForm = () => {
     resetForm();
     navigate("/");
-    useEffect(() => {
-      window.scrollTo(0, 0)
-    }, [])
   };
 
   return (

@@ -74,7 +74,8 @@ class AskEmbeddingsAPIView(APIView):
             )
 
             answer = response["choices"][0]["message"]["content"]
-
+            print(answer)
+            print(embeddings_results)
             return Response({
                 "question": message,
                 "llm_response": answer,

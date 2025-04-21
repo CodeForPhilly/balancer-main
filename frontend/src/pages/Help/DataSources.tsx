@@ -34,7 +34,7 @@ function HowTo() {
               {data.paragraph[0]}
             </p>
           </div>
-          <div className="flex flex-col px-6 py-2 font-satoshi text-sm text-gray-700">
+          <div className="flex flex-col px-2 py-2 font-satoshi text-sm text-gray-700">
             <ListOfFiles showTable={true} />
           </div>
         </div>

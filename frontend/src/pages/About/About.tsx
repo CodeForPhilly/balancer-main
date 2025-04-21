@@ -108,11 +108,7 @@ function About() {
               </a>
               .
             </div>
-            <div className="mt-5">
-              We are currently seeking donations to fund the next phase of
-              development. Your contribution will go towards website domains and
-              hosting, help desk software and marketing efforts.
-            </div>
+
           </div>
 
           <div className="mb-20 mt-5 flex flex-row flex-wrap">
@@ -120,9 +116,6 @@ function About() {
               href="https://opencollective.com/code-for-philly/projects/balancer"
               target="_blank"
             >
-              <button className="btnBlue mr-5 transition-transform focus:outline-none focus:ring focus:ring-blue-200">
-                Donate Here
-              </button>
             </a>
             <a href="mailto:balancerteam@codeforphilly.org">
               <button className="btnBlue transition-transform focus:outline-none focus:ring focus:ring-blue-200">

@@ -3,7 +3,15 @@
 }
 
 .show_chat {
-  @apply fixed bottom-6 left-4 rounded h-[50%] w-[320px] rounded-lg bg-white border shadow-xl dark:bg-slate-800 dark:text-slate-300;
+  @apply fixed bottom-6 left-4 rounded rounded-lg bg-white border shadow-xl dark:bg-slate-800 dark:text-slate-300;
+}
+
+.show_chat.windowed {
+  @apply h-[50%] w-[320px];
+}
+
+.show_chat.full-screen {
+  @apply w-[95%] h-[95%];
 }
 
 .circle {

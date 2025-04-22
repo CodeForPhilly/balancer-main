@@ -57,9 +57,7 @@ export const Layout = ({
             handleLoginMenu={handleLoginMenu}
           />
         )}
-        <Header  
-        resetForm={resetForm}
-        />
+        <Header resetForm={resetForm} />
         {children}
         <Footer />
       </div>

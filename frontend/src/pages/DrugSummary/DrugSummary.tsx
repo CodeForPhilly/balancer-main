@@ -1,8 +1,12 @@
-import DrugSummaryForm from "./DrugSummaryForm.tsx";
-// import Layout from "../Layout/Layout";
+import DrugSummaryForm from "./DrugSummaryForm";
+import Layout_V2_Main from "../Layout/Layout_V2_Main";
 
-function DrugLookup() {
-  return <DrugSummaryForm />;
-}
+const DocContextualChat: React.FC = () => {
+  return (
+    <Layout_V2_Main>
+      <DrugSummaryForm />
+    </Layout_V2_Main>
+  );
+};
 
-export default DrugLookup;
+export default DocContextualChat;

@@ -7,7 +7,18 @@ import ErrorMessage from "../ErrorMessage";
 import ConversationList from "./ConversationList";
 import { extractContentFromDOM } from "../../services/domExtraction";
 import axios from "axios";
-import { FaPlus, FaMinus, FaTimes, FaComment, FaComments, FaPills, FaLightbulb, FaArrowCircleDown, FaExpandAlt, FaExpandArrowsAlt } from "react-icons/fa";
+import {
+  FaPlus,
+  FaMinus,
+  FaTimes,
+  FaComment,
+  FaComments,
+  FaPills,
+  FaLightbulb,
+  FaArrowCircleDown,
+  FaExpandAlt,
+  FaExpandArrowsAlt,
+} from "react-icons/fa";
 import {
   fetchConversations,
   continueConversation,
@@ -34,7 +45,7 @@ interface ChatDropDownProps {
 }
 
 const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
-  const CHATBOT_NAME : string = "JJ";
+  const CHATBOT_NAME = "JJ";
   const [inputValue, setInputValue] = useState("");
   const [chatLog, setChatLog] = useState<ChatLogItem[]>([]); // Specify the type as ChatLogItem[]
   const [isLoading, setIsLoading] = useState(false);
@@ -50,8 +61,8 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
   ];
   const refreshPrompts = [
     "Risks associated with Lithium.",
-    "What medications could cause liver issues?"
-  ]
+    "What medications could cause liver issues?",
+  ];
   const [pageContent, setPageContent] = useState("");
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
@@ -76,8 +87,10 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
 
   const handleScroll = (event: React.UIEvent<HTMLElement>) => {
     const target = event.target as HTMLElement;
-    const bottom = target.scrollHeight - Math.round(target.scrollTop) === target.clientHeight;
-    setBottom(bottom)
+    const bottom =
+      target.scrollHeight - Math.round(target.scrollTop) ===
+      target.clientHeight;
+    setBottom(bottom);
   };
 
   const [expandChat, setExpandChat] = useState(false);
@@ -88,7 +101,10 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
       // Use setTimeout to ensure the new message has been rendered
       setTimeout(() => {
         chatContainer.scrollTop = chatContainer.scrollHeight;
-        setBottom(chatContainer.scrollHeight - chatContainer.scrollTop === chatContainer.clientHeight);
+        setBottom(
+          chatContainer.scrollHeight - chatContainer.scrollTop ===
+            chatContainer.clientHeight
+        );
       }, 0);
     }
   }, [activeConversation?.messages]);
@@ -103,17 +119,24 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
     }
   };
 
-  const scrollToBottom = (element: HTMLElement) => element.scroll({ top: element.scrollHeight, behavior: 'smooth' });
+  const scrollToBottom = (element: HTMLElement) =>
+    element.scroll({ top: element.scrollHeight, behavior: "smooth" });
 
-  const handleScrollDown = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const handleScrollDown = (
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent>
+  ) => {
     event.preventDefault();
     const element = document.getElementById("inside_chat");
 
-    element ? scrollToBottom(element) : console.error("Element with id 'inside_chat' not found", element);
-  }
+    element
+      ? scrollToBottom(element)
+      : console.error("Element with id 'inside_chat' not found", element);
+  };
 
   const handleSubmit = async (
-    event: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement, MouseEvent>,
+    event:
+      | React.FormEvent<HTMLFormElement>
+      | React.MouseEvent<HTMLButtonElement, MouseEvent>,
     suggestion?: string
   ) => {
     event.preventDefault();
@@ -145,7 +168,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
       const updatedMessages = [...conversation.messages, newMessage];
       setActiveConversation({
         ...conversation,
-        title: 'Asking JJ...',
+        title: "Asking JJ...",
         messages: updatedMessages,
       });
 
@@ -155,7 +178,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
       const data = await continueConversation(
         conversation.id,
         newMessage.content,
-        pageContent,
+        pageContent
       );
 
       // Update the ConversationList component after previous function creates a title
@@ -201,7 +224,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
 
   const handleSelectConversation = (id: Conversation["id"]) => {
     const selectedConversation = conversations.find(
-      (conversation: any) => conversation.id === id,
+      (conversation: any) => conversation.id === id
     );
 
     if (selectedConversation) {
@@ -218,23 +241,38 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
   useEffect(() => {
     if (showChat) {
       loadConversations();
+      const resizeObserver = new ResizeObserver((entries) => {
+        if (!entries || entries.length === 0) return;
 
-      const resizeObserver = new ResizeObserver(() => {
-        const target = chatContainerRef.current;
+        const entry = entries[0];
+
+        const target = entry.target as HTMLElement;
+
         if (target) {
-          const bottom = target.scrollHeight - Math.round(target.scrollTop) === target.clientHeight;
+          const bottom =
+            target.scrollHeight - Math.round(target.scrollTop) ===
+            target.clientHeight;
           setBottom(bottom);
         }
       });
-      resizeObserver.observe(chatContainerRef.current);
-      return () => resizeObserver.disconnect(); // clean up
+
+      const currentContainer = chatContainerRef.current;
+      if (currentContainer) {
+        resizeObserver.observe(currentContainer);
+      }
+
+      return () => {
+        resizeObserver.disconnect();
+      };
     }
   }, [showChat]);
 
   return (
     <>
       {showChat ? (
-        <div className={`show_chat ring-slate-1000/10 shadow ${expandChat ? 'full-screen' : 'windowed'}`}>
+        <div
+          className={`show_chat ring-slate-1000/10 shadow ${expandChat ? "full-screen" : "windowed"}`}
+        >
           <div
             id="chat_container"
             className=" mx-auto flex h-full  flex-col overflow-auto rounded "
@@ -258,25 +296,25 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
               <div
                 className="truncate mx-2 font-semibold"
                 title={
-                  (activeConversation !== null && !showConversationList)
+                  activeConversation !== null && !showConversationList
                     ? activeConversation.title
                     : `Ask ${CHATBOT_NAME}`
                 }
               >
-                {activeConversation !== null && !showConversationList
-                  ? activeConversation.title
-                  : <>
-                  <FaComments className="chatbot_icon" /><span className="chatbot_name">Ask {CHATBOT_NAME}</span>
-                </>
-                }
+                {activeConversation !== null && !showConversationList ? (
+                  activeConversation.title
+                ) : (
+                  <>
+                    <FaComments className="chatbot_icon" />
+                    <span className="chatbot_name">Ask {CHATBOT_NAME}</span>
+                  </>
+                )}
                 <br />
               </div>
 
               <div className="flex space-x-2">
                 <button
-                  onClick={() =>
-                    setExpandChat((prevState) => !prevState)
-                  }
+                  onClick={() => setExpandChat((prevState) => !prevState)}
                   className="flex items-center justify-center"
                 >
                   {expandChat ? (
@@ -295,8 +333,19 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
                 </button>
               </div>
             </div>
-            <div id="inside_chat" onScroll={handleScroll} className="inside_chat" style={{scrollbarWidth: "thin", scrollBehavior: "smooth"}} ref={chatContainerRef}>
-              <button id="scroll_down" className="scroll_down animate-bounce" onClick={handleScrollDown} style={{ visibility: bottom ? 'hidden' : 'visible' }}>
+            <div
+              id="inside_chat"
+              onScroll={handleScroll}
+              className="inside_chat"
+              style={{ scrollbarWidth: "thin", scrollBehavior: "smooth" }}
+              ref={chatContainerRef}
+            >
+              <button
+                id="scroll_down"
+                className="scroll_down animate-bounce"
+                onClick={handleScrollDown}
+                style={{ visibility: bottom ? "hidden" : "visible" }}
+              >
                 <FaArrowCircleDown />
               </button>
               {showConversationList ? (
@@ -316,11 +365,11 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
                     <>
                       <div className="chat_bubble chat_bubble_header">
                         <h5>Hi there, I'm {CHATBOT_NAME}!</h5>
-                        <p>You can ask me all your bipolar disorder treatment questions.</p>
-                        <Link
-                          to="/data-sources"
-                          className="chat_link"
-                        >
+                        <p>
+                          You can ask me all your bipolar disorder treatment
+                          questions.
+                        </p>
+                        <Link to="/data-sources" className="chat_link">
                           Learn more about my sources.
                         </Link>
                       </div>
@@ -369,21 +418,23 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
                       .sort(
                         (a, b) =>
                           new Date(a.timestamp).getTime() -
-                          new Date(b.timestamp).getTime(),
+                          new Date(b.timestamp).getTime()
                       )
                       .map((message, index) => (
                         <div
                           key={index}
                           className={`flex flex-row space-x-2 ${
-                            message.is_user ? "chat_text chat_text_user " : "chat_text chat_text_bot"
+                            message.is_user
+                              ? "chat_text chat_text_user "
+                              : "chat_text chat_text_bot"
                           }`}
                         >
                           <div>
-                            {
-                              message.is_user
-                              ? <FaComment className="chat_text_icon" />
-                              : <FaComment className="chat_text_icon" />
-                            }
+                            {message.is_user ? (
+                              <FaComment className="chat_text_icon" />
+                            ) : (
+                              <FaComment className="chat_text_icon" />
+                            )}
                           </div>
                           <div className="chat_text_wrap">
                             <pre

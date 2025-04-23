@@ -874,7 +874,7 @@ const NewPatientForm = ({
                         newPatientInfo.PriorMedications?.split(",")) ||
                       []
                     }
-                    placeholder=""
+                    placeholder="Start typing..."
                     label=""
                     onChange={(chips) =>
                       setNewPatientInfo({

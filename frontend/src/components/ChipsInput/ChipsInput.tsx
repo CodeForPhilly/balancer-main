@@ -33,6 +33,12 @@ const ChipsInput: React.FC<ChipsInputProps> = ({
     }
   };
 
+  const filteredSuggestions = suggestions.filter(
+    (item) =>
+      item.toLowerCase().includes(inputValue.toLowerCase()) &&
+      !value.includes(item)
+  );
+
   const handleBlur = (e: React.FocusEvent<HTMLDivElement>) => {
     const nextFocusTarget = e.relatedTarget as HTMLElement | null;
 
@@ -53,11 +59,13 @@ const ChipsInput: React.FC<ChipsInputProps> = ({
   const handleSuggestionClick = (selected: string) => {
     onChange([...value, selected]);
     setInputFocused(false); // Close dropdown after selection
+    setInputValue("");
   };
 
   const handleKeyUp = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Backspace" && inputValue === "" && value.length > 0) {
       onChange(value.slice(0, -1));
+      setInputValue("");
     } else if (
       (e.key === " " ||
         e.key === "Tab" ||
@@ -75,6 +83,7 @@ const ChipsInput: React.FC<ChipsInputProps> = ({
 
   const handleRemoveChip = (chip: string) => {
     onChange(value.filter((c) => c !== chip));
+    setInputValue("");
   };
 
   return (
@@ -116,9 +125,9 @@ const ChipsInput: React.FC<ChipsInputProps> = ({
         />
       </div>
 
-      {inputFocused && (
+      {inputFocused && filteredSuggestions.length > 0 && (
         <ul className="mt-1 w-full bg-white border rounded shadow z-10">
-          {suggestions.map((item, idx) => (
+          {filteredSuggestions.map((item, idx) => (
             <li
               key={idx}
               onClick={() => handleSuggestionClick(item)}

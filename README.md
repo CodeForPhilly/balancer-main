@@ -25,6 +25,7 @@ Tools used for for Balancer development:
 
 1. `Docker and docker-compose`
 2. `OpenAI API`: Ask for the API key and add it to `config/env/env.dev`
+3. `Anthropic API`: Ask for the API key and add it to `config/env/env.dev`
 3. `pgAdmin`: The email and password are specified in `balancer-main/docker-compose.yml`
 4. `Postman`: Ask to get invited to the Balancer Postman team `balancer_dev`
 

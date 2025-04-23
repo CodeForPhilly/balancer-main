@@ -57,21 +57,6 @@ const handleSendDrugSummary = async (message: FormValues["message"], guid: strin
   }
 };
 
-
-const handleClickDrugSummary = async (guid: string) => {
-  try {
-
-    const endpoint = guid ? `/v1/api/rule_extraction?guid=${guid}` : '/v1/api/rule_extraction';
-    const response = await api.get(endpoint);
-    console.log("Response data:", JSON.stringify(response.data, null, 2));
-    return response.data;
-  } catch (error) {
-    console.error("Error(s) during handleClickDrugSummary: ", error);
-    throw error;
-  }
-};
-
-
 const fetchConversations = async (): Promise<Conversation[]> => {
   try {
     const response = await api.get(`/chatgpt/conversations/`);
@@ -152,7 +137,6 @@ const updateConversationTitle = async (
 export {
   handleSubmitFeedback,
   handleSendDrugSummary,
-  handleClickDrugSummary,
   fetchConversations,
   fetchConversation,
   newConversation,

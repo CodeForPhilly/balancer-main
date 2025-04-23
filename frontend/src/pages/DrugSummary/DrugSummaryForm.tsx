@@ -1,31 +1,24 @@
 import React from "react";
 import "../../components/Header/chat.css";
-// React Hooks
 import { useState, useEffect, useRef } from "react";
 // import paperclip from "../../assets/paperclip.svg";
-import { handleSendDrugSummary, handleClickDrugSummary } from "../../api/apiClient.ts";
+import { handleSendDrugSummary } from "../../api/apiClient.ts";
 import { ChatMessageItem, SearchResult } from "./type";
-// Reuse components
 import ParseStringWithLinks from "../../services/parsing/ParseWithSource.tsx";
 import { useLocation } from "react-router-dom";
 import PDFViewer from "./PDFViewer";
 
-// JavaScript function that returns JSX:  "React functional component"
 const DrugSummaryForm = () => {
-  
-  // State is updated whenever the input changes
   const [inputValue, setInputValue] = useState("");
   const [inputHeight, setInputHeight] = useState(50); // Initial height in pixels
   const [chatLog, setChatLog] = useState<ChatMessageItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const location = useLocation();
-  // Access and manipulate DOM (Document Object Model) elements
   const chatContainerRef = useRef<HTMLDivElement>(null);
   // const fileInputRef = useRef<HTMLInputElement>(null);
   const scrollToBottomRef = useRef<HTMLDivElement | null>(null);
   const maxInputHeight = 150; // Maximum height in pixels
 
-  // Run code at specific points in the component's lifecycle
   useEffect(() => {
     if (chatContainerRef.current) {
       const chatContainer = chatContainerRef.current;
@@ -39,7 +32,6 @@ const DrugSummaryForm = () => {
     }
   }, [chatLog]);
 
-  // Forms and user interaction: Form submission 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -57,7 +49,6 @@ const DrugSummaryForm = () => {
     setIsLoading(true);
 
     try {
-      // Integrate component with the backend
       const response = await handleSendDrugSummary(inputValue, guid);
       console.log("API Response:", response);
 
@@ -99,35 +90,6 @@ const DrugSummaryForm = () => {
     }
   };
 
-
-  const handleClick = async () => {
-
-    const params = new URLSearchParams(location.search);
-    const guid = params.get("guid") || ``;
-
-    setIsLoading(true);
-
-    try {
-
-      const response = await handleClickDrugSummary(guid);
-
-      console.log("API Response:", response);
-
-      setChatLog((prevChatLog) => [...prevChatLog, {type: "bot", message: response['texts']}]);
-      setChatLog((prevChatLog) => [...prevChatLog, {type: "bot", message: response['cited_texts']}]);
-
-    } catch (error) {
-
-      console.error("Error:", error);
-
-    } finally {
-      // Ensure isLoading is set to false whether the API call success or fails
-      setIsLoading(false);
-    }
-  
-
-  };
-
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInputValue(e.target.value);
   };
@@ -144,7 +106,6 @@ const DrugSummaryForm = () => {
       });
     }
   };
-  // JavaScript function that returns JSX:  "React functional component"
 
   return (
     <>
@@ -159,11 +120,9 @@ const DrugSummaryForm = () => {
               id="chat_container"
               className="relative bottom-0  top-0 mt-10 flex h-[calc(100vh-210px)] flex-col overflow-y-auto border-t p-2"
             >
-              {/* Conditionally render components */}
               {chatLog.length === 0 ? (
                 <>
                   <div className="flex  flex-col gap-4 p-3">
-                    {/* Apply Tailwind CSS classes  */}
                     <div className="max-h-[100%] rounded-lg border-2 bg-stone-50 p-2 text-sky-950">
                       You can ask about the content on this page.
                     </div>
@@ -192,7 +151,6 @@ const DrugSummaryForm = () => {
                         {typeof message.message === "string" ? (
                           message.message
                         ) : (
-                          // Components can be reused
                           <ParseStringWithLinks
                             text={message.message.llm_response}
                             chunkData={message.message.embeddings_info}
@@ -248,14 +206,6 @@ const DrugSummaryForm = () => {
               </button>
             </div>
           </form>
-          <div className="ml-5 flex items-center justify-between">
-              <button
-                onClick={handleClick}
-                className=" h-12 rounded-xl border bg-blue-500 px-3 py-1.5 font-satoshi  text-white hover:bg-blue-400"
-              >
-                Extract Medication Rules
-              </button>
-            </div>
         </div>
       </div>
     </>

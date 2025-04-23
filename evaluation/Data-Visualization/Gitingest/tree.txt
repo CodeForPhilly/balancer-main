@@ -1,0 +1,99 @@
+Directory structure:
+└── server/
+    ├── Dockerfile
+    ├── Dockerfile.prod
+    ├── Dockerfile.prodBackup
+    ├── entrypoint.prod.sh
+    ├── entrypoint.sh
+    ├── manage.py
+    ├── requirements.txt
+    ├── api/
+    │   ├── __init__.py
+    │   ├── admin.py
+    │   ├── apps.py
+    │   ├── models.py
+    │   ├── tests.py
+    │   ├── management/
+    │   │   ├── __init__.py
+    │   │   └── commands/
+    │   │       ├── __init__.py
+    │   │       ├── createsu.py
+    │   │       └── populatedb.py
+    │   ├── migrations/
+    │   │   ├── 0001_initial.py
+    │   │   ├── 0002_uploadfile_analyzed_uploadfile_approved_and_more.py
+    │   │   ├── 0003_alter_uploadfile_date_of_upload_and_more.py
+    │   │   ├── 0004_uploadfile_uploaded_by_email_and_more.py
+    │   │   ├── 0005_embeddings.py
+    │   │   ├── 0006_feedback.py
+    │   │   ├── 0007_conversation_message.py
+    │   │   ├── 0008_medrule.py
+    │   │   ├── 0009_remove_medrule_medication_medrule_explanation_and_more.py
+    │   │   ├── 0010_alter_medrule_unique_together.py
+    │   │   ├── 0011_embeddings_publication_embeddings_publication_date_and_more.py
+    │   │   └── __init__.py
+    │   ├── models/
+    │   │   ├── TokenObtainPairSerializer.py
+    │   │   ├── __init__.py
+    │   │   ├── authUser.py
+    │   │   ├── model_embeddings.py
+    │   │   ├── model_medRule.py
+    │   │   └── serializers.py
+    │   ├── services/
+    │   │   ├── conversions_services.py
+    │   │   ├── embedding_services.py
+    │   │   ├── openai_services.py
+    │   │   ├── sentencetTransformer_model.py
+    │   │   └── tools/
+    │   │       ├── database.py
+    │   │       └── tools.py
+    │   └── views/
+    │       ├── ai_promptStorage/
+    │       │   ├── models.py
+    │       │   ├── serializers.py
+    │       │   ├── urls.py
+    │       │   └── views.py
+    │       ├── ai_settings/
+    │       │   ├── models.py
+    │       │   ├── serializers.py
+    │       │   ├── urls.py
+    │       │   └── views.py
+    │       ├── conversations/
+    │       │   ├── models.py
+    │       │   ├── serializers.py
+    │       │   ├── urls.py
+    │       │   └── views.py
+    │       ├── embeddings/
+    │       │   ├── embeddingsView.py
+    │       │   └── urls.py
+    │       ├── feedback/
+    │       │   ├── models.py
+    │       │   ├── serializers.py
+    │       │   ├── urls.py
+    │       │   └── views.py
+    │       ├── listMeds/
+    │       │   ├── models.py
+    │       │   ├── serializers.py
+    │       │   ├── urls.py
+    │       │   └── views.py
+    │       ├── medRules/
+    │       │   ├── serializers.py
+    │       │   ├── urls.py
+    │       │   └── views.py
+    │       ├── risk/
+    │       │   ├── urls.py
+    │       │   └── views.py
+    │       ├── text_extraction/
+    │       │   ├── urls.py
+    │       │   └── views.py
+    │       └── uploadFile/
+    │           ├── models.py
+    │           ├── serializers.py
+    │           ├── urls.py
+    │           └── views.py
+    └── balancer_backend/
+        ├── __init__.py
+        ├── asgi.py
+        ├── settings.py
+        ├── urls.py
+        └── wsgi.py

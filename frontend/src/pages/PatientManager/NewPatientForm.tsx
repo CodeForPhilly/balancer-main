@@ -341,7 +341,6 @@ const NewPatientForm = ({
               </button>
             </div>
             <form onSubmit={handleSubmit} className="mt-2 ">
-              {/* <ErrorMessage errors={errors} /> */}
               <div className="flex flex-row justify-between py-6 border-b border-gray-900/10 md:items-center ">
                 <div className="mr-5 md:mr-0 md:w-[300px]">
                   <label
@@ -364,99 +363,10 @@ const NewPatientForm = ({
                         {diagnosis}
                       </option>
                     ))}
-                    {/* <option value="Mixed">Mixed</option> */}
                   </select>
                 </div>
-                {/* {errorMessage && (
-                  <div className="text-red-500">{errorMessage}</div>
-                )} */}
-              </div>
 
-              {/* <div className="flex justify-between px-0 py-6 border-b border-gray-900/10 md:grid md:grid-cols-3 md:gap-4">
-                <div>
-                  <legend className="text-sm font-semibold leading-6 text-gray-900">
-                    Bipolar history
-                  </legend>
-                </div>
-                <div className="pr-10 md:pl-24 md:pr-0">
-                  <div className="flex  gap-x-3">
-                    <div className="flex items-center h-6 ">
-                      <input
-                        id="Mania"
-                        name="Mania"
-                        type="checkbox"
-                        className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-600"
-                        onChange={(e) => handleCheckboxChange(e, "Mania")}
-                      />
-                    </div>
-                    <div className="text-sm leading-6">
-                      <label
-                        htmlFor="Mania"
-                        className="font-medium text-gray-900"
-                      >
-                        Mania
-                      </label>
-                    </div>
-                  </div>
-                  <div className="flex  gap-x-3">
-                    <div className="flex items-center h-6">
-                      <input
-                        id="Depression"
-                        name="Depression"
-                        type="checkbox"
-                        className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-600"
-                        onChange={(e) => handleCheckboxChange(e, "Depression")}
-                      />
-                    </div>
-                    <div className="text-sm leading-6">
-                      <label
-                        htmlFor="Depression"
-                        className="font-medium text-gray-900"
-                      >
-                        Depression
-                      </label>
-                    </div>
-                  </div>
-                  <div className="flex  gap-x-3">
-                    <div className="flex items-center h-6">
-                      <input
-                        id="Hypomania"
-                        name="Hypomania"
-                        type="checkbox"
-                        className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-600"
-                        onChange={(e) => handleCheckboxChange(e, "Hypomania")}
-                      />
-                    </div>
-                    <div className="text-sm leading-6">
-                      <label
-                        htmlFor="Hypomania"
-                        className="font-medium text-gray-900"
-                      >
-                        Hypomania
-                      </label>
-                    </div>
-                  </div>
-                  <div className="flex  gap-x-3">
-                    <div className="flex items-center h-6">
-                      <input
-                        id="Mixed"
-                        name="Mixed"
-                        type="checkbox"
-                        className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-600"
-                        onChange={(e) => handleCheckboxChange(e, "Mixed")}
-                      />
-                    </div>
-                    <div className="text-sm leading-6">
-                      <label
-                        htmlFor="Mixed"
-                        className="font-medium text-gray-900"
-                      >
-                        Mixed
-                      </label>
-                    </div>
-                  </div>
-                </div>
-              </div> */}
+              </div>
               <div className="py-6 border-b border-gray-900/10 ">
                 <p className="text-sm leading-6 text-gray-600 ">
                   Select patient characteristics

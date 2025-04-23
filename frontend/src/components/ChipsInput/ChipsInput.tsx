@@ -26,6 +26,7 @@ const ChipsInput: React.FC<ChipsInputProps> = ({
   const [inputValue, setInputValue] = useState<string>("");
   const [inputFocused, setInputFocused] = useState<boolean>(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const handleFocus = (e: FocusEvent<HTMLDivElement>) => {
     if (e.target === inputRef.current) {
@@ -87,7 +88,7 @@ const ChipsInput: React.FC<ChipsInputProps> = ({
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full relative" ref={containerRef}>
       {label && (
         <label className="block text-sm font-medium mb-2">{label}</label>
       )}
@@ -126,7 +127,7 @@ const ChipsInput: React.FC<ChipsInputProps> = ({
       </div>
 
       {inputFocused && filteredSuggestions.length > 0 && (
-        <ul className="mt-1 w-full bg-white border rounded shadow z-10">
+        <ul className="absolute left-0 right-0 mt-1 max-h-60 overflow-y-auto bg-white border rounded shadow-lg z-10">
           {filteredSuggestions.map((item, idx) => (
             <li
               key={idx}

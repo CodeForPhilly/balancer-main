@@ -24,11 +24,9 @@ Get the code using git by either forking or cloning `CodeForPhilly/balancer-main
 Tools used to run Balancer:
 1. `Docker`: Install Docker Desktop
 2. `OpenAI API`: Ask for the API key and add it to `config/env/env.dev`
-
-Tools used for Balancer development: 
-1. `Postman`: Ask to get invited to the Balancer Postman team `balancer_dev`
-2. `pgAdmin`: The email and password are specified in `balancer-main/docker-compose.yml`
-
+3. `Anthropic API`: Ask for the API key and add it to `config/env/env.dev`
+4. `pgAdmin`: The email and password are specified in `balancer-main/docker-compose.yml`
+5. `Postman`: Ask to get invited to the Balancer Postman team `balancer_dev`
 
 ### Running Balancer for development
 

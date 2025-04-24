@@ -85,16 +85,17 @@ const Header: React.FC<LoginFormProps> = ({
     };
   }, [delayTimeout]);
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [navigate]);
+
   const handleForm = () => {
     resetForm();
     navigate("/");
-    useEffect(() => {
-      window.scrollTo(0, 0)
-    }, [])
   };
 
   return (
-    <header className="z10 fixed w-full items-center no-print">
+    <header className="z-50 fixed w-full items-center no-print">
       <div className="hidden w-full items-center justify-center border-b border-gray-300 bg-blue-100 p-1 text-center text-sm font-light text-gray-500 lg:flex">
         <p className="">
           This app is currently in its beta testing phase. The information and

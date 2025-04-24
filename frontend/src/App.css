@@ -187,7 +187,7 @@ Input field.
 */
 
 .input {
-  @apply block  rounded-md border-0 bg-white py-3 pl-5 pr-5 font-satoshi text-base ring-1 transition duration-200  hover:border-0 hover:ring-1 hover:ring-sky-500   focus:outline-none focus:ring-2  focus:ring-sky-500;
+  @apply block rounded-md border-0 shadow-sm ring-1 ring-inset bg-white py-3 pl-5 pr-5 font-satoshi text-base transition duration-300 focus:border-0 focus:outline-none focus:ring-2 focus:ring-sky-500 hover:border-0 hover:ring-1 hover:ring-sky-500;
 }
 
 /*

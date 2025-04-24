@@ -13,6 +13,10 @@ export interface FormValues {
   image: string;
 }
 
+interface FormProps {
+  id?: string;
+}
+
 // Error Message interface and validation
 interface ErrorMessages {
   [key: string]: string[];
@@ -27,7 +31,7 @@ const isValidErrorMessages = (data: unknown): data is ErrorMessages => {
   );
 };
 
-const FeedbackForm = () => {
+function FeedbackForm ({ id }: FormProps) {
   const [feedback, setFeedback] = useState("");
   const [errorMessages, setErrorMessages] = useState<ErrorMessages>({});
   const [isPressed, setIsPressed] = useState(false);
@@ -194,10 +198,11 @@ const FeedbackForm = () => {
 
   return (
     <>
-      <div className="flex w-[100%] justify-between">
+      <div className="flex flex-col w-[100%] justify-between">
         <h2 className="header_logo cursor-pointer font-satoshi text-xl font-bold text-gray-600  hover:text-blue-600 ">
-          Leave Us Feedback!
+          { !id ? 'Leave Us Feedback!' : 'Report an Issue' }
         </h2>
+          { id && <h6 className="text-gray-500">Patient ID: <span className="font-light">{id}</span></h6> }
       </div>
       <section className="mx-auto w-full">
         <form onSubmit={handleSubmit} className="mt-2">
@@ -421,7 +426,7 @@ const FeedbackForm = () => {
                   className="btnGray mr-5"
                   onClick={handleCancel}
                 >
-                  Cancel
+                  Clear
                 </button>
               </div>
               <button

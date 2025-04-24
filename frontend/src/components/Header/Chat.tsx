@@ -1,13 +1,24 @@
 import React from "react";
-// import { Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import "../../components/Header/chat.css";
 import { useState, useEffect, useRef } from "react";
 import TypingAnimation from "./components/TypingAnimation";
 import ErrorMessage from "../ErrorMessage";
 import ConversationList from "./ConversationList";
-import chatBubble from "../../assets/chatbubble.svg";
 import { extractContentFromDOM } from "../../services/domExtraction";
 import axios from "axios";
+import {
+  FaPlus,
+  FaMinus,
+  FaTimes,
+  FaComment,
+  FaComments,
+  FaPills,
+  FaLightbulb,
+  FaArrowCircleDown,
+  FaExpandAlt,
+  FaExpandArrowsAlt,
+} from "react-icons/fa";
 import {
   fetchConversations,
   continueConversation,
@@ -34,6 +45,7 @@ interface ChatDropDownProps {
 }
 
 const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
+  const CHATBOT_NAME = "JJ";
   const [inputValue, setInputValue] = useState("");
   const [chatLog, setChatLog] = useState<ChatLogItem[]>([]); // Specify the type as ChatLogItem[]
   const [isLoading, setIsLoading] = useState(false);
@@ -44,9 +56,12 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
   const [error, setError] = useState<Error | null>(null);
 
   const suggestionPrompts = [
-    "Tell me about treatment options.",
-    "What are the common side effects?",
-    "How to manage medication schedule?",
+    "What are the side effects of Latuda?",
+    "Why is cariprazine better than valproate for a pregnant patient?",
+  ];
+  const refreshPrompts = [
+    "Risks associated with Lithium.",
+    "What medications could cause liver issues?",
   ];
   const [pageContent, setPageContent] = useState("");
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -68,12 +83,17 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
     setPageContent(extractedContent);
   }, []);
 
-  // useEffect(() => {
-  //   if (chatContainerRef.current) {
-  //     const chatContainer = chatContainerRef.current;
-  //     chatContainer.scrollTop = chatContainer.scrollHeight;
-  //   }
-  // }, [chatLog]);
+  const [bottom, setBottom] = useState(false);
+
+  const handleScroll = (event: React.UIEvent<HTMLElement>) => {
+    const target = event.target as HTMLElement;
+    const bottom =
+      target.scrollHeight - Math.round(target.scrollTop) ===
+      target.clientHeight;
+    setBottom(bottom);
+  };
+
+  const [expandChat, setExpandChat] = useState(false);
 
   useEffect(() => {
     if (chatContainerRef.current && activeConversation) {
@@ -81,6 +101,10 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
       // Use setTimeout to ensure the new message has been rendered
       setTimeout(() => {
         chatContainer.scrollTop = chatContainer.scrollHeight;
+        setBottom(
+          chatContainer.scrollHeight - chatContainer.scrollTop ===
+            chatContainer.clientHeight
+        );
       }, 0);
     }
   }, [activeConversation?.messages]);
@@ -95,11 +119,30 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
     }
   };
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const scrollToBottom = (element: HTMLElement) =>
+    element.scroll({ top: element.scrollHeight, behavior: "smooth" });
+
+  const handleScrollDown = (
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent>
+  ) => {
+    event.preventDefault();
+    const element = document.getElementById("inside_chat");
+
+    element
+      ? scrollToBottom(element)
+      : console.error("Element with id 'inside_chat' not found", element);
+  };
+
+  const handleSubmit = async (
+    event:
+      | React.FormEvent<HTMLFormElement>
+      | React.MouseEvent<HTMLButtonElement, MouseEvent>,
+    suggestion?: string
+  ) => {
     event.preventDefault();
 
     const newMessage = {
-      content: inputValue,
+      content: (inputValue || suggestion) ?? "",
       is_user: true,
       timestamp: new Date().toISOString(),
     };
@@ -125,6 +168,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
       const updatedMessages = [...conversation.messages, newMessage];
       setActiveConversation({
         ...conversation,
+        title: "Asking JJ...",
         messages: updatedMessages,
       });
 
@@ -134,13 +178,13 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
       const data = await continueConversation(
         conversation.id,
         newMessage.content,
-        pageContent,
+        pageContent
       );
 
       // Update the ConversationList component after previous function creates a title
       if (conversationCreated) loadConversations(); // Note: no 'await' so this can occur in the background
 
-      setActiveConversation((prevConversation) => {
+      setActiveConversation((prevConversation: any) => {
         if (!prevConversation) return null;
 
         return {
@@ -178,55 +222,9 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
     }
   };
 
-  // const systemMessage = {
-  //   role: "system",
-  //   content: "You are a bot please keep conversation going.",
-  // };
-  // const sendMessage = (message: ChatLogItem[]) => {
-  //   const baseUrl = import.meta.env.VITE_API_BASE_URL;
-  //   const url = `${baseUrl}/chatgpt/chat`;
-
-  //   const apiMessages = message.map((messageObject) => {
-  //     let role = "";
-  //     if (messageObject.is_user) {
-  //       role = "user";
-  //     } else {
-  //       role = "assistant";
-  //     }
-  //     return { role: role, content: messageObject.content };
-  //   });
-
-  //   systemMessage.content += `If applicable, please use the following content to ask questions. If not applicable,
-  //     please answer to the best of your ability: ${pageContent}`;
-
-  //   const apiRequestBody = {
-  //     prompt: [systemMessage, ...apiMessages],
-  //   };
-
-  //   setIsLoading(true);
-
-  //   axios
-  //     .post(url, apiRequestBody)
-  //     .then((response) => {
-  //       console.log(response);
-  //       setChatLog((prevChatLog) => [
-  //         ...prevChatLog,
-  //         {
-  //           is_user: false,
-  //           content: response.data.message.choices[0].message.content,
-  //         },
-  //       ]);
-  //       setIsLoading(false);
-  //     })
-  //     .catch((error) => {
-  //       setIsLoading(false);
-  //       console.log(error);
-  //     });
-  // };
-
   const handleSelectConversation = (id: Conversation["id"]) => {
     const selectedConversation = conversations.find(
-      (conversation) => conversation.id === id,
+      (conversation: any) => conversation.id === id
     );
 
     if (selectedConversation) {
@@ -241,37 +239,45 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
   };
 
   useEffect(() => {
-    if (showChat) loadConversations();
+    if (showChat) {
+      loadConversations();
+      const resizeObserver = new ResizeObserver((entries) => {
+        if (!entries || entries.length === 0) return;
+
+        const entry = entries[0];
+
+        const target = entry.target as HTMLElement;
+
+        if (target) {
+          const bottom =
+            target.scrollHeight - Math.round(target.scrollTop) ===
+            target.clientHeight;
+          setBottom(bottom);
+        }
+      });
+
+      const currentContainer = chatContainerRef.current;
+      if (currentContainer) {
+        resizeObserver.observe(currentContainer);
+      }
+
+      return () => {
+        resizeObserver.disconnect();
+      };
+    }
   }, [showChat]);
 
   return (
     <>
-      {/* {showChat && (
+      {showChat ? (
         <div
-          className="fixed inset-0 bg-gray-900 opacity-50 z-5"
-          onClick={handleChat}
-        ></div>
-      )} */}
-      <div
-        className={`fixed bottom-0 right-0 rounded md:bottom-3 md:right-4 ${
-          showChat
-            ? "show_chat border-1bg-white ring-slate-1000/10 shadow"
-            : "h-12 "
-        } `}
-      >
-        {showChat ? (
+          className={`show_chat ring-slate-1000/10 shadow ${expandChat ? "full-screen" : "windowed"}`}
+        >
           <div
             id="chat_container"
             className=" mx-auto flex h-full  flex-col overflow-auto rounded "
           >
-            {/* <div
-              className="sticky top-0 mt-0 flex h-8 w-full flex-row items-center justify-between rounded-t-lg border-b bg-white p-1  "
-              style={{ borderBottomColor: "#abcdef" }}
-            > */}
-            <div
-              className="sticky top-0 mt-0 flex h-8 w-full flex-row items-center justify-between rounded-t-lg border-b bg-white p-1  "
-              style={{ borderBottomColor: "#abcdef" }}
-            >
+            <div className="chat_top_nav">
               <button
                 onClick={() =>
                   setShowConversationList((prevState) => !prevState)
@@ -280,85 +286,130 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
               >
                 {showConversationList ? (
                   // Icon for "Hide"
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 512 512"
-                    className="h-5 w-5"
-                    fill="currentColor"
-                  >
-                    <path d="M0 96C0 78.3 14.3 64 32 64l384 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L32 128C14.3 128 0 113.7 0 96zM64 256c0-17.7 14.3-32 32-32l384 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L96 288c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32L32 448c-17.7 0-32-14.3-32-32s14.3-32 32-32l384 0c17.7 0 32 14.3 32 32z" />
-                  </svg>
+                  <FaMinus className="chat_icon" />
                 ) : (
                   // Icon for "Show"
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 448 512"
-                    className="h-5 w-5"
-                    fill="currentColor"
-                  >
-                    <path d="M0 96C0 78.3 14.3 64 32 64l384 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L32 128C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32l384 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L32 288c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32L32 448c-17.7 0-32-14.3-32-32s14.3-32 32-32l384 0c17.7 0 32 14.3 32 32z" />
-                  </svg>
+                  <FaPlus className="chat_icon" />
                 )}
               </button>
 
               <div
-                className="ml-4 text-black truncate"
+                className="truncate mx-2 font-semibold"
                 title={
                   activeConversation !== null && !showConversationList
                     ? activeConversation.title
-                    : `Question for me?`
+                    : `Ask ${CHATBOT_NAME}`
                 }
               >
-                {activeConversation !== null && !showConversationList
-                  ? activeConversation.title
-                  : `Question for me?`}
+                {activeConversation !== null && !showConversationList ? (
+                  activeConversation.title
+                ) : (
+                  <>
+                    <FaComments className="chatbot_icon" />
+                    <span className="chatbot_name">Ask {CHATBOT_NAME}</span>
+                  </>
+                )}
                 <br />
               </div>
 
-              <div
-                className="delete mr-2 flex h-6 w-8 cursor-pointer items-center justify-center rounded-full bg-white text-black hover:bg-red-500"
-                onClick={() => setShowChat(false)}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  aria-hidden="true"
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => setExpandChat((prevState) => !prevState)}
+                  className="flex items-center justify-center"
                 >
-                  <path
-                    fillRule="evenodd"
-                    d="M15.293 4.293a1 1 0 011.414 1.414L11.414 12l5.293 5.293a1 1 0 01-1.414 1.414L10 13.414l-5.293 5.293a1 1 0 01-1.414-1.414L8.586 12 3.293 6.707a1 1 0 111.414-1.414L10 10.586l5.293-5.293z"
-                    clipRule="evenodd"
-                  />
-                </svg>
+                  {expandChat ? (
+                    // Icon for "Shrink"
+                    <FaExpandAlt className="chat_icon" />
+                  ) : (
+                    // Icon for "expand"
+                    <FaExpandArrowsAlt className="chat_icon" />
+                  )}
+                </button>
+                <button
+                  className="delete flex items-center justify-center"
+                  onClick={() => setShowChat(false)}
+                >
+                  <FaTimes className="chat_icon" />
+                </button>
               </div>
             </div>
-            <div className="flex-grow overflow-y-auto" ref={chatContainerRef}>
+            <div
+              id="inside_chat"
+              onScroll={handleScroll}
+              className="inside_chat"
+              style={{ scrollbarWidth: "thin", scrollBehavior: "smooth" }}
+              ref={chatContainerRef}
+            >
+              <button
+                id="scroll_down"
+                className="scroll_down animate-bounce"
+                onClick={handleScrollDown}
+                style={{ visibility: bottom ? "hidden" : "visible" }}
+              >
+                <FaArrowCircleDown />
+              </button>
               {showConversationList ? (
-                <ConversationList
-                  conversations={conversations}
-                  onSelectConversation={handleSelectConversation}
-                  onNewConversation={handleNewConversation}
-                  onSubmitConversationTitle={updateConversationTitle}
-                  onDeleteConversation={deleteConversation}
-                />
+                <div className="chat_list">
+                  <ConversationList
+                    conversations={conversations}
+                    onSelectConversation={handleSelectConversation}
+                    onNewConversation={handleNewConversation}
+                    onSubmitConversationTitle={updateConversationTitle}
+                    onDeleteConversation={deleteConversation}
+                  />
+                </div>
               ) : (
-                <div className="font_body mt-6 flex flex-grow flex-col space-y-2 p-5">
+                <div className="chat_intro">
                   {activeConversation === null ||
                   activeConversation.messages.length === 0 ? (
                     <>
-                      {/* <div className="text-gray-500">
-                    Want to know more about a medication or have a question? Ask
-                    Balancer in this chat, and information will be pulled from
-                    all over the internet to assist you <br />
-                    <br />
-                  </div> */}
-                      <div className="max-h-[100%] max-w-[310px] rounded-lg border-2 bg-gray-200 p-2 text-black">
-                        You can ask about the content on this page.
+                      <div className="chat_bubble chat_bubble_header">
+                        <h5>Hi there, I'm {CHATBOT_NAME}!</h5>
+                        <p>
+                          You can ask me all your bipolar disorder treatment
+                          questions.
+                        </p>
+                        <Link to="/data-sources" className="chat_link">
+                          Learn more about my sources.
+                        </Link>
                       </div>
-                      <div className="max-h-[100%] max-w-[190px] rounded-lg border-2 bg-gray-200 p-2 text-black">
-                        Or questions in general.
+                      <div className="chat_suggestion_section">
+                        <div className="chat_suggestion_header">
+                          <FaPills className="text-rose-400 text-xl align-bottom inline-block mr-2" />
+                          <h5 className="inline-block">Explore a medication</h5>
+                        </div>
+                        <ul className="chat_suggestion_list">
+                          {suggestionPrompts.map((suggestion, index) => (
+                            <li key={index}>
+                              <button
+                                type="button"
+                                className="chat_suggestion"
+                                onClick={(e) => handleSubmit(e, suggestion)}
+                              >
+                                {suggestion}
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div className="chat_suggestion_section">
+                        <div className="chat_suggestion_header">
+                          <FaLightbulb className="text-amber-400 text-xl align-bottom inline-block mr-2" />
+                          <h5 className="inline-block">Refresh your memory</h5>
+                        </div>
+                        <ul className="chat_suggestion_list">
+                          {refreshPrompts.map((suggestion, index) => (
+                            <li key={index}>
+                              <button
+                                type="button"
+                                className="chat_suggestion"
+                                onClick={(e) => handleSubmit(e, suggestion)}
+                              >
+                                {suggestion}
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
                       </div>
                     </>
                   ) : (
@@ -367,34 +418,40 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
                       .sort(
                         (a, b) =>
                           new Date(a.timestamp).getTime() -
-                          new Date(b.timestamp).getTime(),
+                          new Date(b.timestamp).getTime()
                       )
                       .map((message, index) => (
                         <div
                           key={index}
-                          className={`flex ${
-                            message.is_user ? "justify-end" : "justify-start"
+                          className={`flex flex-row space-x-2 ${
+                            message.is_user
+                              ? "chat_text chat_text_user "
+                              : "chat_text chat_text_bot"
                           }`}
                         >
-                          <pre
-                            style={{
-                              fontFamily: "inherit",
-                              whiteSpace: "pre-wrap",
-                              wordWrap: "break-word",
-                            }}
-                            className={`${
-                              message.is_user
-                                ? "bg-blue-200 text-black "
-                                : "border-2 bg-gray-200 text-black "
-                            }rounded-lg max-h-[100%] max-w-[500px] p-2`}
-                          >
-                            {message.content}
-                          </pre>
+                          <div>
+                            {message.is_user ? (
+                              <FaComment className="chat_text_icon" />
+                            ) : (
+                              <FaComment className="chat_text_icon" />
+                            )}
+                          </div>
+                          <div className="chat_text_wrap">
+                            <pre
+                              style={{
+                                fontFamily: "inherit",
+                                whiteSpace: "pre-wrap",
+                                wordWrap: "break-word",
+                              }}
+                            >
+                              {message.content}
+                            </pre>
+                          </div>
                         </div>
                       ))
                   )}
                   {isLoading && (
-                    <div key={chatLog.length} className="flex justify-between">
+                    <div key={chatLog.length} className="flex justify-center">
                       <div className="max-w-sm rounded-lg p-4 text-white">
                         <TypingAnimation />
                       </div>
@@ -404,49 +461,28 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
                 </div>
               )}
             </div>
-            <div className="inside_chat rounded-b-lg bg-white p-4 sticky bottom-0 left-0 right-0 z-50 ">
-              <div className="flex md:flex-col gap-1 p-2 ">
-                {suggestionPrompts.map((suggestion, index) => (
-                  <button
-                    type="button"
-                    key={index}
-                    className="rounded-md border p-2 text-sm text-black hover:bg-blue-200"
-                    onClick={() => setInputValue(suggestion)}
-                  >
-                    {suggestion}
-                  </button>
-                ))}
-              </div>
-              <form onSubmit={handleSubmit} className="mb-1 flex">
-                <div className="ml-2 flex-grow">
-                  <input
-                    type="ani_input"
-                    className="input w-full"
-                    placeholder="Talk to me..."
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                  />
-                </div>
-                <div className="ml-5">
-                  <button type="submit" className="btnBlue">
-                    Send
-                  </button>
-                </div>
-              </form>
-            </div>
+            <form onSubmit={handleSubmit} className="chat_footer">
+              <input
+                type="text"
+                className="input w-full"
+                placeholder={`Ask ${CHATBOT_NAME} a question`}
+                value={inputValue}
+                onChange={(event) => setInputValue(event.target.value)}
+              />
+            </form>
           </div>
-        ) : (
-          <div
-            onClick={() => setShowChat(true)}
-            className="group absolute relative bottom-9 right-5 inline-block flex h-16 w-16 cursor-pointer items-center justify-center rounded-full   object-contain hover:cursor-pointer hover:border-blue-600 hover:bg-blue-300 md:bottom-20 md:right-20 no-print"
-          >
-            <img src={chatBubble} alt="logo" className="h-6 md:h-10 md:w-10 " />
-            <div className="absolute bottom-20 mt-2 hidden w-32 rounded bg-gray-700 px-2 py-1 text-sm text-white before:absolute before:-top-2 before:left-1/2 before:-translate-x-1/2 before:transform before:border-8 before:border-transparent before:border-b-gray-700 group-hover:block">
-              Any questions? Click here to to chat!
-            </div>
+        </div>
+      ) : (
+        <div
+          onClick={() => setShowChat(true)}
+          className="fixed bottom-9 left-10 h-16 w-16 inline-block cursor-pointer flex items-center justify-center rounded-full bg-blue-500 object-contain hover:cursor-pointer hover:bg-blue-300 md:bottom-20 md:right-20 no-print"
+        >
+          <FaComments className="text-white h-10 w-10" />
+          <div className="absolute bottom-20 mt-2 hidden w-32 rounded bg-gray-700 px-2 py-1 text-sm text-white before:absolute before:-top-2 before:left-1/2 before:-translate-x-1/2 before:transform before:border-8 before:border-transparent before:border-b-gray-700 group-hover:block">
+            Any questions? Click here to to chat!
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </>
   );
 };

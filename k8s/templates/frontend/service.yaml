@@ -14,4 +14,4 @@ spec:
       name: http
   selector:
     {{- include "balancer.selectorLabels" . | nindent 4 }}
-    app.kubernetes.io/component: frontend 
+    app.kubernetes.io/component: frontend

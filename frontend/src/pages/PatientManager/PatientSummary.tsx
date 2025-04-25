@@ -70,7 +70,6 @@ const MedicationItem = ({
           </span>
         </div>
       </li>
-
       {isClicked && riskData && (
         <div className="px-6 py-4 bg-gray-50">
           <div className="flex">
@@ -310,7 +309,7 @@ const PatientSummary = ({
                       <h2 className="font-bold text-gray-600 cursor-pointer header_logo font-satoshi hover:text-blue-600">
                         Summary
                       </h2>
-                      <aside className="flex items-center gap-4">
+                      <aside className="flex w-1/3 flex-row justify-end space-x-2 sm:w-auto">
                         <button onClick={handlePatientPrint} className="p-3 text-sm text-gray-900 border rounded-lg hover:text-gray-800 no-print">
                           <FaPrint className="inline-block" /> Print
                         </button>
@@ -318,18 +317,18 @@ const PatientSummary = ({
                           <FaPencilAlt className="inline-block" /> Edit
                         </button>
                         <button
-                          onClick={handleClickSummary}
-                          className="p-3 text-sm text-gray-900 border rounded-lg hover:text-gray-800 no-print">
-                          <FaMinus className="inline-block" /> Hide
-                        </button>
-                        <button
-                          className="p-3 text-sm text-red-500 border rounded-lg hover:text-gray-800 no-print"
+                          className="p-2 sm:p-3  text-sm text-red-500 border rounded-lg hover:text-red-500  hover:bg-gray-100 hover:border-red-500 no-print"
                           onClick={(event) => {
                             if (patientInfo.ID) {
                               handleOpenModal(patientInfo.ID, event);
                             }
                           }}>
                           <FaBug className="inline-block" /> Report Issue
+                        </button>
+                        <button
+                            onClick={handleClickSummary}
+                            className="p-3 text-sm text-gray-900 border rounded-lg hover:text-gray-800 no-print">
+                          <FaMinus className="inline-block" /> Hide
                         </button>
                       </aside>
                     </div>

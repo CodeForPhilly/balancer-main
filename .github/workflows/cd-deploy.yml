@@ -1,0 +1,82 @@
+# .github/workflows/cd-deploy.yml
+name: CD – Build, Push & Deploy
+
+on:
+  push:
+    branches: [ listOfMed ]
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  IMAGE_REG: ghcr.io/${{ github.repository_owner }}
+
+jobs:
+  build:
+    name: Build & Push Production Images
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.set-vars.outputs.TAG }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set version tag
+        id: set-vars
+        run: |
+          # e.g. v1.2.3 or commit SHA fallback
+          if [[ "${GITHUB_REF##*/}" =~ ^v[0-9] ]]; then 
+            echo "TAG=${GITHUB_REF##*/}" >> $GITHUB_OUTPUT
+          else
+            echo "TAG=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Login to registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & push backend
+        uses: docker/build-push-action@v3
+        with:
+          context: server
+          file: server/Dockerfile.prod
+          push: true
+          tags: |
+            ${{ env.IMAGE_REG }}/balancer-backend:${{ needs.build.outputs.tag }}
+            ${{ env.IMAGE_REG }}/balancer-backend:latest
+
+      - name: Build & push frontend
+        uses: docker/build-push-action@v3
+        with:
+          context: frontend
+          file: frontend/Dockerfile
+          push: true
+          tags: |
+            ${{ env.IMAGE_REG }}/balancer-frontend:${{ needs.build.outputs.tag }}
+            ${{ env.IMAGE_REG }}/balancer-frontend:latest
+
+  # deploy:
+  #   name: Deploy to Kubernetes
+  #   needs: build
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3
+
+  #     - name: Set up kubectl
+  #       # or use azure/setup-kubectl, google-github-actions/setup-gcloud, etc.
+  #       uses: azure/setup-kubectl@v3
+  #       with:
+  #         version: 'latest'
+  #         # supply your kubeconfig via a secret
+  #         kubeconfig: ${{ secrets.KUBE_CONFIG_DATA }}
+
+  #     - name: Update Helm chart values
+  #       run: |
+  #         helm upgrade --install balancer ./charts/balancer \
+  #           --namespace production \
+  #           --create-namespace \
+  #           --set backend.image.tag=${{ needs.build.outputs.tag }} \
+  #           --set frontend.image.tag=${{ needs.build.outputs.tag }}

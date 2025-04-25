@@ -1,4 +1,3 @@
-# .github/workflows/ci-build.yml
 name: CI – Build & Push PR Images
 
 on:
@@ -16,11 +15,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: Compute lowercase owner
+        id: vars
+        run: |
+          owner=$(echo "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')
+          echo "owner=$owner" >> $GITHUB_OUTPUT
+
       - name: Log in to registry
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
-          username: ${{ github.repository_owner }}
+          username: ${{ steps.vars.outputs.owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build & push backend
@@ -30,8 +35,8 @@ jobs:
           file: server/Dockerfile.prod
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/balancer-backend:pr-${{ github.event.number }}
-            ghcr.io/${{ github.repository_owner }}/balancer-backend:pr-${{ github.event.number }}-latest
+            ghcr.io/${{ steps.vars.outputs.owner }}/balancer-backend:pr-${{ github.event.number }}
+            ghcr.io/${{ steps.vars.outputs.owner }}/balancer-backend:pr-${{ github.event.number }}-latest
 
       - name: Build & push frontend
         uses: docker/build-push-action@v3
@@ -40,5 +45,5 @@ jobs:
           file: frontend/Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/balancer-frontend:pr-${{ github.event.number }}
-            ghcr.io/${{ github.repository_owner }}/balancer-frontend:pr-${{ github.event.number }}-latest
+            ghcr.io/${{ steps.vars.outputs.owner }}/balancer-frontend:pr-${{ github.event.number }}
+            ghcr.io/${{ steps.vars.outputs.owner }}/balancer-frontend:pr-${{ github.event.number }}-latest

@@ -19,7 +19,6 @@ backend:
       memory: 3Gi
   config:
     debug: "1"
-    apiBaseUrl: "https://balancertestsite.com/"
     allowedHosts: "*"
 
 frontend:
@@ -38,8 +37,6 @@ frontend:
     limits:
       cpu: 500m
       memory: 512Mi
-  config:
-    apiBaseUrl: "https://balancertestsite.com/"
   secrets:
     apiKey: ""  # Example encrypted value
 

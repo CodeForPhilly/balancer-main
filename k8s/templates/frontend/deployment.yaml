@@ -25,11 +25,6 @@ spec:
             - name: http
               containerPort: 3000
               protocol: TCP
-          env:
-            - name: CHOKIDAR_USEPOLLING
-              value: "true"
-            - name: VITE_API_BASE_URL
-              value: {{ .Values.frontend.config.apiBaseUrl | default "https://balancertestsite.com/" | quote }}
           resources:
             requests:
               cpu: {{ .Values.frontend.resources.requests.cpu | default "100m" }}

@@ -33,8 +33,6 @@ spec:
                   key: secret-key
             - name: DEBUG
               value: {{ .Values.backend.config.debug | default "1" | quote }}
-            - name: VITE_API_BASE_URL
-              value: {{ .Values.backend.config.apiBaseUrl | default "https://balancertestsite.com/" | quote }}
             - name: DJANGO_ALLOWED_HOSTS
               value: {{ .Values.backend.config.allowedHosts | default "*" | quote }}
             - name: DATABASE

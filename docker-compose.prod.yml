@@ -28,17 +28,11 @@ services:
     image: balancer-frontend
     build:
       context: frontend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.prod
       args:
         - IMAGE_NAME=balancer-frontend
     ports:
-        - "3000:3000"
-    environment:
-        - CHOKIDAR_USEPOLLING=true
-        - VITE_API_BASE_URL=https://balancertestsite.com/
-    volumes:
-        - "./frontend:/usr/src/app:delegated"
-        - "/usr/src/app/node_modules/"
+        - "80:80"
     depends_on:
       - backend
 

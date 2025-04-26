@@ -18,7 +18,7 @@ const LoginMenuDropDown: React.FC<LoginMenuDropDownProps> = ({
         className={classNames(
           "flex flex-col items-center justify-center gap-y-3 text-md no-print",
           showLoginMenu
-            ? "fixed right-0 top-0 z-40 h-full w-[100%] border-l border-l-gray-900 bg-white p-16 duration-1000 ease-in-out md:w-[65%] lg:w-[35%]"
+            ? "fixed right-0 top-0 z-[200] h-full w-[100%] border-l border-l-gray-900 bg-white p-16 duration-1000 ease-in-out md:w-[65%] lg:w-[35%]"
             : "fixed right-[-500%] duration-500 ease-in-out md:right-[-500%]"
         )}
       >
@@ -72,7 +72,7 @@ const LoginMenuDropDown: React.FC<LoginMenuDropDownProps> = ({
 const LoginMenu = ({ show }: { show: boolean }) => {
   if (!show) return null;
 
-  return <div className="inset-0 z-20 bg-gray-900 opacity-50 md:fixed" />;
+  return <div className="inset-0 z-[100] bg-gray-900 opacity-50 md:fixed" />;
 };
 
 export default LoginMenuDropDown;

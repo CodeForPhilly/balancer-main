@@ -12,11 +12,15 @@ const DrugSummaryForm = () => {
   const [inputHeight, setInputHeight] = useState(50);
   const [chatLog, setChatLog] = useState<ChatMessageItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [hasPDF, setHasPDF] = useState(false); // New state to track PDF availability
+  const [hasPDF, setHasPDF] = useState(false);
   const location = useLocation();
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const scrollToBottomRef = useRef<HTMLDivElement | null>(null);
   const maxInputHeight = 150;
+
+  const params = new URLSearchParams(location.search);
+  const guid = params.get("guid") || "";
+  const pageParam = params.get("page");
 
   useEffect(() => {
     if (chatContainerRef.current) {
@@ -31,19 +35,26 @@ const DrugSummaryForm = () => {
     }
   }, [chatLog]);
 
-  // Check if PDF is available on component mount based on guid parameter
   useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const guid = params.get("guid");
-    // If guid exists and is not empty, we should have a PDF
     setHasPDF(!!guid);
-  }, [location.search]);
+  }, [guid]);
+
+
+  useEffect(() => {
+
+    if (pageParam && hasPDF) {
+      const page = parseInt(pageParam, 10);
+      if (!isNaN(page) && page > 0) {
+        const event = new CustomEvent("navigateToPdfPage", {
+          detail: { pageNumber: page }
+        });
+        window.dispatchEvent(event);
+      }
+    }
+  }, [pageParam, hasPDF]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
-    const params = new URLSearchParams(location.search);
-    const guid = params.get("guid") || ``;
 
     const newMessage = {
       message: inputValue,

@@ -28,6 +28,7 @@ const PDFViewer = () => {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const guid = params.get("guid");
+  const pageParam = params.get("page");
 
   const baseURL = import.meta.env.VITE_API_BASE_URL;
 
@@ -35,6 +36,32 @@ const PDFViewer = () => {
     () => (guid ? `${baseURL}/v1/api/uploadFile/${guid}` : null),
     [guid, baseURL]
   );
+
+
+  useEffect(() => {
+    if (pageParam) {
+      const page = parseInt(pageParam, 10);
+      if (!isNaN(page) && page > 0) {
+        setPageNumber(page);
+      }
+    }
+  }, [pageParam]);
+
+  useEffect(() => {
+    const handlePageNavigation = (event: CustomEvent) => {
+      const { pageNumber } = event.detail;
+      if (pageNumber && !isNaN(pageNumber) && pageNumber > 0 && pageNumber <= (numPages || 1)) {
+        setPageNumber(pageNumber);
+      }
+    };
+
+    window.addEventListener('navigateToPdfPage', handlePageNavigation as EventListener);
+
+    // Clean up
+    return () => {
+      window.removeEventListener('navigateToPdfPage', handlePageNavigation as EventListener);
+    };
+  }, [numPages]);
 
   // Calculate container size to make PDF responsive
   useEffect(() => {
@@ -155,7 +182,6 @@ const PDFViewer = () => {
   useEffect(() => {
     if (pdfUrl) {
       fetchPdf();
-      setPageNumber(1);
     }
   }, [pdfUrl, fetchPdf]);
 
@@ -163,8 +189,15 @@ const PDFViewer = () => {
     ({ numPages }: DocumentLoadSuccess) => {
       setNumPages(numPages);
       setError(null);
+      
+      if (pageParam) {
+        const page = parseInt(pageParam, 10);
+        if (!isNaN(page) && page > 0 && page <= numPages) {
+          setPageNumber(page);
+        }
+      }
     },
-    []
+    [pageParam]
   );
 
   const onDocumentLoadError = useCallback((err: Error) => {

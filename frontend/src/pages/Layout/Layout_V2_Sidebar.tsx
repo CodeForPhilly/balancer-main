@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { ChevronLeft, ChevronRight, File, Loader2 } from "lucide-react";
 import axios from "axios";
 
@@ -15,6 +15,7 @@ const Sidebar: React.FC = () => {
   const [files, setFiles] = useState<File[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const toggleSidebar = () => {
     setSidebarCollapsed(!sidebarCollapsed);
@@ -43,7 +44,14 @@ const Sidebar: React.FC = () => {
   }, []);
 
   const handleFileClick = (guid: string) => {
-    navigate(`/drugsummary?guid=${guid}`);
+    const params = new URLSearchParams(location.search);
+    const currentGuid = params.get("guid");
+    
+    if (guid !== currentGuid) {
+      navigate(`/drugsummary?guid=${guid}&page=1`);
+    } else {
+      navigate(`/drugsummary?guid=${guid}${params.has("page") ? `&page=${params.get("page")}` : ""}`);
+    }
   };
 
   return (

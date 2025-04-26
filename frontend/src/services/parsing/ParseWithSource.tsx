@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { EmbeddingInfo } from "./chat";
 
 interface ParseStringWithLinksProps {
@@ -10,6 +10,10 @@ const ParseStringWithLinks: React.FC<ParseStringWithLinksProps> = ({
   text,
   chunkData,
 }) => {
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const currentGuid = params.get("guid");
+  
   const parseText = (text: string) => {
     // Regular expression to find ***[GUID, Page X, Chunk Y]***
     const regex = /\*\*\*\[([^\]]+)\]\*\*\*/g;
@@ -54,7 +58,7 @@ const ParseStringWithLinks: React.FC<ParseStringWithLinksProps> = ({
 
         if (guidMatch && pageNumberMatch && chunkNumberMatch) {
           const guid = guidMatch[1];
-          const pageNumber = pageNumberMatch[1];
+          const pageNumber = parseInt(pageNumberMatch[1], 10);
           const chunkNumber = chunkNumberMatch[1];
 
           const chunkKey = `${guid}-${pageNumber}-${chunkNumber}`;
@@ -71,16 +75,37 @@ const ParseStringWithLinks: React.FC<ParseStringWithLinksProps> = ({
             const { name, text: chunkText } = chunkData;
             const tooltipContent = `Document Name: ${name}, Page: ${pageNumber}, Chunk: ${chunkNumber}, Text: ${chunkText}`;
 
-            return (
-              <Link
-                key={index}
-                className="cursor-pointer rounded-xl bg-gray-100 px-1.5 py-0.5 text-[13px] font-medium text-gray-400 hover:bg-gray-200"
-                to={`/PromptChatManager?fileguid=${guid}&page=${pageNumber}`}
-                title={tooltipContent}
-              >
-                {`${pageNumber}`}
-              </Link>
-            );
+            const isSamePdf = currentGuid === guid;
+            
+            if (isSamePdf) {
+              return (
+                <a
+                  key={index}
+                  className="cursor-pointer rounded-xl bg-gray-100 px-1.5 py-0.5 text-[13px] font-medium text-gray-400 hover:bg-gray-200"
+                  onClick={() => {
+                    const event = new CustomEvent("navigateToPdfPage", {
+                      detail: { pageNumber: pageNumber }
+                    });
+                    window.dispatchEvent(event);
+                  }}
+                  title={tooltipContent}
+                >
+                  {`${pageNumber}`}
+                </a>
+              );
+            } else {
+              // If different PDF, navigate to the new PDF with the correct page
+              return (
+                <Link
+                  key={index}
+                  className="cursor-pointer rounded-xl bg-gray-100 px-1.5 py-0.5 text-[13px] font-medium text-gray-400 hover:bg-gray-200"
+                  to={`${location.pathname}?guid=${guid}&page=${pageNumber}`}
+                  title={tooltipContent}
+                >
+                  {`${pageNumber}`}
+                </Link>
+              );
+            }
           } else {
             // Debug: Log failed lookup
             console.log(`No chunk data found for ${chunkKey}`);
@@ -90,7 +115,7 @@ const ParseStringWithLinks: React.FC<ParseStringWithLinksProps> = ({
               <Link
                 key={index}
                 className="cursor-pointer rounded-xl bg-gray-100 px-1.5 py-0.5 text-[13px] font-medium text-gray-700 hover:bg-gray-200"
-                to={`/PromptChatManager?fileguid=${guid}&page=${pageNumber}`}
+                to={`${location.pathname}?guid=${guid}&page=${pageNumber}`}
                 title={`Warning: No matching chunk data found for Page: ${pageNumber}, Chunk: ${chunkNumber}`}
               >
                 {`${pageNumber}?`}

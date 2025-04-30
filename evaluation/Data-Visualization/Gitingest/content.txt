@@ -1,0 +1,3227 @@
+================================================
+File: Dockerfile
+================================================
+# pull official base image
+FROM python:3.11.4-slim-buster
+
+# set work directory
+WORKDIR /usr/src/server
+
+# set environment variables
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+# install system dependencies
+RUN apt-get update && apt-get install -y netcat
+
+# install dependencies
+RUN pip install --upgrade pip
+COPY ./requirements.txt .
+RUN pip install -r requirements.txt
+
+# copy project
+COPY . /usr/src/server
+
+# Correct line endings in entrypoint.sh and make it executable
+RUN sed -i 's/\r$//' /usr/src/server/entrypoint.sh && chmod +x /usr/src/server/entrypoint.sh
+
+# run entrypoint.sh
+ENTRYPOINT ["/usr/src/server/entrypoint.sh"]
+
+
+================================================
+File: Dockerfile.prod
+================================================
+# pull official base image
+FROM python:3.11.4-slim-buster
+
+
+# set work directory
+WORKDIR /usr/src/app
+
+# set environment variables
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+# install system dependencies
+RUN apt-get update && apt-get install -y netcat
+
+# install dependencies
+RUN pip install --upgrade pip
+COPY ./requirements.txt .
+RUN pip install -r requirements.txt
+
+# copy project
+COPY . /usr/src/app
+
+# Correct line endings in entrypoint.sh and make it executable
+RUN sed -i 's/\r$//' entrypoint.sh && chmod +x entrypoint.sh
+
+# run entrypoint.sh
+ENTRYPOINT ["./entrypoint.prod.sh"]
+
+# Default command to run on container start
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000", "--noreload"]
+
+
+================================================
+File: Dockerfile.prodBackup
+================================================
+###########
+# BUILDER #
+###########
+
+# pull official base image
+FROM python:3.11.4-slim-buster as builder
+
+# set work directory
+WORKDIR /usr/src/app
+
+# set environment variables
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+# install system dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends gcc
+
+# lint
+# RUN pip install --upgrade pip
+# RUN pip install flake8==6.0.0
+# COPY . /usr/src/app/
+# RUN flake8 --ignore=E501,F401 .
+
+# install python dependencies
+COPY ./requirements.txt .
+RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requirements.txt
+
+
+#########
+# FINAL #
+#########
+
+# pull official base image
+FROM python:3.11.4-slim-buster
+
+# create directory for the app user
+RUN mkdir -p /home/app
+
+# create the app user
+RUN addgroup --system app && adduser --system --group app
+
+# create the appropriate directories
+ENV HOME=/home/app
+ENV APP_HOME=/home/app/web
+RUN mkdir $APP_HOME
+WORKDIR $APP_HOME
+
+# install dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends netcat
+COPY --from=builder /usr/src/app/wheels /wheels
+COPY --from=builder /usr/src/app/requirements.txt .
+RUN pip install --upgrade pip
+RUN pip install --no-cache /wheels/*
+
+# copy entrypoint.prod.sh
+COPY ./entrypoint.prod.sh .
+RUN sed -i 's/\r$//g'  $APP_HOME/entrypoint.prod.sh
+RUN chmod +x  $APP_HOME/entrypoint.prod.sh
+
+# copy project
+COPY . $APP_HOME
+
+# chown all the files to the app user
+RUN chown -R app:app $APP_HOME
+
+# change to the app user
+USER app
+
+# run entrypoint.prod.sh
+ENTRYPOINT ["/home/app/web/entrypoint.prod.sh"]
+
+================================================
+File: entrypoint.prod.sh
+================================================
+#!/bin/sh
+
+if [ "$DATABASE" = "postgres" ]
+then
+    echo "Waiting for postgres..."
+
+    while ! nc -z $SQL_HOST $SQL_PORT; do
+      sleep 0.1
+    done
+
+    echo "PostgreSQL started"
+fi
+
+# python manage.py makemigrations api
+# python manage.py flush --no-input
+python manage.py migrate
+# create superuser for postgre admin on start up
+python manage.py createsu
+# populate the database on start up
+python manage.py populatedb
+exec "$@"
+
+
+================================================
+File: entrypoint.sh
+================================================
+#!/bin/sh
+
+if [ "$DATABASE" = "postgres" ]
+then
+    echo "Waiting for postgres..."
+
+    while ! nc -z $SQL_HOST $SQL_PORT; do
+      sleep 0.1
+    done
+
+    echo "PostgreSQL started"
+fi
+
+python manage.py makemigrations api --no-input
+# python manage.py flush --no-input
+python manage.py migrate
+# create superuser for postgre admin on start up
+python manage.py createsu
+# populate the database on start up
+python manage.py populatedb
+exec "$@"
+
+
+================================================
+File: manage.py
+================================================
+#!/usr/bin/env python
+"""Django's command-line utility for administrative tasks."""
+import os
+import sys
+
+
+def main():
+    """Run administrative tasks."""
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'balancer_backend.settings')
+    try:
+        from django.core.management import execute_from_command_line
+    except ImportError as exc:
+        raise ImportError(
+            "Couldn't import Django. Are you sure it's installed and "
+            "available on your PYTHONPATH environment variable? Did you "
+            "forget to activate a virtual environment?"
+        ) from exc
+    execute_from_command_line(sys.argv)
+
+
+if __name__ == '__main__':
+    main()
+
+
+================================================
+File: requirements.txt
+================================================
+Django==4.2.3
+gunicorn==21.2.0
+psycopg2-binary==2.9.6
+beautifulsoup4==4.12.2
+openai==0.27.8
+requests==2.31.0
+tiktoken==0.4.0
+nltk==3.8.1
+python-dotenv==1.0.0
+djangorestframework==3.14.0
+django-registration-redux==2.13
+django-cors-headers>=3.10.0
+djangorestframework-simplejwt
+djoser
+pdfplumber
+pgvector
+sentence_transformers
+PyMuPDF==1.24.0
+Pillow
+pytesseract
+
+================================================
+File: api/admin.py
+================================================
+from django.contrib import admin
+from .views.uploadFile.models import UploadFile
+from .views.listMeds.models import Medication, Diagnosis, Suggestion
+from .models.authUser import UserAccount
+from .views.ai_settings.models import AI_Settings
+from .views.ai_promptStorage.models import AI_PromptStorage
+from .views.ai_settings.models import AI_Settings
+from .views.ai_promptStorage.models import AI_PromptStorage
+from .models.model_embeddings import Embeddings
+from .views.feedback.models import Feedback
+from .models.model_medRule import MedRule
+
+
+@admin.register(MedRule)
+class MedRuleAdmin(admin.ModelAdmin):
+    list_display = ['rule_type', 'history_type', 'label']
+    filter_horizontal = ['medications', 'sources']
+    search_fields = ['label', 'history_type', 'reason']
+
+
+@admin.register(Embeddings)
+class MedicationAdmin(admin.ModelAdmin):
+    list_display = ['guid']
+
+
+@admin.register(Medication)
+class MedicationAdmin(admin.ModelAdmin):
+    list_display = ['name', 'benefits', 'risks']
+
+
+@admin.register(Diagnosis)
+class DiagnosisAdmin(admin.ModelAdmin):
+    list_display = ['state']
+
+
+@admin.register(Suggestion)
+class SuggestionAdmin(admin.ModelAdmin):
+    list_display = ['diagnosis', 'medication', 'tier']
+
+
+@admin.register(UploadFile)
+class UploadFile(admin.ModelAdmin):
+    list_display = ['guid', 'file_name', 'file']
+
+
+@admin.register(UserAccount)
+class UserAccountAdmin(admin.ModelAdmin):
+    list_display = ['id', 'first_name', 'email', 'is_superuser']
+
+
+@admin.register(AI_Settings)
+class AI_Settings(admin.ModelAdmin):
+    list_display = ['id', 'guid', 'SourceTableGUID', 'SettingValue']
+
+
+@admin.register(AI_PromptStorage)
+class AI_PromptStorage(admin.ModelAdmin):
+    list_display = ['id', 'guid', 'PromptText', 'IsActive']
+
+
+@admin.register(Feedback)
+class Feedback(admin.ModelAdmin):
+    list_display = ['feedbacktype', 'name', 'email', 'message']
+
+
+================================================
+File: api/apps.py
+================================================
+from django.apps import AppConfig
+
+
+class ApiConfig(AppConfig):
+    default_auto_field = 'django.db.models.BigAutoField'
+    name = 'api'
+
+
+================================================
+File: api/models.py
+================================================
+from django.db import models
+
+# Create your models here.
+
+
+================================================
+File: api/tests.py
+================================================
+from django.test import TestCase
+import unittest
+from .services.tools.tools import validate_tool_inputs, execute_tool
+
+class TestTools(unittest.TestCase):
+    def test_validate_tool_inputs_missing_required_param(self):
+        with self.assertRaises(ValueError) as context:
+            validate_tool_inputs("ask_database", {})
+        self.assertEqual(str(context.exception), "Missing required parameter: query")
+
+    def test_validate_tool_inputs_invalid_param_type(self):
+        with self.assertRaises(ValueError) as context:
+            validate_tool_inputs("ask_database", {"query": 123})
+        self.assertEqual(str(context.exception), "Parameter 'query' must be of type string")
+    
+    def test_validate_tool_inputs_invalid_function_name(self):
+        with self.assertRaises(ValueError) as context:
+            validate_tool_inputs("", {"query": "test"})
+        self.assertEqual(str(context.exception), "Invalid tool function name")
+    
+    def test_validate_tool_inputs_non_dict_arguments(self):
+        with self.assertRaises(ValueError) as context:
+            validate_tool_inputs("ask_database", "not a dictionary")
+        self.assertEqual(str(context.exception), "Tool arguments must be a dictionary")
+
+    def test_execute_tool_invalid_function(self):
+        with self.assertRaises(ValueError) as context:
+            execute_tool("non_existent_function", {"query": "test"})
+        self.assertIn("Tool function 'non_existent_function' does not exist", str(context.exception))
+
+================================================
+File: api/management/commands/createsu.py
+================================================
+from django.core.management.base import BaseCommand
+from django.contrib.auth import get_user_model
+
+
+class Command(BaseCommand):
+    help = 'Create a default superuser'
+
+    def handle(self, *args, **kwargs):
+        User = get_user_model()
+        if not User.objects.filter(email='admin@example.com').exists():
+            User.objects.create_superuser(
+                email='admin@example.com', password='adminpassword')
+            self.stdout.write(self.style.SUCCESS(
+                'Successfully created a new superuser'))
+        else:
+            self.stdout.write(self.style.SUCCESS(
+                'Superuser already exists. Skipping.'))
+
+
+================================================
+File: api/management/commands/populatedb.py
+================================================
+from django.core.management.base import BaseCommand
+from api.views.listMeds.models import Medication, Diagnosis, Suggestion
+
+MEDICATIONS = [
+    [
+        'Lithium',
+        'Stabilizes mood swings, Reduces manic episodes, Prevents future episodes, Decreases suicide risk, Effective long-term treatment', 
+        'Kidney problems, Thyroid issues, Weight gain, Tremors, Dehydration'
+    ], 
+    [
+        'Lurasidone',
+        'Treats manic and depressive episodes, Fewer metabolic side effects, Improves mood stability, May enhance cognition, Once-daily dosing', 
+        'Risk of akathisia, May cause weight gain, Potential for sedation, Increased risk of suicidal thoughts, Possible EPS symptoms'
+    ],
+    [
+        'Paliperidone', 
+        'Stabilizes mood swings, Reduces manic symptoms, Decreases depressive episodes, Improves quality of life, Long-acting formulation available', 
+        'Weight gain, Increased risk of diabetes, Elevated cholesterol levels, Sedation or drowsiness, Movement disorders'
+    ],
+    [
+        'Quetiapine plus Lithium',
+        'Mood stabilization, Reduced manic episodes, Improved sleep, Decreased risk of relapse, May manage depressive symptoms', 
+        'Weight gain, Sedation, Risk of diabetes, Hormonal changes, Potential for tremors'
+    ],
+    [
+        'Cariprazine', 
+        'Mood stabilization, Reduced manic episodes, Decreased depressive symptoms, Improved overall functioning, Lower risk of relapse',
+        'Weight gain, Sedation, Risk of akathisia, Increased lipid levels, Potential for metabolic side effects'
+    ],
+    [
+        'Lithium plus Valproate', 
+        'Mood stabilization, Reduced manic episodes, Combats depressive symptoms, Long-term effectiveness, Decreased risk of suicide',
+        'Weight gain, Kidney problems, Thyroid issues, Liver damage, Potential birth defects'
+    ],
+    [
+        'Citalopram',
+        'May improve mood and reduce depression symptoms, Can help regulate sleep patterns, May increase energy levels, Generally well-tolerated, Can enhance quality of life',
+        'Risk of manic episodes, Potential for increased suicidal thoughts, May cause agitation or restlessness, Possible sexual side effects, Can lead to serotonin syndrome'
+    ],
+    [
+        'Quetiapine', 
+        'Stabilizes mood, Reduces manic symptoms, Improves sleep, Decreases depressive episodes, Helps with anxiety', 
+        'Weight gain, Sedation, Metabolic changes, Dizziness, Potential for diabetes'
+    ],
+    [
+        'Aripiprazole',
+        'Treats mania and mixed episodes, Improves mood stability, Reduces risk of relapse, Fewer metabolic side effects, May enhance cognitive function',
+        'Weight gain possible, Risk of akathisia, May cause sedation, Potential for hyperglycemia, Increased risk of tremors'
+    ],
+    [
+        'Olanzapine',
+        'Stabilizes mood swings, Reduces manic symptoms, Treats psychotic features, Improves quality of life, Helps with sleep',
+        'Weight gain, Metabolic issues, Sedation, Diabetes risk, Elevated cholesterol'
+    ],
+    [
+        'Valproate', 
+        'Stabilizes mood swings, Reduces manic episodes, Prevents future mood episodes, Eases symptoms of mania, Can be used long-term', 
+        'Weight gain, Liver damage, Birth defects, Pancreatitis risk, Sedation and dizziness'
+    ],
+    [
+        'Asenapine', 
+        'Mood stabilization, Decreased mania symptoms, Improved sleep, Reduced agitation, Reduced risk of relapse', 
+        'Weight gain, Sedation, Increased glucose levels, Extrapyramidal symptoms, Risk of akathisia'
+    ],
+    [
+        'Sertraline',
+        'Mood stabilization, Improved sleep, Reduced depression symptoms, Enhances overall well-being, Decreased anxiety levels',
+        'Risk of manic episodes, Sexual dysfunction, Potential weight gain, Increased suicidal thoughts, Serotonin syndrome'
+    ],
+    [
+        'Carbamazepine', 
+        'Stabilizes mood swings, Reduces manic episodes, Low risk of weight gain, Decreases risk of suicide, Helps with irritability and aggression',
+        'Risk of liver damage, May cause dizziness, Interacts with many medications, Monitoring blood counts necessary, Skin reactions possible'
+    ],
+    [
+        'Lurasidone plus Lithium',
+        'Dual action for mood stabilization, Reduced risk of manic episodes, May improve depressive symptoms, Effective in treating Bipolar disorder, Fewer side effects compared to other medications',
+        'Potential for weight gain, Risk of lithium toxicity, Possible hormonal imbalances, Increased risk of diabetes, Adverse effects on the liver'
+    ],
+    [
+        'Lithium plus Lamotrigine', 
+        'Mood stabilization, Reduces manic episodes, Decreases depressive symptoms, Long-term efficacy, Combination therapy option',
+        'Kidney problems, Thyroid issues, Risk of toxicity, Cognitive side effects, Skin reactions'
+    ],
+    [
+        'Olanzapine plus Lithium',
+        'Mood stabilization, Reduced manic episodes, Decreased depressive symptoms, Improved quality of life, Effective in treating bipolar disorder',
+        'Weight gain, Sedation, Metabolic side effects, Increased cholesterol levels, Kidney problems'
+    ],
+    [
+        'Ziprasidone', 
+        'Treats manic and depressive episodes, Helps improve mood stability, Fewer metabolic side effects, Low risk of weight gain, Can be taken with or without food', 
+        'May cause dizziness or fainting, Risk of sedation and drowsiness, Potential for abnormal heart rhythms, Increased risk of type 2 diabetes, Possible increase in cholesterol levels'
+    ],
+    [
+        'Haloperidol', 
+        'Mania control, Psychosis relief, Agitation reduction, Improved sleep, Rapid symptom relief', 
+        'Tardive dyskinesia, Neurological side effects, Sedation, Weight gain, Cardiac issues'
+    ],
+    [
+        'Olanzapine plus Fluoxetine',
+        'Mood stabilization, Decreased depressive symptoms, Improved quality of life, Reduced risk of relapse, Symptom management',
+        'Weight gain, Diabetes risk, Sedation, Movement disorders, Cardiovascular effects'
+    ],
+    [
+        'Risperidone',
+        'Stabilizes mood swings, Reduces manic episodes, Helps manage psychosis, Relieves agitation and aggression, Improves sleep patterns',
+        'Weight gain, Increased risk of diabetes, Sedation and drowsiness, Elevated prolactin levels, Potential for movement disorders'
+    ],
+    [
+        'Lamotrigine',
+        'Mood stabilization, Decreased risk of mania, Reduced depressive episodes, Fewer bipolar symptoms, Improves quality of life',
+        'Skin rash (serious), Dizziness and drowsiness, Cognitive impairment, Affects vision, Risk of suicidal thoughts'
+    ],
+    [
+        'Lurasidone plus Valproate',
+        'Dual action for stabilizing moods, Potential for improved symptom management, May enhance effectiveness compared to monotherapy, Combination approach targeting different pathways, Less risk of treatment resistance',
+        ' Increased potential for side effects, Possible drug interactions, Greater risk of adverse reactions, Higher medication burden, Monitoring required for drug levels'
+    ],
+    [
+        'Escitalopram',
+        'Improves mood, Reduces anxiety, Helps with depression, May enhance overall well-being, Easy to take (typically once daily)',
+        'Risk of manic episodes, Potential for serotonin syndrome, May cause weight changes, Withdrawal symptoms, Increased suicidal thoughts (especially at start)'
+    ],
+    [
+        'Olanzapine plus Valproate',
+        'Treats mania symptoms, Mood stabilization, Decreases risk of relapse, Improves overall functioning, Reduces depressive episodes',
+        'Weight gain, Sedation, Metabolic issues, Liver toxicity, Cognitive side effects'
+    ],
+    [
+        'Quetiapine plus Valproate',
+        'Stabilizes mood swings, Reduces manic episodes, Decreases depressive symptoms, Improves sleep patterns, Enhances overall quality of life',
+        'Weight gain, Sedation, Increased risk of diabetes, Liver function abnormalities, Potential for birth defects'
+    ]
+]
+
+MED_CHOICES = {
+    'Manic': [
+        'Risperidone, Olanzapine',
+        'Aripiprazole, Asenapine, Carbamazepine, Cariprazine, Lithium, Paliperidone, Quetiapine, Valproate, Ziprasidone',
+        'Haloperidol'
+    ],
+    'Hypomanic': [
+        'Risperidone, Olanzapine',
+        'Aripiprazole, Asenapine, Carbamazepine, Cariprazine, Lithium, Paliperidone, Quetiapine, Valproate',
+        'Haloperidol, Ziprasidone'
+    ],
+    'Depressed': [
+        'Quetiapine, Lurasidone',
+        'Olanzapine plus Fluoxetine, Valproate, Quetiapine plus Lithium, Quetiapine plus Valproate, Lurasidone plus Lithium, Lurasidone plus Valproate, Lithium plus Valproate, Lithium plus Lamotrigine',
+        'Lamotrigine, Lithium, Olanzapine, Carbamazepine, Cariprazine, Olanzapine plus lithium, Olanzapine plus valproate'
+    ],
+    'Euthymic': [
+        'Quetiapine',
+        'Lamotrigine, Lithium, Olanzapine plus Fluoxetine',
+        'Lurasidone, Citalopram, Escitalopram, Sertraline'
+    ]
+}
+
+class Command(BaseCommand):
+    help = 'Populate the DB after initialization'
+
+    def handle(self, *args, **kwargs):
+        if Medication.objects.all().count() > 0:
+            return
+        med_set = {}
+        for med in MEDICATIONS:
+            medication = Medication.objects.get_or_create(
+                name=med[0],
+                benefits=med[1],
+                risks=med[2]
+            )[0]
+            med_set[med[0].lower()] = medication
+        for state in MED_CHOICES:
+            diagnosis = Diagnosis.objects.get_or_create(state=state)[0]
+            for (i, options) in enumerate(MED_CHOICES[state]):
+                option_list = [med.strip().lower() for med in options.split(",")]
+                for med in option_list:
+                    exist = Suggestion.objects.filter(diagnosis=diagnosis, medication=med_set[med]).count() > 0
+                    if not exist:
+                        Suggestion.objects.create(
+                            diagnosis=diagnosis, 
+                            medication=med_set[med], 
+                            tier=(i+1)
+                        )
+
+
+
+================================================
+File: api/migrations/0001_initial.py
+================================================
+# Generated by Django 4.2.3 on 2024-03-30 23:06
+
+from django.db import migrations, models
+import django.db.models.deletion
+import uuid
+
+
+class Migration(migrations.Migration):
+
+    initial = True
+
+    dependencies = [
+        ('auth', '0012_alter_user_first_name_max_length'),
+    ]
+
+    operations = [
+        migrations.CreateModel(
+            name='Diagnosis',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('state', models.CharField(max_length=29)),
+            ],
+        ),
+        migrations.CreateModel(
+            name='Medication',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('name', models.CharField(max_length=29)),
+                ('benefits', models.CharField(max_length=1000)),
+                ('risks', models.CharField(max_length=1000)),
+            ],
+        ),
+        migrations.CreateModel(
+            name='UploadFile',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('guid', models.UUIDField(default=uuid.uuid4, editable=False, unique=True)),
+                ('file_name', models.CharField(max_length=255)),
+                ('file', models.BinaryField(null=True)),
+            ],
+        ),
+        migrations.CreateModel(
+            name='Suggestion',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('tier', models.PositiveIntegerField(default=3)),
+                ('diagnosis', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='api.diagnosis')),
+                ('medication', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='api.medication')),
+            ],
+        ),
+        migrations.AddField(
+            model_name='diagnosis',
+            name='medication_suggestion',
+            field=models.ManyToManyField(through='api.Suggestion', to='api.medication'),
+        ),
+        migrations.CreateModel(
+            name='UserAccount',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('password', models.CharField(max_length=128, verbose_name='password')),
+                ('last_login', models.DateTimeField(blank=True, null=True, verbose_name='last login')),
+                ('is_superuser', models.BooleanField(default=False, help_text='Designates that this user has all permissions without explicitly assigning them.', verbose_name='superuser status')),
+                ('email', models.EmailField(max_length=255, unique=True)),
+                ('first_name', models.CharField(max_length=255)),
+                ('last_name', models.CharField(max_length=255)),
+                ('is_active', models.BooleanField(default=True)),
+                ('is_staff', models.BooleanField(default=False)),
+                ('groups', models.ManyToManyField(blank=True, help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.', related_name='user_set', related_query_name='user', to='auth.group', verbose_name='groups')),
+                ('user_permissions', models.ManyToManyField(blank=True, help_text='Specific permissions for this user.', related_name='user_set', related_query_name='user', to='auth.permission', verbose_name='user permissions')),
+            ],
+            options={
+                'abstract': False,
+            },
+        ),
+    ]
+
+
+================================================
+File: api/migrations/0002_uploadfile_analyzed_uploadfile_approved_and_more.py
+================================================
+# Generated by Django 4.2.3 on 2024-04-23 09:45
+
+from django.db import migrations, models
+
+
+class Migration(migrations.Migration):
+
+    dependencies = [
+        ('api', '0001_initial'),
+    ]
+
+    operations = [
+        migrations.AddField(
+            model_name='uploadfile',
+            name='analyzed',
+            field=models.DateTimeField(blank=True, null=True),
+        ),
+        migrations.AddField(
+            model_name='uploadfile',
+            name='approved',
+            field=models.DateTimeField(blank=True, null=True),
+        ),
+        migrations.AddField(
+            model_name='uploadfile',
+            name='date_of_upload',
+            field=models.DateTimeField(blank=True, null=True),
+        ),
+        migrations.AddField(
+            model_name='uploadfile',
+            name='file_type',
+            field=models.CharField(max_length=50, null=True),
+        ),
+        migrations.AddField(
+            model_name='uploadfile',
+            name='page_count',
+            field=models.IntegerField(null=True),
+        ),
+        migrations.AddField(
+            model_name='uploadfile',
+            name='size',
+            field=models.BigIntegerField(null=True),
+        ),
+        migrations.AddField(
+            model_name='uploadfile',
+            name='source_url',
+            field=models.CharField(blank=True, max_length=255, null=True),
+        ),
+        migrations.AddField(
+            model_name='uploadfile',
+            name='uploaded_by',
+            field=models.CharField(blank=True, max_length=255, null=True),
+        ),
+        migrations.AlterField(
+            model_name='uploadfile',
+            name='id',
+            field=models.AutoField(primary_key=True, serialize=False),
+        ),
+    ]
+
+
+================================================
+File: api/migrations/0003_alter_uploadfile_date_of_upload_and_more.py
+================================================
+# Generated by Django 4.2.3 on 2024-05-28 20:38
+
+from django.conf import settings
+from django.db import migrations, models
+import django.db.models.deletion
+import uuid
+
+
+class Migration(migrations.Migration):
+
+    dependencies = [
+        ('api', '0002_uploadfile_analyzed_uploadfile_approved_and_more'),
+    ]
+
+    operations = [
+        migrations.AlterField(
+            model_name='uploadfile',
+            name='date_of_upload',
+            field=models.DateTimeField(auto_now_add=True),
+        ),
+        migrations.AlterField(
+            model_name='uploadfile',
+            name='file_type',
+            field=models.CharField(max_length=50),
+        ),
+        migrations.AlterField(
+            model_name='uploadfile',
+            name='page_count',
+            field=models.IntegerField(),
+        ),
+        migrations.AlterField(
+            model_name='uploadfile',
+            name='size',
+            field=models.BigIntegerField(),
+        ),
+        migrations.AlterField(
+            model_name='uploadfile',
+            name='uploaded_by',
+            field=models.CharField(blank=True, max_length=255),
+        ),
+        migrations.CreateModel(
+            name='AI_Settings',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('guid', models.UUIDField(default=uuid.uuid4, editable=False, unique=True)),
+                ('SettingsLabel', models.CharField(max_length=255, null=True)),
+                ('SettingValue', models.TextField()),
+                ('SourceTable', models.TextField()),
+                ('SourceTableGUID', models.CharField(max_length=255, null=True, unique=True)),
+                ('LastModified', models.DateTimeField(auto_now=True)),
+                ('ModifiedByUser', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='settings_modified', to=settings.AUTH_USER_MODEL)),
+            ],
+            options={
+                'verbose_name_plural': 'AI_settings',
+            },
+        ),
+        migrations.CreateModel(
+            name='AI_PromptStorage',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('guid', models.UUIDField(default=uuid.uuid4, editable=False, unique=True)),
+                ('PromptText', models.TextField()),
+                ('IsActive', models.BooleanField(default=True)),
+                ('Area', models.CharField(choices=[('system', 'System Prompt'), ('dashboard', 'Dashboard'), ('settings', 'Settings Page')], default='dashboard', max_length=100)),
+                ('CreatedAt', models.DateTimeField(auto_now_add=True)),
+                ('LastModified', models.DateTimeField(auto_now=True)),
+                ('CreatedByUser', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='prompts_created', to=settings.AUTH_USER_MODEL)),
+                ('ModifiedByUser', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='prompts_modified', to=settings.AUTH_USER_MODEL)),
+            ],
+            options={
+                'verbose_name_plural': 'AI_PromptStorage',
+            },
+        ),
+    ]
+
+
+================================================
+File: api/migrations/0004_uploadfile_uploaded_by_email_and_more.py
+================================================
+# Generated by Django 4.2.3 on 2024-07-30 10:19
+
+from django.conf import settings
+from django.db import migrations, models
+import django.db.models.deletion
+
+
+class Migration(migrations.Migration):
+
+    dependencies = [
+        ('api', '0003_alter_uploadfile_date_of_upload_and_more'),
+    ]
+
+    operations = [
+        migrations.AddField(
+            model_name='uploadfile',
+            name='uploaded_by_email',
+            field=models.CharField(blank=True, max_length=255),
+        ),
+        migrations.AlterField(
+            model_name='uploadfile',
+            name='uploaded_by',
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL),
+        ),
+    ]
+
+
+================================================
+File: api/migrations/0005_embeddings.py
+================================================
+# Generated by Django 4.2.3 on 2024-07-30 10:21
+
+from django.db import migrations, models
+import django.db.models.deletion
+import pgvector.django.vector
+import uuid
+
+
+class Migration(migrations.Migration):
+
+    dependencies = [
+        ('api', '0004_uploadfile_uploaded_by_email_and_more'),
+    ]
+
+    operations = [
+        migrations.CreateModel(
+            name='Embeddings',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('guid', models.UUIDField(default=uuid.uuid4, editable=False, unique=True)),
+                ('name', models.CharField(max_length=255)),
+                ('text', models.TextField()),
+                ('page_num', models.IntegerField(default=1)),
+                ('chunk_number', models.IntegerField()),
+                ('embedding_sentence_transformers', pgvector.django.vector.VectorField(dimensions=384, null=True)),
+                ('date_of_upload', models.DateTimeField(auto_now_add=True)),
+                ('upload_file', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='embeddings', to='api.uploadfile')),
+            ],
+        ),
+    ]
+
+
+================================================
+File: api/migrations/0006_feedback.py
+================================================
+# Generated by Django 4.2.3 on 2024-08-20 12:33
+
+from django.db import migrations, models
+
+
+class Migration(migrations.Migration):
+
+    dependencies = [
+        ('api', '0005_embeddings'),
+    ]
+
+    operations = [
+        migrations.CreateModel(
+            name='Feedback',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('feedbacktype', models.CharField(choices=[('issue', 'Issue'), ('new_feature', 'New Feature'), ('general', 'General')], default='general', max_length=100)),
+                ('name', models.CharField(default='', max_length=100)),
+                ('email', models.EmailField(default='', max_length=254)),
+                ('message', models.TextField(default='')),
+            ],
+        ),
+    ]
+
+
+================================================
+File: api/migrations/0007_conversation_message.py
+================================================
+# Generated by Django 4.2.3 on 2024-09-10 21:10
+
+from django.conf import settings
+from django.db import migrations, models
+import django.db.models.deletion
+
+
+class Migration(migrations.Migration):
+
+    dependencies = [
+        ('api', '0006_feedback'),
+    ]
+
+    operations = [
+        migrations.CreateModel(
+            name='Conversation',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('title', models.CharField(blank=True, max_length=255)),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('updated_at', models.DateTimeField(auto_now=True)),
+                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='conversations', to=settings.AUTH_USER_MODEL)),
+            ],
+        ),
+        migrations.CreateModel(
+            name='Message',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('content', models.TextField()),
+                ('is_user', models.BooleanField(default=True)),
+                ('timestamp', models.DateTimeField(auto_now_add=True)),
+                ('conversation', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='messages', to='api.conversation')),
+            ],
+        ),
+    ]
+
+
+================================================
+File: api/migrations/0008_medrule.py
+================================================
+# Generated by Django 4.2.3 on 2024-10-14 17:46
+
+from django.db import migrations, models
+import django.db.models.deletion
+
+
+class Migration(migrations.Migration):
+
+    dependencies = [
+        ('api', '0007_conversation_message'),
+    ]
+
+    operations = [
+        migrations.CreateModel(
+            name='MedRule',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('rule_type', models.CharField(choices=[('INCLUDE', 'Include'), ('EXCLUDE', 'Exclude')], max_length=7)),
+                ('history_type', models.CharField(max_length=255)),
+                ('reason', models.TextField(blank=True, null=True)),
+                ('label', models.CharField(blank=True, max_length=255, null=True)),
+                ('medication', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='api.medication')),
+            ],
+        ),
+    ]
+
+
+================================================
+File: api/migrations/0009_remove_medrule_medication_medrule_explanation_and_more.py
+================================================
+# Generated by Django 4.2.3 on 2025-02-09 18:56
+
+from django.db import migrations, models
+
+
+class Migration(migrations.Migration):
+
+    dependencies = [
+        ('api', '0008_medrule'),
+    ]
+
+    operations = [
+        migrations.RemoveField(
+            model_name='medrule',
+            name='medication',
+        ),
+        migrations.AddField(
+            model_name='medrule',
+            name='explanation',
+            field=models.TextField(blank=True, null=True),
+        ),
+        migrations.AddField(
+            model_name='medrule',
+            name='medications',
+            field=models.ManyToManyField(related_name='med_rules', to='api.medication'),
+        ),
+        migrations.AddField(
+            model_name='medrule',
+            name='sources',
+            field=models.ManyToManyField(blank=True, related_name='med_rules', to='api.embeddings'),
+        ),
+        migrations.AlterModelTable(
+            name='medrule',
+            table='api_medrule',
+        ),
+    ]
+
+
+================================================
+File: api/migrations/0010_alter_medrule_unique_together.py
+================================================
+# Generated by Django 4.2.3 on 2025-02-17 17:53
+
+from django.db import migrations
+
+
+class Migration(migrations.Migration):
+
+    dependencies = [
+        ('api', '0009_remove_medrule_medication_medrule_explanation_and_more'),
+    ]
+
+    operations = [
+        migrations.AlterUniqueTogether(
+            name='medrule',
+            unique_together={('rule_type', 'history_type')},
+        ),
+    ]
+
+
+================================================
+File: api/migrations/0011_embeddings_publication_embeddings_publication_date_and_more.py
+================================================
+# Generated by Django 4.2.3 on 2025-03-19 22:37
+
+from django.db import migrations, models
+
+
+class Migration(migrations.Migration):
+
+    dependencies = [
+        ('api', '0010_alter_medrule_unique_together'),
+    ]
+
+    operations = [
+        migrations.AddField(
+            model_name='embeddings',
+            name='publication',
+            field=models.CharField(blank=True, max_length=255, null=True),
+        ),
+        migrations.AddField(
+            model_name='embeddings',
+            name='publication_date',
+            field=models.DateTimeField(blank=True, null=True),
+        ),
+        migrations.AddField(
+            model_name='embeddings',
+            name='title',
+            field=models.CharField(max_length=255, null=True),
+        ),
+        migrations.AddField(
+            model_name='uploadfile',
+            name='publication',
+            field=models.CharField(blank=True, max_length=255, null=True),
+        ),
+        migrations.AddField(
+            model_name='uploadfile',
+            name='publication_date',
+            field=models.DateTimeField(blank=True, null=True),
+        ),
+        migrations.AddField(
+            model_name='uploadfile',
+            name='title',
+            field=models.CharField(max_length=255, null=True),
+        ),
+    ]
+
+
+================================================
+File: api/models/TokenObtainPairSerializer.py
+================================================
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
+
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super(MyTokenObtainPairSerializer, cls).get_token(user)
+        # Add custom claims
+        token['is_superuser'] = user.is_superuser
+        return token
+
+
+================================================
+File: api/models/__init__.py
+================================================
+from .authUser import UserAccount
+
+
+================================================
+File: api/models/authUser.py
+================================================
+
+from django.db import models
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
+
+
+class UserAccountManager(BaseUserManager):
+    def create_user(self, email, password=None, **extra_fields):
+        if not email:
+            raise ValueError('Users must have an email address')
+
+        email = self.normalize_email(email)
+        user = self.model(email=email, **extra_fields)
+
+        user.set_password(password)
+        user.save()
+
+        return user
+
+    def create_superuser(self, email, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError('Superuser must have is_staff=True.')
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError('Superuser must have is_superuser=True.')
+
+        return self.create_user(email, password, **extra_fields)
+
+
+class UserAccount(AbstractBaseUser, PermissionsMixin):
+    email = models.EmailField(max_length=255, unique=True)
+    first_name = models.CharField(max_length=255)
+    last_name = models.CharField(max_length=255)
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
+
+    objects = UserAccountManager()
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['first_name', 'last_name']
+
+    def get_full_name(self):
+        return self.first_name
+
+    def get_short_name(self):
+        return self.first_name
+
+    def __str__(self):
+        return self.email
+
+
+================================================
+File: api/models/model_embeddings.py
+================================================
+from django.db import models
+from django.conf import settings
+from pgvector.django import VectorField
+import uuid
+from ..views.uploadFile.models import UploadFile
+
+
+class Embeddings(models.Model):
+    upload_file = models.ForeignKey(
+        UploadFile, related_name='embeddings', on_delete=models.CASCADE)
+    # This is a new unique GUID for each Embedding
+    guid = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=255)
+    title = models.CharField(max_length=255, null=True)
+    publication = models.CharField(max_length=255, blank=True, null=True)
+    publication_date = models.DateTimeField(blank=True, null=True)
+    text = models.TextField()
+    page_num = models.IntegerField(default=1)
+    chunk_number = models.IntegerField()
+    embedding_sentence_transformers = VectorField(
+        dimensions=384, null=True)
+    date_of_upload = models.DateTimeField(auto_now_add=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
+
+================================================
+File: api/models/model_medRule.py
+================================================
+from django.db import models
+from ..views.listMeds.models import Medication
+from django.db.models import CASCADE
+from ..models.model_embeddings import Embeddings
+
+
+class MedRule(models.Model):
+    rule_type = models.CharField(
+        max_length=7,
+        choices=[('INCLUDE', 'Include'), ('EXCLUDE', 'Exclude')]
+    )
+    history_type = models.CharField(max_length=255)
+    reason = models.TextField(blank=True, null=True)
+    label = models.CharField(max_length=255, blank=True, null=True)
+    medications = models.ManyToManyField(Medication, related_name='med_rules')
+    sources = models.ManyToManyField(
+        Embeddings,
+        related_name='med_rules',
+        blank=True
+    )
+    explanation = models.TextField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'api_medrule'
+        unique_together = ['rule_type', 'history_type']
+
+    def __str__(self):
+        return f"{self.rule_type} - {self.label}"
+
+
+================================================
+File: api/models/serializers.py
+================================================
+# Import the UserCreateSerializer from Djoser.
+from djoser.serializers import UserCreateSerializer
+
+# Import Django's function for retrieving the user model.
+from django.contrib.auth import get_user_model
+# Call the function to get the current active user model set in your Django project.
+User = get_user_model()
+
+# Begin defining a new class named UserCreateSerializer.
+# This class inherits from the UserCreateSerializer provided by Djoser.
+
+
+class UserCreateSerializer(UserCreateSerializer):
+
+    # Define a nested Meta class inside your UserCreateSerializer.
+    # This Meta class inherits from UserCreateSerializer.Meta provided by Djoser.
+    class Meta(UserCreateSerializer.Meta):
+        # Specify that the model to be used is the User model we retrieved earlier.
+        model = User
+
+        # Define the fields that should be included in the serialized data.
+        # Here, we're including the user's id, email, first name, last name, and password.
+        fields = ('id', 'email', 'first_name', 'last_name', 'password')
+
+
+================================================
+File: api/services/conversions_services.py
+================================================
+import uuid
+
+
+def convert_uuids(data):
+    if isinstance(data, dict):
+        return {key: convert_uuids(value) for key, value in data.items()}
+    elif isinstance(data, list):
+        return [convert_uuids(item) for item in data]
+    elif isinstance(data, uuid.UUID):
+        return str(data)
+    else:
+        return data
+
+
+================================================
+File: api/services/embedding_services.py
+================================================
+# services/embedding_services.py
+from .sentencetTransformer_model import TransformerModel
+# Adjust import path as needed
+from ..models.model_embeddings import Embeddings
+from pgvector.django import L2Distance
+
+
+def get_closest_embeddings(user, message_data, document_name=None, guid=None, num_results=10):
+    #
+    transformerModel = TransformerModel.get_instance().model
+    embedding_message = transformerModel.encode(message_data)
+    # Start building the query based on the message's embedding
+    closest_embeddings_query = Embeddings.objects.filter(
+        upload_file__uploaded_by=user
+    ).annotate(
+        distance=L2Distance(
+            'embedding_sentence_transformers', embedding_message)
+    ).order_by('distance')
+
+    # Filter by GUID if provided, otherwise filter by document name if provided
+    if guid:
+        closest_embeddings_query = closest_embeddings_query.filter(
+            upload_file__guid=guid)
+    elif document_name:
+        closest_embeddings_query = closest_embeddings_query.filter(
+            name=document_name)
+
+    # Slice the results to limit to num_results
+    closest_embeddings_query = closest_embeddings_query[:num_results]
+
+    # Format the results to be returned
+    results = [
+        {
+            "name": obj.name,
+            "text": obj.text,
+            "page_number": obj.page_num,
+            "chunk_number": obj.chunk_number,
+            "distance": obj.distance,
+            "file_id": obj.upload_file.guid if obj.upload_file else None,
+        }
+        for obj in closest_embeddings_query
+    ]
+
+    return results
+
+
+================================================
+File: api/services/openai_services.py
+================================================
+import openai
+import os
+
+
+class openAIServices:
+    def openAI(userMessage, prompt, model=None, temp=None):
+        openai.api_key = os.getenv("OPEN_API_KEY")
+        if model is None:
+            model = "gpt-4o-mini"
+
+        if temp is None:
+            temp = 0.2
+
+        response = openai.ChatCompletion.create(
+            model,
+            temperature=temp,
+            message=[
+                {"role": "system",
+                 "content": prompt},
+                {"role": "user", "content": userMessage}
+            ]
+        )
+        return response
+
+
+================================================
+File: api/services/sentencetTransformer_model.py
+================================================
+from sentence_transformers import SentenceTransformer
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+class TransformerModel:
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            logger.info("Loading SentenceTransformer model")
+            cls._instance = super(TransformerModel, cls).__new__(cls)
+            cls._instance.model = SentenceTransformer(
+                'paraphrase-MiniLM-L6-v2')
+        return cls._instance
+
+    @classmethod
+    def get_instance(cls):
+        if cls._instance is None:
+            cls._instance = cls()
+        return cls._instance
+
+
+================================================
+File: api/services/tools/database.py
+================================================
+from django.db import connection
+
+# Define a list of allowed tables
+ALLOWED_TABLES = ['api_medication']
+
+def get_table_names(conn):
+    """Return a list of table names from the PostgreSQL database."""
+    table_names = []
+    with conn.cursor() as cursor:
+        cursor.execute("""
+            SELECT table_name 
+            FROM information_schema.tables 
+            WHERE table_schema = 'public' AND table_type = 'BASE TABLE';
+        """)
+        tables = cursor.fetchall()
+        for table in tables:
+            if table[0] in ALLOWED_TABLES:
+                table_names.append(table[0])
+    return table_names
+
+
+def get_column_names(conn, table_name):
+    """Return a list of column names for a given table in the PostgreSQL database."""
+    if table_name not in ALLOWED_TABLES:
+        return []
+    
+    column_names = []
+    with conn.cursor() as cursor:
+        cursor.execute(f"""
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = '{table_name}';
+        """)
+        columns = cursor.fetchall()
+        for col in columns:
+            column_names.append(col[0])
+    return column_names
+
+
+def get_database_info(conn):
+    """Return a list of dicts containing the table name and columns for each table in the PostgreSQL database."""
+    table_dicts = []
+    for table_name in get_table_names(conn):
+        column_names = get_column_names(conn, table_name)
+        table_dicts.append({"table_name": table_name, "column_names": column_names})
+    return table_dicts
+
+
+def ask_database(query, params=None, conn=connection):
+    """Only allow SELECT queries to prevent data modification or deletion."""
+    query_lower = query.strip().lower()
+    if not query_lower.startswith("select"):
+        return "Only SELECT queries are allowed."
+    
+    # Check if the query only accesses allowed tables
+    for table in ALLOWED_TABLES:
+        if f"from {table}" in query_lower:
+            break
+    else:
+        return "Query accesses unauthorized tables."
+    
+    try:
+        cursor = conn.cursor()
+        cursor.execute(query, params)
+        results = cursor.fetchall()
+        return str(results)
+    except Exception as e:
+        return f"Query failed with error: {e}"
+
+
+
+================================================
+File: api/services/tools/tools.py
+================================================
+from django.db import connection
+from typing import Dict, Any, Callable, List
+from dataclasses import dataclass
+from .database import ask_database, get_database_info
+
+database_schema_dict = get_database_info(connection)
+database_schema_string = "\n".join(
+    [
+        f"Table: {table['table_name']}\nColumns: {', '.join(table['column_names'])}"
+        for table in database_schema_dict
+    ]
+)
+
+@dataclass
+class ToolFunction:
+    name: str
+    func: Callable
+    description: str
+    parameters: Dict[str, Any]
+
+def create_tool_dict(tool: ToolFunction) -> Dict[str, Any]:
+    return {
+        "type": "function",
+        "function": {
+            "name": tool.name,
+            "description": tool.description,
+            "parameters": {
+                "type": "object",
+                "properties": tool.parameters,
+                "required": list(tool.parameters.keys()),
+            }
+        }
+    }
+
+TOOL_FUNCTIONS = [
+    ToolFunction(
+        name="ask_database",
+        func=ask_database,
+        description="""
+        Use this function to answer user questions about medication in the Balancer database.
+        The Balancer medication database stores medications by their official medical (generic) names, not brand names.
+        Therefore:
+        - Brand names should be converted to their official medical names before querying.
+        - Queries should be case-insensitive to handle any variation in how medication names are stored (e.g., "Lurasidone", "lurasidone").
+        Input should be a fully formed SQL query.
+        Important guidelines:
+        - Always use case-insensitive matching in queries by converting both the database column and the input to lowercase.
+        For example, in SQL:
+        - PostgreSQL: `LOWER(name) = LOWER('lurasidone')`
+        """,
+        parameters={
+            "query": {
+                "type": "string",
+                "description": f"""
+                SQL query extracting info to answer the user's question.
+                SQL should be written using this database schema:
+                {database_schema_string}
+                The query should be returned in plain text, not in JSON.
+                """
+            }
+        }
+    ),
+]
+
+# Automatically generate the tool_functions dictionary and tools list
+tool_functions: Dict[str, Callable] = {
+    tool.name: tool.func for tool in TOOL_FUNCTIONS
+}
+
+tools: List[Dict[str, Any]] = [
+    create_tool_dict(tool) for tool in TOOL_FUNCTIONS
+]
+
+def validate_tool_inputs(tool_function_name, tool_arguments):
+    """Validate the inputs for the execute_tool function."""
+    if not isinstance(tool_function_name, str) or not tool_function_name:
+        raise ValueError("Invalid tool function name")
+    
+    if not isinstance(tool_arguments, dict):
+        raise ValueError("Tool arguments must be a dictionary")
+    
+    # Check if the tool_function_name exists in the tools
+    tool = next((t for t in tools if t["function"]["name"] == tool_function_name), None)
+    if not tool:
+        raise ValueError(f"Tool function '{tool_function_name}' does not exist")
+    
+    # Validate the tool arguments based on the tool's parameters
+    parameters = tool["function"].get("parameters", {})
+    required_params = parameters.get("required", [])
+    for param in required_params:
+        if param not in tool_arguments:
+            raise ValueError(f"Missing required parameter: {param}")
+    
+    # Check if the parameter types match the expected types
+    properties = parameters.get("properties", {})
+    for param, prop in properties.items():
+        expected_type = prop.get('type')
+        if param in tool_arguments:
+            if expected_type == 'string' and not isinstance(tool_arguments[param], str):
+                raise ValueError(f"Parameter '{param}' must be of type string")
+            
+def execute_tool(function_name: str, arguments: Dict[str, Any]) -> str:
+    """
+    Execute the appropriate function based on the function name.
+    
+    :param function_name: The name of the function to execute
+    :param arguments: A dictionary of arguments to pass to the function
+    :return: The result of the function execution
+    """
+    # Validate tool inputs
+    validate_tool_inputs(function_name, arguments)
+    
+    try:
+        return tool_functions[function_name](**arguments)
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+
+================================================
+File: api/views/ai_promptStorage/models.py
+================================================
+from django.db import models
+from django.conf import settings
+import uuid
+
+PROMPT_AREAS = (
+    ('system', 'System Prompt'),
+    ('dashboard', 'Dashboard'),
+    ('settings', 'Settings Page'),
+)
+
+
+class AI_PromptStorage(models.Model):
+    guid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    PromptText = models.TextField()
+    IsActive = models.BooleanField(default=True)
+    Area = models.CharField(
+        max_length=100, choices=PROMPT_AREAS, default='dashboard')
+    CreatedAt = models.DateTimeField(auto_now_add=True)
+    CreatedByUser = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='prompts_created')
+    LastModified = models.DateTimeField(auto_now=True)
+    ModifiedByUser = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='prompts_modified')
+
+    def __str__(self):
+        return f'Prompt {self.id}: {self.PromptText[:50]}...'
+
+    class Meta:
+        verbose_name_plural = "AI_PromptStorage"
+
+
+================================================
+File: api/views/ai_promptStorage/serializers.py
+================================================
+from rest_framework import serializers
+from .models import AI_PromptStorage
+from django.conf import settings
+
+
+class AI_PromptStorageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AI_PromptStorage
+        exclude = ('CreatedByUser', 'ModifiedByUser',)
+
+    def create(self, validated_data):
+
+        user = self.context['request'].user
+        return AI_PromptStorage.objects.create(CreatedByUser=user, ModifiedByUser=user, **validated_data)
+
+
+================================================
+File: api/views/ai_promptStorage/urls.py
+================================================
+from django.urls import path
+from api.views.ai_promptStorage import views
+
+urlpatterns = [
+    path("ai_promptStorage/storePrompt/",
+         views.store_prompt, name="storePrompt"),
+
+    path("ai_promptStorage/getAllPrompts/",
+         views.get_all_prompts, name="getAllPrompts"),
+]
+
+
+================================================
+File: api/views/ai_promptStorage/views.py
+================================================
+from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from .models import AI_PromptStorage
+from .serializers import AI_PromptStorageSerializer
+from django.views.decorators.csrf import csrf_exempt
+
+
+@api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+def store_prompt(request):
+    print(request.user)
+    data = request.data.copy()
+    print(request.user)
+    serializer = AI_PromptStorageSerializer(
+        data=request.data, context={'request': request})
+
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+def get_all_prompts(request):
+    """
+    A view to get all prompts stored in the database.
+    """
+    if request.method == 'GET':
+        prompts = AI_PromptStorage.objects.all()
+        serializer = AI_PromptStorageSerializer(prompts, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+================================================
+File: api/views/ai_settings/models.py
+================================================
+from django.conf import settings
+from django.db import models
+import uuid
+
+
+class AI_Settings(models.Model):
+    guid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    SettingsLabel = models.CharField(max_length=255, null=True)
+    SettingValue = models.TextField()
+    SourceTable = models.TextField()
+    SourceTableGUID = models.CharField(max_length=255, unique=True, null=True)
+    LastModified = models.DateTimeField(auto_now=True)
+    ModifiedByUser = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='settings_modified')
+
+    def __str__(self):
+        return self.guid
+
+    class Meta:
+        verbose_name_plural = "AI_settings"
+
+
+================================================
+File: api/views/ai_settings/serializers.py
+================================================
+from rest_framework import serializers
+from .models import AI_Settings
+
+
+class AISettingsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AI_Settings
+        fields = ['guid', 'SourceTableGUID', 'SettingValue', 'SettingsLabel',
+                  'SourceTable', 'LastModified', 'ModifiedByUser']
+        read_only_fields = ('guid', 'LastModified', 'ModifiedByUser')
+        # If you want 'settingsLabel' to be read-only as well, add it to the tuple above
+
+    def create(self, validated_data):
+        # If you need custom creation logic, especially for handling the ModifiedByUser
+        # Note: The request.user should be passed to the save method from the view
+        return super().create(validated_data)
+
+
+================================================
+File: api/views/ai_settings/urls.py
+================================================
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from api.views.ai_settings import views
+
+urlpatterns = [
+    path("ai_settings/settings/",
+         views.settings_view, name="settings"),
+]
+
+
+================================================
+File: api/views/ai_settings/views.py
+================================================
+from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from .models import AI_Settings
+from .serializers import AISettingsSerializer
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def settings_view(request):
+    if request.method == 'GET':
+        settings = AI_Settings.objects.all()
+        serializer = AISettingsSerializer(settings, many=True)
+        return Response(serializer.data)
+
+    elif request.method == 'POST':
+        serializer = AISettingsSerializer(
+            data=request.data, context={'request': request})
+        if serializer.is_valid():
+            serializer.save(ModifiedByUser=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+================================================
+File: api/views/conversations/models.py
+================================================
+from django.db import models
+from django.conf import settings
+
+
+class Conversation(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='conversations')
+    title = models.CharField(max_length=255, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.title or f"Conversation {self.id}"
+
+class Message(models.Model):
+    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name='messages')
+    content = models.TextField()
+    is_user = models.BooleanField(default=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+================================================
+File: api/views/conversations/serializers.py
+================================================
+from rest_framework import serializers
+from .models import Conversation, Message
+
+class MessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Message
+        fields = ['content', 'is_user', 'timestamp']
+
+class ConversationSerializer(serializers.ModelSerializer):
+    messages = MessageSerializer(many=True)
+
+    class Meta:
+        model = Conversation
+        fields = ['id', 'title', 'created_at', 'updated_at', 'messages']
+
+    def create(self, validated_data):
+        messages_data = validated_data.pop('messages')
+        conversation = Conversation.objects.create(**validated_data)
+        for message_data in messages_data:
+            Message.objects.create(conversation=conversation, **message_data)
+        return conversation
+
+================================================
+File: api/views/conversations/urls.py
+================================================
+from django.urls import path, include
+from api.views.conversations import views
+from rest_framework.routers import DefaultRouter
+# from views import ConversationViewSet
+
+router = DefaultRouter()
+router.register(r'conversations', views.ConversationViewSet,
+                basename='conversation')
+
+urlpatterns = [
+    path("chatgpt/extract_text/", views.extract_text, name="post_web_text"),
+    path("chatgpt/", include(router.urls))
+]
+
+
+================================================
+File: api/views/conversations/views.py
+================================================
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import APIException
+from django.http import JsonResponse
+from bs4 import BeautifulSoup
+from nltk.stem import PorterStemmer
+import requests
+import openai
+import tiktoken
+import os
+import json
+import logging
+from api.views.ai_settings.models import AI_Settings
+from api.views.ai_promptStorage.models import AI_PromptStorage
+from django.views.decorators.csrf import csrf_exempt
+from django.db import transaction, connection
+from .models import Conversation, Message
+from .serializers import ConversationSerializer, MessageSerializer
+from ...services.tools.tools import tools, execute_tool
+from ...services.tools.database import get_database_info
+
+
+@csrf_exempt
+def extract_text(request: str) -> JsonResponse:
+    """
+    Takes a URL and returns a summary of page's text content.
+
+    Currently only uses the first 3500 tokens.
+    """
+    openai.api_key = os.environ.get("OPENAI_API_KEY")
+    data = json.loads(request.body)
+    webpage_url = data["webpage_url"]
+
+    response = requests.get(webpage_url)
+    soup = BeautifulSoup(response.text, "html.parser")
+    text_contents = soup.find_all("p")
+    text_contents = [p.get_text() for p in text_contents]
+    text_contents = " ".join(text_contents)
+
+    stemmer = PorterStemmer()
+    text_contents = text_contents.split()
+    text_contents = [stemmer.stem(word) for word in text_contents]
+    text_contents = " ".join(text_contents)
+
+    tokens = get_tokens(text_contents, "cl100k_base")
+
+    ai_response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {
+                "role": "system",
+                "content": "Give a brief description of this medicine: %s" % tokens,
+            }
+        ],
+        max_tokens=500,
+    )
+
+    return JsonResponse({"message": ai_response})
+
+
+def get_tokens(string: str, encoding_name: str) -> str:
+    """Tokenize the first 3500 tokens of a string."""
+    encoding = tiktoken.get_encoding(encoding_name)
+    tokens = encoding.encode(string)
+    tokens = tokens[:3500]
+    output_string = encoding.decode(tokens)
+    return output_string
+
+class OpenAIAPIException(APIException):
+    """Custom exception for OpenAI API errors."""
+    status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+    default_detail = "An error occurred while communicating with the OpenAI API."
+    default_code = "openai_api_error"
+
+    def __init__(self, detail=None, code=None):
+        if detail is not None:
+            self.detail = {"error": detail}
+        else:
+            self.detail = {"error": self.default_detail}
+        self.status_code = code or self.status_code
+
+class ConversationViewSet(viewsets.ModelViewSet):
+    serializer_class = ConversationSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Conversation.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        # Add any custom logic here
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=True, methods=['post'])
+    def continue_conversation(self, request, pk=None):
+        conversation = self.get_object()
+        user_message = request.data.get('message')
+        page_context = request.data.get('page_context')
+
+        if not user_message:
+            return Response({"error": "Message is required"}, status=400)
+
+        # Save user message
+        Message.objects.create(conversation=conversation,
+                               content=user_message, is_user=True)
+
+        # Get ChatGPT response
+        chatgpt_response = self.get_chatgpt_response(
+            conversation, user_message, page_context)
+
+        # Save ChatGPT response
+        Message.objects.create(conversation=conversation,
+                               content=chatgpt_response, is_user=False)
+
+        # Generate or update title if it's the first message or empty
+        if conversation.messages.count() <= 2 or not conversation.title:
+            conversation.title = self.generate_title(conversation)
+            conversation.save()
+
+        return Response({"response": chatgpt_response, "title": conversation.title})
+
+    @action(detail=True, methods=['patch'])
+    def update_title(self, request, pk=None):
+        conversation = self.get_object()
+        new_title = request.data.get('title')
+
+        if not new_title:
+            return Response({"error": "New title is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        conversation.title = new_title
+        conversation.save()
+
+        return Response({"status": "Title updated successfully", "title": conversation.title})
+
+    def get_chatgpt_response(self, conversation, user_message, page_context=None):
+        messages = [{
+            "role": "system", 
+            "content": "You are a knowledgeable assistant. Balancer is a powerful tool for selecting bipolar medication for patients. We are open-source and available for free use. Your primary role is to assist licensed clinical professionals with information related to Balancer and bipolar medication selection. If applicable, use the supplied tools to assist the professional."
+        }]
+
+        if page_context:
+            context_message = f"If applicable, please use the following content to ask questions. If not applicable, please answer to the best of your ability: {page_context}"
+            messages.append({"role": "system", "content": context_message})
+
+        for msg in conversation.messages.all():
+            role = "user" if msg.is_user else "assistant"
+            messages.append({"role": role, "content": msg.content})
+
+        messages.append({"role": "user", "content": user_message})
+
+        try:
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=messages,
+                tools=tools,
+                tool_choice="auto"
+            )
+
+            response_message = response.choices[0].message
+            tool_calls = response_message.get('tool_calls', [])
+
+            if not tool_calls:
+                return response_message['content']
+
+
+            # Handle tool calls
+            # Add the assistant's message with tool calls to the conversation
+            messages.append({
+                "role": "assistant",
+                "content": response_message.get('content', ''),
+                "tool_calls": tool_calls
+            })
+            
+            # Process each tool call
+            for tool_call in tool_calls:
+                tool_call_id = tool_call['id']
+                tool_function_name = tool_call['function']['name']
+                tool_arguments = json.loads(tool_call['function'].get('arguments', '{}'))
+                
+                # Execute the tool
+                results = execute_tool(tool_function_name, tool_arguments)
+                
+                # Add the tool response message
+                messages.append({
+                    "role": "tool",
+                    "content": str(results),  # Convert results to string
+                    "tool_call_id": tool_call_id
+                })
+            
+            # Final API call with tool results
+            final_response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                    messages=messages
+                )
+            return final_response.choices[0].message['content']
+        except openai.error.OpenAIError as e:
+            logging.error("OpenAI API Error: %s", str(e))
+            raise OpenAIAPIException(detail=str(e))
+        except Exception as e:
+            logging.error("Unexpected Error: %s", str(e))
+            raise OpenAIAPIException(detail="An unexpected error occurred.")
+
+    def generate_title(self, conversation):
+        # Get the first two messages
+        messages = conversation.messages.all()[:2]
+        context = "\n".join([msg.content for msg in messages])
+        prompt = f"Based on the following conversation, generate a short, descriptive title (max 6 words):\n\n{context}"
+
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant that generates short, descriptive titles."},
+                {"role": "user", "content": prompt}
+            ]
+        )
+
+        return response.choices[0].message['content'].strip()
+
+
+================================================
+File: api/views/embeddings/embeddingsView.py
+================================================
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+import openai
+# from ..embeddings_manage.models import Embeddings
+import os
+from ...services.embedding_services import get_closest_embeddings
+import logging
+import json
+import uuid
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+from ...services.conversions_services import convert_uuids
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class AskEmbeddingsAPIView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        try:
+            user = request.user
+            guid = request.query_params.get('guid')
+            print("AskEmbeddingsAPIView")
+            request_data = request.data.get('message', None)
+            if not request_data:
+                return Response({"error": "Message data is required."}, status=status.HTTP_400_BAD_REQUEST)
+            message = [request_data][0]
+
+            embeddings_results = get_closest_embeddings(user=request.user,
+                                                        message_data=message, guid=guid)
+
+            embeddings_results = convert_uuids(embeddings_results)
+
+            print("AskEmbeddingsAPIView1")
+            prompt_texts = [
+                f"[Start of INFO {i+1} === GUID: {obj['file_id']}, Page Number: {obj['page_number']}, Chunk Number: {obj['chunk_number']}, Text: {obj['text']} === End of INFO {i+1} ]" for i, obj in enumerate(embeddings_results)]
+
+            listOfEmbeddings = " ".join(prompt_texts)
+
+            prompt_text = (
+                f"""You are an AI assistant tasked with providing detailed, well-structured responses based on the information provided in [PROVIDED-INFO]. Follow these guidelines strictly: 
+                1. Content: Use information contained within [PROVIDED-INFO] to answer the question. 
+                2. Organization: Structure your response with clear sections and paragraphs. 
+                3. Citations: After EACH sentence that uses information from [PROVIDED-INFO], include a citation in this exact format:***[{{file_id}}], Page {{page_number}}, Chunk {{chunk_number}}*** . Only use citations that correspond to the information you're presenting. 
+                4. Clarity: Ensure your answer is well-structured and easy to follow. 
+                5. Direct Response: Answer the user's question directly without unnecessary introductions or filler phrases. 
+                Here's an example of the required response format:
+                ________________________________________ 
+                See's Candy in the context of sales during a specific event. The candy counters rang up 2,690 individual sales on a Friday, and an additional 3,931 transactions on a Saturday ***[16s848as-vcc1-85sd-r196-7f820a4s9de1, Page 5, Chunk 26]***.
+                People like the consumption of fudge and peanut brittle the most ***[130714d7-b9c1-4sdf-b146-fdsf854cad4f, Page 9, Chunk 19]***. 
+                Here is the history of See's Candy: the company was purchased in 1972, and its products have not been materially altered in 101 years ***[895sdsae-b7v5-416f-c84v-7f9784dc01e1, Page 2, Chunk 13]***. 
+                Bipolar disorder treatment often involves mood stabilizers. Lithium is a commonly prescribed mood stabilizer effective in reducing manic episodes ***[b99988ac-e3b0-4d22-b978-215e814807f4, Page 29, Chunk 122]***. For acute hypomania or mild to moderate mania, initial treatment with risperidone or olanzapine monotherapy is suggested ***[b99988ac-e3b0-4d22-b978-215e814807f4, Page 24, Chunk 101]***. 
+                ________________________________________ 
+                Please provide your response to the user's question following these guidelines precisely.
+                [PROVIDED-INFO] = {listOfEmbeddings}"""
+            )
+
+            # message = f"{message}\n"
+            model_used = "gpt-4o-mini"
+            # model_used = "gpt-3.5-turbo-0125"
+
+            openai.api_key = os.getenv("OPENAI_API_KEY")
+            response = openai.ChatCompletion.create(
+                model=model_used,
+                temperature=0.2,
+                messages=[
+                    {"role": "system",
+                        "content": prompt_text},
+                    {"role": "user", "content": message}
+                ]
+            )
+
+            answer = response["choices"][0]["message"]["content"]
+            print(answer)
+            print(embeddings_results)
+            return Response({
+                "question": message,
+                "llm_response": answer,
+                "embeddings_info": embeddings_results,
+                "sent to LLM": prompt_text,
+            }, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+================================================
+File: api/views/embeddings/urls.py
+================================================
+from django.urls import path
+from .embeddingsView import AskEmbeddingsAPIView
+
+
+urlpatterns = [
+
+    path('v1/api/embeddings/ask_embeddings', AskEmbeddingsAPIView.as_view(),
+         name='ask_embeddings'),
+
+]
+
+
+================================================
+File: api/views/feedback/models.py
+================================================
+from django.db import models
+
+
+class Feedback(models.Model):
+    ISSUE = 'issue'
+    NEW_FEATURE = 'new_feature'
+    GENERAL = 'general'
+    
+    FEEDBACK_TYPE_CHOICES = [
+        (ISSUE, 'Issue'),
+        (NEW_FEATURE, 'New Feature'),
+        (GENERAL, 'General'),
+    ]
+
+    feedbacktype = models.CharField(max_length=100, choices=FEEDBACK_TYPE_CHOICES, default=GENERAL)
+    name = models.CharField(max_length=100, default='')
+    email = models.EmailField(default='')
+    message = models.TextField(default='')
+
+    def __str__(self):
+        return self.name
+
+
+================================================
+File: api/views/feedback/serializers.py
+================================================
+from rest_framework import serializers
+from .models import Feedback
+
+
+class FeedbackSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Feedback
+        fields = ['feedbacktype', 'name', 'email', 'message']
+
+
+================================================
+File: api/views/feedback/urls.py
+================================================
+from django.urls import path
+from api.views.feedback import views
+from .views import FeedbackView
+
+urlpatterns = [
+    path('v1/api/feedback/', FeedbackView.as_view(), name='feedback'),
+]
+
+
+================================================
+File: api/views/feedback/views.py
+================================================
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
+from rest_framework import status
+from django.http import JsonResponse, HttpRequest
+from django import forms
+import requests
+import json
+import os
+from .models import Feedback
+from .serializers import FeedbackSerializer
+
+# XXX: remove csrf_exempt usage before production
+from django.views.decorators.csrf import csrf_exempt
+
+
+class FeedbackView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = FeedbackSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+================================================
+File: api/views/listMeds/models.py
+================================================
+from django.db import models
+
+class Medication(models.Model):
+    """
+    name: name of the medication (ex: Lithium) or combination of medications (Quetiapine plus Lithium)
+    benefits: 5 or benefits of the med or the combination, separated by commas
+    risks: similar to benefits
+    """
+    name = models.CharField(max_length=29)
+    benefits = models.CharField(max_length=1000)
+    risks = models.CharField(max_length=1000)
+
+    def __str__(self):
+        return self.name
+
+class Diagnosis(models.Model):
+    state = models.CharField(max_length=29)
+    medication_suggestion = models.ManyToManyField(Medication, through='Suggestion')
+    
+    def __str__(self):
+        return self.state
+
+class Suggestion(models.Model):
+    diagnosis = models.ForeignKey(Diagnosis, on_delete=models.CASCADE)
+    medication = models.ForeignKey(Medication, on_delete=models.CASCADE)
+    tier = models.PositiveIntegerField(default=3)
+
+    def __str__(self):
+        return f'diagnosis {self.diagnosis}, tier {self.tier}, {self.medication}'
+
+
+================================================
+File: api/views/listMeds/serializers.py
+================================================
+from rest_framework import serializers
+from .models import Diagnosis, Medication, Suggestion
+
+class DiagnosisSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Diagnosis
+        fields = '__all__'
+
+class MedicationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Medication
+        fields = ['name', 'benefits', 'risks']
+
+class SuggestionSerializer(serializers.ModelSerializer):
+    medication = MedicationSerializer()
+
+    class Meta:
+        model = Suggestion
+        fields = ['medication', 'tier']
+
+
+================================================
+File: api/views/listMeds/urls.py
+================================================
+from django.urls import path
+from .views import GetMedication, ListOrDetailMedication, AddMedication, DeleteMedication
+urlpatterns = [
+    path('v1/api/get_full_list_med', ListOrDetailMedication.as_view(),
+         name='list_or_detail_medication'),
+    path('v1/api/get_med_recommend',
+         GetMedication.as_view(), name='get_medication'),
+    path('v1/api/add_medication', AddMedication.as_view(),
+         name='add_medication'),  # New POST endpoint
+    path('v1/api/delete_med', DeleteMedication.as_view(),
+         name='delete_medication'),  # New DELETE endpoint
+]
+
+
+================================================
+File: api/views/listMeds/views.py
+================================================
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from .models import Diagnosis, Medication, Suggestion
+from .serializers import DiagnosisSerializer, MedicationSerializer, SuggestionSerializer
+import json
+from django.views.decorators.csrf import csrf_exempt
+# Constants for medication inclusion and exclusion
+MEDS_INCLUDE = {'suicideHistory': ['Lithium']}
+MED_EXCLUDE = {
+    'kidneyHistory': ['Lithium'],
+    'liverHistory': ['Valproate'],
+    'bloodPressureHistory': ['Asenapine', 'Lurasidone', 'Olanzapine', 'Paliperidone', 'Quetiapine', 'Risperidone', 'Ziprasidone', 'Aripiprazole', 'Cariprazine'],
+    'weightGainConcern': ['Quetiapine', 'Risperidone', 'Aripiprazole', 'Olanzapine']
+}
+
+
+class GetMedication(APIView):
+    def post(self, request):
+        data = request.data
+        state_query = data.get('state', '')
+        include_result = []
+        exclude_result = []
+        for condition in MEDS_INCLUDE:
+            if data.get(condition, False):
+                include_result.extend(MEDS_INCLUDE[condition])
+        for condition in MED_EXCLUDE:
+            if data.get(condition, False):
+                # Remove any medication from include list that is in the exclude list
+                include_result = [
+                    med for med in include_result if med not in MED_EXCLUDE[condition]]
+                exclude_result.extend(MED_EXCLUDE[condition])
+        diag_query = Diagnosis.objects.filter(state=state_query)
+        if diag_query.count() <= 0:
+            return Response({'error': 'Diagnosis not found'}, status=status.HTTP_404_NOT_FOUND)
+        diagnosis = diag_query[0]
+        meds = {'first': '', 'second': '', 'third': ''}
+        for med in include_result:
+            meds['first'] += med + ", "
+        for i, line in enumerate(['first', 'second', 'third']):
+            for suggestion in Suggestion.objects.filter(diagnosis=diagnosis, tier=(i + 1)):
+                to_exclude = False
+                for med in exclude_result:
+                    if med in suggestion.medication.name:
+                        to_exclude = True
+                        break
+                if i > 0 and suggestion.medication.name in include_result:
+                    to_exclude = True
+                if not to_exclude:
+                    meds[line] += suggestion.medication.name + ", "
+            meds[line] = meds[line][:-2] if meds[line] else 'None'
+        return Response(meds)
+
+
+class ListOrDetailMedication(APIView):
+    def get(self, request):
+        name_query = request.query_params.get('name', None)
+        if name_query:
+            try:
+                medication = Medication.objects.get(name=name_query)
+                serializer = MedicationSerializer(medication)
+                return Response(serializer.data)
+            except Medication.DoesNotExist:
+                return Response({'error': 'Medication not found'}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            medications = Medication.objects.all()
+            serializer = MedicationSerializer(medications, many=True)
+            return Response(serializer.data)
+
+    def post(self, request):
+        # Implement logic for adding new medications (if needed)
+        # If adding medications, you would check if the medication already exists before creating it
+        data = request.data
+        name = data.get('name', '')
+        if not name:
+            return Response({'error': 'Medication name is required'}, status=status.HTTP_400_BAD_REQUEST)
+        if Medication.objects.filter(name=name).exists():
+            return Response({'error': 'Medication already exists'}, status=status.HTTP_400_BAD_REQUEST)
+        # Assuming Medication model has `name`, `benefits`, `risks` as fields
+        serializer = MedicationSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AddMedication(APIView):
+    """
+    API endpoint to add a medication to the database with its risks and benefits.
+    """
+
+    def post(self, request):
+        data = request.data
+        name = data.get('name', '').strip()
+        benefits = data.get('benefits', '').strip()
+        risks = data.get('risks', '').strip()
+        # Validate the inputs
+        if not name:
+            return Response({'error': 'Medication name is required'}, status=status.HTTP_400_BAD_REQUEST)
+        if not benefits:
+            return Response({'error': 'Medication benefits are required'}, status=status.HTTP_400_BAD_REQUEST)
+        if not risks:
+            return Response({'error': 'Medication risks are required'}, status=status.HTTP_400_BAD_REQUEST)
+        # Check if medication already exists
+        if Medication.objects.filter(name=name).exists():
+            return Response({'error': f'Medication "{name}" already exists'}, status=status.HTTP_400_BAD_REQUEST)
+        # Create and save the new medication
+        serializer = MedicationSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class DeleteMedication(APIView):
+    "API endpoint to delete medication if medication in database"
+
+    def delete(self, request):
+        data = request.data
+        name = data.get('name', '').strip()
+        print("ok vin")
+        # Validate the inputs
+        if not name:
+            return Response({'error': 'Medication name is required'}, status=status.HTTP_400_BAD_REQUEST)
+       # Check if medication exists
+        if Medication.objects.filter(name=name).exists():
+            # return f'Medication "{name}" exists'
+            # Get the medication object
+            medication = Medication.objects.get(name=name)
+        # Delete the medication
+            medication.delete()
+            return Response({'success': "medication exists and will now be deleted"}, status=status.HTTP_201_CREATED)
+        else:
+            return Response({'error': 'Medication does not exist'}, status=status.HTTP_400_BAD_REQUEST)
+        # ask user if sure to delete?
+        # delete med from database
+        # Medication.objects.filter(name=name)
+
+
+================================================
+File: api/views/medRules/serializers.py
+================================================
+from rest_framework import serializers
+from ...models.model_medRule import MedRule
+from ..listMeds.serializers import MedicationSerializer
+from ...models.model_embeddings import Embeddings
+
+
+class EmbeddingsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Embeddings
+        fields = ['guid', 'name', 'text', 'page_num', 'chunk_number']
+
+
+class MedRuleSerializer(serializers.ModelSerializer):
+    medications = MedicationSerializer(many=True, read_only=True)
+    sources = EmbeddingsSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = MedRule
+        fields = ['id', 'rule_type', 'history_type', 'reason', 'label',
+                  'medications', 'sources', 'explanation']
+
+
+================================================
+File: api/views/medRules/urls.py
+================================================
+from django.urls import path
+from .views import MedRules
+
+urlpatterns = [
+    path("v1/api/medRules",
+         MedRules.as_view(), name="medRules"),
+]
+
+
+================================================
+File: api/views/medRules/views.py
+================================================
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+from ...models.model_medRule import MedRule
+from .serializers import MedRuleSerializer  # You'll need to create this
+from ..listMeds.models import Medication
+from ..listMeds.serializers import MedicationSerializer
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class MedRules(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, format=None):
+        # Get all med rules
+        med_rules = MedRule.objects.all()
+
+        # Serialize the data
+        serializer = MedRuleSerializer(med_rules, many=True)
+
+        data = {
+            'status': 'success',
+            'count': len(serializer.data),
+            'results': serializer.data
+        }
+
+        return Response(data, status=status.HTTP_200_OK)
+
+
+================================================
+File: api/views/risk/urls.py
+================================================
+from django.urls import path
+from api.views.risk import views
+
+urlpatterns = [
+    path("chatgpt/risk", views.medication, name="risk")
+] 
+
+
+================================================
+File: api/views/risk/views.py
+================================================
+from django.http import JsonResponse
+import os
+import openai
+import json
+from api.views.listMeds.models import Medication
+
+# XXX: remove csrf_exempt usage before production
+from django.views.decorators.csrf import csrf_exempt
+
+
+@csrf_exempt
+def medication(request):
+    openai.api_key = os.environ.get("OPENAI_API_KEY")
+    data = json.loads(request.body)
+
+    if data is not None:
+        diagnosis = data["diagnosis"] # the variable name is diagnosis but this variable contain the medication name
+    else:
+        return JsonResponse({"error": "Diagnosis not found. Request must include diagnosis."})
+    
+    try:
+        med = Medication.objects.get(name=diagnosis)
+        benefits = [f'- {benefit}' for benefit in med.benefits.split(', ')]
+        risks = [f'- {risk}' for risk in med.risks.split(', ')]
+        return JsonResponse({
+            'benefits': benefits,
+            'risks': risks
+        })
+    except Medication.DoesNotExist:
+        ai_response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {
+                    "role": "system",
+                    "content": f"You are to provide a concise list of 5 key benefits and 5 key risks for the medication suggested when taking it for Bipolar. Each point should be short, clear and be kept under 10 words. Begin the benefits section with !!!benefits!!! and the risks section with !!!risk!!!. Please provide this information for the medication: {diagnosis}."
+                }
+            ]
+        )
+
+        content = ai_response['choices'][0]['message']['content']
+
+        if '!!!benefits!!!' not in content or '!!!risks!!!' not in content:
+            return JsonResponse({"error": "Unexpected format in the response content."})
+
+        # Split the content into benefits and risks sections
+        benefits_selection = content.split(
+            '!!!risks!!!')[0].replace('!!!benefits!!!', '').strip()
+        risks_selection = content.split('!!!risks!!!')[1].strip()
+
+        # Split  the sections into individiual points
+        # Taking every second item as the benefits and risks are on alternate lines
+        benefits = benefits_selection.split('\n')
+        risks = risks_selection.split('\n')
+        content = content
+
+        return JsonResponse({
+            'benefits': benefits,
+            'risks': risks
+        })
+
+
+================================================
+File: api/views/text_extraction/urls.py
+================================================
+from django.urls import path
+from .views import TextExtractionAPIView
+
+
+urlpatterns = [
+
+    path('v1/api/text_extraction', TextExtractionAPIView.as_view(),
+         name='text_extraction'),
+]
+
+
+================================================
+File: api/views/text_extraction/views.py
+================================================
+import os
+
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+import openai
+
+from api.models.model_embeddings import Embeddings
+
+@method_decorator(csrf_exempt, name='dispatch')
+class TextExtractionAPIView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            guid = request.query_params.get('guid')
+            field = request.query_params.get('field')
+
+            query = Embeddings.objects.filter(upload_file__guid=guid)
+
+            #TODO: Message OpenAI with each chunk separately if there are files that are too large for OpenAI
+
+            query_texts = [
+                f"[Start of INFO === GUID: {obj.upload_file.guid}, Page Number: {obj.page_num}, Chunk Number: {obj.chunk_number}, Text: {obj.text} === End of INFO]" 
+                for obj in query]
+
+            query_text = " ".join(query_texts)
+
+            prompt_text = (
+                f"""You are an AI assistant tasked with providing detailed, well-structured responses based on the information provided in [PROVIDED-INFO]. Follow these guidelines strictly: 
+                1. Content: Use information contained within [PROVIDED-INFO] to answer the question. 
+                2. Organization: Structure your response with clear sections and paragraphs. 
+                3. Citations: After EACH sentence that uses information from [PROVIDED-INFO], include a citation in this exact format:***[{{file_id}}], Page {{page_number}}, Chunk {{chunk_number}}*** . Only use citations that correspond to the information you're presenting. 
+                4. Clarity: Ensure your answer is well-structured and easy to follow. 
+                5. Direct Response: Answer the user's question directly without unnecessary introductions or filler phrases. 
+                Here's an example of the required response format:
+                ________________________________________ 
+                See's Candy in the context of sales during a specific event. The candy counters rang up 2,690 individual sales on a Friday, and an additional 3,931 transactions on a Saturday ***[16s848as-vcc1-85sd-r196-7f820a4s9de1, Page 5, Chunk 26]***.
+                People like the consumption of fudge and peanut brittle the most ***[130714d7-b9c1-4sdf-b146-fdsf854cad4f, Page 9, Chunk 19]***. 
+                Here is the history of See's Candy: the company was purchased in 1972, and its products have not been materially altered in 101 years ***[895sdsae-b7v5-416f-c84v-7f9784dc01e1, Page 2, Chunk 13]***. 
+                Bipolar disorder treatment often involves mood stabilizers. Lithium is a commonly prescribed mood stabilizer effective in reducing manic episodes ***[b99988ac-e3b0-4d22-b978-215e814807f4, Page 29, Chunk 122]***. For acute hypomania or mild to moderate mania, initial treatment with risperidone or olanzapine monotherapy is suggested ***[b99988ac-e3b0-4d22-b978-215e814807f4, Page 24, Chunk 101]***. 
+                ________________________________________ 
+                Please provide your response to the user's question following these guidelines precisely.
+                [PROVIDED-INFO] = {query_text}"""
+            )
+
+
+            openai.api_key = os.getenv("OPENAI_API_KEY")
+            response = openai.ChatCompletion.create(
+                model="gpt-4o-mini",
+                temperature=0.2,
+                messages=[{"role": "system", "content": prompt_text}, 
+                          {"role": "user", "content": f"List out the {field}"}
+                ]
+            )
+
+            answer = response["choices"][0]["message"]["content"]
+
+            return Response({
+                "query":  query_text,
+                "answer": answer
+            }, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+================================================
+File: api/views/uploadFile/models.py
+================================================
+from django.db import models
+from django.conf import settings
+import uuid
+
+
+class UploadFile(models.Model):
+    id = models.AutoField(primary_key=True)
+    guid = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
+    file_name = models.CharField(max_length=255)
+    title = models.CharField(max_length=255, null=True)
+    publication = models.CharField(max_length=255, blank=True, null=True)
+    publication_date = models.DateTimeField(blank=True, null=True)
+    file = models.BinaryField(null=True)
+    date_of_upload = models.DateTimeField(auto_now_add=True, blank=True)
+    size = models.BigIntegerField()
+    page_count = models.IntegerField()
+    file_type = models.CharField(max_length=50)
+    uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    uploaded_by_email = models.CharField(max_length=255, blank=True)
+    source_url = models.CharField(max_length=255, blank=True, null=True)
+    analyzed = models.DateTimeField(blank=True, null=True)
+    approved = models.DateTimeField(blank=True, null=True)
+
+    def __str__(self):
+        return self.file_name
+
+
+================================================
+File: api/views/uploadFile/serializers.py
+================================================
+from rest_framework import serializers
+from .models import UploadFile
+
+
+class UploadFileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UploadFile
+        exclude = ['file']
+
+
+================================================
+File: api/views/uploadFile/urls.py
+================================================
+from django.urls import path
+from .views import UploadFileView, RetrieveUploadFileView, EditFileMetadataView
+
+urlpatterns = [
+    path("v1/api/uploadFile", UploadFileView.as_view(), name="uploadFiles"),
+    path("v1/api/uploadFile/<str:guid>",
+         RetrieveUploadFileView.as_view(), name="Get UploadFiles"),
+    path("v1/api/editmetadata/<str:guid>",
+         EditFileMetadataView.as_view(), name="editFileMetadata"),
+]
+
+
+================================================
+File: api/views/uploadFile/views.py
+================================================
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.generics import UpdateAPIView
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+import pdfplumber
+from .models import UploadFile  # Import your UploadFile model
+from django.core.files.base import ContentFile
+import os
+from .serializers import UploadFileSerializer
+from django.http import HttpResponse
+from ...services.sentencetTransformer_model import TransformerModel
+from ...models.model_embeddings import Embeddings
+import fitz
+from django.db import transaction
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class UploadFileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, format=None):
+        print("UploadFileView, get list")
+
+        # Get the authenticated user
+        user = request.user
+
+        # Filter the files uploaded by the authenticated user
+        files = UploadFile.objects.filter(uploaded_by=user.id).defer(
+            'file').order_by('-date_of_upload')
+
+        serializer = UploadFileSerializer(files, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, format=None):
+        print(request.auth)
+        print(f"UploadFileView post called. Path: {request.path}")
+        # if not request.user.is_superuser:
+        #     return Response(
+        #         {"message": "Error, user is not a superuser."},
+        #         status=status.HTTP_401_UNAUTHORIZED,
+        #     )
+
+        uploaded_file = request.FILES.get('file')
+        if uploaded_file is None:
+            return Response(
+                {"message": "No file was provided."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not uploaded_file.name.endswith('.pdf'):
+            return Response(
+                {"message": "Only PDF files are accepted."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            with pdfplumber.open(uploaded_file) as pdf:
+                pages = pdf.pages
+                page_count = len(pages)
+                file_type = 'pdf'  # Since you are only accepting PDFs
+                size = uploaded_file.size  # Size in bytes
+
+                # Read the entire PDF to store in the BinaryField
+                uploaded_file.seek(0)
+                pdf_binary = uploaded_file.read()
+            with transaction.atomic():
+                # Create a new UploadFile instance and populate it
+                new_file = UploadFile(
+                    file_name=uploaded_file.name,
+                    file=pdf_binary,
+                    size=size,
+                    page_count=page_count,
+                    file_type=file_type,
+                    uploaded_by=request.user,  # Set to the user instance
+                    uploaded_by_email=request.user.email  # Also store the email separately
+                )
+                new_file.save()
+
+                if new_file.id is None:
+                    return Response({"message": "Failed to save the upload file."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+                with fitz.open(stream=pdf_binary, filetype="pdf") as doc:
+                    text = ""
+                    page_number = 1  # Initialize page_number
+                    page_texts = []  # List to hold text for each page with page number
+
+                    for page in doc:
+                        page_text = page.get_text()
+                        text += page_text
+                        page_texts.append((page_number, page_text))
+                        page_number += 1
+
+                chunks_with_page = []
+
+                # Create chunks along with their corresponding page number
+                for page_num, page_text in page_texts:
+                    words = page_text.split()
+                    chunks = [' '.join(words[i:i+100])
+                              for i in range(0, len(words), 100)]
+                    for chunk in chunks:
+                        chunks_with_page.append((page_num, chunk))
+
+                model = TransformerModel.get_instance().model
+                # Encode each chunk and save embeddings
+                embeddings = model.encode(
+                    [chunk for _, chunk in chunks_with_page])
+
+                for i, ((page_num, chunk), embedding) in enumerate(zip(chunks_with_page, embeddings)):
+                    Embeddings.objects.create(
+                        upload_file=new_file,
+                        name=new_file.file_name,  # You may adjust the naming convention
+                        text=chunk,
+                        chunk_number=i,
+                        page_num=page_num,  # Store the page number here
+                        embedding_sentence_transformers=embedding.tolist()
+                    )
+            return Response(
+                {"message": "File uploaded successfully.",
+                 "file_id": new_file.id},
+                status=status.HTTP_201_CREATED,
+            )
+        except Exception as e:
+            # Handle potential errors
+            return Response({"message": f"Error processing file and embeddings: {str(e)}"},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, format=None):
+        guid = request.data.get('guid')
+        if not guid:
+            return Response({"message": "No file ID provided."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            with transaction.atomic():
+                # Fetch the file to delete
+                upload_file = UploadFile.objects.get(guid=guid)
+
+                # Check if the user has permission to delete this file
+                if upload_file.uploaded_by != request.user:
+                    return Response({"message": "You do not have permission to delete this file."}, status=status.HTTP_403_FORBIDDEN)
+
+                # Delete related embeddings
+                Embeddings.objects.filter(upload_file=upload_file).delete()
+
+                # Delete the file
+                upload_file.delete()
+
+            return Response({"message": "File and related embeddings deleted successfully."}, status=status.HTTP_200_OK)
+        except UploadFile.DoesNotExist:
+            return Response({"message": "File not found."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"message": f"Error deleting file and embeddings: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class RetrieveUploadFileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, guid, format=None):
+        try:
+            file = UploadFile.objects.get(
+                guid=guid, uploaded_by=request.user.id)
+            response = HttpResponse(file.file, content_type='application/pdf')
+            # print(file.file[:100])
+            response['Content-Disposition'] = f'attachment; filename="{file.file_name}"'
+            return response
+        except UploadFile.DoesNotExist:
+            return Response({"message": "No file found or access denied."}, status=status.HTTP_404_NOT_FOUND)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class EditFileMetadataView(UpdateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = UploadFileSerializer
+    lookup_field = 'guid'
+
+    def get_queryset(self):
+
+        # Ensure that users can only edit files they uploaded
+        return UploadFile.objects.filter(uploaded_by=self.request.user)
+
+
+================================================
+File: balancer_backend/asgi.py
+================================================
+"""
+ASGI config for balancer_backend project.
+
+It exposes the ASGI callable as a module-level variable named ``application``.
+
+For more information on this file, see
+https://docs.djangoproject.com/en/4.2/howto/deployment/asgi/
+"""
+
+import os
+
+from django.core.asgi import get_asgi_application
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'balancer_backend.settings')
+
+application = get_asgi_application()
+
+
+================================================
+File: balancer_backend/settings.py
+================================================
+"""
+Django settings for balancer_backend project.
+
+Generated by 'django-admin startproject' using Django 4.2.3.
+
+For more information on this file, see
+https://docs.djangoproject.com/en/4.2/topics/settings/
+
+For the full list of settings and their values, see
+https://docs.djangoproject.com/en/4.2/ref/settings/
+"""
+
+from pathlib import Path
+import os
+from datetime import timedelta
+
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+# Quick-start development settings - unsuitable for production
+# See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
+
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = os.environ.get("SECRET_KEY")
+
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = bool(os.environ.get("DEBUG", default=0))
+
+# Fetching the value from the environment and splitting to list if necessary.
+# Fallback to '*' if the environment variable is not set.
+ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', '*').split()
+
+# If the environment variable contains '*', the split method would create a list with an empty string.
+# So you need to check for this case and adjust accordingly.
+if ALLOWED_HOSTS == ['*'] or ALLOWED_HOSTS == ['']:
+    ALLOWED_HOSTS = ['*']
+
+
+# Application definition
+
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'balancer_backend',
+    'api',
+    'corsheaders',
+    'rest_framework',
+    'djoser',
+]
+
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+
+]
+
+ROOT_URLCONF = 'balancer_backend.urls'
+
+CORS_ALLOW_ALL_ORIGINS = True
+
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [os.path.join(BASE_DIR, 'build')],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
+
+# Set the login redirect URL after successful email verification
+# Change this to your desired URL
+LOGIN_REDIRECT_URL = os.environ.get("LOGIN_REDIRECT_URL")
+
+WSGI_APPLICATION = 'balancer_backend.wsgi.application'
+
+
+# Database
+# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
+
+DATABASES = {
+    "default": {
+        "ENGINE": os.environ.get("SQL_ENGINE", "django.db.backends.sqlite3"),
+        "NAME": os.environ.get("SQL_DATABASE", BASE_DIR / "db.sqlite3"),
+        "USER": os.environ.get("SQL_USER", "user"),
+        "PASSWORD": os.environ.get("SQL_PASSWORD", "password"),
+        "HOST": os.environ.get("SQL_HOST", "localhost"),
+        "PORT": os.environ.get("SQL_PORT", "5432"),
+    }
+}
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+EMAIL_USE_TLS = True
+
+
+# Password validation
+# https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
+
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    },
+]
+
+# Internationalization
+# https://docs.djangoproject.com/en/4.2/topics/i18n/
+
+LANGUAGE_CODE = 'en-us'
+
+TIME_ZONE = 'UTC'
+
+USE_I18N = True
+
+USE_TZ = True
+
+
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/4.2/howto/static-files/
+
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'build/static'),
+]
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated'
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
+
+SIMPLE_JWT = {
+    'AUTH_HEADER_TYPES': ('JWT',),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'TOKEN_OBTAIN_SERIALIZER': 'api.models.TokenObtainPairSerializer.MyTokenObtainPairSerializer',
+    'AUTH_TOKEN_CLASSES': (
+        'rest_framework_simplejwt.tokens.AccessToken',
+    )
+}
+
+DJOSER = {
+    'LOGIN_FIELD': 'email',
+    'USER_CREATE_PASSWORD_RETYPE': True,
+    'USERNAME_CHANGED_EMAIL_CONFIRMATION': True,
+    'PASSWORD_CHANGED_EMAIL_CONFIRMATION': True,
+    'SEND_CONFIRMATION_EMAIL': True,
+    'SET_USERNAME_RETYPE': True,
+    'SET_PASSWORD_RETYPE': True,
+    'PASSWORD_RESET_CONFIRM_URL': 'password/reset/confirm/{uid}/{token}',
+    'USERNAME_RESET_CONFIRM_URL': 'email/reset/confirm/{uid}/{token}',
+    'ACTIVATION_URL': 'activate/{uid}/{token}',
+    'SEND_ACTIVATION_EMAIL': True,
+    'SOCIAL_AUTH_TOKEN_STRATEGY': 'djoser.social.token.jwt.TokenStrategy',
+    'SOCIAL_AUTH_ALLOWED_REDIRECT_URIS': ['http://localhost:8000/google', 'http://localhost:8000/facebook'],
+    'SERIALIZERS': {
+        'user_create': 'api.models.serializers.UserCreateSerializer',
+        'user': 'api.models.serializers.UserCreateSerializer',
+        'current_user': 'api.models.serializers.UserCreateSerializer',
+        'user_delete': 'djoser.serializers.UserDeleteSerializer',
+    }
+}
+
+
+# Default primary key field type
+# https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+AUTH_USER_MODEL = 'api.UserAccount'
+
+
+================================================
+File: balancer_backend/urls.py
+================================================
+from django.contrib import admin  # Import Django's admin interface module
+# Import functions for URL routing and including other URL configs
+from django.urls import path, include, re_path
+# Import TemplateView for rendering templates
+from django.views.generic import TemplateView
+import importlib  # Import the importlib module for dynamic module importing
+
+# Define a list of URL patterns for the application
+urlpatterns = [
+    # Map 'admin/' URL to the Django admin interface
+    path("admin/", admin.site.urls),
+    # Include Djoser's URL patterns under 'auth/' for basic auth
+    path('auth/', include('djoser.urls')),
+    # Include Djoser's JWT auth URL patterns under 'auth/'
+    path('auth/', include('djoser.urls.jwt')),
+    # Include Djoser's social auth URL patterns under 'auth/'
+    path('auth/', include('djoser.social.urls')),
+]
+
+# List of application names for which URL patterns will be dynamically added
+urls = ['conversations', 'feedback', 'listMeds', 'risk',
+        'uploadFile', 'ai_promptStorage', 'ai_settings', 'embeddings', 'medRules', 'text_extraction']
+
+# Loop through each application name and dynamically import and add its URL patterns
+for url in urls:
+    # Dynamically import the URL module for each app
+    url_module = importlib.import_module(f'api.views.{url}.urls')
+    # Append the URL patterns from each imported module
+    urlpatterns += getattr(url_module, 'urlpatterns', [])
+
+# Add a catch-all URL pattern for handling SPA (Single Page Application) routing
+# Serve 'index.html' for any unmatched URL
+urlpatterns += [
+    re_path(r'^.*$', TemplateView.as_view(template_name='index.html')),]
+
+
+================================================
+File: balancer_backend/wsgi.py
+================================================
+"""
+WSGI config for balancer_backend project.
+
+It exposes the WSGI callable as a module-level variable named ``application``.
+
+For more information on this file, see
+https://docs.djangoproject.com/en/4.2/howto/deployment/wsgi/
+"""
+
+import os
+
+from django.core.wsgi import get_wsgi_application
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'balancer_backend.settings')
+
+application = get_wsgi_application()
+
+

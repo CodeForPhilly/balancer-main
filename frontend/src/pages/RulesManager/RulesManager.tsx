@@ -156,35 +156,49 @@ function RulesManager() {
                 )}
               </div>
             </div>
-
+            <div>
+              <h5 className="mb-2 text-sm font-medium text-indigo-600">
+                Explanation:
+              </h5>
+              {rule.explanation ? (
+                <p className="text-sm">{rule.explanation}</p>
+              ) : (
+                <p className="text-sm text-gray-500">No explanation provided</p>
+              )}
+            </div>
             <div className="border-t pt-4">
               <div className="mb-4">
                 <h5 className="mb-2 text-sm font-medium text-indigo-600">
                   Sources:
                 </h5>
                 {rule.sources && rule.sources.length > 0 ? (
-                  <ul className="list-disc space-y-2 px-4">
+                  <ul className="list-disc space-y-4 px-4">
                     {rule.sources.map((source, index) => (
                       <li key={`${medKey}-source-${index}`} className="text-sm">
-                        {source}
+                        <div className="p-2 border rounded bg-gray-50">
+                          <div>
+                            <strong>Name:</strong> {source.name}
+                          </div>
+                          <div>
+                            <strong>Text:</strong> {source.text}
+                          </div>
+                          <div className="text-xs text-gray-500 mt-1">
+                            <span>
+                              <strong>Page:</strong> {source.page_num}
+                            </span>
+                            <span className="ml-3">
+                              <strong>Chunk:</strong> {source.chunk_number}
+                            </span>
+                            <div className="mt-1 text-xs text-gray-400">
+                              <strong>ID:</strong> {source.guid}
+                            </div>
+                          </div>
+                        </div>
                       </li>
                     ))}
                   </ul>
                 ) : (
                   <p className="text-sm text-gray-500">No sources listed</p>
-                )}
-              </div>
-
-              <div>
-                <h5 className="mb-2 text-sm font-medium text-indigo-600">
-                  Explanation:
-                </h5>
-                {rule.explanation ? (
-                  <p className="text-sm">{rule.explanation}</p>
-                ) : (
-                  <p className="text-sm text-gray-500">
-                    No explanation provided
-                  </p>
                 )}
               </div>
             </div>

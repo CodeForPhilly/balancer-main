@@ -49,11 +49,14 @@ const FileRow: React.FC<FileRowProps> = ({
           "Content-Type": "application/json",
           Authorization: `JWT ${localStorage.getItem("access")}`,
         },
+
         body: JSON.stringify({
           file_name: fileName,
           title: title,
           publication: publication,
-          publication_date: publicationDate.replace('///g', '-'),
+          publication_date:  publicationDate && publicationDate !== ''
+              ? publicationDate.replace(/\//g, '-')
+              : null,
         }),
       });
 
@@ -61,7 +64,7 @@ const FileRow: React.FC<FileRowProps> = ({
         file_name: fileName,
         title: title,
         publication: publication,
-        publication_date: publicationDate
+        publication_date: publicationDate,
       });
 
       setIsEditing(false);

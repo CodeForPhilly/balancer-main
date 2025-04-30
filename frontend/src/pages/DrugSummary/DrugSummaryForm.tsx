@@ -1,7 +1,6 @@
 import React from "react";
 import "../../components/Header/chat.css";
 import { useState, useEffect, useRef } from "react";
-// import paperclip from "../../assets/paperclip.svg";
 import { handleSendDrugSummary } from "../../api/apiClient.ts";
 import { ChatMessageItem, SearchResult } from "./type";
 import ParseStringWithLinks from "../../services/parsing/ParseWithSource.tsx";
@@ -10,14 +9,18 @@ import PDFViewer from "./PDFViewer";
 
 const DrugSummaryForm = () => {
   const [inputValue, setInputValue] = useState("");
-  const [inputHeight, setInputHeight] = useState(50); // Initial height in pixels
+  const [inputHeight, setInputHeight] = useState(50);
   const [chatLog, setChatLog] = useState<ChatMessageItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [hasPDF, setHasPDF] = useState(false);
   const location = useLocation();
   const chatContainerRef = useRef<HTMLDivElement>(null);
-  // const fileInputRef = useRef<HTMLInputElement>(null);
   const scrollToBottomRef = useRef<HTMLDivElement | null>(null);
-  const maxInputHeight = 150; // Maximum height in pixels
+  const maxInputHeight = 150;
+
+  const params = new URLSearchParams(location.search);
+  const guid = params.get("guid") || "";
+  const pageParam = params.get("page");
 
   useEffect(() => {
     if (chatContainerRef.current) {
@@ -32,11 +35,26 @@ const DrugSummaryForm = () => {
     }
   }, [chatLog]);
 
+  useEffect(() => {
+    setHasPDF(!!guid);
+  }, [guid]);
+
+
+  useEffect(() => {
+
+    if (pageParam && hasPDF) {
+      const page = parseInt(pageParam, 10);
+      if (!isNaN(page) && page > 0) {
+        const event = new CustomEvent("navigateToPdfPage", {
+          detail: { pageNumber: page }
+        });
+        window.dispatchEvent(event);
+      }
+    }
+  }, [pageParam, hasPDF]);
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
-    const params = new URLSearchParams(location.search);
-    const guid = params.get("guid") || ``;
 
     const newMessage = {
       message: inputValue,
@@ -45,7 +63,7 @@ const DrugSummaryForm = () => {
 
     setChatLog((prevChatLog) => [...prevChatLog, newMessage]);
     setInputValue("");
-    setInputHeight(50); // Reset input height
+    setInputHeight(50);
     setIsLoading(true);
 
     try {
@@ -96,119 +114,100 @@ const DrugSummaryForm = () => {
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault(); // Prevent default Enter behavior
+      e.preventDefault();
       handleSubmit(e as unknown as React.FormEvent<HTMLFormElement>);
     } else if (e.key === "Enter" && e.shiftKey) {
-      e.preventDefault(); // Prevent form submission on Shift + Enter
+      e.preventDefault();
       setInputHeight((prevHeight) => {
-        const newHeight = Math.min(prevHeight + 20, maxInputHeight); // Increase by 20px, up to max height
+        const newHeight = Math.min(prevHeight + 20, maxInputHeight);
         return newHeight;
       });
     }
   };
 
   return (
-    <>
-      <div className="mx-auto  min-h-screen w-full  flex-grow flex overflow-y-auto border">
-        <div className=" mb-4">
+    <div className="flex h-full w-full justify-center">
+      {/* PDF Viewer - Only show if hasPDF is true */}
+      {hasPDF && (
+        <div className="w-1/2 h-full">
           <PDFViewer />
         </div>
-        <div>
-          <div className=" w-[808px] ">
-            <div
-              ref={chatContainerRef}
-              id="chat_container"
-              className="relative bottom-0  top-0 mt-10 flex h-[calc(100vh-210px)] flex-col overflow-y-auto border-t p-2"
-            >
-              {chatLog.length === 0 ? (
-                <>
-                  <div className="flex  flex-col gap-4 p-3">
-                    <div className="max-h-[100%] rounded-lg border-2 bg-stone-50 p-2 text-sky-950">
-                      You can ask about the content on this page.
-                    </div>
-                    <div className="max-h-[100%]  rounded-lg border-2 bg-stone-50 p-2 text-sky-950">
-                      Or questions in general.
-                    </div>
-                  </div>
-                </>
-              ) : (
-                chatLog.map((message, index) => (
-                  <div key={index} className="flex flex-col gap-4">
-                    <div
-                      className={`${
-                        message.type === "user"
-                          ? "justify-end"
-                          : "justify-start"
-                      } p-2`}
-                    >
-                      <div
-                        className={`${
-                          message.type === "user"
-                            ? "border-2  font-quicksand text-neutral-600"
-                            : "border-2 bg-stone-50 font-quicksand text-sky-950"
-                        } rounded-lg p-2`}
-                      >
-                        {typeof message.message === "string" ? (
-                          message.message
-                        ) : (
-                          <ParseStringWithLinks
-                            text={message.message.llm_response}
-                            chunkData={message.message.embeddings_info}
-                          />
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
+      )}
+
+      {/* Chat Section - Full width if no PDF, otherwise 50% */}
+      <div className={`${hasPDF ? "w-1/2" : "w-1/2"} h-full flex flex-col`}>
+        {/* Chat Messages Container */}
+        <div ref={chatContainerRef} className="flex-grow overflow-y-auto">
+          {chatLog.length === 0 ? (
+            <div className="flex flex-col gap-4 p-3 font-quicksand">
+              <div className="max-w-[310px] rounded-lg border-2 bg-stone-50 p-2 text-sky-950">
+                You can ask about the content on this page.
+              </div>
+              <div className="max-w-[190px] rounded-lg border-2 bg-stone-50 p-2 text-sky-950">
+                Or questions in general.
+              </div>
             </div>
-          </div>
-          <div className="ml-8 flex h-3 items-center justify-start">
-            {isLoading && (
-              <div key={chatLog.length} className="flex justify-between">
-                <div className="items-center justify-center p-1">
-                  <span className="thinking">Let me think</span>
+          ) : (
+            chatLog.map((message, index) => (
+              <div key={index} className="flex flex-col gap-4">
+                <div
+                  className={`${
+                    message.type === "user" ? "justify-end" : "justify-start"
+                  } p-2`}
+                >
+                  <div
+                    className={`${
+                      message.type === "user"
+                        ? "border-2 font-quicksand text-neutral-600"
+                        : "border-2 bg-stone-50 font-quicksand text-sky-950"
+                    } rounded-lg p-2`}
+                  >
+                    {typeof message.message === "string" ? (
+                      message.message
+                    ) : (
+                      <ParseStringWithLinks
+                        text={message.message.llm_response}
+                        chunkData={message.message.embeddings_info}
+                      />
+                    )}
+                  </div>
                 </div>
               </div>
-            )}
-          </div>
-          <form
-            onSubmit={handleSubmit}
-            className="fixed bottom-0 flex  w-[808px]  bg-white p-5"
-          >
-            <div className="relative flex w-full items-center">
-              <textarea
-                className="w-full rounded-md border border-gray-300 py-3 pl-10 pr-3 resize-none"
-                placeholder="Talk to me..."
-                value={inputValue}
-                style={{ height: `${inputHeight}px` }}
-                onChange={handleInputChange}
-                onKeyDown={handleKeyDown}
-              ></textarea>
-              {/* <button
-                type="button"
-                className="absolute left-0 ml-2"
-                onClick={() => {
-                  if (fileInputRef.current) {
-                    fileInputRef.current.click();
-                  }
-                }}
-              >
-                <img src={paperclip} alt="Upload" className="h-6" />
-              </button> */}
+            ))
+          )}
+          <div ref={scrollToBottomRef} />
+
+          {/* Loading Indicator */}
+          {isLoading && (
+            <div className="ml-8 flex justify-start">
+              <div className="items-center justify-center p-1">
+                <span className="thinking">Let me think</span>
+              </div>
             </div>
-            <div className="ml-5 flex items-center justify-between">
-              <button
-                type="submit"
-                className=" h-12 rounded-xl border bg-blue-500 px-3 py-1.5 font-satoshi  text-white hover:bg-blue-400"
-              >
-                Send
-              </button>
-            </div>
-          </form>
+          )}
         </div>
+
+        {/* Input Form - Fixed at bottom */}
+        <form onSubmit={handleSubmit} className="p-3 font-quicksand mt-auto ">
+          <div className="flex items-center justify-center relative">
+            <textarea
+              className="w-full rounded-full border border-gray-300 py-3 pl-10 pr-10"
+              placeholder="Talk to me..."
+              value={inputValue}
+              style={{ height: `${inputHeight}px` }}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+            ></textarea>
+            <button
+              type="submit"
+              className="absolute right-5 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 hover:bg-blue-400"
+            >
+              Send
+            </button>
+          </div>
+        </form>
       </div>
-    </>
+    </div>
   );
 };
 

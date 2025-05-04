@@ -30,6 +30,12 @@ Tools used to run Balancer:
 
 ### Running Balancer for development
 
+Clone the repos.
+
+Open the project in VS Code.
+
+In the terminal run 1) 'cd frontend' 2) 'npm install' 3) cd .. 
+
 Start Docker Desktop and run `docker compose up --build` 
 
 The first time you use `pgAdmin` after building the Docker containers you will need to register the server. The `Host name/address`, `Username` and `Password` are specified in  `balancer-main/docker-compose.yml`

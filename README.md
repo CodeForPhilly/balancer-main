@@ -34,7 +34,7 @@ Clone the repos.
 
 Open the project in VS Code.
 
-In the terminal run 1) 'cd frontend' 2) 'npm install' 3) cd .. 
+In the terminal run 1) 'cd frontend' 2) 'npm install' 3) 'cd ..'
 
 Start Docker Desktop and run `docker compose up --build` 
 

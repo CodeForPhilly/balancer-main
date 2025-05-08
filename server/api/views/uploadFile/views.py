@@ -86,11 +86,17 @@ class UploadFileView(APIView):
                     text = ""
                     page_number = 1  # Initialize page_number
                     page_texts = []  # List to hold text for each page with page number
+                    upload_title = None
 
                     for page in doc:
                         page_text = page.get_text()
                         text += page_text
                         page_texts.append((page_number, page_text))
+
+                        if upload_title is None:
+                            # Try and generate a upload title from this page
+                            pass
+
                         page_number += 1
 
                 chunks_with_page = []

@@ -11,17 +11,17 @@ from server.api.views.text_extraction.views import anthropic_citations
 rouge = evaluate.load('rouge')
 bertscore = evaluate.load('bertscore')
 
-def test_anthropic_citations(paper_name, chunks, user_prompt): # -> List[List]
+def test_anthropic_citations(paper_name, user_prompt, chunks): # -> List[List]
     """
     """
 
-    # texts, cited_texts, reference
+    reference = 
+
     client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+    texts, cited_texts = anthropic_citations(client, user_prompt, chunks)
 
-    texts, cited_texts = anthropic_citations(client, chunks, user_prompt)
 
     prediction = texts, cited_texts
-    reference = 
 
     rouge1 = rouge.compute(predictions=[prediction], references=[reference])['rouge1']
     b = bertscore.compute(predictions=[prediction], references=[reference], model_type="microsoft/deberta-xlarge-mnli")

@@ -26,11 +26,10 @@ The medications for this rule are lithium.
 
 The rule is weight gain concerns. The type of rule is "EXCLUDE". The reason is Seroquel, Risperdal, Abilify, and 
 Zyprexa are known for causing weight gain. The medications for this rule are Quetiapine, Aripiprazole, Olanzapine, Risperidone
-}
 """
 
 # TODO: Add docstrings and type hints
-def anthropic_citations(client, content_chunks, user_prompt): 
+def anthropic_citations(client, user_prompt, content_chunks): 
     """
     """
 
@@ -151,8 +150,7 @@ class RuleExtractionAPIView(APIView):
 
             chunks = [{"type": "text", "text": chunk.text} for chunk in query]
 
-            texts, cited_texts = anthropic_citations(client, chunks, USER_PROMPT)
-
+            texts, cited_texts = anthropic_citations(client, USER_PROMPT, chunks)
 
             return Response({"texts": texts, "cited_texts": cited_texts}, status=status.HTTP_200_OK)
 

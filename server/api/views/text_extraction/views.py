@@ -20,9 +20,9 @@ Identify rules for medication inclusion or exclusion based on medical history or
 
 Return an output with the same structure as these examples:
 
-The rule is history of suicide attempts. The type of rule is "INCLUDE". The reason is lithium is the 
+The rule is history of suicide attempts. The type of rule is "INCLUDE". The reason is Lithium is the 
 only medication on the market that has been proven to reduce suicidality in patients with bipolar disorder.
-The medications for this rule are lithium.
+The medications for this rule are Lithium.
 
 The rule is weight gain concerns. The type of rule is "EXCLUDE". The reason is Seroquel, Risperdal, Abilify, and 
 Zyprexa are known for causing weight gain. The medications for this rule are Quetiapine, Aripiprazole, Olanzapine, Risperidone

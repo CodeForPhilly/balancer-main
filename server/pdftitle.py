@@ -1,8 +1,16 @@
+#! /usr/bin/python3
+
+import os
+from pathlib import Path
+import json
+import sys
+
 import fitz
 
-if __name__ == "__main__":
-  file_path = "/home/ricanontherun/Downloads/Best Buy Order Details.pdf"
+def generate_upload_title(doc) -> str:
+  # Check document metadata for a title.
+  document_title = doc.metadata["title"]
+  pass
 
-# Open pdf as binary
-  with fitz.open(file_path) as doc:
-    print("OK")
+with fitz.open(sys.argv[1]) as doc:
+  generate_upload_title(doc)

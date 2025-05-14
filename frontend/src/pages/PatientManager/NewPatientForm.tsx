@@ -1,6 +1,8 @@
 import { FormEvent, ChangeEvent, useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { PatientInfo, Diagnosis } from "./PatientTypes";
+import { useMedications } from "../ListMeds/useMedications";
+import ChipsInput from "../../components/ChipsInput/ChipsInput";
 import Tooltip from "../../components/Tooltip";
 import { api } from "../../api/apiClient";
 // import ErrorMessage from "../../components/ErrorMessage";
@@ -52,7 +54,7 @@ const NewPatientForm = ({
   setAllPatientInfo,
   patientInfo,
   enterNewPatient,
-  setEnterNewPatient
+  setEnterNewPatient,
 }: NewPatientFormProps) => {
   const [isPressed, setIsPressed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -77,12 +79,15 @@ const NewPatientForm = ({
     blood_pressure: "No",
     Reproductive: "No",
     risk_pregnancy: "No",
-    any_pregnancy: "No"
+    any_pregnancy: "No",
   };
 
-  const defaultPatientInfo: PatientInfo = isEditing ? { ...patientInfo } : nullPatient;
+  const defaultPatientInfo: PatientInfo = isEditing
+    ? { ...patientInfo }
+    : nullPatient;
 
-  const [newPatientInfo, setNewPatientInfo] = useState<PatientInfo>(defaultPatientInfo);
+  const [newPatientInfo, setNewPatientInfo] =
+    useState<PatientInfo>(defaultPatientInfo);
 
   const handleMouseDown = () => {
     setIsPressed(true);
@@ -172,8 +177,10 @@ const NewPatientForm = ({
       // Update state and localStorage
       setPatientInfo(updatedPatientInfo);
       setAllPatientInfo(updatedAllPatientInfo);
-      localStorage.setItem("patientInfos", JSON.stringify(updatedAllPatientInfo));
-
+      localStorage.setItem(
+        "patientInfos",
+        JSON.stringify(updatedAllPatientInfo)
+      );
     } catch (error) {
       console.error("Error occurred:", error);
     } finally {
@@ -218,7 +225,7 @@ const NewPatientForm = ({
     }));
 
     setEnterNewPatient(!enterNewPatient);
-    setIsEditing(false)
+    setIsEditing(false);
   };
 
   const handleClickNewPatient = () => {
@@ -272,6 +279,8 @@ const NewPatientForm = ({
     }
   }, [isEditing, patientInfo]);
 
+  const { medications } = useMedications();
+
   return (
     <section className="lg:flex lg:items-center lg:justify-center">
       {/* {search} */}
@@ -317,7 +326,9 @@ const NewPatientForm = ({
                 className="items-center cursor-pointer "
               >
                 <h2 className="text-xl font-bold text-gray-600 cursor-pointer header_logo font-satoshi hover:text-blue-600 ">
-                  {isEditing ? `Edit Patient ${patientInfo.ID} Details` : "Enter Patient Details"}
+                  {isEditing
+                    ? `Edit Patient ${patientInfo.ID} Details`
+                    : "Enter Patient Details"}
                   {/* <span className="blue_gradient">Details</span> */}
                 </h2>
               </div>
@@ -330,7 +341,6 @@ const NewPatientForm = ({
               </button>
             </div>
             <form onSubmit={handleSubmit} className="mt-2 ">
-              {/* <ErrorMessage errors={errors} /> */}
               <div className="flex flex-row justify-between py-6 border-b border-gray-900/10 md:items-center ">
                 <div className="mr-5 md:mr-0 md:w-[300px]">
                   <label
@@ -353,99 +363,10 @@ const NewPatientForm = ({
                         {diagnosis}
                       </option>
                     ))}
-                    {/* <option value="Mixed">Mixed</option> */}
                   </select>
                 </div>
-                {/* {errorMessage && (
-                  <div className="text-red-500">{errorMessage}</div>
-                )} */}
-              </div>
 
-              {/* <div className="flex justify-between px-0 py-6 border-b border-gray-900/10 md:grid md:grid-cols-3 md:gap-4">
-                <div>
-                  <legend className="text-sm font-semibold leading-6 text-gray-900">
-                    Bipolar history
-                  </legend>
-                </div>
-                <div className="pr-10 md:pl-24 md:pr-0">
-                  <div className="flex  gap-x-3">
-                    <div className="flex items-center h-6 ">
-                      <input
-                        id="Mania"
-                        name="Mania"
-                        type="checkbox"
-                        className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-600"
-                        onChange={(e) => handleCheckboxChange(e, "Mania")}
-                      />
-                    </div>
-                    <div className="text-sm leading-6">
-                      <label
-                        htmlFor="Mania"
-                        className="font-medium text-gray-900"
-                      >
-                        Mania
-                      </label>
-                    </div>
-                  </div>
-                  <div className="flex  gap-x-3">
-                    <div className="flex items-center h-6">
-                      <input
-                        id="Depression"
-                        name="Depression"
-                        type="checkbox"
-                        className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-600"
-                        onChange={(e) => handleCheckboxChange(e, "Depression")}
-                      />
-                    </div>
-                    <div className="text-sm leading-6">
-                      <label
-                        htmlFor="Depression"
-                        className="font-medium text-gray-900"
-                      >
-                        Depression
-                      </label>
-                    </div>
-                  </div>
-                  <div className="flex  gap-x-3">
-                    <div className="flex items-center h-6">
-                      <input
-                        id="Hypomania"
-                        name="Hypomania"
-                        type="checkbox"
-                        className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-600"
-                        onChange={(e) => handleCheckboxChange(e, "Hypomania")}
-                      />
-                    </div>
-                    <div className="text-sm leading-6">
-                      <label
-                        htmlFor="Hypomania"
-                        className="font-medium text-gray-900"
-                      >
-                        Hypomania
-                      </label>
-                    </div>
-                  </div>
-                  <div className="flex  gap-x-3">
-                    <div className="flex items-center h-6">
-                      <input
-                        id="Mixed"
-                        name="Mixed"
-                        type="checkbox"
-                        className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-600"
-                        onChange={(e) => handleCheckboxChange(e, "Mixed")}
-                      />
-                    </div>
-                    <div className="text-sm leading-6">
-                      <label
-                        htmlFor="Mixed"
-                        className="font-medium text-gray-900"
-                      >
-                        Mixed
-                      </label>
-                    </div>
-                  </div>
-                </div>
-              </div> */}
+              </div>
               <div className="py-6 border-b border-gray-900/10 ">
                 <p className="text-sm leading-6 text-gray-600 ">
                   Select patient characteristics
@@ -841,8 +762,8 @@ const NewPatientForm = ({
                   />
                 </div>
               </div> */}
-              <div className="items-center mt-5 md:flex ">
-                <div className=" w-[300px]">
+              <div className="md:flex md:justify-between md:px-4 md:py-6">
+                <div className="w-[300px]">
                   <label
                     htmlFor="current-state"
                     className="flex block text-sm font-semibold leading-6 text-gray-900"
@@ -855,22 +776,21 @@ const NewPatientForm = ({
                     </Tooltip>
                   </label>
                 </div>
-                <div className="md:w-[500px]  md:pl-16">
-                  <input
-                    id="priorMedications"
-                    type="ani_input"
-                    value={newPatientInfo.PriorMedications}
-                    onChange={(e) =>
+                <div className="md:w-2/3">
+                  <ChipsInput
+                    suggestions={medications.map((med) => med.name)}
+                    value={
+                      (newPatientInfo.PriorMedications &&
+                        newPatientInfo.PriorMedications?.split(",")) ||
+                      []
+                    }
+                    placeholder="Start typing..."
+                    label=""
+                    onChange={(chips) =>
                       setNewPatientInfo({
                         ...newPatientInfo,
-                        PriorMedications: String(e.target.value),
+                        PriorMedications: chips.join(","),
                       })
-                    }
-                    placeholder="Separate medications with commas"
-                    className={
-                      isLoading
-                        ? "input_loading peer w-1/2"
-                        : "input mt-2 w-full"
                     }
                   />
                 </div>
@@ -888,12 +808,14 @@ const NewPatientForm = ({
                 </div>
                 <button
                   type="submit"
-                  className={`btnBlue  ${isPressed &&
+                  className={`btnBlue  ${
+                    isPressed &&
                     "transition-transform focus:outline-none focus:ring focus:ring-blue-200"
-                    }${isLoading
+                  }${
+                    isLoading
                       ? "bg-white-600 transition-transform focus:outline-none focus:ring focus:ring-blue-500"
                       : ""
-                    }`}
+                  }`}
                   onMouseDown={handleMouseDown}
                   onMouseUp={handleMouseUp}
                   disabled={isLoading} // Disable the button while loading
@@ -904,7 +826,7 @@ const NewPatientForm = ({
                       <p>Loading...</p>
                     </div>
                   ) : (
-                    <p>{isEditing ? "Edit" : "Submit" }</p>
+                    <p>{isEditing ? "Edit" : "Submit"}</p>
                   )}
                 </button>
               </div>

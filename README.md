@@ -21,18 +21,28 @@ The project kanban board is [on GitHub here](https://github.com/orgs/CodeForPhil
 
 Get the code using git by either forking or cloning `CodeForPhilly/balancer-main`
 
-Tools used for for Balancer development: 
-
-1. `Docker and docker-compose`
+Tools used to run Balancer:
+1. `Docker`: Install Docker Desktop
 2. `OpenAI API`: Ask for the API key and add it to `config/env/env.dev`
-3. `pgAdmin`: The email and password are specified in `balancer-main/docker-compose.yml`
-4. `Postman`: Ask to get invited to the Balancer Postman team `balancer_dev`
+3. `Anthropic API`: Ask for the API key and add it to `config/env/env.dev`
+4. `pgAdmin`: The email and password are specified in `balancer-main/docker-compose.yml`
+5. `Postman`: Ask to get invited to the Balancer Postman team `balancer_dev`
 
 ### Running Balancer for development
 
+Clone the repos.
+
+Open the project in VS Code.
+
+In the terminal run 1) 'cd frontend' 2) 'npm install' 3) 'cd ..'
+
 Start Docker Desktop and run `docker compose up --build` 
 
+The first time you use `pgAdmin` after building the Docker containers you will need to register the server. The `Host name/address`, `Username` and `Password` are specified in  `balancer-main/docker-compose.yml`
+
 The email and password are set in `server/api/management/commands/createsu.py`
+
+Download a sample of papers to upload from [https://balancertestsite.com](https://balancertestsite.com/) 
 
 ## Architecture
 
@@ -44,6 +54,7 @@ Important files and directories in `balancer-main/`:
 
 - `docker-compose.yml`: Used to run docker compose 
 - `server`: Django backend
+    - `entrypoint.sh`: Migrations, Create superuser, Populate database on start up  
 - `frontend`: React frontend
 
 ## License 

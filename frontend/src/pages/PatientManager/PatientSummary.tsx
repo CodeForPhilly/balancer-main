@@ -3,7 +3,7 @@ import axios from "axios";
 import {PatientInfo} from "./PatientTypes";
 import Tooltip from "../../components/Tooltip";
 import TypingAnimation from "../../components/Header/components/TypingAnimation.tsx";
-import {FaPencilAlt, FaPrint, FaMinus, FaBug} from "react-icons/fa";
+import {FaPencilAlt, FaPrint, FaMinus, FaRegThumbsDown} from "react-icons/fa";
 import FeedbackForm from "../Feedback/FeedbackForm";
 import Modal from "../../components/Modal/Modal";
 
@@ -307,40 +307,48 @@ const PatientSummary = ({
                                             <h2 className="font-bold text-gray-600 cursor-pointer header_logo font-satoshi hover:text-blue-600">
                                                 Summary
                                             </h2>
-
-                                            <aside className="flex w-1/3 flex-row justify-end space-x-2 sm:w-auto">
+                                            <aside className="flex w-1/3 flex-row justify-end gap-1.5 sm:w-auto">
                                                 <button
                                                     onClick={handlePatientPrint}
-                                                    className="p-3 text-sm text-gray-900 border rounded-lg hover:text-gray-800 no-print">
+                                                    className="p-3 text-sm text-gray-800 rounded-md hover:bg-gray-100 no-print">
 
-                                                    <FaPrint className="inline-block"/> Print
+                                                    <div className=" flex items-center gap-x-1">
+                                                        <FaPrint/>
+                                                        <span>Print</span>
+                                                    </div>
+
                                                 </button>
                                                 <button
                                                     onClick={handlePatientEdit}
-                                                    className="p-3 text-sm text-gray-900 border rounded-lg hover:text-gray-800 no-print"
+                                                    className="p-3 text-sm text-gray-800 rounded-md hover:bg-gray-100 no-print"
                                                 >
-                                                    <FaPencilAlt className="inline-block"/> Edit
+                                                    <div className=" flex items-center gap-x-1">
+                                                        <FaPencilAlt/>
+                                                        <span>Edit</span>
+                                                    </div>
                                                 </button>
-
                                                 <button
-                                                    className="p-2 sm:p-3  text-sm text-red-500 border rounded-lg hover:text-red-500  hover:bg-gray-100 hover:border-red-500 no-print"
+                                                    className="p-3 text-sm text-gray-800 rounded-md hover:text-red-500 hover:bg-gray-100 no-print"
                                                     onClick={(event) => {
                                                         if (patientInfo.ID) {
                                                             handleOpenModal(patientInfo.ID, event);
                                                         }
                                                     }}
                                                 >
-                                                    <FaBug className="inline-block"/> Report Issue
+                                                    <div className=" flex items-center gap-x-1">
+                                                        <FaRegThumbsDown/>
+                                                        <span> Report Issue </span>
+                                                    </div>
                                                 </button>
-                                                
                                                 <button
                                                     onClick={handleClickSummary}
-                                                    className="p-3 text-sm text-gray-900 border rounded-lg hover:text-gray-800 no-print">
-                                                    <FaMinus className="inline-block"/> Hide
+                                                    className="p-3 text-sm text-gray-800 rounded-md hover:bg-gray-100 no-print">
+                                                    <div className=" flex items-center gap-x-1">
+                                                        <FaMinus/>
+                                                        <span>Hide</span>
+                                                    </div>
                                                 </button>
                                             </aside>
-
-
                                         </div>
                                     </div>
                                     <div className="mt-2 border-b border-gray-900/10">

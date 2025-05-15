@@ -1,5 +1,5 @@
 import {PatientInfo} from "./PatientTypes";
-import {FaUser, FaTrash, FaBug} from "react-icons/fa";
+import {FaUser, FaTrash, FaRegThumbsDown} from "react-icons/fa";
 import {useState} from "react";
 import FeedbackForm from "../Feedback/FeedbackForm"
 import Modal from "../../components/Modal/Modal";
@@ -93,7 +93,7 @@ const PatientHistory = ({
                             </div>
                             <div className="flex gap-x-1 sm:gap-x-4 -mr-1 sm:mr-1 md:-mr-2">
                                 <button
-                                    className="delete py-1 text-sm font-bold rounded-md text-gray-600 hover:text-red-500 hover:bg-gray-100  no-print"
+                                    className="delete py-1 text-sm rounded-md text-gray-800 hover:text-red-500 hover:bg-gray-100  no-print"
                                     onClick={(event) => {
                                         if (item.ID) {
                                             handleDeletePatient(item.ID, event);
@@ -104,8 +104,9 @@ const PatientHistory = ({
                                         <span className="hidden sm:inline-block">Remove</span>
                                     </div>
                                 </button>
+
                                 <button
-                                    className="py-1 text-sm font-bold rounded-md text-red-500 hover:text-red-500 hover:bg-gray-100  no-print"
+                                    className="py-1 text-sm rounded-md text-gray-800 hover:text-red-500 hover:bg-gray-100  no-print"
                                     onClick={(event) => {
                                         if (item.ID) {
                                             handleOpenModal(item.ID, event);
@@ -113,7 +114,7 @@ const PatientHistory = ({
                                     }}
                                 >
                                     <div className="p-2 flex items-center gap-x-1">
-                                        <FaBug/>
+                                        <FaRegThumbsDown/>
                                         <span className="hidden sm:inline-block">Report Issue </span>
                                     </div>
                                 </button>

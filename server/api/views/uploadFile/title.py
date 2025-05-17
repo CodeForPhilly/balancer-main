@@ -3,21 +3,24 @@ import json
 
 import fitz
 
-def generate_title(doc: fitz.Document) -> str:
-  # Check the Document's metadata first, likely to be the highest quality title
-  document_title = doc.metadata["title"]
-  if document_title != None and document_title != "":
-    return document_title.strip()
+title_regex = re.compile(r'^([a-z0-9:-]+\s?)+$', re.IGNORECASE)
 
-  # TODO: Ask the model for a summary title? Use the first page for context?
-  # Look for the first "title" on the first page.
-  first_page_blocks = doc[0].get_text("blocks")
+def generate_title(doc: fitz.Document) -> str | None:
+  # 1. Check the Document's metadata first, likely to be the highest quality title if present.
+  document_metadata_title = doc.metadata["title"]
+  if document_metadata_title is not None and document_metadata_title != "":
+    if title_regex.match(document_metadata_title):
+      return document_metadata_title.strip()
 
+  # 2. Attempt to extract a title from the first page
+  first_page = doc[0]
+  first_page_blocks = first_page.get_text("blocks")
   text_blocks = [block[4].replace('\n', '').strip() for block in first_page_blocks if block[6] == 0]
+  print(json.dumps(text_blocks, indent=4))
   if len(text_blocks) != 0:
-    title_regex = re.compile("/^[\\w]+\\s*$/")
     for text in text_blocks:
       if title_regex.match(text):
         return text
 
-  print(json.dumps(text_blocks, indent=4))
+  # 3. Fallback, ask ChatGPT :-)
+  return None

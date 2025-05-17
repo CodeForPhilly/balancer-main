@@ -23,6 +23,7 @@ def generate_upload_title(doc) -> str:
     # only take text blocks
     if block[6] == 0 else None
     for block in first_page_blocks]
+
   print(text_blocks)
 
   titleRegex = "/^[\\w]+\\s*$/"
@@ -39,4 +40,8 @@ if len(sys.argv) != 2:
 
 with open(sys.argv[1], "rb") as file:
   with fitz.open(stream=file.read(), filetype="pdf") as doc:
-    print("title: {}".format(generate_upload_title(doc)))
+    title = generate_upload_title(doc)
+    if title is not None:
+      print("title: {}".format(title))
+    else:
+      print("no title")

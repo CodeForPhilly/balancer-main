@@ -30,6 +30,8 @@ const PDFViewer = () => {
   const guid = params.get("guid");
   const pageParam = params.get("page");
 
+  const pageRefs = useRef<(HTMLDivElement | null)[]>([]);
+
   const baseURL = import.meta.env.VITE_API_BASE_URL;
 
   const pdfUrl = useMemo(
@@ -62,6 +64,41 @@ const PDFViewer = () => {
       window.removeEventListener('navigateToPdfPage', handlePageNavigation as EventListener);
     };
   }, [numPages]);
+
+  // Update page number based on visible pages
+  useEffect(() => {
+    // Only set up observer if we have pages loaded
+    if (!numPages || pageRefs.current.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const pageDiv = entry.target as HTMLDivElement;
+            const pageIndex = pageRefs.current.indexOf(pageDiv);
+            if (pageIndex !== -1) {
+              setPageNumber(pageIndex);
+            }
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    // Small delay to ensure DOM is updated (messy but works)
+    const timeoutId = setTimeout(() => {
+      pageRefs.current.forEach((pageRef) => {
+        if (pageRef) {
+          observer.observe(pageRef);
+        }
+      });
+    }, 100);
+
+    return () => {
+      clearTimeout(timeoutId);
+      observer.disconnect();
+    };
+  }, [numPages, pageRefs.current.length]);
 
   // Calculate container size to make PDF responsive
   useEffect(() => {
@@ -181,7 +218,7 @@ const PDFViewer = () => {
 
   useEffect(() => {
     if (pdfUrl) {
-      fetchPdf();
+    fetchPdf();
     }
   }, [pdfUrl, fetchPdf]);
 
@@ -220,7 +257,21 @@ const PDFViewer = () => {
       >
         <div className="flex items-center space-x-2">
           <button
-            onClick={() => setPageNumber((prev) => Math.max(prev - 1, 1))}
+            onClick={() => {
+              setPageNumber((prev) => Math.max(prev - 1, 1));
+              if (pageNumber >= 1 && pageNumber <= (numPages || 1)) {
+                const element = pageRefs.current[pageNumber - 1];
+                const currentScroll = window.scrollY;
+                element?.scrollIntoView({
+                  behavior: "auto",
+                  block: "start",
+                  inline: "nearest",
+                });
+                requestAnimationFrame(() => {
+                  window.scrollTo(0, currentScroll);
+                });
+              }
+            }}
             disabled={pageNumber <= 1}
             className="px-3 py-1 bg-white border rounded hover:bg-gray-50 disabled:opacity-50"
           >
@@ -230,9 +281,21 @@ const PDFViewer = () => {
             Page {pageNumber} of {numPages || "-"}
           </span>
           <button
-            onClick={() =>
-              setPageNumber((prev) => Math.min(prev + 1, numPages || prev))
-            }
+            onClick={() => {
+              setPageNumber((prev) => Math.min(prev + 1, numPages || prev));
+              if (pageNumber >= 1 && pageNumber <= (numPages || 1)) {
+                const element = pageRefs.current[pageNumber + 1];
+                const currentScroll = window.scrollY;
+                element?.scrollIntoView({
+                  behavior: "auto",
+                  block: "start",
+                  inline: "nearest",
+                });
+                requestAnimationFrame(() => {
+                  window.scrollTo(0, currentScroll);
+                });
+              }
+            }}
             disabled={pageNumber >= (numPages || 1)}
             className="px-3 py-1 bg-white border rounded hover:bg-gray-50 disabled:opacity-50"
           >
@@ -299,21 +362,37 @@ const PDFViewer = () => {
               options={pdfOptions}
               className="flex justify-center"
             >
-              <Page
-                pageNumber={pageNumber}
-                scale={scale}
-                loading={null}
-                error={null}
-                renderTextLayer={true}
-                renderAnnotationLayer={true}
-                className="shadow-lg"
-                height={
-                  containerSize.height > 0 ? containerSize.height : undefined
-                }
-                width={
-                  containerSize.width > 0 ? containerSize.width - 50 : undefined
-                }
-              />
+              <div className="flex flex-col items-center">
+                {numPages &&
+                  Array.from({ length: numPages }, (_, index) => (
+                    <div
+                      key={index + 1}
+                      ref={(el) => {
+                        if (pageRefs.current) pageRefs.current[index + 1] = el;
+                      }}
+                    >
+                      <Page
+                        pageNumber={index + 1}
+                        scale={scale}
+                        loading={null}
+                        error={null}
+                        renderTextLayer={true}
+                        renderAnnotationLayer={true}
+                        className="shadow-lg mb-4"
+                        height={
+                          containerSize.height > 0
+                            ? containerSize.height
+                            : undefined
+                        }
+                        width={
+                          containerSize.width > 0
+                            ? containerSize.width - 50
+                            : undefined
+                        }
+                      />
+                    </div>
+                  ))}
+              </div>
             </Document>
           </div>
         )}

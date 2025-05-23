@@ -273,9 +273,10 @@ const PatientSummary = ({
                     <>
                         <div className="justify-between lg:w-[860px]">
                             {!showSummary && (
-                                <div className="font_body rounded-md border bg-white p-2 px-3 ring-1 hover:ring-slate-300 md:p-4 md:px-8 lg:w-[860px]">
+                                <div
+                                    className="font_body rounded-md border bg-white p-2 px-3 ring-1 hover:ring-slate-300 md:p-4 md:px-8 lg:w-[860px]"
+                                    onClick={handleClickSummary}>
                                     <div
-                                        onClick={handleClickSummary}
                                         className="flex items-center justify-between"
                                     >
                                         <h2 className="text-xl font-bold text-gray-600 cursor-pointer header_logo font-satoshi hover:text-blue-600">

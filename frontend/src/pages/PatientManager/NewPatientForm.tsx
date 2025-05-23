@@ -299,10 +299,11 @@ const NewPatientForm = ({
             <div className=" md:mx-0 md:p-0">
                 <br/>
                 {!enterNewPatient && (
-                    <div className="font_body rounded-md  border bg-white p-2 px-3 ring-1 hover:ring-slate-300 md:p-4 md:px-8 lg:w-[860px] no-print">
+                    <div
+                        className="font_body rounded-md  border bg-white p-2 px-3 ring-1 hover:ring-slate-300 md:p-4 md:px-8 lg:w-[860px] no-print"
+                        onClick={handleClickSummary}>
                         <div
                             className="flex items-center justify-between"
-                            onClick={handleClickSummary}
                         >
                             <h2 className="text-xl font-bold text-gray-600 cursor-pointer header_logo font-satoshi hover:text-blue-600 ">
                                 Click To Enter New Patient

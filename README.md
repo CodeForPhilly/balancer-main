@@ -26,8 +26,8 @@ The Code for Philly Code of Conduct is [here](https://codeforphilly.org/pages/co
 Get the code using git by either forking or cloning `CodeForPhilly/balancer-main`
 
 Tools used to run Balancer:
-1. `OpenAI API`: Ask for the API key and add it to `config/env/env.dev`
-2. `Anthropic API`: Ask for the API key and add it to `config/env/env.dev`
+1. `OpenAI API`: Ask for an API key and add it to `config/env/env.dev`
+2. `Anthropic API`: Ask for an API key and add it to `config/env/env.dev`
 
 Tools used for development:
 1. `Docker`: Install Docker Desktop
@@ -44,11 +44,11 @@ Running Balancer:
 Running pgAdmin:
 - The email and password of `pgAdmin` are specified in `balancer-main/docker-compose.yml`
 - The first time you use `pgAdmin` after building the Docker containers you will need to register the server. 
-- The `Host name/address`, `Username` and `Password` are specified in  `balancer-main/docker-compose.yml`
+The `Host name/address`, `Username` and `Password` are specified in  `balancer-main/docker-compose.yml`
 
 ## Architecture
 
-The Balancer website is a Postgres, Django REST, and React project:
+The Balancer website is a Postgres, Django REST, and React project. The source code layout is:
 
 ![Architecture Drawing](Architecture.png)
 

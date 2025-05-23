@@ -48,6 +48,8 @@ Download a sample of papers to upload from [https://balancertestsite.com](https:
 
 The Balancer website is a Django, React, and Postgres project
 
+![Balancer Screenshot]("Architecture.png")
+
 ### Source code layout
 
 Important files and directories in `balancer-main/`:

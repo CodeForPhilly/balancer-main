@@ -17,32 +17,34 @@ Join the [Code for Philly Slack and introduce yourself](https://codeforphilly.or
 
 The project kanban board is [on GitHub here](https://github.com/orgs/CodeForPhilly/projects/2)
 
+### Code for Philly Code of Conduct
+
+The Code for Philly Code of Conduct is [here](https://codeforphilly.org/pages/code_of_conduct/) 
+
 ### Setting up a development environment   
 
 Get the code using git by either forking or cloning `CodeForPhilly/balancer-main`
 
 Tools used to run Balancer:
+1. `OpenAI API`: Ask for the API key and add it to `config/env/env.dev`
+2. `Anthropic API`: Ask for the API key and add it to `config/env/env.dev`
+
+Tools used for development:
 1. `Docker`: Install Docker Desktop
-2. `OpenAI API`: Ask for the API key and add it to `config/env/env.dev`
-3. `Anthropic API`: Ask for the API key and add it to `config/env/env.dev`
-4. `pgAdmin`: The email and password are specified in `balancer-main/docker-compose.yml`
-5. `Postman`: Ask to get invited to the Balancer Postman team `balancer_dev`
+2. `Postman`: Ask to get invited to the Balancer Postman team `balancer_dev`
+3. `npm`: In the terminal run 1) 'cd frontend' 2) 'npm install' 3) 'cd ..'
 
 ### Running Balancer for development
 
-Clone the repos.
+Running Balancer:
+- Start Docker Desktop and run `docker compose up --build` 
+- The email and password are set in `server/api/management/commands/createsu.py`
+- Download a sample of papers to upload from [https://balancertestsite.com](https://balancertestsite.com/) 
 
-Open the project in VS Code.
-
-In the terminal run 1) 'cd frontend' 2) 'npm install' 3) 'cd ..'
-
-Start Docker Desktop and run `docker compose up --build` 
-
-The first time you use `pgAdmin` after building the Docker containers you will need to register the server. The `Host name/address`, `Username` and `Password` are specified in  `balancer-main/docker-compose.yml`
-
-The email and password are set in `server/api/management/commands/createsu.py`
-
-Download a sample of papers to upload from [https://balancertestsite.com](https://balancertestsite.com/) 
+Running pgAdmin:
+- The email and password of `pgAdmin` are specified in `balancer-main/docker-compose.yml`
+- The first time you use `pgAdmin` after building the Docker containers you will need to register the server. 
+- The `Host name/address`, `Username` and `Password` are specified in  `balancer-main/docker-compose.yml`
 
 ## Architecture
 

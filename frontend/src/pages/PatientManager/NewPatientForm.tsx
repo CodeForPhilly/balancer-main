@@ -839,7 +839,7 @@ const NewPatientForm = ({
                                             <p>Loading...</p>
                                         </div>
                                     ) : (
-                                        <p>{isEditing ? "Edit" : "Submit"}</p>
+                                        <p className="text-sm whitespace-nowrap">{isEditing ? "Edit Form" : "Submit"}</p>
                                     )}
                                 </button>
                             </div>

@@ -1,2 +1,3 @@
 config
 config/env/env.dev
+.idea/

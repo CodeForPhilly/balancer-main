@@ -46,18 +46,9 @@ Download a sample of papers to upload from [https://balancertestsite.com](https:
 
 ## Architecture
 
-The Balancer website is a Django, React, and Postgres project
+The Balancer website is a Postgres, Django REST, and React project:
 
 ![Architecture Drawing](Architecture.png)
-
-### Source code layout
-
-Important files and directories in `balancer-main/`:
-
-- `docker-compose.yml`: Used to run docker compose 
-- `server`: Django backend
-    - `entrypoint.sh`: Migrations, Create superuser, Populate database on start up  
-- `frontend`: React frontend
 
 ## License 
 

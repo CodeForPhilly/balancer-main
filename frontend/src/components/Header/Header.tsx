@@ -11,7 +11,7 @@ import {connect, useDispatch} from "react-redux";
 import {RootState} from "../../services/actions/types";
 import {logout, AppDispatch} from "../../services/actions/auth";
 import {HiChevronDown} from "react-icons/hi";
-import {usePatientContext} from "../../contexts/PatientContext.tsx";
+import {useGlobalContext} from "../../contexts/GlobalContext.tsx";
 
 interface LoginFormProps {
     isAuthenticated: boolean;
@@ -29,7 +29,7 @@ const Header: React.FC<LoginFormProps> = ({
     const [showChat, setShowChat] = useState(false);
     const [showLoginMenu, setShowLoginMenu] = useState(false);
     const [redirect, setRedirect] = useState(false);
-    const {setShowSummary, setEnterNewPatient, triggerFormReset} = usePatientContext()
+    const {setShowSummary, setEnterNewPatient, triggerFormReset, setIsEditing} = useGlobalContext()
 
     const dispatch = useDispatch<AppDispatch>();
 
@@ -91,6 +91,7 @@ const Header: React.FC<LoginFormProps> = ({
 
 
     const handleForm = () => {
+        setIsEditing(false);
         triggerFormReset();
         setEnterNewPatient(true);
         setShowSummary(false);

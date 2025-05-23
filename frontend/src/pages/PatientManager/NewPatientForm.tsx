@@ -5,7 +5,7 @@ import {useMedications} from "../ListMeds/useMedications";
 import ChipsInput from "../../components/ChipsInput/ChipsInput";
 import Tooltip from "../../components/Tooltip";
 import {api} from "../../api/apiClient";
-import {usePatientContext} from "../../contexts/PatientContext.tsx";
+import {useGlobalContext} from "../../contexts/GlobalContext.tsx";
 // import ErrorMessage from "../../components/ErrorMessage";
 
 // create new interface for refactor and to work with backend
@@ -62,7 +62,7 @@ const NewPatientForm = ({
     const [isPressed, setIsPressed] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
-    const {resetFormValues} = usePatientContext();
+    const {resetFormValues, setShowSummary} = useGlobalContext();
 
     useEffect(() => {
         if (resetFormValues) {
@@ -188,6 +188,7 @@ const NewPatientForm = ({
             // Update state and localStorage
             setPatientInfo(updatedPatientInfo);
             setAllPatientInfo(updatedAllPatientInfo);
+            setShowSummary(true)
             localStorage.setItem(
                 "patientInfos",
                 JSON.stringify(updatedAllPatientInfo)

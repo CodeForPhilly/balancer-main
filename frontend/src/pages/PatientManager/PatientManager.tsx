@@ -8,7 +8,7 @@ import PatientSummary from "./PatientSummary.tsx";
 import {Diagnosis, PatientInfo} from "./PatientTypes.ts";
 import {copy} from "../../assets/index.js";
 import Welcome from "../../components/Welcome/Welcome.tsx";
-import {usePatientContext} from "../../contexts/PatientContext.tsx";
+import {useGlobalContext} from "../../contexts/GlobalContext.tsx";
 
 const PatientManager = () => {
 
@@ -67,9 +67,15 @@ const PatientManager = () => {
     };
 
     const [allPatientInfo, setAllPatientInfo] = useState<PatientInfo[]>([]);
-    const [isEditing, setIsEditing] = useState<boolean>(false);
     const [isPatientDeleted, setIsPatientDeleted] = useState<boolean>(false);
-    const {showSummary, setShowSummary, enterNewPatient, setEnterNewPatient} = usePatientContext();
+    const {
+        showSummary,
+        setShowSummary,
+        enterNewPatient,
+        setEnterNewPatient,
+        isEditing,
+        setIsEditing
+    } = useGlobalContext();
 
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore

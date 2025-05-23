@@ -1,39 +1,43 @@
-// Update PatientContext.tsx to include the reset functionality
 import React, {createContext, useContext, useState} from 'react';
 
-interface PatientContextType {
+interface GlobalContextType {
     showSummary: boolean;
     setShowSummary: React.Dispatch<React.SetStateAction<boolean>>;
     enterNewPatient: boolean;
     setEnterNewPatient: React.Dispatch<React.SetStateAction<boolean>>;
     resetFormValues: boolean;
     triggerFormReset: () => void;
+    isEditing: boolean;
+    setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 
 //redux / context issue need to provide default to avoid undefined
 //if we don't the login errors out
-const defaultContextValue: PatientContextType = {
-    enterNewPatient: true,
+const defaultContextValue: GlobalContextType = {
+    enterNewPatient: false,
     setEnterNewPatient: () => {
     }, //no-op default
-    showSummary: true,
+    showSummary: false,
     setShowSummary: () => {
     }, //no-op default
     resetFormValues: false,
     triggerFormReset: () => {
     }, //no-op default
+    isEditing: false,
+    setIsEditing: () => {
+    }, //no-op default
 };
 
 
-const PatientContext = createContext<PatientContextType>(defaultContextValue);
+const GlobalContext = createContext<GlobalContextType>(defaultContextValue);
 
 
-export const PatientProvider: React.FC<{ children: React.ReactNode }> = ({children}) => {
+export const GlobalProvider: React.FC<{ children: React.ReactNode }> = ({children}) => {
     const [showSummary, setShowSummary] = useState<boolean>(false);
     const [enterNewPatient, setEnterNewPatient] = useState<boolean>(true);
     const [resetFormValues, setResetFormValues] = useState<boolean>(false);
-
+    const [isEditing, setIsEditing] = useState<boolean>(false);
 
     const triggerFormReset = () => {
         setResetFormValues(true);
@@ -44,25 +48,27 @@ export const PatientProvider: React.FC<{ children: React.ReactNode }> = ({childr
     };
 
     return (
-        <PatientContext.Provider
+        <GlobalContext.Provider
             value={{
                 showSummary,
                 setShowSummary,
                 enterNewPatient,
                 setEnterNewPatient,
                 resetFormValues,
-                triggerFormReset
+                triggerFormReset,
+                isEditing,
+                setIsEditing
             }}
         >
             {children}
-        </PatientContext.Provider>
+        </GlobalContext.Provider>
     );
 };
 
-export const usePatientContext = () => {
-    const context = useContext(PatientContext);
+export const useGlobalContext = () => {
+    const context = useContext(GlobalContext);
     if (context === undefined) {
-        throw new Error('usePatientContext must be used within a PatientProvider');
+        throw new Error('useGlobalContext must be used within a GlobalProvider');
     }
     return context;
 };

@@ -2,16 +2,16 @@ import "./App.css";
 import {DarkModeProvider} from "./contexts/DarkModeContext";
 import Layout from "./pages/Layout/Layout";
 import PatientManager from "./pages/PatientManager/PatientManager";
-import {PatientProvider} from "./contexts/PatientContext.tsx";
+import {GlobalProvider} from "./contexts/GlobalContext.tsx";
 
 const App = () => {
     return (
         <DarkModeProvider>
-            <PatientProvider>
+            <GlobalProvider>
                 <Layout>
                     <PatientManager/>
                 </Layout>
-            </PatientProvider>
+            </GlobalProvider>
         </DarkModeProvider>
     );
 };

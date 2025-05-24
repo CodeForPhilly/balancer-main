@@ -2,39 +2,36 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-import openai
-# from ..embeddings_manage.models import Embeddings
+from django.http import StreamingHttpResponse
 import os
 from ...services.embedding_services import get_closest_embeddings
-import logging
-import json
-import uuid
+from ...services.conversions_services import convert_uuids
+from ...services.openai_services import openAIServices
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from ...services.conversions_services import convert_uuids
+import json
 
 
 @method_decorator(csrf_exempt, name='dispatch')
 class AskEmbeddingsAPIView(APIView):
-
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
         try:
             user = request.user
             guid = request.query_params.get('guid')
-            print("AskEmbeddingsAPIView")
+            stream = request.query_params.get(
+                'stream', 'false').lower() == 'true'
+
             request_data = request.data.get('message', None)
             if not request_data:
                 return Response({"error": "Message data is required."}, status=status.HTTP_400_BAD_REQUEST)
-            message = [request_data][0]
+            message = str(request_data)
 
-            embeddings_results = get_closest_embeddings(user=request.user,
-                                                        message_data=message, guid=guid)
-
+            embeddings_results = get_closest_embeddings(
+                user=user, message_data=message, guid=guid)
             embeddings_results = convert_uuids(embeddings_results)
 
-            print("AskEmbeddingsAPIView1")
             prompt_texts = [
                 f"[Start of INFO {i+1} === GUID: {obj['file_id']}, Page Number: {obj['page_number']}, Chunk Number: {obj['chunk_number']}, Text: {obj['text']} === End of INFO {i+1} ]" for i, obj in enumerate(embeddings_results)]
 
@@ -58,31 +55,45 @@ class AskEmbeddingsAPIView(APIView):
                 [PROVIDED-INFO] = {listOfEmbeddings}"""
             )
 
-            # message = f"{message}\n"
-            model_used = "gpt-4o-mini"
-            # model_used = "gpt-3.5-turbo-0125"
+            if stream:
+                def stream_generator():
+                    try:
+                        last_chunk = ""
+                        for chunk in openAIServices.openAI(message, prompt_text, stream=True, raw_stream=False):
+                            # Format as Server-Sent Events for better client handling
+                            if chunk and chunk != last_chunk:
+                                last_chunk = chunk
+                                yield f"data: {json.dumps({'content': chunk})}\n\n"
 
-            openai.api_key = os.getenv("OPENAI_API_KEY")
-            response = openai.ChatCompletion.create(
-                model=model_used,
-                temperature=0.2,
-                messages=[
-                    {"role": "system",
-                        "content": prompt_text},
-                    {"role": "user", "content": message}
-                ]
+                        # Send end-of-stream marker
+                        yield f"data: {json.dumps({'done': True})}\n\n"
+
+                    except Exception as e:
+                        error_data = json.dumps({"error": str(e)})
+                        yield f"data: {error_data}\n\n"
+
+                response = StreamingHttpResponse(
+                    stream_generator(),
+                    content_type='text/event-stream'
+                )
+                # Add CORS and caching headers for streaming
+                response['Cache-Control'] = 'no-cache'
+                response['Access-Control-Allow-Origin'] = '*'
+                # Disable nginx buffering if behind nginx
+                response['X-Accel-Buffering'] = 'no'
+                return response
+            # Non-streaming response
+            answer = openAIServices.openAI(
+                userMessage=message,
+                prompt=prompt_text,
+                stream=False
             )
-
-            answer = response["choices"][0]["message"]["content"]
-            print(answer)
-            print(embeddings_results)
             return Response({
                 "question": message,
                 "llm_response": answer,
                 "embeddings_info": embeddings_results,
-                "sent to LLM": prompt_text,
+                "sent_to_llm": prompt_text,
             }, status=status.HTTP_200_OK)
 
         except Exception as e:
-            print(f"An error occurred: {e}")
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

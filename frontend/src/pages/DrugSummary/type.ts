@@ -5,10 +5,11 @@ export interface ChatMessageItem {
     message: string | MessageResponse;
   }
   
-  export interface MessageResponse {
-    llm_response: string;
-    embeddings_info: EmbeddingInfo[];
-  }
+export interface MessageResponse {
+  question: string;
+  llm_response: string;
+  embeddings_info: EmbeddingInfo[];
+}
   
   export interface ChatLogItem {
     type: string;
@@ -22,14 +23,13 @@ export interface ChatMessageItem {
     }
   
   
-    export interface EmbeddingInfo {
-      name: string;
-      text: string;
-      chunk_number: number;
-      file_id: number;
-      page_number: number;
-      distance: number;
-    }
+export interface EmbeddingInfo {
+  file_id: string;
+  name: string;
+  page_number: number;
+  chunk_number: number;
+  text: string;
+}
   
   export interface GetAllPrompts {
       id: number | string;

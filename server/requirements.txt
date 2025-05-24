@@ -2,7 +2,7 @@ Django==4.2.3
 gunicorn==21.2.0
 psycopg2-binary==2.9.6
 beautifulsoup4==4.12.2
-openai==0.27.8
+openai>=1.0.0
 requests==2.31.0
 tiktoken==0.4.0
 nltk==3.8.1

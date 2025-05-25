@@ -188,17 +188,26 @@ const DrugSummaryForm = () => {
             </div>
           ) : (
             chatLog.map((message, index) => (
-              <div key={index} className="flex flex-col gap-4 p-3">
+              <div key={index} className="flex flex-col gap-4 p-2">
+                {message.type === "user" ? null : (
+                  <div className=" flex items-center justify-between">
+                    <div className="flex items-center">
+                      <span className="font-bold text-sm font-quicksand text-sky-950">
+                        Balancer
+                      </span>
+                    </div>
+                  </div>
+                )}
                 <div
-                  className={`${
+                  className={`flex ${
                     message.type === "user" ? "justify-end" : "justify-start"
-                  } `}
+                  }`}
                 >
                   <div
                     className={`${
                       message.type === "user"
-                        ? "border border-black text-sm font-quicksand"
-                        : "border bg-blue-50 bg-opacity-50 border-sky-400 text-sm font-quicksand "
+                        ? "border border-black text-sm font-quicksand shadow-md"
+                        : "border bg-blue-50 bg-opacity-50 border-sky-400 text-sm font-quicksand shadow-md"
                     } rounded-lg p-2 relative`}
                   >
                     {typeof message.message === "string" ? (
@@ -215,7 +224,9 @@ const DrugSummaryForm = () => {
                           message.message.llm_response.length === 0 && (
                             <div className="flex justify-start">
                               <div className="items-center justify-center p-1">
-                                <span className="thinking">Let me think</span>
+                                <span className="thinking  bg-blue-50 bg-opacity-50 text-sm font-quicksand">
+                                  Let me think
+                                </span>
                               </div>
                             </div>
                           )}
@@ -243,26 +254,33 @@ const DrugSummaryForm = () => {
             ))
           )}
         </div>
-        <form onSubmit={handleSubmit} className="p-3 font-quicksand mt-8">
-          <div className="relative flex items-center border border-sky-400  rounded-lg bg-white shadow-sm px-3 py-2">
-            <textarea
-              ref={textareaRef}
-              placeholder="Ask the document a question..."
-              className="w-full resize-none bg-transparent outline-none text-gray-700 placeholder-gray-400"
-              rows={1}
-              value={inputValue}
-              onChange={handleInputChange}
-              onKeyDown={handleKeyDown}
-              disabled={isStreaming}
-              style={{ height: `${inputHeight}px`, maxHeight: "150px" }}
-            />
-            <div className="absolute left-3 bottom-full mb-1 text-xs text-gray-500 flex items-center gap-2">
-              <span>Balancer 1.0</span>
-              <span>•</span>
-              <span>{inputValue.trim().split(/\s+/).length} words</span>
+        <div className="p-3 font-quicksand mt-8 bg-gray-100 rounded-2xl shadow-inner">
+          <form onSubmit={handleSubmit} className="space-y-2">
+            <div className="relative flex items-center border border-gray-300 rounded-xl bg-white shadow-sm px-4 py-3">
+              <textarea
+                ref={textareaRef}
+                placeholder="Ask the document a question..."
+                className="w-full resize-none bg-transparent outline-none text-sm font-quicksand placeholder-gray-500"
+                rows={1}
+                value={inputValue}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
+                disabled={isStreaming}
+                style={{ height: `${inputHeight}px`, maxHeight: "150px" }}
+              />
             </div>
-          </div>
-        </form>
+
+            <div className="text-xs text-gray-500 flex items-center justify-between px-1">
+              <div className="flex items-center gap-2">
+                <span>Balancer 1.0</span>
+                <span>•</span>
+                <span>
+                  {inputValue.trim().split(/\s+/).filter(Boolean).length} words
+                </span>
+              </div>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

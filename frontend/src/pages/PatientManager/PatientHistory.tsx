@@ -1,8 +1,9 @@
 import {PatientInfo} from "./PatientTypes";
-import {FaUser, FaTrash, FaBug} from "react-icons/fa";
+import {FaUser, FaTrash, FaRegThumbsDown} from "react-icons/fa";
 import {useState} from "react";
 import FeedbackForm from "../Feedback/FeedbackForm"
 import Modal from "../../components/Modal/Modal";
+import {useGlobalContext} from "../../contexts/GlobalContext.tsx";
 
 export interface PatientHistoryProps {
     allPatientInfo: PatientInfo[];
@@ -21,6 +22,7 @@ const PatientHistory = ({
                         }: PatientHistoryProps) => {
 
     const [isModalOpen, setIsModalOpen] = useState({status: false, id: ''});
+    const {setShowSummary} = useGlobalContext()
 
     const handleOpenModal = (id: string, event: React.MouseEvent) => {
         event.stopPropagation();
@@ -54,7 +56,7 @@ const PatientHistory = ({
                 <div className=" md:mx-0 md:p-0 ">
                     <br/>
                     {allPatientInfo.length > 0 && (
-                        <h2 className="header_logo cursor-pointer font-satoshi text-xl font-bold text-gray-600  hover:text-blue-600 no-print">
+                        <h2 className="header_logo inline-block cursor-pointer font-satoshi text-xl font-bold text-gray-600  hover:text-blue-600 no-print">
                             List of Patients
                             {/* <span className="blue_gradient">Patients</span> */}
                         </h2>
@@ -64,6 +66,7 @@ const PatientHistory = ({
                             key={`link-${index}`}
                             onClick={() => {
                                 setPatientInfo(item);
+                                setShowSummary(true)
                                 window.scrollTo(0, 0); // This line makes the page scroll to the top
                             }}
                             className="font_body mb-3 flex justify-between cursor-pointer rounded-md border bg-white p-3 px-3 py-2.5 pl-5 ring-1 hover:ring-slate-300 md:p-2 md:px-6 lg:w-[860px] no-print items-center"
@@ -93,7 +96,7 @@ const PatientHistory = ({
                             </div>
                             <div className="flex gap-x-1 sm:gap-x-4 -mr-1 sm:mr-1 md:-mr-2">
                                 <button
-                                    className="delete py-1 text-sm font-bold rounded-md text-gray-600 hover:text-red-500 hover:bg-gray-100  no-print"
+                                    className="delete py-1 text-sm rounded-md text-gray-800 hover:text-red-500 hover:bg-gray-100  no-print"
                                     onClick={(event) => {
                                         if (item.ID) {
                                             handleDeletePatient(item.ID, event);
@@ -104,8 +107,9 @@ const PatientHistory = ({
                                         <span className="hidden sm:inline-block">Remove</span>
                                     </div>
                                 </button>
+
                                 <button
-                                    className="py-1 text-sm font-bold rounded-md text-red-500 hover:text-red-500 hover:bg-gray-100  no-print"
+                                    className="py-1 text-sm rounded-md text-gray-800 hover:text-red-500 hover:bg-gray-100  no-print"
                                     onClick={(event) => {
                                         if (item.ID) {
                                             handleOpenModal(item.ID, event);
@@ -113,7 +117,7 @@ const PatientHistory = ({
                                     }}
                                 >
                                     <div className="p-2 flex items-center gap-x-1">
-                                        <FaBug/>
+                                        <FaRegThumbsDown/>
                                         <span className="hidden sm:inline-block">Report Issue </span>
                                     </div>
                                 </button>

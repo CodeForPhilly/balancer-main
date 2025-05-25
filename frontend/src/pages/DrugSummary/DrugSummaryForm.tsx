@@ -173,7 +173,9 @@ const DrugSummaryForm = () => {
           <PDFViewer />
         </div>
       )}
-      <div className={`${hasPDF ? "w-1/2" : "w-full"} h-full flex flex-col`}>
+      <div
+        className={`${hasPDF ? "w-1/2" : "w-full"} h-full flex flex-col p-2`}
+      >
         <div ref={chatContainerRef} className="flex-grow overflow-y-auto">
           {chatLog.length === 0 ? (
             <div className="flex flex-col gap-4 p-3 font-quicksand">
@@ -186,59 +188,63 @@ const DrugSummaryForm = () => {
             </div>
           ) : (
             chatLog.map((message, index) => (
-              <div key={index} className="flex flex-col gap-4">
+              <div key={index} className="flex flex-col gap-4 p-3">
                 <div
                   className={`${
                     message.type === "user" ? "justify-end" : "justify-start"
-                  } p-2`}
+                  } `}
                 >
                   <div
                     className={`${
                       message.type === "user"
-                        ? "border-2 font-quicksand text-neutral-600"
-                        : "border-2 bg-stone-50 font-quicksand text-sky-950"
+                        ? "border border-black text-sm font-quicksand"
+                        : "border bg-blue-50 bg-opacity-50 border-sky-400 text-sm font-quicksand "
                     } rounded-lg p-2 relative`}
                   >
                     {typeof message.message === "string" ? (
                       message.message
                     ) : (
-                      <ParseStringWithLinks
-                        text={message.message.llm_response}
-                        chunkData={message.message.embeddings_info}
-                      />
+                      <>
+                        <ParseStringWithLinks
+                          text={message.message.llm_response}
+                          chunkData={message.message.embeddings_info}
+                        />
+
+                        {streamingMessageIndex === index &&
+                          isStreaming &&
+                          message.message.llm_response.length === 0 && (
+                            <div className="flex justify-start">
+                              <div className="items-center justify-center p-1">
+                                <span className="thinking">Let me think</span>
+                              </div>
+                            </div>
+                          )}
+
+                        {streamingMessageIndex === index &&
+                          isStreaming &&
+                          message.message.llm_response.length > 0 && (
+                            <div className="absolute bottom-1 right-2 flex space-x-1">
+                              <div className="w-1 h-1 bg-blue-500 rounded-full animate-pulse"></div>
+                              <div
+                                className="w-1 h-1 bg-blue-500 rounded-full animate-pulse"
+                                style={{ animationDelay: "0.2s" }}
+                              ></div>
+                              <div
+                                className="w-1 h-1 bg-blue-500 rounded-full animate-pulse"
+                                style={{ animationDelay: "0.4s" }}
+                              ></div>
+                            </div>
+                          )}
+                      </>
                     )}
-                    {streamingMessageIndex === index &&
-                      isStreaming &&
-                      typeof message.message === "object" &&
-                      message.message.llm_response.length > 0 && (
-                        <div className="absolute bottom-1 right-2 flex space-x-1">
-                          <div className="w-1 h-1 bg-blue-500 rounded-full animate-pulse"></div>
-                          <div
-                            className="w-1 h-1 bg-blue-500 rounded-full animate-pulse"
-                            style={{ animationDelay: "0.2s" }}
-                          ></div>
-                          <div
-                            className="w-1 h-1 bg-blue-500 rounded-full animate-pulse"
-                            style={{ animationDelay: "0.4s" }}
-                          ></div>
-                        </div>
-                      )}
                   </div>
                 </div>
               </div>
             ))
           )}
-          <div ref={scrollToBottomRef} />
-          {isLoading && !isStreaming && (
-            <div className="ml-8 flex justify-start">
-              <div className="items-center justify-center p-1">
-                <span className="thinking">Let me think</span>
-              </div>
-            </div>
-          )}
         </div>
-        <form onSubmit={handleSubmit} className="p-3 font-quicksand mt-auto">
-          <div className="relative flex items-center border border-gray-300 rounded-lg bg-white shadow-sm px-3 py-2">
+        <form onSubmit={handleSubmit} className="p-3 font-quicksand mt-8">
+          <div className="relative flex items-center border border-sky-400  rounded-lg bg-white shadow-sm px-3 py-2">
             <textarea
               ref={textareaRef}
               placeholder="Ask the document a question..."

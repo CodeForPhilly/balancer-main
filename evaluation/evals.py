@@ -56,7 +56,7 @@ def anthropic_citations(client, user_prompt, content_chunks):
     texts = " ".join(text)
     cited_texts = " ".join(cited_text)
 
-    return texts, cited_texts
+    return texts, cited_texts, message.usage
 
 
 
@@ -72,12 +72,27 @@ def test_anthropic_citations(query: str, context: str, reference: str) -> tuple:
     """
 
     client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
-    texts, cited_texts = anthropic_citations(client, query, context)
+    texts, cited_texts, message_usage = anthropic_citations(client, query, context)
+
+    # Evaluation Metrics
 
     rouge1 = rouge.compute(predictions=[texts], references=[reference])['rouge1']
+    # TDOO: Read docs for the most apprpriate bertscore model to use
     b = bertscore.compute(predictions=[texts], references=[reference], model_type="microsoft/deberta-xlarge-mnli")
 
-    return (texts, cited_texts, rouge1, b['precision'][0], b['recall'][0], b['f1'][0])
+
+    # Model Pricing: https://docs.anthropic.com/en/docs/about-claude/pricing#model-pricing
+    
+    CLAUDE_HAIKU_3_5_PRICING_DOLLARS_PER_MILLION_TOKENS = {'base_input': 0.80, 
+                                                           'output': 4.00,}
+
+
+    input_cost_dollars = (CLAUDE_HAIKU_3_5_PRICING_DOLLARS_PER_MILLION_TOKENS['base_input'] / 1000000) * message_usage.input_tokens
+    out_cost_dollars = (CLAUDE_HAIKU_3_5_PRICING_DOLLARS_PER_MILLION_TOKENS['output'] / 1000000) * message_usage.output_tokens
+
+    total_cost_dollars = input_cost_dollars + out_cost_dollars
+
+    return ("CLAUDE_HAIKU_3_5", texts, cited_texts, rouge1, b['precision'][0], b['recall'][0], b['f1'][0], total_cost_dollars)
 
 
 if __name__ == "__main__":
@@ -101,7 +116,7 @@ if __name__ == "__main__":
 
         evaluations.append(test_anthropic_citations(row['Query'], row['Context'], row['Reference']))
 
-    df = pd.DataFrame.from_records(evaluations, columns = ["Texts", "Cited Texts", "Rouge1", "BertScore Precision", "BertScore Recall", "BertScore F1"])
+    df = pd.DataFrame.from_records(evaluations, columns = ["Model", "Texts", "Cited Texts", "Rouge1", "BertScore Precision", "BertScore Recall", "BertScore F1", "Total Cost (USD)"])
 
     df_out = pd.concat([df_in, df], axis=1)
 

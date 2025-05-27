@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import LoginMenuDropDown from "../../components/Header/LoginMenuDropDown.tsx";
 import { useAuth } from "./authHooks.ts";
+import { useGlobalContext } from "../../../src/contexts/GlobalContext.tsx";
 
 interface LoginFormProps {
   isAuthenticated: boolean;
@@ -10,6 +11,9 @@ interface LoginFormProps {
 const Header: React.FC<LoginFormProps> = ({ isAuthenticated }) => {
   const [showLoginMenu, setShowLoginMenu] = useState(false);
   const location = useLocation();
+  const { setShowMetaPanel } = useGlobalContext();
+
+  const isOnDrugSummaryPage = location.pathname.includes("/drugsummary");
 
   useEffect(() => {
     // only show the login menu on non‑auth pages
@@ -51,6 +55,14 @@ const Header: React.FC<LoginFormProps> = ({ isAuthenticated }) => {
           >
             Admin Portal
           </Link>
+          {isOnDrugSummaryPage && (
+            <button
+              onClick={() => setShowMetaPanel((prev) => !prev)}
+              className="ml-4 px-3 py-1.5 bg-blue-100 hover:bg-blue-200 rounded-md text-sm"
+            >
+              Insights
+            </button>
+          )}
         </div>
       </nav>
       {!isAuthenticated && showLoginMenu && (

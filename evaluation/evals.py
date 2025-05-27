@@ -2,6 +2,7 @@
 """
 
 import os
+import argparse
 
 import anthropic
 import evaluate
@@ -12,7 +13,7 @@ import pandas as pd
 rouge = evaluate.load('rouge')
 bertscore = evaluate.load('bertscore')
 
-#TODO: Move this to a file and import it here in evaluation/evals.py and server/api/views/text_extraction/views.py
+#TODO: Move this to a file and import it here and in server/api/views/text_extraction/views.py
 def anthropic_citations(client, user_prompt, content_chunks): 
     """
     """
@@ -81,10 +82,19 @@ def test_anthropic_citations(query: str, context: str, reference: str) -> tuple:
 
 if __name__ == "__main__":
 
-    #TODO: Add command line arguments for input and output file paths
-    df_in = pd.read_csv("")
+    parser = argparse.ArgumentParser(description="Evaluate anthropic_citations function on a dataset.")
+    parser.add_argument("--input", "-i", required=True, help="Path to input CSV file")
+    parser.add_argument("--output", "-o", required=True, help="Path to output CSV file")
+    args = parser.parse_args()
 
-    #TODO: Strip and normalize column names in the DataFrame:
+    df_in = pd.read_csv(args.input)
+    
+    # Ensure the input DataFrame has the required columns
+    required_columns = ['Query', 'Context', 'Reference']
+    if not all(col in df_in.columns for col in required_columns):
+        raise ValueError(f"Input CSV must contain the following columns: {required_columns}")
+
+    #TODO: Strip and normalize column names in the DataFrame
 
     evaluations = []
     for index, row in df_in.iterrows():
@@ -93,4 +103,6 @@ if __name__ == "__main__":
 
     df = pd.DataFrame.from_records(evaluations, columns = ["Texts", "Cited Texts", "Rouge1", "BertScore Precision", "BertScore Recall", "BertScore F1"])
 
-    df_out = pd.concat([df_in, df], axis=1).to_csv("", index=False)
+    df_out = pd.concat([df_in, df], axis=1)
+
+    df_out.to_csv(args.output, index=False)

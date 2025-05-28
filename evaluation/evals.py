@@ -1,4 +1,4 @@
-"""Evaluation script for testing the anthropic_citations function
+"""LLM Evals
 """
 
 import os
@@ -94,24 +94,30 @@ def test_anthropic_citations(query: str, context: str, reference: str) -> tuple:
 
     total_cost_dollars = input_cost_dollars + out_cost_dollars
 
-    return ("CLAUDE_HAIKU_3_5", texts, cited_texts, rouge1, b['precision'][0], b['recall'][0], b['f1'][0], total_cost_dollars)
+    return (texts, cited_texts, rouge1, b['precision'][0], b['recall'][0], b['f1'][0], total_cost_dollars)
 
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(description="Evaluate anthropic_citations function on a dataset.")
-    parser.add_argument("--input", "-i", required=True, help="Path to input CSV file")
+    parser = argparse.ArgumentParser(description="LLM Evals")
+    parser.add_argument("--config", "-c", required=True, help="Path to config CSV file")
+    parser.add_argument("--reference", "-r", required=True, help="Path to reference CSV file")
     parser.add_argument("--output", "-o", required=True, help="Path to output CSV file")
+
     args = parser.parse_args()
 
-    df_in = pd.read_csv(args.input)
+    df_config = pd.read_csv(args.config)
+    df_reference = pd.read_csv(args.reference)
+    
+    # Cross join the config and reference DataFrames
+    df_in = df_config.merge(df_reference, how='cross')
     logging.info(f"Input DataFrame shape: {df_in.shape}")
     logging.info(f"Input DataFrame columns: {df_in.columns.tolist()}")
     
-    # Ensure the input DataFrame has the required columns
-    required_columns = ['Query', 'Context', 'Reference']
-    if not all(col in df_in.columns for col in required_columns):
-        raise ValueError(f"Input CSV must contain the following columns: {required_columns}")
+    # # Ensure the input DataFrame has the required columns
+    # required_columns = ['Query', 'Context', 'Reference']
+    # if not all(col in df_in.columns for col in required_columns):
+    #     raise ValueError(f"Input CSV must contain the following columns: {required_columns}")
 
     #TODO: Strip and normalize column names in the DataFrame
 
@@ -121,7 +127,7 @@ if __name__ == "__main__":
         evaluations.append(test_anthropic_citations(row['Query'], row['Context'], row['Reference']))
         logging.info(f"Processed row {index + 1}/{len(df_in)}")
 
-    df = pd.DataFrame.from_records(evaluations, columns = ["Model", "Texts", "Cited Texts", "Rouge1", "BertScore Precision", "BertScore Recall", "BertScore F1", "Total Cost (USD)"])
+    df = pd.DataFrame.from_records(evaluations, columns = ["Texts", "Cited Texts", "Rouge1", "BertScore Precision", "BertScore Recall", "BertScore F1", "Total Cost (USD)"])
 
     df_out = pd.concat([df_in, df], axis=1)
 

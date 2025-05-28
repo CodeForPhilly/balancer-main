@@ -8,6 +8,7 @@ import logging
 import anthropic
 import evaluate
 import pandas as pd
+import openai
 
 rouge = evaluate.load('rouge')
 bertscore = evaluate.load('bertscore')
@@ -17,6 +18,20 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 #TODO: Move this to a file and import it here and in server/api/views/text_extraction/views.py
 def anthropic_citations(client, user_prompt, content_chunks): 
     """
+    Function to interact with the Anthropic API to generate text with citations.
+    Args:
+        client (Anthropic): An instance of the Anthropic client.
+        user_prompt (str): The user prompt to be sent to the model.
+        content_chunks (list): A list of content chunks to be used as context for the model.
+    Returns:
+        tuple: A tuple containing the generated text, cited text, and message usage.
+    Raises:
+        Exception: If the API call fails or if the response format is unexpected.
+    Example:
+        >>> from anthropic import Anthropic
+        >>> client = Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+        >>> user_prompt = "What is the capital of France?"
+        >>> content_chunks = ["Paris is the capital of France.", "France is located in Europe."]    
     """
 
     message = client.messages.create(
@@ -57,7 +72,32 @@ def anthropic_citations(client, user_prompt, content_chunks):
     texts = " ".join(text)
     cited_texts = " ".join(cited_text)
 
-    return texts, cited_texts, message.usage
+    return texts, message.usage
+
+
+def openai_function(client, user_prompt, content_chunks):    
+    """
+    Function to interact with the OpenAI API to generate text.
+    Args:
+        client (OpenAI): An instance of the OpenAI client.
+        user_prompt (str): The user prompt to be sent to the model.
+        content_chunks (list): A list of content chunks to be used as context for the model.
+    Returns:
+        tuple: A tuple containing the generated text, cited text, and message usage.
+    Raises:
+        Exception: If the API call fails or if the response format is unexpected.
+    Example:
+
+    """
+
+    response = client.responses.create(
+        model="gpt-4o-mini",
+        instructions=user_prompt,
+        input=content_chunks,
+    )
+
+
+    return response.output_text, response.usage
 
 
 
@@ -73,10 +113,9 @@ def test_anthropic_citations(query: str, context: str, reference: str) -> tuple:
     """
 
     client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
-    texts, cited_texts, message_usage = anthropic_citations(client, query, context)
+    texts, message_usage = anthropic_citations(client, query, context)
 
     # Evaluation Metrics
-
 
     rouge1 = rouge.compute(predictions=[texts], references=[reference])['rouge1']
     # TDOO: Read docs for the most apprpriate bertscore model to use
@@ -94,7 +133,31 @@ def test_anthropic_citations(query: str, context: str, reference: str) -> tuple:
 
     total_cost_dollars = input_cost_dollars + out_cost_dollars
 
-    return (texts, cited_texts, rouge1, b['precision'][0], b['recall'][0], b['f1'][0], total_cost_dollars)
+    return (texts, rouge1, b['precision'][0], b['recall'][0], b['f1'][0], total_cost_dollars)
+
+
+
+def test_openai(query: str, context: str, reference: str) -> tuple:
+
+    client = openai.OpenAI(api_key=os.environ.get("OPEN_API_KEY"))
+    texts, usage = openai_function(client, query, context)
+
+    rouge1 = rouge.compute(predictions=[texts], references=[reference])['rouge1']
+    b = bertscore.compute(predictions=[texts], references=[reference], model_type="microsoft/deberta-xlarge-mnli")
+
+    # Model Pricing: https://platform.openai.com/docs/pricing
+
+    OPENAI_PRICING_DOLLARS_PER_MILLION_TOKENS = {'input': 0.15,
+                                                'output': 0.60,}
+    
+
+    input_cost_dollars = (OPENAI_PRICING_DOLLARS_PER_MILLION_TOKENS['input'] / 1000000) * usage.input_tokens
+    out_cost_dollars = (OPENAI_PRICING_DOLLARS_PER_MILLION_TOKENS['output'] / 1000000) * usage.output_tokens
+
+    total_cost_dollars = input_cost_dollars + out_cost_dollars
+
+    return (texts, rouge1, b['precision'][0], b['recall'][0], b['f1'][0], total_cost_dollars)
+
 
 
 if __name__ == "__main__":
@@ -114,20 +177,26 @@ if __name__ == "__main__":
     logging.info(f"Input DataFrame shape: {df_in.shape}")
     logging.info(f"Input DataFrame columns: {df_in.columns.tolist()}")
     
-    # # Ensure the input DataFrame has the required columns
-    # required_columns = ['Query', 'Context', 'Reference']
-    # if not all(col in df_in.columns for col in required_columns):
-    #     raise ValueError(f"Input CSV must contain the following columns: {required_columns}")
+    # Ensure the input DataFrame has the required columns
+    required_columns = ['Query', 'Context', 'Reference']
+    if not all(col in df_in.columns for col in required_columns):
+        raise ValueError(f"Input CSV must contain the following columns: {required_columns}")
 
-    #TODO: Strip and normalize column names in the DataFrame
 
     evaluations = []
     for index, row in df_in.iterrows():
 
-        evaluations.append(test_anthropic_citations(row['Query'], row['Context'], row['Reference']))
+        if row["Model"] == "CLAUDE_HAIKU_3_5_CITATIONS":
+            evaluations.append(test_anthropic_citations(row['Query'], row['Context'], row['Reference']))
+        elif row["Model"] == "OPEN_AI":
+            evaluations.append(test_openai(row['Query'], row['Context'], row['Reference']))
+        else:
+            logging.warning(f"Model {row['MODEL']} is not supported or not implemented yet.")
+            evaluations.append((None, None, None, None, None, None, None))
+
         logging.info(f"Processed row {index + 1}/{len(df_in)}")
 
-    df = pd.DataFrame.from_records(evaluations, columns = ["Texts", "Cited Texts", "Rouge1", "BertScore Precision", "BertScore Recall", "BertScore F1", "Total Cost (USD)"])
+    df = pd.DataFrame.from_records(evaluations, columns = ["Texts", "Rouge1", "BertScore Precision", "BertScore Recall", "BertScore F1", "Total Cost (USD)"])
 
     df_out = pd.concat([df_in, df], axis=1)
 

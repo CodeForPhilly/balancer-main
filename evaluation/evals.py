@@ -3,15 +3,16 @@
 
 import os
 import argparse
+import logging
 
 import anthropic
 import evaluate
 import pandas as pd
 
-#from server.api.views.text_extraction.views import anthropic_citations
-
 rouge = evaluate.load('rouge')
 bertscore = evaluate.load('bertscore')
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 #TODO: Move this to a file and import it here and in server/api/views/text_extraction/views.py
 def anthropic_citations(client, user_prompt, content_chunks): 
@@ -76,10 +77,11 @@ def test_anthropic_citations(query: str, context: str, reference: str) -> tuple:
 
     # Evaluation Metrics
 
+
     rouge1 = rouge.compute(predictions=[texts], references=[reference])['rouge1']
     # TDOO: Read docs for the most apprpriate bertscore model to use
     b = bertscore.compute(predictions=[texts], references=[reference], model_type="microsoft/deberta-xlarge-mnli")
-
+    # TODO: Add METEOR scores: https://huggingface.co/spaces/evaluate-metric/meteor
 
     # Model Pricing: https://docs.anthropic.com/en/docs/about-claude/pricing#model-pricing
     
@@ -103,6 +105,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     df_in = pd.read_csv(args.input)
+    logging.info(f"Input DataFrame shape: {df_in.shape}")
+    logging.info(f"Input DataFrame columns: {df_in.columns.tolist()}")
     
     # Ensure the input DataFrame has the required columns
     required_columns = ['Query', 'Context', 'Reference']
@@ -115,9 +119,13 @@ if __name__ == "__main__":
     for index, row in df_in.iterrows():
 
         evaluations.append(test_anthropic_citations(row['Query'], row['Context'], row['Reference']))
+        logging.info(f"Processed row {index + 1}/{len(df_in)}")
 
     df = pd.DataFrame.from_records(evaluations, columns = ["Model", "Texts", "Cited Texts", "Rouge1", "BertScore Precision", "BertScore Recall", "BertScore F1", "Total Cost (USD)"])
 
     df_out = pd.concat([df_in, df], axis=1)
 
     df_out.to_csv(args.output, index=False)
+    logging.info(f"Output DataFrame shape: {df_out.shape}")
+    logging.info(f"Results saved to {args.output}")
+    logging.info("Evaluation completed successfully.")

@@ -100,7 +100,7 @@ if __name__ == "__main__":
     logging.info(f"Config DataFrame columns: {df_config.columns.tolist()}")
 
     if not all(model in SUPPORTED_MODELS for model in df_config['Model'].unique()):
-        raise ValueError(f"Unsupported model(s) found in config: {set(df_config['Model'].unique()) - set(supported_models)}")
+        raise ValueError(f"Unsupported model(s) found in config: {set(df_config['Model'].unique()) - set(SUPPORTED_MODELS)}")
     
     df_reference = pd.read_csv(args.reference)
     logging.info(f"Reference DataFrame shape: {df_reference.shape}")

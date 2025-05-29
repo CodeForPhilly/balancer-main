@@ -1,4 +1,4 @@
-"""LLM Evals
+"""
 """
 
 import os
@@ -6,163 +6,74 @@ import argparse
 import logging
 
 import anthropic
+import openai
 import evaluate
 import pandas as pd
-import openai
 
 rouge = evaluate.load('rouge')
 bertscore = evaluate.load('bertscore')
 
+from services import claude_citations
+from services import gpt_4o_mini
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-#TODO: Move this to a file and import it here and in server/api/views/text_extraction/views.py
-def anthropic_citations(client, user_prompt, content_chunks): 
+def create_response(model, query, context):
+
+    if model == "CLAUDE_HAIKU_3_5_CITATIONS":
+
+        client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+        output_text, token_usage, pricing, latency = claude_citations(client, query, context)
+    
+    elif model == "GPT_4O_MINI":
+
+        client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+        output_text, token_usage, pricing, latency = gpt_4o_mini(client, query, context)
+
+    else:
+        logging.error(f"Unsupported model: {model}")
+        output_text = None
+        token_usage = None
+        pricing = None
+        latency = None
+
+
+    return output_text, token_usage, pricing, latency
+
+
+def evaluate_response(model, query, context, reference):
     """
-    Function to interact with the Anthropic API to generate text with citations.
-    Args:
-        client (Anthropic): An instance of the Anthropic client.
-        user_prompt (str): The user prompt to be sent to the model.
-        content_chunks (list): A list of content chunks to be used as context for the model.
-    Returns:
-        tuple: A tuple containing the generated text, cited text, and message usage.
-    Raises:
-        Exception: If the API call fails or if the response format is unexpected.
-    Example:
-        >>> from anthropic import Anthropic
-        >>> client = Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
-        >>> user_prompt = "What is the capital of France?"
-        >>> content_chunks = ["Paris is the capital of France.", "France is located in Europe."]    
-    """
-
-    message = client.messages.create(
-        model="claude-3-5-haiku-20241022",
-        max_tokens=1024,
-        messages=[
-            {
-                "role": "user",
-                "content": [
-                    {
-                        "type": "document",
-                        "source": {
-                            "type": "content",
-                            "content": content_chunks
-                        },
-                        "citations": {"enabled": True}
-                    },
-
-                    {
-                        "type": "text",
-                        "text": user_prompt
-                    }
-                ]
-            }
-        ],
-    )
-
-    # Response Structure: https://docs.anthropic.com/en/docs/build-with-claude/citations#response-structure
-
-    text = []
-    cited_text = []
-    for content in message.to_dict()['content']:
-        text.append(content['text'])
-        if 'citations' in content.keys():
-            text.append(" ".join([f"<{citation['start_block_index']} - {citation['end_block_index']}>" for citation in content['citations']]))
-            cited_text.append(" ".join([f"<{citation['start_block_index']} - {citation['end_block_index']}> {citation['cited_text']}" for citation in content['citations']]))
-
-    texts = " ".join(text)
-    cited_texts = " ".join(cited_text)
-
-    return texts, message.usage
-
-
-def openai_function(client, user_prompt, content_chunks):    
-    """
-    Function to interact with the OpenAI API to generate text.
-    Args:
-        client (OpenAI): An instance of the OpenAI client.
-        user_prompt (str): The user prompt to be sent to the model.
-        content_chunks (list): A list of content chunks to be used as context for the model.
-    Returns:
-        tuple: A tuple containing the generated text, cited text, and message usage.
-    Raises:
-        Exception: If the API call fails or if the response format is unexpected.
-    Example:
-
     """
 
-    response = client.responses.create(
-        model="gpt-4o-mini",
-        instructions=user_prompt,
-        input=content_chunks,
-    )
+    text, token_usage, pricing, latency = create_response(model, query, context)
 
 
-    return response.output_text, response.usage
+    rouge1 = rouge.compute(predictions=[text], references=[reference])['rouge1']
 
+    # TODO: Read docs for the most apprpriate bertscore model to use
+    b = bertscore.compute(predictions=[text], references=[reference], model_type="microsoft/deberta-xlarge-mnli")
 
-
-def test_anthropic_citations(query: str, context: str, reference: str) -> tuple:
-    """
-    Test the anthropic_citations function with a given query and context.
-    Args:
-        query (str): The query string to be used in the test.
-        context (str): The context string to be used in the test.
-        reference (str): The reference string to be used in the test.
-    Returns:
-        tuple: A tuple containing the output and evaluation metrics.
-    """
-
-    client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
-    texts, message_usage = anthropic_citations(client, query, context)
-
-    # Evaluation Metrics
-
-    rouge1 = rouge.compute(predictions=[texts], references=[reference])['rouge1']
-    # TDOO: Read docs for the most apprpriate bertscore model to use
-    b = bertscore.compute(predictions=[texts], references=[reference], model_type="microsoft/deberta-xlarge-mnli")
     # TODO: Add METEOR scores: https://huggingface.co/spaces/evaluate-metric/meteor
 
-    # Model Pricing: https://docs.anthropic.com/en/docs/about-claude/pricing#model-pricing
-    
-    CLAUDE_HAIKU_3_5_PRICING_DOLLARS_PER_MILLION_TOKENS = {'base_input': 0.80, 
-                                                           'output': 4.00,}
-
-
-    input_cost_dollars = (CLAUDE_HAIKU_3_5_PRICING_DOLLARS_PER_MILLION_TOKENS['base_input'] / 1000000) * message_usage.input_tokens
-    out_cost_dollars = (CLAUDE_HAIKU_3_5_PRICING_DOLLARS_PER_MILLION_TOKENS['output'] / 1000000) * message_usage.output_tokens
+    input_cost_dollars = (pricing['input'] / 1000000) * token_usage.input_tokens
+    out_cost_dollars = (pricing['output'] / 1000000) * token_usage.output_tokens
 
     total_cost_dollars = input_cost_dollars + out_cost_dollars
 
-    return (texts, rouge1, b['precision'][0], b['recall'][0], b['f1'][0], total_cost_dollars)
-
-
-
-def test_openai(query: str, context: str, reference: str) -> tuple:
-
-    client = openai.OpenAI(api_key=os.environ.get("OPEN_API_KEY"))
-    texts, usage = openai_function(client, query, context)
-
-    rouge1 = rouge.compute(predictions=[texts], references=[reference])['rouge1']
-    b = bertscore.compute(predictions=[texts], references=[reference], model_type="microsoft/deberta-xlarge-mnli")
-
-    # Model Pricing: https://platform.openai.com/docs/pricing
-
-    OPENAI_PRICING_DOLLARS_PER_MILLION_TOKENS = {'input': 0.15,
-                                                'output': 0.60,}
-    
-
-    input_cost_dollars = (OPENAI_PRICING_DOLLARS_PER_MILLION_TOKENS['input'] / 1000000) * usage.input_tokens
-    out_cost_dollars = (OPENAI_PRICING_DOLLARS_PER_MILLION_TOKENS['output'] / 1000000) * usage.output_tokens
-
-    total_cost_dollars = input_cost_dollars + out_cost_dollars
-
-    return (texts, rouge1, b['precision'][0], b['recall'][0], b['f1'][0], total_cost_dollars)
-
+    return pd.DataFrame([{
+            "Output Text": text,
+            "Rouge1": rouge1,
+            "BertScore Precision": b['precision'][0],
+            "BertScore Recall": b['recall'][0],
+            "BertScore F1": b['f1'][0],
+            "Total Cost (USD)": total_cost_dollars,
+            "Latency (s)": latency
+        }])
 
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(description="LLM Evals")
+    parser = argparse.ArgumentParser(description="")
     parser.add_argument("--config", "-c", required=True, help="Path to config CSV file")
     parser.add_argument("--reference", "-r", required=True, help="Path to reference CSV file")
     parser.add_argument("--output", "-o", required=True, help="Path to output CSV file")
@@ -170,35 +81,31 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     df_config = pd.read_csv(args.config)
+    logging.info(f"Config DataFrame shape: {df_config.shape}")
+    logging.info(f"Config DataFrame columns: {df_config.columns.tolist()}")
+
+    supported_models = ["CLAUDE_HAIKU_3_5_CITATIONS", "GPT_4O_MINI"]
+    if not all(model in supported_models for model in df_config['Model'].unique()):
+        raise ValueError(f"Unsupported model(s) found in config: {set(df_config['Model'].unique()) - set(supported_models)}")
+    
     df_reference = pd.read_csv(args.reference)
+    logging.info(f"Reference DataFrame shape: {df_reference.shape}")
+    logging.info(f"Reference DataFrame columns: {df_reference.columns.tolist()}")
     
     # Cross join the config and reference DataFrames
     df_in = df_config.merge(df_reference, how='cross')
-    logging.info(f"Input DataFrame shape: {df_in.shape}")
-    logging.info(f"Input DataFrame columns: {df_in.columns.tolist()}")
-    
-    # Ensure the input DataFrame has the required columns
-    required_columns = ['Query', 'Context', 'Reference']
-    if not all(col in df_in.columns for col in required_columns):
-        raise ValueError(f"Input CSV must contain the following columns: {required_columns}")
 
-
-    evaluations = []
+    df_evals = pd.DataFrame()
     for index, row in df_in.iterrows():
 
-        if row["Model"] == "CLAUDE_HAIKU_3_5_CITATIONS":
-            evaluations.append(test_anthropic_citations(row['Query'], row['Context'], row['Reference']))
-        elif row["Model"] == "OPEN_AI":
-            evaluations.append(test_openai(row['Query'], row['Context'], row['Reference']))
-        else:
-            logging.warning(f"Model {row['MODEL']} is not supported or not implemented yet.")
-            evaluations.append((None, None, None, None, None, None, None))
-
+        df_evals = pd.concat([df_evals, evaluate_response(row['Model'], row['Query'], row['Context'], row['Reference'])], axis=0)
+        
         logging.info(f"Processed row {index + 1}/{len(df_in)}")
 
-    df = pd.DataFrame.from_records(evaluations, columns = ["Texts", "Rouge1", "BertScore Precision", "BertScore Recall", "BertScore F1", "Total Cost (USD)"])
+    
+    # Concatenate the input and evaluations DataFrames
 
-    df_out = pd.concat([df_in, df], axis=1)
+    df_out = pd.concat([df_in.reset_index(drop=True), df_evals.reset_index(drop=True)], axis=1)
 
     df_out.to_csv(args.output, index=False)
     logging.info(f"Output DataFrame shape: {df_out.shape}")

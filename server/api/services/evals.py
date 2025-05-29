@@ -1,5 +1,8 @@
 """
+Evaluate LLM outputs using multiple metrics and compute associated costs
 """
+
+#TODO: Add tests on a small dummy dataset to confirm output CSV matches expectations
 
 import os
 import argparse
@@ -23,11 +26,13 @@ def create_response(model, query, context):
     if model == "CLAUDE_HAIKU_3_5_CITATIONS":
 
         client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+        #TODO: Add error handling for API calls
         output_text, token_usage, pricing, latency = claude_citations(client, query, context)
     
     elif model == "GPT_4O_MINI":
 
         client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+        #TODO: Add error handling for API calls
         output_text, token_usage, pricing, latency = gpt_4o_mini(client, query, context)
 
     else:
@@ -47,6 +52,7 @@ def evaluate_response(model, query, context, reference):
 
     text, token_usage, pricing, latency = create_response(model, query, context)
 
+    #TODO: Add check for None values in text, token_usage, pricing, latency
 
     rouge1 = rouge.compute(predictions=[text], references=[reference])['rouge1']
 
@@ -73,7 +79,7 @@ def evaluate_response(model, query, context, reference):
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(description="")
+    parser = argparse.ArgumentParser(description="Evaluate LLM outputs using multiple metrics and compute associated costs")
     parser.add_argument("--config", "-c", required=True, help="Path to config CSV file")
     parser.add_argument("--reference", "-r", required=True, help="Path to reference CSV file")
     parser.add_argument("--output", "-o", required=True, help="Path to output CSV file")
@@ -95,6 +101,7 @@ if __name__ == "__main__":
     # Cross join the config and reference DataFrames
     df_in = df_config.merge(df_reference, how='cross')
 
+    # TODO: Parallelize the evaluation process for each row in df_in using concurrent.futures or similar libraries
     df_evals = pd.DataFrame()
     for index, row in df_in.iterrows():
 

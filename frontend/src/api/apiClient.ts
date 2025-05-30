@@ -58,7 +58,7 @@ const handleSendDrugSummary = async (message: FormValues["message"], guid: strin
 
 const handleRuleExtraction = async (guid: string) => {
   try {
-    const response = await api.get(`/v1/api/rule_extraction?guid=${guid}`);
+    const response = await api.get(`/v1/api/rule_extraction_openai?guid=${guid}`);
     // console.log("Rule extraction response:", JSON.stringify(response.data, null, 2));
     return response.data;
   } catch (error) {

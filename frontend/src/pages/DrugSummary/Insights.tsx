@@ -7,40 +7,36 @@ interface Rule {
   type: string;
   reason: string;
   medications: string[];
+  source: string;
+  chunk_number: number;
+  chunk_text: string;
 }
 
 interface RuleExtractionData {
+  rules: Rule[];
   texts: string;
   cited_texts: string;
 }
 
 const Insights: React.FC = () => {
-  const [extractedData, setExtractedData] = useState<RuleExtractionData | null>(
-    null
-  );
+  const [data, setData] = useState<RuleExtractionData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [parsedRules, setParsedRules] = useState<Rule[]>([]);
 
   const { search } = useLocation();
   const params = new URLSearchParams(search);
   const guid = params.get("guid") || "";
 
   useEffect(() => {
-    fetchRuleExtraction();
-  }, []);
+    fetchData();
+  }, [guid]);
 
-  const fetchRuleExtraction = async () => {
+  const fetchData = async () => {
     setLoading(true);
     setError(null);
-
     try {
       const result = await handleRuleExtraction(guid);
-      setExtractedData(result);
-
-      if (result.texts) {
-        parseRulesFromText(result.texts);
-      }
+      setData(result);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to fetch rule extraction"
@@ -48,101 +44,6 @@ const Insights: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const parseRulesFromText = (text: string) => {
-    const rules: Rule[] = [];
-
-    let ruleMatches = text.match(/Rule \d+:[\s\S]*?(?=Rule \d+:|$)/g);
-
-    if (!ruleMatches || ruleMatches.length === 0) {
-      ruleMatches = text.match(/\d+\.\s*Rule:[\s\S]*?(?=\d+\.\s*Rule:|$)/g);
-    }
-
-    if (!ruleMatches || ruleMatches.length === 0) {
-      ruleMatches = text.match(/\d+\.[\s\S]*?(?=\d+\.|$)/g);
-    }
-
-    if (ruleMatches && ruleMatches.length > 0) {
-      ruleMatches.forEach((ruleText) => {
-        let ruleMatch, typeMatch, reasonMatch, medicationsMatch;
-
-        ruleMatch = ruleText.match(/(?:The )?rule(?:\s+is)?:?\s*([^.\n]+)/i);
-        typeMatch = ruleText.match(
-          /(?:The )?type(?:\s+of\s+rule)?(?:\s+is)?:?\s*"?([^".\n]+)"?/i
-        );
-        reasonMatch = ruleText.match(
-          /(?:The )?reason(?:\s+is)?:?\s*([\s\S]*?)(?=(?:The )?medications?|$)/i
-        );
-        medicationsMatch = ruleText.match(
-          /(?:The )?medications?(?:\s+for\s+this\s+rule)?(?:\s+are?)?:?\s*([^.\n]+)/i
-        );
-
-        if (!ruleMatch) {
-          ruleMatch =
-            ruleText.match(/Rule:\s*([^.\n]+)/i) ||
-            ruleText.match(/^\d+\.\s*([^:\n]+)/);
-        }
-
-        if (!typeMatch) {
-          typeMatch =
-            ruleText.match(/Type:\s*"?([^".\n]+)"?/i) ||
-            ruleText.match(/(EXCLUDE|INCLUDE)/i);
-        }
-
-        if (!reasonMatch) {
-          reasonMatch = ruleText.match(
-            /Reason:\s*([\s\S]*?)(?=Medications?|$)/i
-          );
-        }
-
-        if (!medicationsMatch) {
-          medicationsMatch = ruleText.match(/Medications?:\s*([^.\n]+)/i);
-        }
-
-        let ruleName = "";
-        if (ruleMatch) {
-          ruleName = ruleMatch[1].trim();
-        } else {
-          const contextMatch = ruleText.match(
-            /(pregnancy|metabolic|cardiac|renal|thyroid|drug interaction|extrapyramidal)/i
-          );
-          if (contextMatch) {
-            ruleName = contextMatch[1];
-          }
-        }
-
-        let ruleType = "";
-        if (typeMatch) {
-          ruleType = typeMatch[1].trim().toUpperCase();
-        }
-
-        let reason = "";
-        if (reasonMatch) {
-          reason = reasonMatch[1].trim().replace(/\s+/g, " ");
-        }
-
-        let medications: string[] = [];
-        if (medicationsMatch) {
-          medications = medicationsMatch[1]
-            .split(/[,;]/)
-            .map((med) => med.trim())
-            .filter((med) => med.length > 0);
-        }
-
-        if (ruleName || ruleType) {
-          rules.push({
-            rule: ruleName || "Unknown Rule",
-            type: ruleType || "UNKNOWN",
-            reason: reason,
-            medications: medications,
-          });
-        }
-      });
-    }
-
-    console.log("Parsed rules:", rules);
-    setParsedRules(rules);
   };
 
   const getTypeColor = (type: string) => {
@@ -171,7 +72,7 @@ const Insights: React.FC = () => {
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
           <p className="text-red-700">{error}</p>
           <button
-            onClick={fetchRuleExtraction}
+            onClick={fetchData}
             className="mt-2 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors"
           >
             Retry
@@ -186,22 +87,22 @@ const Insights: React.FC = () => {
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold">Extracted Rules</h2>
         <button
-          onClick={fetchRuleExtraction}
+          onClick={fetchData}
           className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition-colors"
         >
           Refresh
         </button>
       </div>
 
-      {extractedData ? (
+      {data ? (
         <div className="space-y-6">
           {/* Parsed Rules Section */}
           <div>
             <h3 className="text-md font-semibold mb-3 text-gray-800">
-              Medication Rules ({parsedRules.length})
+              Medication Rules ({data.rules.length})
             </h3>
             <div className="space-y-3">
-              {parsedRules.map((rule, index) => (
+              {data.rules.map((rule, index) => (
                 <div
                   key={index}
                   className="border bg-blue-50 bg-opacity-50 border-sky-400 text-sm font-quicksand shadow-md rounded-lg p-2 relative"
@@ -218,20 +119,20 @@ const Insights: React.FC = () => {
                   </div>
 
                   {rule.reason && (
-                    <p className="text-sm text-gray-700 mb-3 leading-relaxed">
+                    <p className="text-sm text-gray-700 mb-2 leading-relaxed">
                       {rule.reason}
                     </p>
                   )}
 
                   {rule.medications.length > 0 && (
-                    <div>
+                    <div className="mb-2">
                       <span className="text-sm font-medium text-gray-600">
                         Medications:{" "}
                       </span>
                       <div className="flex flex-wrap gap-1 mt-1">
-                        {rule.medications.map((med, medIndex) => (
+                        {rule.medications.map((med, i) => (
                           <span
-                            key={medIndex}
+                            key={i}
                             className="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs"
                           >
                             {med}
@@ -240,46 +141,50 @@ const Insights: React.FC = () => {
                       </div>
                     </div>
                   )}
+
+                  {/* 🔍 View Source Text Section */}
+                  {rule.chunk_text && (
+                    <details className="mt-3 text-xs border border-gray-300 rounded p-2 bg-white text-gray-800">
+                      <summary className="cursor-pointer text-blue-600 font-medium">
+                        View Source
+                        {/* View Source Chunk ({rule.source}) */}
+                      </summary>
+                      <div className="mt-2 whitespace-pre-wrap">
+                        {rule.chunk_text}
+                      </div>
+                    </details>
+                  )}
+
+                  {/* <div className="mt-2">
+                    <button
+                      onClick={() =>
+                        window.dispatchEvent(
+                          new CustomEvent("navigateToPdfPage", {
+                            detail: { pageNumber: rule.chunk_number },
+                          })
+                        )
+                      }
+                      className="text-blue-500 underline text-xs hover:text-blue-700"
+                    >
+                      Jump to Page {rule.chunk_number}
+                    </button>
+                  </div> */}
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Raw Data Section - Collapsible */}
-          <details className="border border-gray-200 rounded-lg">
-            <summary className="bg-gray-50 px-4 py-2 cursor-pointer hover:bg-gray-100 transition-colors font-medium">
-              Raw Extracted Text
-            </summary>
-            <div className="p-4 border-t border-gray-200">
-              <div className="bg-gray-50 rounded p-3 text-sm text-gray-700 whitespace-pre-wrap max-h-60 overflow-y-auto">
-                {extractedData.texts}
-              </div>
-            </div>
-          </details>
-
-          {/* Cited Texts Section - Collapsible */}
-          <details className="border border-gray-200 rounded-lg">
-            <summary className="bg-gray-50 px-4 py-2 cursor-pointer hover:bg-gray-100 transition-colors font-medium">
-              Cited References
-            </summary>
-            <div className="p-4 border-t border-gray-200">
-              <div className="bg-gray-50 rounded p-3 text-sm text-gray-700 whitespace-pre-wrap max-h-60 overflow-y-auto">
-                {extractedData.cited_texts}
-              </div>
-            </div>
-          </details>
-
-          {/* JSON View - Collapsible */}
-          <details className="border border-gray-200 rounded-lg">
+          {/* JSON View */}
+          {/* <details className="border border-gray-200 rounded-lg">
             <summary className="bg-gray-50 px-4 py-2 cursor-pointer hover:bg-gray-100 transition-colors font-medium">
               Raw JSON Response
             </summary>
             <div className="p-4 border-t border-gray-200">
               <pre className="bg-gray-900 text-green-400 rounded p-3 text-xs overflow-x-auto max-h-60 overflow-y-auto">
-                {JSON.stringify(extractedData, null, 2)}
+                {JSON.stringify(data, null, 2)}
               </pre>
             </div>
-          </details>
+          </details> */}
         </div>
       ) : (
         <div className="text-center py-8 text-gray-500">

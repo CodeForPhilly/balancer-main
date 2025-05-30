@@ -7,7 +7,8 @@ from rest_framework import status
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 import anthropic
-
+import json
+import re
 from api.models.model_embeddings import Embeddings
 
 
@@ -135,10 +136,21 @@ class RuleExtractionAPIOpenAIView(APIView):
 
             Identify rules for medication inclusion or exclusion based on medical history or concerns.
 
-            Return each rule with this exact structure:
-            The rule is __. The type of rule is "__". The reason is __. The medications for this rule are __. Source: [chunk-X]
+            For each rule you find, return a JSON object using the following format:
 
-            Only use chunks provided. If no rule is found in a chunk, skip it.
+            {
+              "rule": "<condition or concern>",
+              "type": "INCLUDE" or "EXCLUDE",
+              "reason": "<short explanation for why this rule applies>",
+              "medications": ["<medication 1>", "<medication 2>", ...],
+              "source": "<chunk-X>"
+            }
+
+            Only include rules that are explicitly stated or strongly implied in the chunk.
+
+            Only use the chunks provided. If no rule is found in a chunk, skip it.
+
+            Return the entire output as a JSON array.
             """
 
             guid = request.query_params.get('guid')
@@ -149,8 +161,21 @@ class RuleExtractionAPIOpenAIView(APIView):
             ]
 
             output_text = openai_extraction(chunks, user_prompt)
+            cleaned_text = re.sub(r"^```json|```$", "",
+                                  output_text.strip()).strip()
+            rules = json.loads(cleaned_text)
 
-            return Response({"text": output_text}, status=status.HTTP_200_OK)
+            # Attach chunk_number and chunk_text to each rule
+            chunk_lookup = {f"chunk-{i}": chunk.text for i,
+                            chunk in enumerate(query)}
+            for rule in rules:
+                source = rule.get("source", "").strip("[]")  # e.g. chunk-63
+                if source.startswith("chunk-"):
+                    chunk_number = int(source.replace("chunk-", ""))
+                    rule["chunk_number"] = chunk_number
+                    rule["chunk_text"] = chunk_lookup.get(source, "")
+
+            return Response({"rules": rules}, status=status.HTTP_200_OK)
 
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

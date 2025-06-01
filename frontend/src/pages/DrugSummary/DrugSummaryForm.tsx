@@ -5,8 +5,11 @@ import { handleSendDrugSummaryStream } from "../../api/apiClient.ts";
 import { ChatMessageItem } from "./type";
 import ParseStringWithLinks from "../../services/parsing/ParseWithSource.tsx";
 import PDFViewer from "./PDFViewer";
+import { useGlobalContext } from "../../../src/contexts/GlobalContext.tsx";
+import Insights from "./Insights";
 
 const DrugSummaryForm = () => {
+  const { showMetaPanel } = useGlobalContext();
   const [inputValue, setInputValue] = useState("");
   const [inputHeight, setInputHeight] = useState(50);
   const [chatLog, setChatLog] = useState<ChatMessageItem[]>([]);
@@ -16,7 +19,7 @@ const DrugSummaryForm = () => {
   const [streamingMessageIndex, setStreamingMessageIndex] = useState<
     number | null
   >(null);
-
+  const showChat = true;
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const scrollToBottomRef = useRef<HTMLDivElement | null>(null);
   const maxInputHeight = 150;
@@ -166,39 +169,57 @@ const DrugSummaryForm = () => {
     }
   };
 
+  const visiblePanels = [
+    hasPDF ? "pdf" : null,
+    showChat ? "chat" : null,
+    showMetaPanel ? "meta" : null,
+  ].filter(Boolean);
+
+  const panelCount = visiblePanels.length;
+
+  const panelWidthClass =
+    panelCount === 3 ? "w-1/3" : panelCount === 2 ? "w-1/2" : "w-full";
+
   return (
     <div className="flex h-full w-full justify-center">
       {hasPDF && (
-        <div className="w-1/2 h-full">
+        <div className={`${panelWidthClass} h-full`}>
           <PDFViewer />
         </div>
       )}
-      <div
-        className={`${hasPDF ? "w-1/2" : "w-full"} h-full flex flex-col p-2`}
-      >
+      <div className={`${panelWidthClass} h-full flex flex-col p-2`}>
         <div ref={chatContainerRef} className="flex-grow overflow-y-auto">
           {chatLog.length === 0 ? (
             <div className="flex flex-col gap-4 p-3 font-quicksand">
-              <div className="max-w-[310px] rounded-lg border-2 bg-stone-50 p-2 text-sky-950">
+              <div className="max-w-[310px] border bg-blue-50 bg-opacity-50 border-sky-400 text-sm font-quicksand shadow-md rounded-lg p-2 relative">
                 You can ask about the content on this page.
               </div>
-              <div className="max-w-[190px] rounded-lg border-2 bg-stone-50 p-2 text-sky-950">
+              <div className="max-w-[190px] border bg-blue-50 bg-opacity-50 border-sky-400 text-sm font-quicksand shadow-md rounded-lg p-2 relative">
                 Or questions in general.
               </div>
             </div>
           ) : (
             chatLog.map((message, index) => (
-              <div key={index} className="flex flex-col gap-4 p-3">
+              <div key={index} className="flex flex-col gap-4 p-2">
+                {message.type === "user" ? null : (
+                  <div className=" flex items-center justify-between">
+                    <div className="flex items-center">
+                      <span className="font-bold text-sm font-quicksand text-sky-950">
+                        Balancer
+                      </span>
+                    </div>
+                  </div>
+                )}
                 <div
-                  className={`${
+                  className={`flex ${
                     message.type === "user" ? "justify-end" : "justify-start"
-                  } `}
+                  }`}
                 >
                   <div
                     className={`${
                       message.type === "user"
-                        ? "border border-black text-sm font-quicksand"
-                        : "border bg-blue-50 bg-opacity-50 border-sky-400 text-sm font-quicksand "
+                        ? "border border-black text-sm font-quicksand shadow-md"
+                        : "border bg-blue-50 bg-opacity-50 border-sky-400 text-sm font-quicksand shadow-md"
                     } rounded-lg p-2 relative`}
                   >
                     {typeof message.message === "string" ? (
@@ -215,7 +236,9 @@ const DrugSummaryForm = () => {
                           message.message.llm_response.length === 0 && (
                             <div className="flex justify-start">
                               <div className="items-center justify-center p-1">
-                                <span className="thinking">Let me think</span>
+                                <span className="thinking  bg-blue-50 bg-opacity-50 text-sm font-quicksand">
+                                  Let me think
+                                </span>
                               </div>
                             </div>
                           )}
@@ -243,27 +266,41 @@ const DrugSummaryForm = () => {
             ))
           )}
         </div>
-        <form onSubmit={handleSubmit} className="p-3 font-quicksand mt-8">
-          <div className="relative flex items-center border border-sky-400  rounded-lg bg-white shadow-sm px-3 py-2">
-            <textarea
-              ref={textareaRef}
-              placeholder="Ask the document a question..."
-              className="w-full resize-none bg-transparent outline-none text-gray-700 placeholder-gray-400"
-              rows={1}
-              value={inputValue}
-              onChange={handleInputChange}
-              onKeyDown={handleKeyDown}
-              disabled={isStreaming}
-              style={{ height: `${inputHeight}px`, maxHeight: "150px" }}
-            />
-            <div className="absolute left-3 bottom-full mb-1 text-xs text-gray-500 flex items-center gap-2">
-              <span>Balancer 1.0</span>
-              <span>•</span>
-              <span>{inputValue.trim().split(/\s+/).length} words</span>
+        <div className="p-3 font-quicksand mt-8 bg-gray-100 rounded-2xl shadow-inner">
+          <form onSubmit={handleSubmit} className="space-y-2">
+            <div className="relative flex items-center border border-gray-300 rounded-xl bg-white shadow-sm px-4 py-3">
+              <textarea
+                ref={textareaRef}
+                placeholder="Ask the document a question..."
+                className="w-full resize-none bg-transparent outline-none text-sm font-quicksand placeholder-gray-500"
+                rows={1}
+                value={inputValue}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
+                disabled={isStreaming}
+                style={{ height: `${inputHeight}px`, maxHeight: "150px" }}
+              />
             </div>
-          </div>
-        </form>
+
+            <div className="text-xs text-gray-500 flex items-center justify-between px-1">
+              <div className="flex items-center gap-2">
+                <span>Balancer 1.0</span>
+                <span>•</span>
+                <span>
+                  {inputValue.trim().split(/\s+/).filter(Boolean).length} words
+                </span>
+              </div>
+            </div>
+          </form>
+        </div>
       </div>
+      {showMetaPanel && (
+        <div
+          className={`${panelWidthClass} h-full bg-white border-l border-sky-200 p-4 shadow-inner`}
+        >
+          <Insights />
+        </div>
+      )}
     </div>
   );
 };

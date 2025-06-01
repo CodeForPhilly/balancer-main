@@ -215,7 +215,7 @@ const PDFViewer = () => {
   return (
     <div
       ref={containerRef}
-      className="w-full h-full flex flex-col bg-white border-r border-gray-30"
+      className="w-full h-full flex flex-col bg-white border-r border-blue-200"
     >
       <div
         ref={headerRef}

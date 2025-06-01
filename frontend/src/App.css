@@ -256,7 +256,6 @@ Error message. Please see ErrorMessages.tsx under components folder
 }
 
 .thinking {
-
     font-size: 16px;
 
     animation: ellipsis 1.5s infinite;

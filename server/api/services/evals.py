@@ -4,64 +4,28 @@ Evaluate LLM outputs using multiple metrics and compute associated costs
 
 #TODO: Add tests on a small dummy dataset to confirm it handles errors gracefully and produces expected outputs
 
-import os
 import argparse
 import logging
 
-import anthropic
-import openai
 import evaluate
 import pandas as pd
 
 rouge = evaluate.load('rouge')
 bertscore = evaluate.load('bertscore')
 
-from services import claude_citations, gpt_4o_mini, gpt_41_nano, claude_haiku_3
+from services import ModelFactory
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
-SUPPORTED_MODELS = ["CLAUDE_HAIKU_3_5_CITATIONS", "GPT_4O_MINI", "GPT_41_NANO", "CLAUDE_HAIKU_3"]
-
-def create_response(model, query, context):
-
-    if model == "CLAUDE_HAIKU_3_5_CITATIONS":
-        client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
-        #TODO: Add error handling for API calls
-        output_text, token_usage, pricing, latency = claude_citations(client, query, context)
-
-    elif model == "GPT_4O_MINI":
-        client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
-        #TODO: Add error handling for API calls
-        output_text, token_usage, pricing, latency = gpt_4o_mini(client, query, context)
-
-    elif model == "GPT_41_NANO":
-        client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
-        #TODO: Add error handling for API calls
-        output_text, token_usage, pricing, latency = gpt_41_nano(client, query, context)
-
-    elif model == "CLAUDE_HAIKU_3":
-        client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
-        #TODO: Add error handling for API calls
-        output_text, token_usage, pricing, latency = claude_haiku_3(client, query, context)
-
-    else:
-        logging.error(f"Unsupported model: {model}")
-        output_text = None
-        token_usage = None
-        pricing = None
-        latency = None
-
-
-    return output_text, token_usage, pricing, latency
-
 
 def evaluate_response(model, query, context, reference):
     """
     """
 
-    text, token_usage, pricing, latency = create_response(model, query, context)
+    handler = ModelFactory.get_handler(model)
 
-    #TODO: Add check for None values in text, token_usage, pricing, latency
+    #TODO: Add error handling for unsupported models
+        
+    text, token_usage, pricing, latency = handler.handle_request(query, context)
 
     rouge1 = rouge.compute(predictions=[text], references=[reference])['rouge1']
 
@@ -99,8 +63,8 @@ if __name__ == "__main__":
     logging.info(f"Config DataFrame shape: {df_config.shape}")
     logging.info(f"Config DataFrame columns: {df_config.columns.tolist()}")
 
-    if not all(model in SUPPORTED_MODELS for model in df_config['Model'].unique()):
-        raise ValueError(f"Unsupported model(s) found in config: {set(df_config['Model'].unique()) - set(SUPPORTED_MODELS)}")
+    if not all(model in ModelFactory.HANDLERS.keys() for model in df_config['Model'].unique()):
+        raise ValueError(f"Unsupported model(s) found in config: {set(df_config['Model'].unique()) - set(ModelFactory.HANDLERS.keys())}")
     
     df_reference = pd.read_csv(args.reference)
     logging.info(f"Reference DataFrame shape: {df_reference.shape}")

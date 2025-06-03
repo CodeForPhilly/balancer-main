@@ -7,11 +7,9 @@ Evaluate LLM outputs using multiple metrics and compute associated costs
 import argparse
 import logging
 
-import evaluate
 import pandas as pd
-
-rouge = evaluate.load('rouge')
-bertscore = evaluate.load('bertscore')
+from lighteval.tasks.requests import Doc
+from lighteval.metrics.metrics_sample import Extractiveness
 
 from services import ModelFactory
 
@@ -25,28 +23,25 @@ def evaluate_response(model, query, context, reference):
 
     #TODO: Add error handling for unsupported models
         
-    text, token_usage, pricing, latency = handler.handle_request(query, context)
+    output_text, token_usage, pricing, duration = handler.handle_request(query, context)
 
-    rouge1 = rouge.compute(predictions=[text], references=[reference])['rouge1']
-
-    # TODO: Read docs for the most apprpriate bertscore model to use
-    b = bertscore.compute(predictions=[text], references=[reference], model_type="microsoft/deberta-xlarge-mnli")
-
-    # TODO: Add METEOR scores: https://huggingface.co/spaces/evaluate-metric/meteor
+    doc = Doc(query="", choices=[], gold_index=0, specific={"text": context})
+    extractiveness = Extractiveness().compute(formatted_doc=doc, predictions=[output_text])
 
     input_cost_dollars = (pricing['input'] / 1000000) * token_usage.input_tokens
-    out_cost_dollars = (pricing['output'] / 1000000) * token_usage.output_tokens
+    output_cost_dollars = (pricing['output'] / 1000000) * token_usage.output_tokens
 
-    total_cost_dollars = input_cost_dollars + out_cost_dollars
+    total_cost_dollars = input_cost_dollars + output_cost_dollars
 
     return pd.DataFrame([{
-            "Output Text": text,
-            "Rouge1": rouge1,
-            "BertScore Precision": b['precision'][0],
-            "BertScore Recall": b['recall'][0],
-            "BertScore F1": b['f1'][0],
-            "Total Cost (USD)": total_cost_dollars,
-            "Latency (s)": latency
+            "Output Text": output_text,
+            "Extractiveness Coverage": extractiveness['summarization_coverage'],
+            "Extractiveness Density": extractiveness['summarization_density'],
+            "Extractiveness Compression": extractiveness['summarization_compression'],
+            "Input Token Usage": token_usage.input_tokens,
+            "Output Token Usage": token_usage.output_tokens,
+            "Cost (USD)": total_cost_dollars,
+            "Duration (s)": duration
         }])
 
 
@@ -63,6 +58,12 @@ if __name__ == "__main__":
     logging.info(f"Config DataFrame shape: {df_config.shape}")
     logging.info(f"Config DataFrame columns: {df_config.columns.tolist()}")
 
+    # Remove the trailing whitespace from column names
+    df_config.columns = df_config.columns.str.strip()
+
+    #TODO: Check if the required columns are present
+
+    # Check if all models in the config are supported by ModelFactory
     if not all(model in ModelFactory.HANDLERS.keys() for model in df_config['Model'].unique()):
         raise ValueError(f"Unsupported model(s) found in config: {set(df_config['Model'].unique()) - set(ModelFactory.HANDLERS.keys())}")
     

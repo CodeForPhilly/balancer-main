@@ -46,11 +46,13 @@ const Sidebar: React.FC = () => {
   const handleFileClick = (guid: string) => {
     const params = new URLSearchParams(location.search);
     const currentGuid = params.get("guid");
-    
+
     if (guid !== currentGuid) {
       navigate(`/drugsummary?guid=${guid}&page=1`);
     } else {
-      navigate(`/drugsummary?guid=${guid}${params.has("page") ? `&page=${params.get("page")}` : ""}`);
+      navigate(
+        `/drugsummary?guid=${guid}${params.has("page") ? `&page=${params.get("page")}` : ""}`
+      );
     }
   };
 
@@ -58,7 +60,7 @@ const Sidebar: React.FC = () => {
     <div
       className={`z-10 h-screen ${
         sidebarCollapsed ? "w-16" : "w-60"
-      } flex flex-col border-r border-gray-200 bg-white transition-all duration-300 ease-in-out`}
+      } flex flex-col border-r  border-blue-200 bg-white transition-all duration-300 ease-in-out`}
     >
       <div className="flex h-16 w-full items-center justify-between px-4">
         {!sidebarCollapsed && (

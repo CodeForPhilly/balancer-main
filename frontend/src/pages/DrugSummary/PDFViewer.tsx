@@ -1,11 +1,10 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
 
-// Configure PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
 interface DocumentLoadSuccess {
@@ -20,78 +19,137 @@ const PDFViewer = () => {
   const [error, setError] = useState<string | null>(null);
   const [pdfData, setPdfData] = useState<Uint8Array | null>(null);
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
+  const [isDocumentLoaded, setIsDocumentLoaded] = useState(false);
+  const [targetPageAfterLoad, setTargetPageAfterLoad] = useState<number | null>(
+    null
+  );
+
+  const manualScrollInProgress = useRef(false);
+  const PAGE_INIT_DELAY = 800;
 
   const headerRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const pageRefs = useRef<Record<number, HTMLDivElement | null>>({});
+  const initializationRef = useRef(false);
 
   const location = useLocation();
+  const navigate = useNavigate();
   const params = new URLSearchParams(location.search);
   const guid = params.get("guid");
   const pageParam = params.get("page");
 
   const baseURL = import.meta.env.VITE_API_BASE_URL;
-
   const pdfUrl = useMemo(
     () => (guid ? `${baseURL}/v1/api/uploadFile/${guid}` : null),
     [guid, baseURL]
   );
 
-
   useEffect(() => {
+    pageRefs.current = {};
+    setIsDocumentLoaded(false);
+    initializationRef.current = false;
+
     if (pageParam) {
       const page = parseInt(pageParam, 10);
-      if (!isNaN(page) && page > 0) {
-        setPageNumber(page);
-      }
+      if (!isNaN(page) && page > 0) setTargetPageAfterLoad(page);
+    } else {
+      setTargetPageAfterLoad(1);
     }
-  }, [pageParam]);
+  }, [guid, pageParam]);
+
+  const scrollToPage = useCallback(
+    (page: number) => {
+      if (page < 1 || !numPages || page > numPages) return;
+      const targetRef = pageRefs.current[page];
+      if (!targetRef) return;
+
+      manualScrollInProgress.current = true;
+      targetRef.scrollIntoView({ behavior: "smooth", block: "start" });
+
+      const observer = new IntersectionObserver(
+        (entries, obs) => {
+          const entry = entries[0];
+          if (entry?.isIntersecting) {
+            manualScrollInProgress.current = false;
+            obs.disconnect();
+          }
+        },
+        { threshold: 0.5 }
+      );
+      observer.observe(targetRef);
+
+      const newParams = new URLSearchParams(location.search);
+      newParams.set("page", String(page));
+      navigate(`${location.pathname}?${newParams.toString()}`, {
+        replace: true,
+      });
+      setPageNumber(page);
+    },
+    [numPages, navigate, location.pathname, location.search]
+  );
+
+  const goToPage = useCallback(
+    (page: number) => {
+      if (typeof page !== "number" || isNaN(page)) return;
+      if (page < 1) page = 1;
+      else if (numPages && page > numPages) page = numPages;
+
+      setPageNumber(page);
+      scrollToPage(page);
+    },
+    [numPages, scrollToPage]
+  );
 
   useEffect(() => {
-    const handlePageNavigation = (event: CustomEvent) => {
-      const { pageNumber } = event.detail;
-      if (pageNumber && !isNaN(pageNumber) && pageNumber > 0 && pageNumber <= (numPages || 1)) {
-        setPageNumber(pageNumber);
-      }
+    const handlePageNavigation = (event: Event) => {
+      const customEvent = event as CustomEvent<{ pageNumber: number }>;
+      const { pageNumber } = customEvent.detail || {};
+      if (!pageNumber || isNaN(pageNumber)) return;
+      goToPage(pageNumber);
     };
 
-    window.addEventListener('navigateToPdfPage', handlePageNavigation as EventListener);
+    window.addEventListener("navigateToPdfPage", handlePageNavigation);
+    return () =>
+      window.removeEventListener("navigateToPdfPage", handlePageNavigation);
+  }, [goToPage]);
 
-    // Clean up
-    return () => {
-      window.removeEventListener('navigateToPdfPage', handlePageNavigation as EventListener);
-    };
-  }, [numPages]);
+  useEffect(() => {
+    if (
+      isDocumentLoaded &&
+      numPages &&
+      targetPageAfterLoad &&
+      Object.keys(pageRefs.current).length > 0
+    ) {
+      const validPage = Math.min(Math.max(1, targetPageAfterLoad), numPages);
+      setPageNumber(validPage);
 
-  // Calculate container size to make PDF responsive
+      const timeoutId = setTimeout(() => {
+        scrollToPage(validPage);
+        setTargetPageAfterLoad(null);
+      }, PAGE_INIT_DELAY);
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [isDocumentLoaded, numPages, targetPageAfterLoad, scrollToPage]);
+
   useEffect(() => {
     const calculateSize = () => {
       if (containerRef.current && headerRef.current && contentRef.current) {
         const headerHeight = headerRef.current.offsetHeight;
         const contentPadding = 32;
-
-        // Get the available height and width for the PDF
         const availableHeight =
           containerRef.current.clientHeight - headerHeight - contentPadding;
         const availableWidth = contentRef.current.clientWidth - contentPadding;
 
-        setContainerSize({
-          width: availableWidth,
-          height: availableHeight,
-        });
+        setContainerSize({ width: availableWidth, height: availableHeight });
       }
     };
-
     calculateSize();
-
-    // Recalculate on resize
     window.addEventListener("resize", calculateSize);
-    return () => {
-      window.removeEventListener("resize", calculateSize);
-    };
+    return () => window.removeEventListener("resize", calculateSize);
   }, []);
 
-  // Memoize PDF options
   const pdfOptions = useMemo(
     () => ({
       cMapUrl: `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/cmaps/`,
@@ -101,7 +159,6 @@ const PDFViewer = () => {
     []
   );
 
-  // Memoize file object
   const file = useMemo(() => (pdfData ? { data: pdfData } : null), [pdfData]);
 
   const isPDF = useCallback((data: Uint8Array): boolean => {
@@ -112,107 +169,53 @@ const PDFViewer = () => {
 
   const fetchPdf = useCallback(async () => {
     if (!pdfUrl) return;
-
     try {
       setLoading(true);
       setError(null);
-
       const token = localStorage.getItem("access");
-      if (!token) {
-        throw new Error("No access token found. Please log in.");
-      }
-
-      const response = await axios({
-        method: "GET",
-        url: pdfUrl,
-        headers: {
-          Authorization: `JWT ${token}`,
-        },
+      if (!token) throw new Error("No access token found. Please log in.");
+      const response = await axios.get(pdfUrl, {
+        headers: { Authorization: `JWT ${token}` },
         responseType: "arraybuffer",
       });
-
-      // Create a copy of the array buffer to prevent detachment
-      const arrayBuffer = response.data.slice(0);
-      const pdfBytes = new Uint8Array(arrayBuffer);
-
-      if (!isPDF(pdfBytes)) {
-        throw new Error(
-          "Invalid PDF format. The server response does not appear to be a PDF file."
-        );
-      }
-
+      const pdfBytes = new Uint8Array(response.data.slice(0));
+      if (!isPDF(pdfBytes)) throw new Error("Invalid PDF format.");
       setPdfData(pdfBytes);
-      setLoading(false);
     } catch (err: any) {
-      let errorMessage = "An error occurred while fetching the PDF.";
-
-      if (axios.isAxiosError(err)) {
-        if (err.response) {
-          switch (err.response.status) {
-            case 401:
-              errorMessage = "Session expired. Please log in again.";
-              break;
-            case 403:
-              errorMessage = "You don't have permission to view this document.";
-              break;
-            case 404:
-              errorMessage = "PDF file not found.";
-              break;
-            case 406:
-              errorMessage = "Server cannot generate the requested format.";
-              break;
-            default:
-              errorMessage = `Server error: ${err.response.statusText || "Unknown error"}`;
-          }
-        } else if (err.request) {
-          errorMessage =
-            "Unable to reach the server. Please check your connection.";
-        }
-      } else if (err instanceof Error) {
-        errorMessage = err.message;
-      }
-
-      console.error("PDF fetch error:", err);
-      setError(errorMessage);
+      const msg = axios.isAxiosError(err)
+        ? err.response?.status === 401
+          ? "Session expired."
+          : err.response?.status === 404
+            ? "PDF not found."
+            : "Server error."
+        : err.message;
+      setError(msg);
       setPdfData(null);
+    } finally {
       setLoading(false);
     }
   }, [pdfUrl, isPDF]);
 
   useEffect(() => {
-    if (pdfUrl) {
-      fetchPdf();
-    }
+    if (pdfUrl) fetchPdf();
   }, [pdfUrl, fetchPdf]);
 
   const onDocumentLoadSuccess = useCallback(
     ({ numPages }: DocumentLoadSuccess) => {
       setNumPages(numPages);
       setError(null);
-      
-      if (pageParam) {
-        const page = parseInt(pageParam, 10);
-        if (!isNaN(page) && page > 0 && page <= numPages) {
-          setPageNumber(page);
-        }
-      }
+      setIsDocumentLoaded(true);
     },
-    [pageParam]
+    []
   );
 
-  const onDocumentLoadError = useCallback((err: Error) => {
-    console.error("Document load error:", err);
-    setError(err.message);
-  }, []);
-
-  if (!guid) {
+  if (!guid)
     return <div className="p-4 text-gray-600">No document specified.</div>;
-  }
 
   return (
     <div
       ref={containerRef}
-      className="w-full h-full flex flex-col bg-white border-r border-gray-30"
+      className="w-full h-full flex flex-col bg-white border-r border-blue-200"
     >
       <div
         ref={headerRef}
@@ -220,9 +223,9 @@ const PDFViewer = () => {
       >
         <div className="flex items-center space-x-2">
           <button
-            onClick={() => setPageNumber((prev) => Math.max(prev - 1, 1))}
+            onClick={() => goToPage(Math.max(pageNumber - 1, 1))}
             disabled={pageNumber <= 1}
-            className="px-3 py-1 bg-white border rounded hover:bg-gray-50 disabled:opacity-50"
+            className="px-3 py-1 bg-white border rounded"
           >
             ←
           </button>
@@ -231,91 +234,89 @@ const PDFViewer = () => {
           </span>
           <button
             onClick={() =>
-              setPageNumber((prev) => Math.min(prev + 1, numPages || prev))
+              goToPage(Math.min(pageNumber + 1, numPages || pageNumber))
             }
-            disabled={pageNumber >= (numPages || 1)}
-            className="px-3 py-1 bg-white border rounded hover:bg-gray-50 disabled:opacity-50"
+            disabled={!numPages || pageNumber >= numPages}
+            className="px-3 py-1 bg-white border rounded"
           >
             →
           </button>
         </div>
-
         <div className="flex items-center space-x-2">
           <button
             onClick={() => setScale((prev) => Math.max(prev - 0.1, 0.5))}
-            className="px-3 py-1 bg-white border rounded hover:bg-gray-50"
+            className="px-3 py-1 bg-white border rounded"
           >
             −
           </button>
           <span className="text-sm">{Math.round(scale * 100)}%</span>
           <button
             onClick={() => setScale((prev) => Math.min(prev + 0.1, 2.0))}
-            className="px-3 py-1 bg-white border rounded hover:bg-gray-50"
+            className="px-3 py-1 bg-white border rounded"
           >
             +
           </button>
         </div>
       </div>
-
       <div
         ref={contentRef}
         className="flex-grow overflow-auto p-4 w-full flex items-center justify-center"
-        style={{
-          transform: "none",
-        }} /* Important to prevent zoom from affecting the container */
       >
-        {loading && (
-          <div className="flex items-center justify-center h-full w-full">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
-          </div>
-        )}
-
-        {error && (
-          <div className="flex items-center justify-center h-full w-full">
-            <div className="text-red-500 text-center p-4">
-              <p className="font-medium">Error</p>
-              <p className="text-sm">{error}</p>
-              <button
-                onClick={fetchPdf}
-                className="mt-2 px-4 py-2 bg-white border rounded hover:bg-gray-50"
-              >
-                Retry
-              </button>
-            </div>
-          </div>
-        )}
-
-        {file && !loading && !error && (
-          <div
-            className="pdf-document-container"
-            style={{ maxHeight: containerSize.height }}
-          >
-            <Document
-              file={file}
-              onLoadSuccess={onDocumentLoadSuccess}
-              onLoadError={onDocumentLoadError}
-              loading={null}
-              error={null}
-              options={pdfOptions}
-              className="flex justify-center"
+        {loading ? (
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
+        ) : error ? (
+          <div className="text-red-500 text-center p-4">
+            <p className="font-medium">Error</p>
+            <p className="text-sm">{error}</p>
+            <button
+              onClick={fetchPdf}
+              className="mt-2 px-4 py-2 bg-white border rounded"
             >
-              <Page
-                pageNumber={pageNumber}
-                scale={scale}
-                loading={null}
-                error={null}
-                renderTextLayer={true}
-                renderAnnotationLayer={true}
-                className="shadow-lg"
-                height={
-                  containerSize.height > 0 ? containerSize.height : undefined
-                }
-                width={
-                  containerSize.width > 0 ? containerSize.width - 50 : undefined
-                }
-              />
-            </Document>
+              Retry
+            </button>
           </div>
+        ) : (
+          file && (
+            <div
+              className="pdf-document-container flex flex-col items-center"
+              style={{ maxHeight: containerSize.height }}
+            >
+              <Document
+                file={file}
+                onLoadSuccess={onDocumentLoadSuccess}
+                onLoadError={(err) => setError(err.message)}
+                options={pdfOptions}
+              >
+                <div className="flex flex-col items-center w-full">
+                  {Array.from({ length: numPages || 0 }, (_, index) => {
+                    const pageNum = index + 1;
+                    return (
+                      <div
+                        key={pageNum}
+                        ref={(el) => {
+                          if (el) pageRefs.current[pageNum] = el;
+                        }}
+                        className="mb-4 w-full"
+                      >
+                        <Page
+                          pageNumber={pageNum}
+                          scale={scale}
+                          renderTextLayer={true}
+                          renderAnnotationLayer={true}
+                          className="shadow-lg"
+                          height={containerSize.height || undefined}
+                          width={(containerSize.width || 0) - 50}
+                        />
+                        <div className="text-center text-gray-500 text-sm mt-1">
+                          Page {pageNum} of {numPages}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </Document>
+            </div>
+          )
         )}
       </div>
     </div>

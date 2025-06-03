@@ -14,7 +14,8 @@ RUN apt-get update && apt-get install -y netcat
 # install dependencies
 RUN pip install --upgrade pip
 COPY ./requirements.txt .
-RUN pip install -r requirements.txt
+RUN pip install --timeout=600 --retries=5 -r requirements.txt
+
 
 # copy project
 COPY . /usr/src/server

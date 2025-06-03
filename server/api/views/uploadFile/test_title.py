@@ -1,3 +1,5 @@
+import json
+
 import fitz
 import os
 
@@ -23,6 +25,19 @@ class TestGenerateTitle(unittest.TestCase):
     with fitz.open("./testdata/creativitystabilizer.pdf") as doc:
       expected_title = "Impact of mood stabilizers on creativity"
       self.assertEqual(expected_title, generate_title(doc))
+
+  def test_largest_text(self):
+    first_page_json = None
+    with open("/home/ricanontherun/Documents/balancer/uploads/output.json", "r") as f:
+      content = ""
+      for line in f:
+        content += line
+      first_page_json = json.loads(content)
+
+    blocks = first_page_json["blocks"]
+    text_blocks = [block for block in blocks if block["type"] == 0]
+
+    print(json.dumps(text_blocks[0], indent=4))
 
   def test_remaining(self):
     uploads_dir  = "~/Documents/balancer/uploads"

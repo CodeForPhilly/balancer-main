@@ -15,6 +15,7 @@ from ...services.sentencetTransformer_model import TransformerModel
 from ...models.model_embeddings import Embeddings
 import fitz
 from django.db import transaction
+from .title import generate_title
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -77,27 +78,26 @@ class UploadFileView(APIView):
                     uploaded_by=request.user,  # Set to the user instance
                     uploaded_by_email=request.user.email  # Also store the email separately
                 )
-                new_file.save()
-
-                if new_file.id is None:
-                    return Response({"message": "Failed to save the upload file."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
                 with fitz.open(stream=pdf_binary, filetype="pdf") as doc:
                     text = ""
                     page_number = 1  # Initialize page_number
                     page_texts = []  # List to hold text for each page with page number
-                    upload_title = None
+
+                    title = generate_title(doc)
+                    if title is not None:
+                        new_file.title = title
 
                     for page in doc:
                         page_text = page.get_text()
                         text += page_text
                         page_texts.append((page_number, page_text))
 
-                        if upload_title is None:
-                            # Try and generate a upload title from this page
-                            pass
-
                         page_number += 1
+
+                new_file.save()
+                if new_file.id is None:
+                    return Response({"message": "Failed to save the upload file."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
                 chunks_with_page = []
 

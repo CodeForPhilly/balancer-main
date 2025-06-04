@@ -2,15 +2,13 @@
 This module contains functions to interact with different AI models
 """
 
-import time
-from abc import ABC, abstractmethod
 import os
+import time
 import logging
+from abc import ABC, abstractmethod
 
 import anthropic
 import openai
-
-# TODO Add docstrings and type hints to the classes and methods
 
 class BaseModelHandler(ABC):
     @abstractmethod
@@ -25,7 +23,16 @@ class ClaudeHaiku35CitationsHandler(BaseModelHandler):
     def __init__(self):
         self.client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
-    def handle_request(self, query, context):
+    def handle_request(self, query: str, context: str)-> tuple[str, dict, dict, float]:
+        """
+        Handles the request to the Claude Haiku 3.5 model with citations enabled.
+        Args:
+            query (str): The user query to be processed.
+            context (str): The context or document content to be used for citations.
+        Returns:
+            tuple: A tuple containing the response text, usage information, pricing information, and latency.
+        """
+
         start_time = time.time()
         message = self.client.messages.create(
             model=self.MODEL,
@@ -50,7 +57,7 @@ class ClaudeHaiku35CitationsHandler(BaseModelHandler):
 
                     ]
                 }
-            ],
+            ]
         )
         latency = time.time() - start_time
         
@@ -79,7 +86,16 @@ class ClaudeHaiku3Handler(BaseModelHandler):
     def __init__(self):
         self.client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
-    def handle_request(self, query, context):
+    def handle_request(self, query: str, context: str)-> tuple[str, dict, dict, float]:
+        """
+        Handles the request to the Claude Haiku 3 model without citations.
+
+        Args:
+            query (str): The user query to be processed.
+            context (str): The context or document content to be used.
+        Returns:
+            tuple: A tuple containing the response text, usage information, pricing information, and latency.
+        """
         start_time = time.time()
         message = self.client.messages.create(
             model=self.MODEL,
@@ -125,7 +141,16 @@ class GPT4OMiniHandler(BaseModelHandler):
     def __init__(self):
         self.client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
-    def handle_request(self, query, context):
+    def handle_request(self, query: str, context: str)-> tuple[str, dict, dict, float]:
+        """
+        Handles the request to the GPT-4o Mini model
+
+        Args:
+            query (str): The user query to be processed.
+            context (str): The context or document content to be used.
+        Returns:
+            tuple: A tuple containing the response text, usage information, pricing information, and latency.
+        """
         start_time = time.time()
         response = self.client.responses.create(
             model=self.MODEL,
@@ -146,7 +171,16 @@ class GPT41NanoHandler(BaseModelHandler):
     def __init__(self):
         self.client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
-    def handle_request(self, query, context):
+    def handle_request(self, query: str, context: str) -> tuple[str, dict, dict, float]:
+        """
+        Handles the request to the GPT-4.1 Nano model
+
+        Args:
+            query (str): The user query to be processed.
+            context (str): The context or document content to be used.
+        Returns:
+            tuple: A tuple containing the response text, usage information, pricing information, and latency.
+        """
         start_time = time.time()
         response = self.client.responses.create(
             model=self.MODEL,
@@ -168,7 +202,16 @@ class ModelFactory:
 
     # HANDLERS doesn't vary per instance so we can use a class method 
     @classmethod
-    def get_handler(cls, model_name):
+    def get_handler(cls, model_name: str) -> BaseModelHandler:
+        """
+        Factory method to get the appropriate model handler based on the model name
+
+        Args:
+            model_name (str): The name of the model for which to get the handler.
+        Returns:
+            BaseModelHandler: An instance of the appropriate model handler class.
+        """
+
         handler_class = cls.HANDLERS.get(model_name)
         if handler_class:
             return handler_class()

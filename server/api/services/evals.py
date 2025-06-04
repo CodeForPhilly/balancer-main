@@ -18,12 +18,21 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 #TODO: Add type hints to the function signatures for better clarity and type checking
 
 #TODO: Rename model to model name and query to instructions for clarity
-def evaluate_response(model, query, context, reference):
+def evaluate_response(model_name: str, query: str, context: str, reference: str) -> pd.DataFrame:
     """
-    # TODO: Add docstring for evaluate_response function
+    Evaluates the response of a model to a given query and context, computes extractiveness metrics, token usage, and cost
+
+    Args:
+        model_name (str): The name of the model to be used for evaluation.
+        query (str): The user query to be processed.
+        context (str): The context or document content to be used.
+        reference (str): The reference text for comparison (not used in this function, but can be used for further evaluations).
+
+    Returns:
+        pd.DataFrame: A DataFrame containing the output text, extractiveness metrics, token usage, cost, and duration.
     """
 
-    handler = ModelFactory.get_handler(model)
+    handler = ModelFactory.get_handler(model_name)
 
     #TODO: Add error handling for unsupported models
         

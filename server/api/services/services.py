@@ -13,7 +13,9 @@ import openai
 
 class BaseModelHandler(ABC):
     @abstractmethod
-    def handle_request(self, query, context):
+    def handle_request(
+        self, query: str, context: str
+    ) -> tuple[str, dict[str, int], dict[str, float], float]:
         pass
 
 
@@ -25,17 +27,20 @@ class ClaudeHaiku35CitationsHandler(BaseModelHandler):
     def __init__(self) -> None:
         self.client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
-    def handle_request(self, query: str, context: str) -> tuple[str, dict, dict, float]:
+    def handle_request(
+        self, query: str, context: str
+    ) -> tuple[str, dict[str, int], dict[str, float], float]:
         """
-        Handles the request to the Claude Haiku 3.5 model with citations enabled.
+        Handles the request to the Claude Haiku 3.5 model with citations enabled
+
         Args:
-            query (str): The user query to be processed.
-            context (str): The context or document content to be used for citations.
-        Returns:
-            tuple: A tuple containing the response text, usage information, pricing information, and latency.
+            query: The user query to be processed
+            context: The context or document content to be used for citations
+
         """
 
         start_time = time.time()
+        # TODO: Add error handling for API requests and invalid responses
         message = self.client.messages.create(
             model=self.MODEL,
             max_tokens=1024,
@@ -53,7 +58,7 @@ class ClaudeHaiku35CitationsHandler(BaseModelHandler):
                 }
             ],
         )
-        latency = time.time() - start_time
+        duration = time.time() - start_time
 
         # Response Structure: https://docs.anthropic.com/en/docs/build-with-claude/citations#response-structure
 
@@ -85,7 +90,7 @@ class ClaudeHaiku35CitationsHandler(BaseModelHandler):
             full_text,
             message.usage,
             self.PRICING_DOLLARS_PER_MILLION_TOKENS,
-            latency,
+            duration,
         )
 
 
@@ -94,20 +99,23 @@ class ClaudeHaiku3Handler(BaseModelHandler):
     # Model Pricing: https://docs.anthropic.com/en/docs/about-claude/pricing#model-pricing
     PRICING_DOLLARS_PER_MILLION_TOKENS = {"input": 0.25, "output": 1.25}
 
-    def __init__(self)-> None:
+    def __init__(self) -> None:
         self.client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
-    def handle_request(self, query: str, context: str) -> tuple[str, dict, dict, float]:
+    def handle_request(
+        self, query: str, context: str
+    ) -> tuple[str, dict[str, int], dict[str, float], float]:
         """
-        Handles the request to the Claude Haiku 3 model without citations.
+        Handles the request to the Claude Haiku 3 model with citations disabled
 
         Args:
-            query (str): The user query to be processed.
-            context (str): The context or document content to be used.
-        Returns:
-            tuple: A tuple containing the response text, usage information, pricing information, and latency.
+            query: The user query to be processed
+            context: The context or document content to be used
+
         """
+
         start_time = time.time()
+        # TODO: Add error handling for API requests and invalid responses
         message = self.client.messages.create(
             model=self.MODEL,
             max_tokens=1024,
@@ -125,7 +133,7 @@ class ClaudeHaiku3Handler(BaseModelHandler):
                 }
             ],
         )
-        latency = time.time() - start_time
+        duration = time.time() - start_time
 
         text = []
         for content in message.to_dict()["content"]:
@@ -137,7 +145,7 @@ class ClaudeHaiku3Handler(BaseModelHandler):
             full_text,
             message.usage,
             self.PRICING_DOLLARS_PER_MILLION_TOKENS,
-            latency,
+            duration,
         )
 
 
@@ -149,29 +157,31 @@ class GPT4OMiniHandler(BaseModelHandler):
     def __init__(self) -> None:
         self.client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
-    def handle_request(self, query: str, context: str) -> tuple[str, dict, dict, float]:
+    def handle_request(
+        self, query: str, context: str
+    ) -> tuple[str, dict[str, int], dict[str, float], float]:
         """
         Handles the request to the GPT-4o Mini model
 
         Args:
-            query (str): The user query to be processed.
-            context (str): The context or document content to be used.
-        Returns:
-            tuple: A tuple containing the response text, usage information, pricing information, and latency.
+            query: The user query to be processed
+            context: The context or document content to be used
+
         """
         start_time = time.time()
+        # TODO: Add error handling for API requests and invalid responses
         response = self.client.responses.create(
             model=self.MODEL,
             instructions=query,
             input=context,
         )
-        latency = time.time() - start_time
+        duration = time.time() - start_time
 
         return (
             response.output_text,
             response.usage,
             self.PRICING_DOLLARS_PER_MILLION_TOKENS,
-            latency,
+            duration,
         )
 
 
@@ -183,29 +193,31 @@ class GPT41NanoHandler(BaseModelHandler):
     def __init__(self) -> None:
         self.client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
-    def handle_request(self, query: str, context: str) -> tuple[str, dict, dict, float]:
+    def handle_request(
+        self, query: str, context: str
+    ) -> tuple[str, dict[str, int], dict[str, float], float]:
         """
         Handles the request to the GPT-4.1 Nano model
 
         Args:
-            query (str): The user query to be processed.
-            context (str): The context or document content to be used.
-        Returns:
-            tuple: A tuple containing the response text, usage information, pricing information, and latency.
+            query: The user query to be processed
+            context: The context or document content to be used
+
         """
         start_time = time.time()
+        # TODO: Add error handling for API requests and invalid responses
         response = self.client.responses.create(
             model=self.MODEL,
             instructions=query,
             input=context,
         )
-        latency = time.time() - start_time
+        duration = time.time() - start_time
 
         return (
             response.output_text,
             response.usage,
             self.PRICING_DOLLARS_PER_MILLION_TOKENS,
-            latency,
+            duration,
         )
 
 

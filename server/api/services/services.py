@@ -22,7 +22,7 @@ class ClaudeHaiku35CitationsHandler(BaseModelHandler):
     # Model Pricing: https://docs.anthropic.com/en/docs/about-claude/pricing#model-pricing
     PRICING_DOLLARS_PER_MILLION_TOKENS = {"input": 0.80, "output": 4.00}
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
     def handle_request(self, query: str, context: str) -> tuple[str, dict, dict, float]:
@@ -94,7 +94,7 @@ class ClaudeHaiku3Handler(BaseModelHandler):
     # Model Pricing: https://docs.anthropic.com/en/docs/about-claude/pricing#model-pricing
     PRICING_DOLLARS_PER_MILLION_TOKENS = {"input": 0.25, "output": 1.25}
 
-    def __init__(self):
+    def __init__(self)-> None:
         self.client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
     def handle_request(self, query: str, context: str) -> tuple[str, dict, dict, float]:
@@ -146,7 +146,7 @@ class GPT4OMiniHandler(BaseModelHandler):
     # Model Pricing: https://platform.openai.com/docs/pricing
     PRICING_DOLLARS_PER_MILLION_TOKENS = {"input": 0.15, "output": 0.60}
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
     def handle_request(self, query: str, context: str) -> tuple[str, dict, dict, float]:
@@ -180,7 +180,7 @@ class GPT41NanoHandler(BaseModelHandler):
     # Model Pricing: https://platform.openai.com/docs/pricing
     PRICING_DOLLARS_PER_MILLION_TOKENS = {"input": 0.10, "output": 0.40}
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
     def handle_request(self, query: str, context: str) -> tuple[str, dict, dict, float]:
@@ -219,7 +219,7 @@ class ModelFactory:
 
     # HANDLERS doesn't vary per instance so we can use a class method
     @classmethod
-    def get_handler(cls, model_name: str) -> BaseModelHandler:
+    def get_handler(cls, model_name: str) -> BaseModelHandler | None:
         """
         Factory method to get the appropriate model handler based on the model name
 

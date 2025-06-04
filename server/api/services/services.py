@@ -10,20 +10,22 @@ from abc import ABC, abstractmethod
 import anthropic
 import openai
 
+
 class BaseModelHandler(ABC):
     @abstractmethod
     def handle_request(self, query, context):
         pass
 
+
 class ClaudeHaiku35CitationsHandler(BaseModelHandler):
     MODEL = "claude-3-5-haiku-20241022"
     # Model Pricing: https://docs.anthropic.com/en/docs/about-claude/pricing#model-pricing
-    PRICING_DOLLARS_PER_MILLION_TOKENS = {'input': 0.80, 'output': 4.00}
+    PRICING_DOLLARS_PER_MILLION_TOKENS = {"input": 0.80, "output": 4.00}
 
     def __init__(self):
         self.client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
-    def handle_request(self, query: str, context: str)-> tuple[str, dict, dict, float]:
+    def handle_request(self, query: str, context: str) -> tuple[str, dict, dict, float]:
         """
         Handles the request to the Claude Haiku 3.5 model with citations enabled.
         Args:
@@ -41,52 +43,61 @@ class ClaudeHaiku35CitationsHandler(BaseModelHandler):
                 {
                     "role": "user",
                     "content": [
-                        {
-                            "type": "text",
-                            "text": query
-                        },
-
+                        {"type": "text", "text": query},
                         {
                             "type": "document",
-                            "source": {
-                                "type": "content",
-                                "content": context
-                            },
-                            "citations": {"enabled": True}
+                            "source": {"type": "content", "content": context},
+                            "citations": {"enabled": True},
                         },
-
-                    ]
+                    ],
                 }
-            ]
+            ],
         )
         latency = time.time() - start_time
-        
 
         # Response Structure: https://docs.anthropic.com/en/docs/build-with-claude/citations#response-structure
 
         text = []
         cited_text = []
-        for content in message.to_dict()['content']:
-            text.append(content['text'])
-            if 'citations' in content.keys():
-                text.append(" ".join([f"<{citation['start_block_index']} - {citation['end_block_index']}>" for citation in content['citations']]))
-                cited_text.append(" ".join([f"<{citation['start_block_index']} - {citation['end_block_index']}> {citation['cited_text']}" for citation in content['citations']]))
+        for content in message.to_dict()["content"]:
+            text.append(content["text"])
+            if "citations" in content.keys():
+                text.append(
+                    " ".join(
+                        [
+                            f"<{citation['start_block_index']} - {citation['end_block_index']}>"
+                            for citation in content["citations"]
+                        ]
+                    )
+                )
+                cited_text.append(
+                    " ".join(
+                        [
+                            f"<{citation['start_block_index']} - {citation['end_block_index']}> {citation['cited_text']}"
+                            for citation in content["citations"]
+                        ]
+                    )
+                )
 
         full_text = " ".join(text)
 
-        return full_text, message.usage, self.PRICING_DOLLARS_PER_MILLION_TOKENS, latency
-
+        return (
+            full_text,
+            message.usage,
+            self.PRICING_DOLLARS_PER_MILLION_TOKENS,
+            latency,
+        )
 
 
 class ClaudeHaiku3Handler(BaseModelHandler):
     MODEL = "claude-3-haiku-20240307"
     # Model Pricing: https://docs.anthropic.com/en/docs/about-claude/pricing#model-pricing
-    PRICING_DOLLARS_PER_MILLION_TOKENS = {'input': 0.25, 'output': 1.25}
+    PRICING_DOLLARS_PER_MILLION_TOKENS = {"input": 0.25, "output": 1.25}
 
     def __init__(self):
         self.client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
-    def handle_request(self, query: str, context: str)-> tuple[str, dict, dict, float]:
+    def handle_request(self, query: str, context: str) -> tuple[str, dict, dict, float]:
         """
         Handles the request to the Claude Haiku 3 model without citations.
 
@@ -104,44 +115,41 @@ class ClaudeHaiku3Handler(BaseModelHandler):
                 {
                     "role": "user",
                     "content": [
-                        {
-                            "type": "text",
-                            "text": query
-                        },
-
+                        {"type": "text", "text": query},
                         {
                             "type": "document",
-                            "source": {
-                                "type": "content",
-                                "content": context
-                            },
-                            "citations": {"enabled": False}
+                            "source": {"type": "content", "content": context},
+                            "citations": {"enabled": False},
                         },
-
-                    ]
+                    ],
                 }
             ],
         )
         latency = time.time() - start_time
 
         text = []
-        for content in message.to_dict()['content']:
-            text.append(content['text'])
-            
+        for content in message.to_dict()["content"]:
+            text.append(content["text"])
+
         full_text = " ".join(text)
 
-        return full_text, message.usage, self.PRICING_DOLLARS_PER_MILLION_TOKENS, latency
+        return (
+            full_text,
+            message.usage,
+            self.PRICING_DOLLARS_PER_MILLION_TOKENS,
+            latency,
+        )
 
 
 class GPT4OMiniHandler(BaseModelHandler):
     MODEL = "gpt-4o-mini"
     # Model Pricing: https://platform.openai.com/docs/pricing
-    PRICING_DOLLARS_PER_MILLION_TOKENS = {'input': 0.15, 'output': 0.60}
+    PRICING_DOLLARS_PER_MILLION_TOKENS = {"input": 0.15, "output": 0.60}
 
     def __init__(self):
         self.client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
-    def handle_request(self, query: str, context: str)-> tuple[str, dict, dict, float]:
+    def handle_request(self, query: str, context: str) -> tuple[str, dict, dict, float]:
         """
         Handles the request to the GPT-4o Mini model
 
@@ -159,14 +167,18 @@ class GPT4OMiniHandler(BaseModelHandler):
         )
         latency = time.time() - start_time
 
-        return response.output_text, response.usage, self.PRICING_DOLLARS_PER_MILLION_TOKENS, latency
-
+        return (
+            response.output_text,
+            response.usage,
+            self.PRICING_DOLLARS_PER_MILLION_TOKENS,
+            latency,
+        )
 
 
 class GPT41NanoHandler(BaseModelHandler):
     MODEL = "gpt-4.1-nano"
     # Model Pricing: https://platform.openai.com/docs/pricing
-    PRICING_DOLLARS_PER_MILLION_TOKENS = {'input': 0.10, 'output': 0.40}
+    PRICING_DOLLARS_PER_MILLION_TOKENS = {"input": 0.10, "output": 0.40}
 
     def __init__(self):
         self.client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
@@ -189,7 +201,12 @@ class GPT41NanoHandler(BaseModelHandler):
         )
         latency = time.time() - start_time
 
-        return response.output_text, response.usage, self.PRICING_DOLLARS_PER_MILLION_TOKENS, latency
+        return (
+            response.output_text,
+            response.usage,
+            self.PRICING_DOLLARS_PER_MILLION_TOKENS,
+            latency,
+        )
 
 
 class ModelFactory:
@@ -198,9 +215,9 @@ class ModelFactory:
         "CLAUDE_HAIKU_3": ClaudeHaiku3Handler,
         "GPT_4O_MINI": GPT4OMiniHandler,
         "GPT_41_NANO": GPT41NanoHandler,
-        }
+    }
 
-    # HANDLERS doesn't vary per instance so we can use a class method 
+    # HANDLERS doesn't vary per instance so we can use a class method
     @classmethod
     def get_handler(cls, model_name: str) -> BaseModelHandler:
         """

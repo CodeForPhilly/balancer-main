@@ -15,8 +15,12 @@ from services import ModelFactory
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
+#TODO: Add type hints to the function signatures for better clarity and type checking
+
+#TODO: Rename model to model name and query to instructions for clarity
 def evaluate_response(model, query, context, reference):
     """
+    # TODO: Add docstring for evaluate_response function
     """
 
     handler = ModelFactory.get_handler(model)
@@ -78,6 +82,7 @@ if __name__ == "__main__":
     df_evals = pd.DataFrame()
     for index, row in df_in.iterrows():
 
+        #TODO: Rename Model to Model name for clarity
         df_evals = pd.concat([df_evals, evaluate_response(row['Model'], row['Query'], row['Context'], row['Reference'])], axis=0)
         
         logging.info(f"Processed row {index + 1}/{len(df_in)}")

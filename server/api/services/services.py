@@ -10,6 +10,8 @@ import logging
 import anthropic
 import openai
 
+# TODO Add docstrings and type hints to the classes and methods
+
 class BaseModelHandler(ABC):
     @abstractmethod
     def handle_request(self, query, context):

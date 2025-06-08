@@ -5,6 +5,7 @@ import fitz
 from server.api.services.openai_services import openAIServices
 
 # regular expression to match common research white paper titles. Created by Chat-gpt
+# requires at least 3 words, no dates, no version numbers.
 title_regex = re.compile(r'^(?=(?:\b\w+\b[\s:,\-\(\)]*){3,})(?!.*\b(?:19|20)\d{2}\b)(?!.*\bv\d+\b)[A-Za-z0-9][\w\s:,\-\(\)]*[A-Za-z\)]$', re.IGNORECASE)
 
 def generate_title(pdf: fitz.Document) -> str | None:
@@ -13,6 +14,8 @@ def generate_title(pdf: fitz.Document) -> str | None:
         if title_regex.match(document_metadata_title):
             print("suitable title was found in metadata")
             return document_metadata_title.strip()
+        else:
+            print("metadata title did not match regex")
 
     print("Looking for title in first page text")
     first_page = pdf[0]
@@ -23,17 +26,16 @@ def generate_title(pdf: fitz.Document) -> str | None:
         if block[6] == 0 # only include text blocks.
     ]
 
+    # For some reason, extracted PDF text has extra spaces. Collapse them here.
     regex = r"\s{2,}"
     text_blocks = [re.sub(regex, " ", text) for text in text_blocks]
 
-    # replace redundant whitespaces with single space.
     if len(text_blocks) != 0:
         for text in text_blocks:
             if title_regex.match(text):
-                print(f"suitable title was found in first page text {text}")
                 return text
 
-    print("using chatgpt to generate title")
+    print("no suitable title found in first page text. Using GPT-4 to summarize the PDF")
     gpt_title = summarize_pdf(pdf)
     return gpt_title or None
 

@@ -3,7 +3,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from django.http import StreamingHttpResponse
-import os
 from ...services.embedding_services import get_closest_embeddings
 from ...services.conversions_services import convert_uuids
 from ...services.openai_services import openAIServices

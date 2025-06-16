@@ -7,7 +7,6 @@ from django.views.decorators.csrf import csrf_exempt
 from ...models.model_medRule import MedRule
 from .serializers import MedRuleSerializer  # You'll need to create this
 from ..listMeds.models import Medication
-from ..listMeds.serializers import MedicationSerializer
 from ..uploadFile.models import UploadFile
 from ...models.model_embeddings import Embeddings
 

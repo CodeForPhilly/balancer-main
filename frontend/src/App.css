@@ -1,23 +1,23 @@
 @keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+    a:nth-of-type(2) .logo {
+        animation: logo-spin infinite 20s linear;
+    }
 }
 
 @media print {
-  .no-print,
-  button {
-    display: none !important;
-  }
+    .no-print,
+    button {
+        display: none !important;
+    }
 }
 
 @tailwind base;
@@ -25,9 +25,9 @@
 @tailwind utilities;
 
 @layer components {
-  .sidebar-icon {
-    @apply;
-  }
+    .sidebar-icon {
+        @apply;
+    }
 }
 
 /*
@@ -35,61 +35,61 @@
 */
 
 .main {
-  width: 100vw;
-  min-height: 100vh;
-  position: fixed;
-  display: flex;
-  justify-content: center;
-  padding: 120px 24px 160px 24px;
-  pointer-events: none;
+    width: 100vw;
+    min-height: 100vh;
+    position: fixed;
+    display: flex;
+    justify-content: center;
+    padding: 120px 24px 160px 24px;
+    pointer-events: none;
 }
 
 .main:before {
-  background: radial-gradient(circle, rgba(2, 0, 36, 0) 0, #fafafa 100%);
-  position: absolute;
-  content: "";
-  z-index: 2;
-  width: 100%;
-  height: 100%;
-  top: 0;
+    background: radial-gradient(circle, rgba(2, 0, 36, 0) 0, #fafafa 100%);
+    position: absolute;
+    content: "";
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    top: 0;
 }
 
 .dark .main:before {
-  background: #000;
-  position: absolute;
-  content: "";
-  z-index: 2;
-  width: 100%;
-  height: 100%;
-  top: 0;
+    background: #000;
+    position: absolute;
+    content: "";
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    top: 0;
 }
 
 .main:after {
-  content: "";
-  background-image: url("/src/assets/grid.svg");
-  z-index: 1;
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  opacity: 0.4;
-  filter: invert(1);
+    content: "";
+    background-image: url("/src/assets/grid.svg");
+    z-index: 1;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    opacity: 0.4;
+    filter: invert(1);
 }
 
 .dark .main:after {
-  opacity: 0.7; /* Just an example: change the opacity in dark mode */
-  background-image: none;
+    opacity: 0.7; /* Just an example: change the opacity in dark mode */
+    background-image: none;
 }
 
 .gradient {
-  height: fit-content;
-  z-index: 3;
-  width: 100%;
-  max-width: 640px;
-  background-image: radial-gradient(
-      at 27% 37%,
-      hsla(215, 98%, 61%, 1) 0px,
-      transparent 0%
+    height: fit-content;
+    z-index: 3;
+    width: 100%;
+    max-width: 640px;
+    background-image: radial-gradient(
+            at 27% 37%,
+            hsla(215, 98%, 61%, 1) 0px,
+            transparent 0%
     ),
     radial-gradient(at 97% 21%, F5F6F9(125, 98%, 72%, 1) 0px, transparent 50%),
     radial-gradient(at 52% 99%, hsla(354, 98%, 61%, 1) 0px, transparent 50%),
@@ -97,19 +97,19 @@
     radial-gradient(at 97% 96%, F5F6F9(38, 60%, 74%, 1) 0px, transparent 50%),
     radial-gradient(at 33% 50%, hsla(222, 67%, 73%, 1) 0px, transparent 50%),
     radial-gradient(at 79% 53%, hsla(343, 68%, 79%, 1) 0px, transparent 50%);
-  position: absolute;
-  content: "";
-  width: 100%;
-  height: 100%;
-  filter: blur(100px) saturate(150%);
-  top: 80px;
-  opacity: 0.15;
+    position: absolute;
+    content: "";
+    width: 100%;
+    height: 100%;
+    filter: blur(100px) saturate(150%);
+    top: 80px;
+    opacity: 0.15;
 }
 
 @media screen and (max-width: 640px) {
-  .main {
-    padding: 0;
-  }
+    .main {
+        padding: 0;
+    }
 }
 
 /*
@@ -119,7 +119,7 @@
 /* Layout For Whole Site */
 
 .container {
-  @apply relative z-10 mx-auto flex w-full flex-col items-center;
+    @apply relative z-10 mx-auto flex w-full flex-col items-center;
 }
 
 /*
@@ -127,7 +127,7 @@ This is the wording logo in the nav bar
 */
 
 .header_logo {
-  @apply bg-gradient-to-r from-blue-600 via-blue-700 to-blue-600 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-blue-600 via-blue-700 to-blue-600 bg-clip-text text-transparent;
 }
 
 /* Tailwind Styles */
@@ -137,15 +137,7 @@ Font for body
 */
 
 .font_body {
-  @apply  font-satoshi;
-}
-
-/*
-The border style of the container
-*/
-
-.summary_box {
-  @apply rounded-md border  bg-white p-4 px-8 ring-1 hover:ring-slate-300 ;
+    @apply font-satoshi;
 }
 
 /*
@@ -153,15 +145,15 @@ Button
 */
 
 .btnBlue {
-  @apply h-12 rounded-xl border bg-blue-500 px-3 py-1.5 font-satoshi text-white  hover:bg-blue-400;
+    @apply h-12 rounded-xl border bg-blue-500 px-3 py-1.5 font-satoshi text-white  hover:bg-blue-400;
 }
 
 .btnGray {
-  @apply h-12 rounded-xl border bg-gray-500 px-3 py-1.5 font-satoshi text-sm  text-white  hover:bg-blue-400;
+    @apply h-12 rounded-xl border bg-gray-500 px-3 py-1.5 font-satoshi text-sm  text-white  hover:bg-blue-400;
 }
 
 .btnRed {
-  @apply h-12 rounded-xl border bg-red-700 px-3 py-1.5 font-satoshi text-sm  text-white  hover:bg-blue-400;
+    @apply h-12 rounded-xl border bg-red-700 px-3 py-1.5 font-satoshi text-sm  text-white  hover:bg-blue-400;
 }
 
 
@@ -170,16 +162,17 @@ The heading directly under the nav bar.
 */
 
 .head_text {
-  @apply mt-16 text-center text-5xl font-extrabold leading-[1.15] text-black sm:text-6xl;
+    @apply mt-16 text-center text-5xl font-extrabold leading-[1.15] text-black sm:text-6xl;
 }
 
 .desc {
-  @apply mt-7  px-2 text-center font-sans text-3xl font-medium text-gray-800 md:p-0 md:px-0 md:text-5xl;
+    @apply mt-7  px-2 text-center font-sans text-3xl font-medium text-gray-800 md:p-0 md:px-0 md:text-5xl;
 }
+
 .desc1 {
-  @apply mx-auto mt-5 hidden max-w-[75%] text-center  font-satoshi text-lg text-gray-400 sm:text-xl  md:block;
-  font-size: 100%;
-  letter-spacing: 0.03em;
+    @apply mx-auto mt-5 hidden max-w-[75%] text-center  font-satoshi text-lg text-gray-400 sm:text-xl  md:block;
+    font-size: 100%;
+    letter-spacing: 0.03em;
 }
 
 /*
@@ -187,7 +180,7 @@ Input field.
 */
 
 .input {
-  @apply block rounded-md border-0 shadow-sm ring-1 ring-inset bg-white py-3 pl-5 pr-5 font-satoshi text-base transition duration-300 focus:border-0 focus:outline-none focus:ring-2 focus:ring-sky-500 hover:border-0 hover:ring-1 hover:ring-sky-500;
+    @apply block rounded-md border-0 shadow-sm ring-1 ring-inset bg-white py-3 pl-5 pr-5 font-satoshi text-base transition duration-300 focus:border-0 focus:outline-none focus:ring-2 focus:ring-sky-500 hover:border-0 hover:ring-1 hover:ring-sky-500;
 }
 
 /*
@@ -195,7 +188,7 @@ This is for when the input field is loading
 */
 
 .input_loading {
-  @apply block w-full rounded-md border border-gray-300  bg-gray-300 bg-opacity-50 py-3 pl-5 pr-5 font-satoshi text-base font-medium shadow-lg focus:border-black focus:outline-none focus:ring-0;
+    @apply block w-full rounded-md border border-gray-300  bg-gray-300 bg-opacity-50 py-3 pl-5 pr-5 font-satoshi text-base font-medium shadow-lg focus:border-black focus:outline-none focus:ring-0;
 }
 
 /*
@@ -203,11 +196,11 @@ Dropdown field.
 */
 
 .dropdown {
-  @apply block md:w-64 font-satoshi cursor-pointer rounded-md border-0 p-3 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset  sm:text-sm sm:leading-6   focus:outline-none focus:ring-2  focus:ring-sky-500 hover:border-0 hover:ring-1 hover:ring-sky-500 ;
+    @apply block md:w-64 font-satoshi cursor-pointer rounded-md border-0 p-3 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset  sm:text-sm sm:leading-6   focus:outline-none focus:ring-2  focus:ring-sky-500 hover:border-0 hover:ring-1 hover:ring-sky-500 ;
 }
 
 .link_card {
-  @apply flex cursor-pointer items-center justify-between rounded-md border  bg-white p-3 py-2.5 pl-5   ring-1 hover:bg-indigo-100;
+    @apply flex cursor-pointer items-center justify-between rounded-md border  bg-white p-3 py-2.5 pl-5   ring-1 hover:bg-indigo-100;
 }
 
 /*
@@ -215,7 +208,7 @@ Circle background for logos
 */
 
 .copy_btn {
-  @apply flex h-7 w-7 cursor-pointer items-center justify-center  rounded-full bg-white/10 shadow-[inset_10px_-50px_94px_0_rgb(199,199,199,0.2)] md:mr-10;
+    @apply flex h-7 w-7 cursor-pointer items-center justify-center  rounded-full bg-white/10 shadow-[inset_10px_-50px_94px_0_rgb(199,199,199,0.2)] md:mr-10;
 }
 
 /*
@@ -223,58 +216,56 @@ Tooltip. Please see Tooltip.tsx under components folder
 */
 
 .tooltip-container {
-  @apply cursor-pointer;
+    @apply cursor-pointer;
 }
 
 .tooltip {
-  @apply border;
-  position: absolute;
-  /* top: calc(-100% - 50px); */
-  transform: translateX(-50%);
-  background-color: #f4f9ff;
-  color: #111827;
-  padding: 10px;
-  border-radius: 4px;
-  z-index: 1;
-  min-width: 200px;
-  max-width: 500px;
+    @apply border;
+    position: absolute;
+    /* top: calc(-100% - 50px); */
+    transform: translateX(-50%);
+    background-color: #f4f9ff;
+    color: #111827;
+    padding: 10px;
+    border-radius: 4px;
+    z-index: 1;
+    min-width: 200px;
+    max-width: 500px;
 }
 
 .material-symbols-outlined {
-  font-size: 18px;
+    font-size: 18px;
 }
 
 /*
 Error message. Please see ErrorMessages.tsx under components folder
 */
 @keyframes ellipsis {
-  0%, 20% {
-    content: '';
-  }
-  40% {
-    content: '.';
-  }
-  60% {
-    content: '..';
-  }
-  80%, 100% {
-    content: '...';
-  }
+    0%, 20% {
+        content: '';
+    }
+    40% {
+        content: '.';
+    }
+    60% {
+        content: '..';
+    }
+    80%, 100% {
+        content: '...';
+    }
 }
 
 .thinking {
-  display: inline-block;
-  font-size: 16px;
-  vertical-align: middle;
-  animation: ellipsis 1.5s infinite;
+    font-size: 16px;
+
+    animation: ellipsis 1.5s infinite;
 }
 
 .thinking::after {
-  display: inline-block;
-  width: 20px;
-  animation: ellipsis 2s infinite;
-  content: '';
-  font-weight: bold;
-  margin-left: 5px;
+
+    animation: ellipsis 2s infinite;
+    content: '';
+    font-weight: bold;
+
 }
 

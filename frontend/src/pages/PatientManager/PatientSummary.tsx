@@ -1,11 +1,13 @@
-import {useState, useEffect} from "react";
+import React, {useState, useEffect, useRef} from "react";
 import axios from "axios";
 import {PatientInfo} from "./PatientTypes";
 import Tooltip from "../../components/Tooltip";
 import TypingAnimation from "../../components/Header/components/TypingAnimation.tsx";
-import {FaPencilAlt, FaPrint, FaMinus, FaBug} from "react-icons/fa";
+import {FaPencilAlt, FaPrint, FaMinus, FaRegThumbsDown} from "react-icons/fa";
 import FeedbackForm from "../Feedback/FeedbackForm";
 import Modal from "../../components/Modal/Modal";
+import {EllipsisVertical} from "lucide-react";
+
 
 interface PatientSummaryProps {
     showSummary: boolean;
@@ -217,6 +219,39 @@ const PatientSummary = ({
         window.print();
     };
 
+    const [isMobileDropDownOpen, setIsMobileDropDownOpen] = useState(false)
+    const mobileMenuRef = useRef<HTMLDivElement>(null);
+
+    const handleMobileDropDownMenu = () => {
+        setIsMobileDropDownOpen(!isMobileDropDownOpen)
+    }
+
+    const MobileMenuItem = ({item, onClick}: { item: string, onClick: (e: React.MouseEvent) => void }) => {
+        const handleClick = (e: React.MouseEvent) => {
+            e.stopPropagation();
+            onClick?.(e);
+            setIsMobileDropDownOpen(false)
+        }
+        return (<div
+            className="flex pt-1 py-1 px-3 text-base font-semibold"
+            onClick={handleClick}>
+            {item}</div>)
+    }
+
+    useEffect(() => {
+        const handleClickOutsideMenu = (event: MouseEvent) => {
+            if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node)) {
+                setIsMobileDropDownOpen(false)
+            }
+        }
+        if (isMobileDropDownOpen) {
+            document.addEventListener('mousedown', handleClickOutsideMenu);
+        }
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutsideMenu);
+        };
+    }, [isMobileDropDownOpen]);
+
     const renderMedicationsSection = () => (
         <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
             <dt className="flex text-sm font-medium leading-6 text-gray-900">
@@ -273,9 +308,10 @@ const PatientSummary = ({
                     <>
                         <div className="justify-between lg:w-[860px]">
                             {!showSummary && (
-                                <div className="font_body rounded-md border bg-white p-2 px-3 ring-1 hover:ring-slate-300 md:p-4 md:px-8 lg:w-[860px]">
+                                <div
+                                    className="font_body rounded-md border bg-white p-2 px-3 ring-1 hover:ring-slate-300 md:p-4 md:px-8 lg:w-[860px] cursor-pointer"
+                                    onClick={handleClickSummary}>
                                     <div
-                                        onClick={handleClickSummary}
                                         className="flex items-center justify-between"
                                     >
                                         <h2 className="text-xl font-bold text-gray-600 cursor-pointer header_logo font-satoshi hover:text-blue-600">
@@ -303,44 +339,97 @@ const PatientSummary = ({
                             {showSummary && (
                                 <div className="p-2 px-3 bg-white border rounded-md font_body ring-1 hover:ring-slate-300 md:p-4 md:px-8">
                                     <div>
-                                        <div className="flex items-center justify-between text-xl">
+                                        <div className="relative flex items-center justify-between text-xl">
                                             <h2 className="font-bold text-gray-600 cursor-pointer header_logo font-satoshi hover:text-blue-600">
                                                 Summary
                                             </h2>
-
-                                            <aside className="flex w-1/3 flex-row justify-end space-x-2 sm:w-auto">
+                                            {isMobileDropDownOpen ? (
+                                                <div className="flex justify-center items-center">
+                                                    <div
+                                                        ref={mobileMenuRef}
+                                                        className="absolute z-10 py-1.5 flex bg-white flex-col
+                                                    gap-2 border border-blue-300 -translate-x-[73px] translate-y-[84px]
+                                                    shadow-md rounded-[3px] w-36 no-print">
+                                                        <MobileMenuItem item="Edit" onClick={handlePatientEdit}/>
+                                                        <MobileMenuItem item="Print" onClick={handlePatientPrint}/>
+                                                        <MobileMenuItem
+                                                            item="Report Issue"
+                                                            onClick={(event) => {
+                                                                if (patientInfo.ID) {
+                                                                    handleOpenModal(patientInfo.ID, event);
+                                                                }
+                                                            }}
+                                                        />
+                                                    </div>
+                                                    <div className="flex justify-center items-center gap-3">
+                                                        <div
+                                                            className="p-1.5 sm:hidden flex justify-center items-center h-7 w-7 bg-blue-100 rounded-[3px]"
+                                                            onClick={handleMobileDropDownMenu}>
+                                                            <EllipsisVertical/>
+                                                        </div>
+                                                        <div
+                                                            className="sm:hidden text-2xl text-black bg-transparent -mt-[2px]"
+                                                            onClick={handleClickSummary}>
+                                                            &times;
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="flex justify-center items-center gap-3">
+                                                    <div
+                                                        className="p-1.5 sm:hidden flex justify-center items-center h-7 w-7"
+                                                        onClick={handleMobileDropDownMenu}>
+                                                        <EllipsisVertical/>
+                                                    </div>
+                                                    <div
+                                                        className="sm:hidden text-2xl text-black bg-transparent -mt-[2px]"
+                                                        onClick={handleClickSummary}>
+                                                        &times;
+                                                    </div>
+                                                </div>
+                                            )}
+                                            <aside className="hidden sm:flex gap-1.5">
                                                 <button
                                                     onClick={handlePatientPrint}
-                                                    className="p-3 text-sm text-gray-900 border rounded-lg hover:text-gray-800 no-print">
+                                                    className="p-3 text-sm text-gray-800 rounded-md hover:bg-gray-100 no-print">
 
-                                                    <FaPrint className="inline-block"/> Print
+                                                    <div className=" flex items-center gap-x-1">
+                                                        <FaPrint/>
+                                                        <span>Print</span>
+                                                    </div>
+
                                                 </button>
                                                 <button
                                                     onClick={handlePatientEdit}
-                                                    className="p-3 text-sm text-gray-900 border rounded-lg hover:text-gray-800 no-print"
+                                                    className="p-3 text-sm text-gray-800 rounded-md hover:bg-gray-100 no-print"
                                                 >
-                                                    <FaPencilAlt className="inline-block"/> Edit
+                                                    <div className=" flex items-center gap-x-1">
+                                                        <FaPencilAlt/>
+                                                        <span>Edit</span>
+                                                    </div>
                                                 </button>
-
                                                 <button
-                                                    className="p-2 sm:p-3  text-sm text-red-500 border rounded-lg hover:text-red-500  hover:bg-gray-100 hover:border-red-500 no-print"
+                                                    className="p-3 text-sm text-gray-800 rounded-md hover:text-red-500 hover:bg-gray-100 no-print"
                                                     onClick={(event) => {
                                                         if (patientInfo.ID) {
                                                             handleOpenModal(patientInfo.ID, event);
                                                         }
                                                     }}
                                                 >
-                                                    <FaBug className="inline-block"/> Report Issue
+                                                    <div className=" flex items-center gap-x-1">
+                                                        <FaRegThumbsDown/>
+                                                        <span> Report Issue </span>
+                                                    </div>
                                                 </button>
-                                                
                                                 <button
                                                     onClick={handleClickSummary}
-                                                    className="p-3 text-sm text-gray-900 border rounded-lg hover:text-gray-800 no-print">
-                                                    <FaMinus className="inline-block"/> Hide
+                                                    className="p-3 text-sm text-gray-800 rounded-md hover:bg-gray-100 no-print">
+                                                    <div className=" flex items-center gap-x-1">
+                                                        <FaMinus/>
+                                                        <span>Hide</span>
+                                                    </div>
                                                 </button>
                                             </aside>
-
-
                                         </div>
                                     </div>
                                     <div className="mt-2 border-b border-gray-900/10">

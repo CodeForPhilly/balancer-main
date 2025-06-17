@@ -7,6 +7,8 @@ It supports batch evalaution via a configuration CSV and produces a detailed met
 
 ## Usage
 
+This script evalutes LLM outputs using the `lighteval` library: https://huggingface.co/docs/lighteval/en/metric-list#automatic-metrics-for-generative-tasks
+
 Ensure you have the `lighteval` library and any model SDKs (e.g., OpenAI, Anthropic) configured properly.
 
 
@@ -16,9 +18,9 @@ python evals.py --config path/to/config.csv --reference path/to/reference.csv --
 
 The arguments to the script are:
 
-- Path to the config CSV file (model, query, context)
-- Path to the reference CSV file
-- Path where the evaluation resulst will be saved
+- Path to the config CSV file: Must include the columns "Model Name" and "Query"
+- Path to the reference CSV file: Must include the columns "Context" and "Reference"
+- Path where the evaluation resuls will be saved
 
 
 The script outputs a CSV with the following columns:

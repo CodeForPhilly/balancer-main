@@ -7,7 +7,7 @@ It supports batch evalaution via a configuration CSV and produces a detailed met
 
 ## Usage
 
-This script evalutes LLM outputs using the `lighteval` library: https://huggingface.co/docs/lighteval/en/metric-list#automatic-metrics-for-generative-tasks
+This script evaluates LLM outputs using the `lighteval` library: https://huggingface.co/docs/lighteval/en/metric-list#automatic-metrics-for-generative-tasks
 
 Ensure you have the `lighteval` library and any model SDKs (e.g., OpenAI, Anthropic) configured properly.
 

@@ -4,6 +4,12 @@ Evaluate LLM outputs using multiple metrics and compute associated costs
 
 # TODO: Add tests on a small dummy dataset to confirm it handles errors gracefully and produces expected outputs
 
+import sys
+import os
+
+# Ensure the parent directory is in the path to import ModelFactory
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 import argparse
 import logging
 
@@ -11,7 +17,7 @@ import pandas as pd
 from lighteval.tasks.requests import Doc
 from lighteval.metrics.metrics_sample import Extractiveness
 
-from services import ModelFactory
+from server.api.services.llm_services import ModelFactory
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"

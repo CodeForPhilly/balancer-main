@@ -1,11 +1,13 @@
 
-# LLM Output Evaluator
+# Evaluations
 
-This script evaluates the outputs of Large Language Models (LLMs) and estimates the associated token usage and cost.
+## LLM Output Evaluator
+
+The `evals` script evaluates the outputs of Large Language Models (LLMs) and estimates the associated token usage and cost.
 
 It supports batch evalaution via a configuration CSV and produces a detailed metrics report in CSV format.
 
-## Usage
+### Usage
 
 This script evaluates LLM outputs using the `lighteval` library: https://huggingface.co/docs/lighteval/en/metric-list#automatic-metrics-for-generative-tasks
 

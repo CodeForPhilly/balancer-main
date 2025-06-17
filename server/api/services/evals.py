@@ -88,7 +88,12 @@ if __name__ == "__main__":
     # Remove the trailing whitespace from column names
     df_config.columns = df_config.columns.str.strip()
 
-    # TODO: Check if the required columns are present
+    # Check if the required columns are present
+    required_columns = ["Model Name", "Query"]
+    if not all(col in df_config.columns for col in required_columns):
+        raise ValueError(
+            f"Config DataFrame must contain the following columns: {required_columns}"
+        )
 
     # Check if all models in the config are supported by ModelFactory
     if not all(
@@ -102,6 +107,15 @@ if __name__ == "__main__":
     df_reference = pd.read_csv(args.reference)
     logging.info(f"Reference DataFrame shape: {df_reference.shape}")
     logging.info(f"Reference DataFrame columns: {df_reference.columns.tolist()}")
+
+    # Remove the trailing whitespace from column names
+    df_reference.columns = df_reference.columns.str.strip()
+    # Check if the required columns are present
+    required_columns = ["Context", "Reference"]
+    if not all(col in df_reference.columns for col in required_columns):
+        raise ValueError(
+            f"Reference DataFrame must contain the following columns: {required_columns}"
+        )
 
     # Cross join the config and reference DataFrames
     df_in = df_config.merge(df_reference, how="cross")

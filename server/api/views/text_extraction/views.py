@@ -1,5 +1,7 @@
 import os
-from ...services.openai_services import openAIServices
+import json
+import re
+
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -7,15 +9,27 @@ from rest_framework import status
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 import anthropic
-import json
-import re
+
+from ...services.openai_services import openAIServices
 from api.models.model_embeddings import Embeddings
 
 
-# TODO: Add docstrings and type hints
-def anthropic_citations(client, content_chunks, user_prompt):
+def anthropic_citations(client: anthropic.Client, user_prompt: str, content_chunks: list) -> tuple:
     """
+    Sends a message to Anthropic Citations and extract and format the response 
+
+    Parameters
+    ----------
+    client: An instance of the Anthropic API client used to make the request
+    user_prompt: The user's question or instruction to be processed by the model
+    content_chunks: A list of text chunks that provide context for the model to use during generation
+
+    Returns
+    -------
+    tuple
+
     """
+
 
     message = client.messages.create(
         model="claude-3-5-haiku-20241022",
@@ -93,6 +107,7 @@ class RuleExtractionAPIView(APIView):
 
             query = Embeddings.objects.filter(upload_file__guid=guid)
 
+            # TODO: Format into the Anthropic API"s expected input format in the anthropic_citations function
             chunks = [{"type": "text", "text": chunk.text} for chunk in query]
 
             texts, cited_texts = anthropic_citations(

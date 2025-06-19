@@ -2,7 +2,7 @@ import re
 
 import fitz
 
-from server.api.services.openai_services import openAIServices
+from ...services.openai_services import openAIServices
 
 # regular expression to match common research white paper titles. Created by Chat-gpt
 # requires at least 3 words, no dates, no version numbers.

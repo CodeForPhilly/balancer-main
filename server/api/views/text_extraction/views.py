@@ -13,6 +13,24 @@ import anthropic
 from ...services.openai_services import openAIServices
 from api.models.model_embeddings import Embeddings
 
+USER_PROMPT = """
+I'm creating a system to analyze medical research. It processes peer-reviewed papers to extract key details
+
+Act as a seasoned physician or medical professional who treat patients with bipolar disorder
+
+Identify rules for medication inclusion or exclusion based on medical history or concerns 
+
+Return an output with the same structure as these examples:
+
+The rule is history of suicide attempts. The type of rule is "INCLUDE". The reason is lithium is the 
+only medication on the market that has been proven to reduce suicidality in patients with bipolar disorder.
+The medications for this rule are lithium.
+
+The rule is weight gain concerns. The type of rule is "EXCLUDE". The reason is Seroquel, Risperdal, Abilify, and 
+Zyprexa are known for causing weight gain. The medications for this rule are Quetiapine, Aripiprazole, Olanzapine, Risperidone
+}
+"""
+
 
 def anthropic_citations(client: anthropic.Client, user_prompt: str, content_chunks: list) -> tuple:
     """
@@ -82,27 +100,8 @@ class RuleExtractionAPIView(APIView):
     def get(self, request):
         try:
 
-            client = anthropic.Anthropic(
-                api_key=os.getenv("ANTHROPIC_API_KEY"))
-
-            user_prompt = """
-            I'm creating a system to analyze medical research. It processes peer-reviewed papers to extract key details
-
-            Act as a seasoned physician or medical professional who treat patients with bipolar disorder
-
-            Identify rules for medication inclusion or exclusion based on medical history or concerns
-
-            Return an output with the same structure as these examples:
-
-            The rule is history of suicide attempts. The type of rule is "INCLUDE". The reason is lithium is the
-            only medication on the market that has been proven to reduce suicidality in patients with bipolar disorder.
-            The medications for this rule are lithium.
-
-            The rule is weight gain concerns. The type of rule is "EXCLUDE". The reason is Seroquel, Risperdal, Abilify, and
-            Zyprexa are known for causing weight gain. The medications for this rule are Quetiapine, Aripiprazole, Olanzapine, Risperidone
-            }
-            """
-
+            client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+            
             guid = request.query_params.get('guid')
 
             query = Embeddings.objects.filter(upload_file__guid=guid)
@@ -110,8 +109,8 @@ class RuleExtractionAPIView(APIView):
             # TODO: Format into the Anthropic API"s expected input format in the anthropic_citations function
             chunks = [{"type": "text", "text": chunk.text} for chunk in query]
 
-            texts, cited_texts = anthropic_citations(
-                client, chunks, user_prompt)
+            texts, cited_texts = anthropic_citations(client, USER_PROMPT, chunks)
+
 
             return Response({"texts": texts, "cited_texts": cited_texts}, status=status.HTTP_200_OK)
 

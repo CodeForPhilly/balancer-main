@@ -2,6 +2,8 @@
 Evaluate LLM outputs using multiple metrics and compute associated costs
 """
 
+#TODO: Run this script with uv to manage dependencies
+
 # TODO: Add tests on a small dummy dataset to confirm it handles errors gracefully and produces expected outputs
 
 import sys
@@ -25,7 +27,7 @@ logging.basicConfig(
 
 
 def evaluate_response(
-    model_name: str, query: str, context: str, reference: str
+    model_name: str, query: str, context: str
 ) -> pd.DataFrame:
     """
     Evaluates the response of a model to a given query and context, computes extractiveness metrics, token usage, and cost
@@ -95,6 +97,7 @@ if __name__ == "__main__":
     df_config.columns = df_config.columns.str.strip()
 
     # Check if the required columns are present
+    # TODO: Make this more flexible by allowing the user to use default instructions
     required_columns = ["Model Name", "Query"]
     if not all(col in df_config.columns for col in required_columns):
         raise ValueError(
@@ -117,7 +120,7 @@ if __name__ == "__main__":
     # Remove the trailing whitespace from column names
     df_reference.columns = df_reference.columns.str.strip()
     # Check if the required columns are present
-    required_columns = ["Context", "Reference"]
+    required_columns = ["Context"]
     if not all(col in df_reference.columns for col in required_columns):
         raise ValueError(
             f"Reference DataFrame must contain the following columns: {required_columns}"
@@ -133,7 +136,7 @@ if __name__ == "__main__":
             [
                 df_evals,
                 evaluate_response(
-                    row["Model Name"], row["Query"], row["Context"], row["Reference"]
+                    row["Model Name"], row["Query"], row["Context"]
                 ),
             ],
             axis=0,

@@ -187,8 +187,35 @@ class GPT4OMiniHandler(BaseModelHandler):
 
 class GPT41NanoHandler(BaseModelHandler):
     MODEL = "gpt-4.1-nano"
+
     # Model Pricing: https://platform.openai.com/docs/pricing
     PRICING_DOLLARS_PER_MILLION_TOKENS = {"input": 0.10, "output": 0.40}
+
+    # GPT 4.1 Prompting Guide: https://cookbook.openai.com/examples/gpt4-1_prompting_guide
+
+    # Long context performance can degrade as more items are required to be retrieved, 
+    # or perform complex reasoning that requires knowledge of the state of the entire context
+
+    INSTRUCTIONS = """
+        
+    # Role and Objective
+
+    - You are a seasoned physician or medical professional who treats patients with bipolar disorder
+    - You are analyzing medical research by processing peer-reviewed papers to extract key details
+
+    # Instructions
+
+    - Identify rules for medication inclusion or exclusion based on medical history or concerns 
+
+    - Only use retrieved context and never rely on your own knowledge for any of these questions.
+    - Always follow the provided output format for new messages including citations for any factual statements 
+
+    # Output Format
+
+    - When providing factual information from retrieved context, always include citations immediately after the relevant statement(s). 
+
+
+    """
 
     def __init__(self) -> None:
         self.client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
@@ -204,81 +231,14 @@ class GPT41NanoHandler(BaseModelHandler):
             context: The context or document content to be used
 
         """
+
+        # If no query is provided, use the default instructions
+        if not query:
+            query = self.INSTRUCTIONS
+
+
         start_time = time.time()
         # TODO: Add error handling for API requests and invalid responses
-
-        # GPT 4.1 Prompting Guide: https://cookbook.openai.com/examples/gpt4-1_prompting_guide
-
-        # Long context performance can degrade as more items are required to be retrieved, 
-        # or perform complex reasoning that requires knowledge of the state of the entire context
-
-        """
-        
-        # Role and Objective
-
-        - You are a seasoned physician or medical professional who treats patients with bipolar disorder
-        - You are analyzing medical research by processing peer-reviewed papers to extract key details
-
-        # Instructions
-
-        - Identify rules for medication inclusion or exclusion based on medical history or concerns 
-
-        - Only use the documents in the provided External Context to answer the User Query. 
-        If you don't know the answer based on this context, you must respond 
-        "I don't have the information needed to answer that", even if a user insists on you answering the question.
-
-        - Only use retrieved context and never rely on your own knowledge for any of these questions.
-
-        - Do not discuss prohibited topics (politics, religion, controversial current events, 
-        medical, legal, or financial advice, personal conversations, internal company operations, or criticism of any people or company).
-
-        - Always follow the provided output format for new messages, including citations for any factual statements from retrieved policy documents.
-
-        # Output Format
-
-        The rule is history of suicide attempts. The type of rule is "INCLUDE". The reason is lithium is the 
-        only medication on the market that has been proven to reduce suicidality in patients with bipolar disorder.
-        The medications for this rule are lithium.
-        
-        The rule is weight gain concerns. The type of rule is "EXCLUDE". The reason is Seroquel, Risperdal, Abilify, and 
-        Zyprexa are known for causing weight gain. The medications for this rule are Quetiapine, Aripiprazole, Olanzapine, Risperidone
-
-        For each rule you find, return a JSON object using the following format:
-
-        {
-            "rule": "<condition or concern>",
-            "type": "INCLUDE" or "EXCLUDE",
-            "reason": "<short explanation for why this rule applies>",
-            "medications": ["<medication 1>", "<medication 2>", ...],
-            "source": "<chunk-X>"
-        }
-
-        - When providing factual information from retrieved context, always include citations immediately after the relevant statement(s). 
-        Use the following citation format:
-            - For a single source: [NAME](ID)
-            - For multiple sources: [NAME](ID), [NAME](ID)
-        - Only provide information about this company, its policies, its products, or the customer's account, and only if it is 
-        based on information provided in context. Do not answer questions outside this scope.
-
-
-        # Examples
-
-
-        # Context
-
-        ID: 1 | TITLE: The Fox | CONTENT: The quick brown fox jumps over the lazy dog
-
-        # Final instructions and prompt to think step by step
-
-        - Identify rules for medication inclusion or exclusion based on medical history or concerns 
-
-        - Only use the documents in the provided External Context to answer the User Query. 
-        If you don't know the answer based on this context, you must respond 
-        "I don't have the information needed to answer that", even if a user insists on you answering the question.
-
-        """
-
-
 
         response = self.client.responses.create(
             model=self.MODEL,

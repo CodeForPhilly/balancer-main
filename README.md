@@ -46,6 +46,22 @@ Running pgAdmin:
 - The first time you use `pgAdmin` after building the Docker containers you will need to register the server. 
 The `Host name/address`, `Username` and `Password` are specified in  `balancer-main/docker-compose.yml`
 
+## Kubernetes
+
+### Prereqs
+
+- Install ([Devbox](https://www.jetify.com/devbox))
+
+### Steps to reproduce
+
+Inside root dir of balancer
+
+```bash
+devbox shell
+devbox create:cluster
+devbox run deploy:balancer
+```
+
 ## Architecture
 
 The Balancer website is a Postgres, Django REST, and React project. The source code layout is:

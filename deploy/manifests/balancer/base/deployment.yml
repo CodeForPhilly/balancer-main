@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: balancer
+    service: backend
+  name: balancer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: balancer
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: balancer
+    spec:
+      containers:
+        - image: chrissst/balancer
+          name: balancer
+          envFrom:
+            - configMapRef:
+                name: balancer-config
+          ports:
+            - containerPort: 8000

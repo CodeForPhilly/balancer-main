@@ -42,7 +42,8 @@ Start the Postgres, Django REST, and React services by starting Docker Desktop a
 - Download a sample of papers to upload from [https://balancertestsite.com](https://balancertestsite.com/) 
 - The email and password of `pgAdmin` are specified in `balancer-main/docker-compose.yml`
 - The first time you use `pgAdmin` after building the Docker containers you will need to register the server.
-The `Host name/address`, `Username` and `Password` are specified in  `balancer-main/docker-compose.yml`
+    - The `Host name/address` is the Postgres server service name in the Docker Compose file
+    - The `Username` and `Password` are the Postgres server environment variables in the Docker Compose file
 - You can use the below code snippet to  query the database from a Jupyter notebook: 
 
 ```

@@ -4,4 +4,8 @@ kind: Kustomization
 resources:
   - "../../base"
 
+images:
+  - name: chrissst/balancer
+    newTag: v1
+
 namespace: balancer

@@ -5,7 +5,8 @@
     "argocd@latest",
     "kubernetes-helm@latest",
     "kind@latest",
-    "k9s@latest"
+    "k9s@latest",
+    "kustomize@latest"
   ],
   "shell": {
     "init_hook": [
@@ -13,7 +14,7 @@
     ],
     "scripts": {
       "create:cluster": [
-        "kind create cluster --name devbox --wait 60s --config kind-config.yml",
+        "kind create cluster --name devbox --wait 60s",
         "kubectl cluster-info"
       ],
       "deploy:balancer": [

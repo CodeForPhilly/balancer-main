@@ -50,7 +50,22 @@ The `Host name/address`, `Username` and `Password` are specified in  `balancer-m
 
 ### Prereqs
 
-- Install ([Devbox](https://www.jetify.com/devbox))
+- Install [Devbox](https://www.jetify.com/devbox)
+- Run the following script with admin privileges:
+
+```bash
+HOSTNAME="balancertestsite.com"
+DOCKER_IP=$(docker network inspect kind -f '{{(index .IPAM.Config 0).Gateway}}')
+echo "Docker IP: $DOCKER_IP"
+
+# Check if the correct line already exists
+if grep -q "^$DOCKER_IP[[:space:]]\+$HOSTNAME" /etc/hosts; then
+  echo "Entry for $HOSTNAME with IP $DOCKER_IP already exists in /etc/hosts"
+else
+  echo "Updating /etc/hosts for $HOSTNAME"
+  sudo sed -i "/[[:space:]]$HOSTNAME/d" /etc/hosts
+  echo "$DOCKER_IP      $HOSTNAME" | sudo tee -a /etc/hosts
+fi
 
 ### Steps to reproduce
 

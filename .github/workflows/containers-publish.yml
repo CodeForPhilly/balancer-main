@@ -45,22 +45,14 @@ jobs:
 
           echo "Using: ${DOCKER_REPOSITORY}/*:${DOCKER_TAG}"
 
-      - name: "Pull previous Docker container image: backend:latest"
-        run: docker pull "${DOCKER_REPOSITORY}/backend:latest" || true
-
       - name: "Build Docker container image: backend:latest"
         run: |
           cd server
           docker build \
-            --cache-from "${DOCKER_REPOSITORY}/backend:latest" \
             --file Dockerfile.prod \
-            --tag "${DOCKER_REPOSITORY}/backend:latest" \
             --tag "${DOCKER_REPOSITORY}/backend:${DOCKER_TAG}" \
             .
           cd ..
-
-      - name: Push Docker container image backend:latest
-        run: docker push "${DOCKER_REPOSITORY}/backend:latest"
 
       - name: Push Docker container image backend:${DOCKER_TAG}
         run: docker push "${DOCKER_REPOSITORY}/backend:${DOCKER_TAG}"

@@ -46,6 +46,40 @@ Running pgAdmin:
 - The first time you use `pgAdmin` after building the Docker containers you will need to register the server. 
 The `Host name/address`, `Username` and `Password` are specified in  `balancer-main/docker-compose.yml`
 
+## Local Kubernetes Deployment
+
+### Prereqs
+
+- Fill the configmap with the [env vars](./deploy/manifests/balancer/base/configmap.yml)
+- Install [Devbox](https://www.jetify.com/devbox)
+- Run the following script with admin privileges:
+
+```bash
+HOSTNAME="balancertestsite.com"
+LOCAL_IP="127.0.0.1"
+
+# Check if the correct line already exists
+if grep -q "^$LOCAL_IP[[:space:]]\+$HOSTNAME" /etc/hosts; then
+  echo "Entry for $HOSTNAME with IP $LOCAL_IP already exists in /etc/hosts"
+else
+  echo "Updating /etc/hosts for $HOSTNAME"
+  sudo sed -i "/[[:space:]]$HOSTNAME/d" /etc/hosts
+  echo "$LOCAL_IP      $HOSTNAME" | sudo tee -a /etc/hosts
+fi
+```
+
+### Steps to reproduce
+
+Inside root dir of balancer
+
+```bash
+devbox shell
+devbox create:cluster
+devbox run deploy:balancer
+```
+
+The website should be available in [https://balancertestsite.com:30219/](https://balancertestsite.com:30219/)
+
 ## Architecture
 
 The Balancer website is a Postgres, Django REST, and React project. The source code layout is:

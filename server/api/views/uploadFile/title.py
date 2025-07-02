@@ -2,11 +2,14 @@ import re
 
 import fitz
 
-from ...services.openai_services import openAIServices
+from api.services.openai_services import openAIServices
+
 
 # regular expression to match common research white paper titles. Created by Chat-gpt
 # requires at least 3 words, no dates, no version numbers.
-title_regex = re.compile(r'^(?=(?:\b\w+\b[\s:,\-\(\)]*){3,})(?!.*\b(?:19|20)\d{2}\b)(?!.*\bv\d+\b)[A-Za-z0-9][\w\s:,\-\(\)]*[A-Za-z\)]$', re.IGNORECASE)
+title_regex = re.compile(
+    r'^(?=(?:\b\w+\b[\s:,\-\(\)]*){3,})(?!.*\b(?:19|20)\d{2}\b)(?!.*\bv\d+\b)[A-Za-z0-9][\w\s:,\-\(\)]*[A-Za-z\)]$', re.IGNORECASE)
+
 
 def generate_title(pdf: fitz.Document) -> str | None:
     document_metadata_title = pdf.metadata["title"]
@@ -23,7 +26,7 @@ def generate_title(pdf: fitz.Document) -> str | None:
     text_blocks = [
         block[4].strip().replace("\n", " ")
         for block in first_page_blocks
-        if block[6] == 0 # only include text blocks.
+        if block[6] == 0  # only include text blocks.
     ]
 
     # For some reason, extracted PDF text has extra spaces. Collapse them here.
@@ -35,7 +38,8 @@ def generate_title(pdf: fitz.Document) -> str | None:
             if title_regex.match(text):
                 return text
 
-    print("no suitable title found in first page text. Using GPT-4 to summarize the PDF")
+    print(
+        "no suitable title found in first page text. Using GPT-4 to summarize the PDF")
     gpt_title = summarize_pdf(pdf)
     return gpt_title or None
 
@@ -52,5 +56,6 @@ def summarize_pdf(pdf: fitz.Document) -> str:
 
     # UploadFile model title is limited to 255 chars.
     prompt = "Please provide a title for this document. The title should be less than 256 characters and will be displayed on a webpage."
-    response = openAIServices.openAI(first_page_content, prompt, model='gpt-4o', temp=0.0)
+    response = openAIServices.openAI(
+        first_page_content, prompt, model='gpt-4o', temp=0.0)
     return response.choices[0].message.content

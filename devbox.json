@@ -1,0 +1,50 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/0.14.2/.schema/devbox.schema.json",
+  "packages": [
+    "kubectl@latest",
+    "argocd@latest",
+    "kubernetes-helm@latest",
+    "kind@latest",
+    "k9s@latest",
+    "kustomize@latest",
+    "jq@latest"
+  ],
+  "shell": {
+    "init_hook": [
+      "echo 'Welcome to devbox!' > /dev/null"
+    ],
+    "scripts": {
+      "create:cluster": [
+        "kind create cluster --name devbox --wait 60s --config ./deploy/kind-config.yml",
+        "kubectl cluster-info"
+      ],
+      "deploy:balancer": [
+        "devbox run install:prereqs",
+        "devbox run install:balancer"
+      ],
+      "install:prereqs": [
+        "devbox run install:cert-manager",
+        "devbox run install:ingress-nginx"
+      ],
+      "install:balancer": [
+        "kubectl create namespace balancer || true",
+        "kubectl apply -k ./deploy/manifests/balancer/overlays/dev",
+        "echo 'Balancer deployed successfully!'",
+        "echo 'You can access the balancer site at:'",
+        "echo \"HTTPS: https://balancertestsite.com:$(kubectl get svc -n ingress-nginx -o json ingress-nginx-controller | jq .spec.ports[1].nodePort)\""
+      ],
+      "install:cert-manager": [
+        "helm repo add jetstack https://charts.jetstack.io || true",
+        "helm repo update jetstack",
+        "helm upgrade --install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --set crds.enabled=true",
+        "kubectl apply -f ./deploy/manifests/cert-manager"
+      ],
+      "install:ingress-nginx": [
+        "helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx || true",
+        "helm repo update ingress-nginx",
+        "helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx --namespace ingress-nginx --create-namespace --set controller.service.nodePorts.http=31880 --set controller.service.nodePorts.https=30219",
+        "kubectl wait --namespace ingress-nginx --for=condition=Available deployment/ingress-nginx-controller --timeout=120s"
+      ]
+    }
+  }
+}

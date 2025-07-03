@@ -7,9 +7,7 @@ import time
 import logging
 from abc import ABC, abstractmethod
 
-import anthropic
 import openai
-
 
 class BaseModelHandler(ABC):
     @abstractmethod
@@ -18,136 +16,7 @@ class BaseModelHandler(ABC):
     ) -> tuple[str, dict[str, int], dict[str, float], float]:
         pass
 
-
-class ClaudeHaiku35CitationsHandler(BaseModelHandler):
-    MODEL = "claude-3-5-haiku-20241022"
-    # Model Pricing: https://docs.anthropic.com/en/docs/about-claude/pricing#model-pricing
-    PRICING_DOLLARS_PER_MILLION_TOKENS = {"input": 0.80, "output": 4.00}
-
-    def __init__(self) -> None:
-        self.client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
-
-    def handle_request(
-        self, query: str, context: str
-    ) -> tuple[str, dict[str, int], dict[str, float], float]:
-        """
-        Handles the request to the Claude Haiku 3.5 model with citations enabled
-
-        Args:
-            query: The user query to be processed
-            context: The context or document content to be used for citations
-
-        """
-
-        start_time = time.time()
-        # TODO: Add error handling for API requests and invalid responses
-        message = self.client.messages.create(
-            model=self.MODEL,
-            max_tokens=1024,
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": query},
-                        {
-                            "type": "document",
-                            "source": {"type": "content", "content": context},
-                            "citations": {"enabled": True},
-                        },
-                    ],
-                }
-            ],
-        )
-        duration = time.time() - start_time
-
-        # Response Structure: https://docs.anthropic.com/en/docs/build-with-claude/citations#response-structure
-
-        text = []
-        cited_text = []
-        for content in message.to_dict()["content"]:
-            text.append(content["text"])
-            if "citations" in content.keys():
-                text.append(
-                    " ".join(
-                        [
-                            f"<{citation['start_block_index']} - {citation['end_block_index']}>"
-                            for citation in content["citations"]
-                        ]
-                    )
-                )
-                cited_text.append(
-                    " ".join(
-                        [
-                            f"<{citation['start_block_index']} - {citation['end_block_index']}> {citation['cited_text']}"
-                            for citation in content["citations"]
-                        ]
-                    )
-                )
-
-        full_text = " ".join(text)
-
-        return (
-            full_text,
-            message.usage,
-            self.PRICING_DOLLARS_PER_MILLION_TOKENS,
-            duration,
-        )
-
-
-class ClaudeHaiku3Handler(BaseModelHandler):
-    MODEL = "claude-3-haiku-20240307"
-    # Model Pricing: https://docs.anthropic.com/en/docs/about-claude/pricing#model-pricing
-    PRICING_DOLLARS_PER_MILLION_TOKENS = {"input": 0.25, "output": 1.25}
-
-    def __init__(self) -> None:
-        self.client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
-
-    def handle_request(
-        self, query: str, context: str
-    ) -> tuple[str, dict[str, int], dict[str, float], float]:
-        """
-        Handles the request to the Claude Haiku 3 model with citations disabled
-
-        Args:
-            query: The user query to be processed
-            context: The context or document content to be used
-
-        """
-
-        start_time = time.time()
-        # TODO: Add error handling for API requests and invalid responses
-        message = self.client.messages.create(
-            model=self.MODEL,
-            max_tokens=1024,
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": query},
-                        {
-                            "type": "document",
-                            "source": {"type": "content", "content": context},
-                            "citations": {"enabled": False},
-                        },
-                    ],
-                }
-            ],
-        )
-        duration = time.time() - start_time
-
-        text = []
-        for content in message.to_dict()["content"]:
-            text.append(content["text"])
-
-        full_text = " ".join(text)
-
-        return (
-            full_text,
-            message.usage,
-            self.PRICING_DOLLARS_PER_MILLION_TOKENS,
-            duration,
-        )
-
+ # Anthropic  Model Pricing: https://docs.anthropic.com/en/docs/about-claude/pricing#model-pricing
 
 class GPT4OMiniHandler(BaseModelHandler):
     MODEL = "gpt-4o-mini"
@@ -174,6 +43,7 @@ class GPT4OMiniHandler(BaseModelHandler):
             model=self.MODEL,
             instructions=query,
             input=context,
+            temperature=0.0
         )
         duration = time.time() - start_time
 
@@ -196,24 +66,55 @@ class GPT41NanoHandler(BaseModelHandler):
     # Long context performance can degrade as more items are required to be retrieved, 
     # or perform complex reasoning that requires knowledge of the state of the entire context
 
+    #
+
     INSTRUCTIONS = """
         
     # Role and Objective
+    
+    - You are a seasoned physician or medical professional who is developing a bipolar disorder treatment algorithim
 
-    - You are a seasoned physician or medical professional who treats patients with bipolar disorder
-    - You are analyzing medical research by processing peer-reviewed papers to extract key details
+    - You are extracting bipolar medication decision points from a research paper that is chunked into multiple parts each labeled with an ID
 
     # Instructions
 
-    - Identify rules for medication inclusion or exclusion based on medical history or concerns 
+    - Identify decision points for bipolar medications
 
-    - Only use retrieved context and never rely on your own knowledge for any of these questions.
-    - Always follow the provided output format for new messages including citations for any factual statements 
+    - For each decision point you find, return a JSON object using the following format:
+
+        {
+            "criterion": "<condition or concern>",
+            "decision": "INCLUDE" or "EXCLUDE",
+            "medications": ["<medication 1>", "<medication 2>", ...],
+            "reason": "<short explanation for why this criterion applies>",
+            "sources": ["<ID-X>"]
+        }
+
+
+    - Only extract bipolar medication decision points that are explicitly stated or strongly implied in the context and never rely on your own knowledge
 
     # Output Format
 
-    - When providing factual information from retrieved context, always include citations immediately after the relevant statement(s). 
+    - Return the extracted bipolar medication decision points as a JSON array and if no decision points are found in the context return an empty array
 
+    # Example
+
+    [
+        {
+            "criterion": "History of suicide attempts",
+            "decision": "INCLUDE",
+            "medications": ["Lithium"],
+            "reason": "Lithium is the only medication on the market that has been proven to reduce suicidality in patients with bipolar disorder",
+            "sources": ["ID-0"]
+        },
+        {
+            "criterion": "Weight gain concerns",
+            "decision": "EXCLUDE",
+            "medications": ["Quetiapine", "Aripiprazole", "Olanzapine", "Risperidone"],
+            "reason": "Seroquel, Risperdal, Abilify, and Zyprexa are known for causing weight gain",
+            "sources": ["ID-0", "ID-1", "ID-2"]
+        }
+    ]
 
     """
 
@@ -244,6 +145,7 @@ class GPT41NanoHandler(BaseModelHandler):
             model=self.MODEL,
             instructions=query,
             input=context,
+            temperature=0.0
         )
         duration = time.time() - start_time
 
@@ -256,9 +158,12 @@ class GPT41NanoHandler(BaseModelHandler):
 
 
 class ModelFactory:
+
+    #TODO: Define structured fields to extract from unstructured input data
+    #https://platform.openai.com/docs/guides/structured-outputs?api-mode=responses&example=structured-data#examples
+
+
     HANDLERS = {
-        "CLAUDE_HAIKU_3_5_CITATIONS": ClaudeHaiku35CitationsHandler,
-        "CLAUDE_HAIKU_3": ClaudeHaiku3Handler,
         "GPT_4O_MINI": GPT4OMiniHandler,
         "GPT_41_NANO": GPT41NanoHandler,
     }

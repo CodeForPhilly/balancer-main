@@ -179,12 +179,12 @@ plt.tight_layout()
 plt.show()
 
 #TODO: Compute count, min, quantiles and max by model
-#TODO: Calculate efficiency metrics: Totel Token Usage, Cost per Token, Tokens per Second, Cost per Second
-
-
+#TODO: Calculate efficiency metrics: Total Token Usage, Cost per Token, Tokens per Second, Cost per Second
 
 
 The script outputs a CSV with the following columns:
+
+#TODO: Summarize https://aclanthology.org/N18-1065.pdf
 
 * Evaluates LLM outputs for:
 

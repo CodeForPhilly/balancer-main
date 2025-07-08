@@ -1,6 +1,8 @@
 
 # Evaluations
 
+#TODO: Open AI evals documentaiton: https://platform.openai.com/docs/guides/evals
+
 ## LLM Output Evaluator
 
 The `evals` script evaluates the outputs of Large Language Models (LLMs) and estimates the associated token usage and cost.
@@ -11,6 +13,8 @@ It supports batch evalaution via a configuration CSV and produces a detailed met
 
 This script evaluates LLM outputs using the `lighteval` library:
 https://huggingface.co/docs/lighteval/en/metric-list#automatic-metrics-for-generative-tasks
+
+##TODO: Use uv to execute scripts without manually manging enviornments https://docs.astral.sh/uv/guides/scripts/
 
 Ensure you have the `lighteval` library and any model SDKs (e.g., OpenAI) configured properly.
 
@@ -137,6 +141,37 @@ df_grouped = df.groupby(['name', 'upload_file_id'])['formatted_chunk'].apply(lam
 df_grouped = df_grouped.rename(columns={'formatted_chunk': 'concatenated_chunks'})
 df_grouped.to_csv('~/Desktop/formatted_chunks.csv', index=False)
 ```
+
+```
+echo 'export PATH="/Applications/Postgres.app/Contents/Versions/latest/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+
+createdb backupDBBalancer07012025
+pg_restore -v -d backupDBBalancer07012025 ~/Downloads/backupDBBalancer07012025.sql
+
+pip install psycopg2-binary
+
+from sqlalchemy import create_engine
+import pandas as pd
+
+# Alternative: Standard psycopg2 connection (if you get psycopg2 working)
+# engine = create_engine("postgresql://sahildshah@localhost:5432/backupDBBalancer07012025")
+
+# Fixed the variable name (was "database query", now "query")
+query = "SELECT * FROM api_embeddings;"
+
+# Execute the query and load into DataFrame
+df = pd.read_sql(query, engine)
+
+df['formatted_chunk'] = df.apply(lambda row: f"ID: {row['chunk_number']} | CONTENT: {row['text']}", axis=1)
+# Ensure the chunks are joined in order of chunk_number by sorting the DataFrame before grouping and joining
+df = df.sort_values(by=['name', 'upload_file_id', 'chunk_number'])
+df_grouped = df.groupby(['name', 'upload_file_id'])['formatted_chunk'].apply(lambda chunks: "\n".join(chunks)).reset_index()
+df_grouped = df_grouped.rename(columns={'formatted_chunk': 'concatenated_chunks'})
+df_grouped.to_csv('~/Desktop/formatted_chunks.csv', index=False)
+```
+
+
 
 - Path where the evaluation resuls will be saved
 

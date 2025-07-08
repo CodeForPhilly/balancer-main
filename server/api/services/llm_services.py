@@ -16,6 +16,8 @@ class BaseModelHandler(ABC):
     ) -> tuple[str, dict[str, int], dict[str, float], float]:
         pass
 
+# LLM Pricing Calculator: https://www.llm-prices.com/
+
  # Anthropic  Model Pricing: https://docs.anthropic.com/en/docs/about-claude/pricing#model-pricing
 
 class GPT4OMiniHandler(BaseModelHandler):
@@ -78,7 +80,7 @@ class GPT41NanoHandler(BaseModelHandler):
 
     # Instructions
 
-    - Identify decision points for bipolar medications
+    - Identify decision points for bipolar medications #TODO: "pharmacological and procedurl interventions" 
 
     - For each decision point you find, return a JSON object using the following format:
 
@@ -88,10 +90,14 @@ class GPT41NanoHandler(BaseModelHandler):
             "medications": ["<medication 1>", "<medication 2>", ...],
             "reason": "<short explanation for why this criterion applies>",
             "sources": ["<ID-X>"]
+            "hierarchy": Primary: Contraindictions for allergies
+            "override" Exclude for allergy
         }
 
 
     - Only extract bipolar medication decision points that are explicitly stated or strongly implied in the context and never rely on your own knowledge
+
+    - TODO: Test against medication indication file 
 
     # Output Format
 

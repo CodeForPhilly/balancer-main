@@ -17,7 +17,7 @@ spec:
         app: balancer
     spec:
       containers:
-        - image: chrissst/balancer
+        - image: ghcr.io/codeforphilly/balancer-main/backend
           name: balancer
           envFrom:
             - configMapRef:

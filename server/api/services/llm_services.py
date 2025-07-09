@@ -17,11 +17,13 @@ class BaseModelHandler(ABC):
         pass
 
 # LLM Pricing Calculator: https://www.llm-prices.com/
+# TODO: Add support for more models and their pricing
 
- # Anthropic  Model Pricing: https://docs.anthropic.com/en/docs/about-claude/pricing#model-pricing
+# Anthropic  Model Pricing: https://docs.anthropic.com/en/docs/about-claude/pricing#model-pricing
 
 class GPT4OMiniHandler(BaseModelHandler):
     MODEL = "gpt-4o-mini"
+    # TODO: Get the latest model pricing from OpenAI's API or documentation
     # Model Pricing: https://platform.openai.com/docs/pricing
     PRICING_DOLLARS_PER_MILLION_TOKENS = {"input": 0.15, "output": 0.60}
 

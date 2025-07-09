@@ -1,10 +1,24 @@
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = "==3.11.11"
+# dependencies = [
+#   "pandas==2.2.3",
+#   "lighteval==0.10.0", 
+#   "openai==1.83.0"
+# ]
+# ///
+
 """
 Evaluate LLM outputs using multiple metrics and compute associated costs
 """
 
-#TODO: Run this script with uv to manage dependencies
+#This script evaluates LLM outputs using the `lighteval` library
+#https://huggingface.co/docs/lighteval/en/metric-list#automatic-metrics-for-generative-tasks
 
-# TODO: Add tests on a small dummy dataset to confirm it handles errors gracefully and produces expected outputs
+#This script uses Python 3.11 where prebuilt wheels for `sentencepiece` exist
+
+
+#TODO: Add tests on a small dummy dataset to confirm it handles errors gracefully and produces expected outputs
 
 import sys
 import os

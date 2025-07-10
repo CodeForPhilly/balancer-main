@@ -7,8 +7,6 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 import pdfplumber
 from .models import UploadFile  # Import your UploadFile model
-from django.core.files.base import ContentFile
-import os
 from .serializers import UploadFileSerializer
 from django.http import HttpResponse
 from ...services.sentencetTransformer_model import TransformerModel

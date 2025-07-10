@@ -1,6 +1,5 @@
 from django.db import models
 from ..views.listMeds.models import Medication
-from django.db.models import CASCADE
 from ..models.model_embeddings import Embeddings
 
 

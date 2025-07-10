@@ -1,6 +1,4 @@
-from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -14,14 +12,10 @@ import tiktoken
 import os
 import json
 import logging
-from api.views.ai_settings.models import AI_Settings
-from api.views.ai_promptStorage.models import AI_PromptStorage
 from django.views.decorators.csrf import csrf_exempt
-from django.db import transaction, connection
 from .models import Conversation, Message
-from .serializers import ConversationSerializer, MessageSerializer
+from .serializers import ConversationSerializer
 from ...services.tools.tools import tools, execute_tool
-from ...services.tools.database import get_database_info
 
 
 @csrf_exempt

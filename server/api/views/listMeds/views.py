@@ -1,11 +1,8 @@
 from rest_framework import status
-from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import Diagnosis, Medication, Suggestion
-from .serializers import DiagnosisSerializer, MedicationSerializer, SuggestionSerializer
-import json
-from django.views.decorators.csrf import csrf_exempt
+from .serializers import MedicationSerializer
 # Constants for medication inclusion and exclusion
 MEDS_INCLUDE = {'suicideHistory': ['Lithium']}
 MED_EXCLUDE = {

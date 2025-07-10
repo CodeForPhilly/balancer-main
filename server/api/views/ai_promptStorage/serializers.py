@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from .models import AI_PromptStorage
-from django.conf import settings
 
 
 class AI_PromptStorageSerializer(serializers.ModelSerializer):

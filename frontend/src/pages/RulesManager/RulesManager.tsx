@@ -11,15 +11,19 @@ interface Medication {
   risks: string;
 }
 
+interface MedicationSource {
+  medication: Medication;
+  sources: any[];
+}
+
 interface MedRule {
   id: number;
   rule_type: string;
   history_type: string;
   reason: string;
   label: string;
-  medications: Medication[];
-  sources: any[];
   explanation: string | null;
+  medication_sources: MedicationSource[];
 }
 
 interface MedRulesResponse {
@@ -96,8 +100,11 @@ function RulesManager() {
       return newSet;
     });
   };
-
-  const renderMedicationDetails = (medication: Medication, rule: MedRule) => {
+  const renderMedicationDetails = (
+    medication: Medication,
+    rule: MedRule,
+    sources: any[]
+  ) => {
     if (!medication) return null;
 
     const medKey = `${rule.id}-${medication.name}`;
@@ -171,9 +178,9 @@ function RulesManager() {
                 <h5 className="mb-2 text-sm font-medium text-indigo-600">
                   Sources:
                 </h5>
-                {rule.sources && rule.sources.length > 0 ? (
+                {sources && sources.length > 0 ? (
                   <ul className="list-disc space-y-4 px-4">
-                    {rule.sources.map((source, index) => (
+                    {sources.map((source, index) => (
                       <li key={`${medKey}-source-${index}`} className="text-sm">
                         <div className="p-2 border rounded bg-gray-50">
                           <div>
@@ -228,10 +235,14 @@ function RulesManager() {
               Medications:
             </h3>
             <div className="mt-2">
-              {Array.isArray(rule.medications) &&
-              rule.medications.length > 0 ? (
-                rule.medications.map((med) =>
-                  renderMedicationDetails(med, rule)
+              {Array.isArray(rule.medication_sources) &&
+              rule.medication_sources.length > 0 ? (
+                rule.medication_sources.map((medSrc) =>
+                  renderMedicationDetails(
+                    medSrc.medication,
+                    rule,
+                    medSrc.sources
+                  )
                 )
               ) : (
                 <p className="text-sm text-gray-500">

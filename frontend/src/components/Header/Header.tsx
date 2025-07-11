@@ -196,7 +196,7 @@ const Header: React.FC<LoginFormProps> = ({
                 {/* <Chat showChat={showChat} setShowChat={setShowChat} /> */}
                 {isAuthenticated ? authLinks() : guestLinks()}
             </div>
-            <MdNavBar isAuthenticated={isAuthenticated}/>
+            <MdNavBar handleForm={handleForm} isAuthenticated={isAuthenticated}/>
         </header>
     );
 };

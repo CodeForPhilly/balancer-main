@@ -1,17 +1,15 @@
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .models import AI_PromptStorage
 from .serializers import AI_PromptStorageSerializer
-from django.views.decorators.csrf import csrf_exempt
 
 
 @api_view(['POST'])
 # @permission_classes([IsAuthenticated])
 def store_prompt(request):
     print(request.user)
-    data = request.data.copy()
+    data = request.data.copy() # noqa: F841
     print(request.user)
     serializer = AI_PromptStorageSerializer(
         data=request.data, context={'request': request})

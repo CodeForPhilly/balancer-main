@@ -1,5 +1,4 @@
 from django.db import models
-from django.conf import settings
 from pgvector.django import VectorField
 import uuid
 from ..views.uploadFile.models import UploadFile

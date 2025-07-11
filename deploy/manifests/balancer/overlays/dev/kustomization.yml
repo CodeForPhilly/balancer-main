@@ -5,7 +5,7 @@ resources:
   - "../../base"
 
 images:
-  - name: chrissst/balancer
-    newTag: v1
-
+  - name: ghcr.io/codeforphilly/balancer-main/backend
+    newTag: "1.0.2"
+    
 namespace: balancer

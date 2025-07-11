@@ -3,7 +3,7 @@
 # requires-python = "==3.11.11"
 # dependencies = [
 #   "pandas==2.2.3",
-#   "lighteval==0.10.0", 
+#   "lighteval==0.10.0",
 #   "openai==1.83.0"
 # ]
 # ///
@@ -12,13 +12,13 @@
 Evaluate LLM outputs using multiple metrics and compute associated costs
 """
 
-#This script evaluates LLM outputs using the `lighteval` library
-#https://huggingface.co/docs/lighteval/en/metric-list#automatic-metrics-for-generative-tasks
+# This script evaluates LLM outputs using the `lighteval` library
+# https://huggingface.co/docs/lighteval/en/metric-list#automatic-metrics-for-generative-tasks
 
-#This script uses Python 3.11 where prebuilt wheels for `sentencepiece` exist
+# This script uses Python 3.11 where prebuilt wheels for `sentencepiece` exist
 
 
-#TODO: Add tests on a small dummy dataset to confirm it handles errors gracefully and produces expected outputs
+# TODO: Add tests on a small dummy dataset to confirm it handles errors gracefully and produces expected outputs
 
 import sys
 import os
@@ -40,9 +40,7 @@ logging.basicConfig(
 )
 
 
-def evaluate_response(
-    model_name: str, query: str, context: str
-) -> pd.DataFrame:
+def evaluate_response(model_name: str, query: str, context: str) -> pd.DataFrame:
     """
     Evaluates the response of a model to a given query and context, computes extractiveness metrics, token usage, and cost
 
@@ -91,6 +89,8 @@ def evaluate_response(
 
 
 if __name__ == "__main__":
+    # TODO: Add test evaluation argument to run on the first 10 rows of the config file
+
     # TODO: Add CLI argument to specify the metrics to be computed
     parser = argparse.ArgumentParser(
         description="Evaluate LLM outputs using multiple metrics and compute associated costs"
@@ -149,9 +149,7 @@ if __name__ == "__main__":
         df_evals = pd.concat(
             [
                 df_evals,
-                evaluate_response(
-                    row["Model Name"], row["Query"], row["Context"]
-                ),
+                evaluate_response(row["Model Name"], row["Query"], row["Context"]),
             ],
             axis=0,
         )

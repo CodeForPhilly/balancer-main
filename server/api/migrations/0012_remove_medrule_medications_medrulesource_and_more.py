@@ -9,22 +9,27 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.CreateModel(
-            name='MedRuleSource',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True,
-                 primary_key=True, serialize=False, verbose_name='ID')),
-                ('embedding', models.ForeignKey(
-                    on_delete=django.db.models.deletion.CASCADE, to='api.embeddings')),
-                ('medication', models.ForeignKey(
-                    on_delete=django.db.models.deletion.CASCADE, to='api.medication')),
-                ('medrule', models.ForeignKey(
-                    on_delete=django.db.models.deletion.CASCADE, to='api.medrule')),
-            ],
-            options={
-                'db_table': 'api_medrule_sources',
-                'unique_together': {('medrule', 'embedding', 'medication')},
-            },
+        migrations.SeparateDatabaseAndState(
+            database_operations=[],  # Don't create DB table
+            state_operations=[
+                migrations.CreateModel(
+                    name='MedRuleSource',
+                    fields=[
+                        ('id', models.BigAutoField(auto_created=True,
+                         primary_key=True, serialize=False, verbose_name='ID')),
+                        ('medrule', models.ForeignKey(
+                            on_delete=django.db.models.deletion.CASCADE, to='api.medrule')),
+                        ('embedding', models.ForeignKey(
+                            on_delete=django.db.models.deletion.CASCADE, to='api.embeddings')),
+                        ('medication', models.ForeignKey(
+                            on_delete=django.db.models.deletion.CASCADE, to='api.medication')),
+                    ],
+                    options={
+                        'db_table': 'api_medrule_sources',
+                        'unique_together': {('medrule', 'embedding', 'medication')},
+                    },
+                ),
+            ]
         ),
         migrations.SeparateDatabaseAndState(
             database_operations=[],

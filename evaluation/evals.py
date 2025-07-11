@@ -12,14 +12,6 @@
 Evaluate LLM outputs using multiple metrics and compute associated costs
 """
 
-# This script evaluates LLM outputs using the `lighteval` library
-# https://huggingface.co/docs/lighteval/en/metric-list#automatic-metrics-for-generative-tasks
-
-# This script uses Python 3.11 where prebuilt wheels for `sentencepiece` exist
-
-
-# TODO: Add tests on a small dummy dataset to confirm it handles errors gracefully and produces expected outputs
-
 import sys
 import os
 
@@ -30,6 +22,8 @@ import argparse
 import logging
 
 import pandas as pd
+
+# lighteval depends on `sentencepiece` and it only has prebuilt wheels for Python 3.11 or below
 from lighteval.tasks.requests import Doc
 from lighteval.metrics.metrics_sample import Extractiveness
 
@@ -40,129 +34,161 @@ logging.basicConfig(
 )
 
 
-def evaluate_response(model_name: str, query: str, context: str) -> pd.DataFrame:
+def evaluate_response(model: str, instructions: str, input: str) -> pd.DataFrame:
     """
-    Evaluates the response of a model to a given query and context, computes extractiveness metrics, token usage, and cost
-
-    Args:
-        model_name (str): The name of the model to be used for evaluation.
-        query (str): The user query to be processed.
-        context (str): The context or document content to be used.
-        reference (str): The reference text for comparison (not used in this function, but can be used for further evaluations).
-
-    Returns:
-        pd.DataFrame: A DataFrame containing the output text, extractiveness metrics, token usage, cost, and duration.
+    Test a prompt with a set of test data by scoring each item in the data set
     """
 
-    handler = ModelFactory.get_handler(model_name)
+    try:
+        handler = ModelFactory.get_handler(model)
 
-    # TODO: Add error handling for unsupported models
+        generated_text, token_usage, pricing, duration = handler.handle_request(
+            instructions, input
+        )
 
-    output_text, token_usage, pricing, duration = handler.handle_request(query, context)
+        doc = Doc(query="", choices=[], gold_index=0, specific={"text": input})
+        extractiveness = Extractiveness().compute(
+            formatted_doc=doc, predictions=[generated_text]
+        )
 
-    doc = Doc(query="", choices=[], gold_index=0, specific={"text": context})
-    extractiveness = Extractiveness().compute(
-        formatted_doc=doc, predictions=[output_text]
-    )
+        cost_metrics = calculate_cost_metrics(token_usage, pricing)
 
-    input_cost_dollars = (pricing["input"] / 1000000) * token_usage.input_tokens
-    output_cost_dollars = (pricing["output"] / 1000000) * token_usage.output_tokens
+        result = pd.DataFrame(
+            [
+                {
+                    "Generated Text": generated_text,
+                    "Extractiveness Coverage": extractiveness["summarization_coverage"],
+                    "Extractiveness Density": extractiveness["summarization_density"],
+                    "Extractiveness Compression": extractiveness[
+                        "summarization_compression"
+                    ],
+                    "Input Token Usage": token_usage.input_tokens,
+                    "Output Token Usage": token_usage.output_tokens,
+                    "Cost (USD)": cost_metrics["total_cost"],
+                    "Duration (s)": duration,
+                }
+            ]
+        )
 
+    except Exception as e:
+        logging.error(f"Error evaluating response for model {model}: {e}")
+        result = pd.DataFrame(
+            [
+                {
+                    "Generated Text": None,
+                    "Extractiveness Coverage": None,
+                    "Extractiveness Density": None,
+                    "Extractiveness Compression": None,
+                    "Input Token Usage": None,
+                    "Output Token Usage": None,
+                    "Cost (USD)": None,
+                    "Duration (s)": None,
+                }
+            ]
+        )
+
+    return result
+
+
+def calculate_cost_metrics(token_usage: dict, pricing: dict) -> dict:
+    """
+    Calculate cost metrics based on token usage and pricing
+    """
+
+    TOKENS_PER_MILLION = 1_000_000
+
+    # Pricing is in dollars per million tokens
+    input_cost_dollars = (
+        pricing["input"] / TOKENS_PER_MILLION
+    ) * token_usage.input_tokens
+    output_cost_dollars = (
+        pricing["output"] / TOKENS_PER_MILLION
+    ) * token_usage.output_tokens
     total_cost_dollars = input_cost_dollars + output_cost_dollars
 
-    return pd.DataFrame(
-        [
-            {
-                "Output Text": output_text,
-                "Extractiveness Coverage": extractiveness["summarization_coverage"],
-                "Extractiveness Density": extractiveness["summarization_density"],
-                "Extractiveness Compression": extractiveness[
-                    "summarization_compression"
-                ],
-                "Input Token Usage": token_usage.input_tokens,
-                "Output Token Usage": token_usage.output_tokens,
-                "Cost (USD)": total_cost_dollars,
-                "Duration (s)": duration,
-            }
-        ]
-    )
+    return {
+        "input_cost": input_cost_dollars,
+        "output_cost": output_cost_dollars,
+        "total_cost": total_cost_dollars,
+    }
+
+
+def load_csv(file_path: str, required_columns: list) -> pd.DataFrame:
+    """
+    Load a CSV file and validate that it contains the required columns
+
+    Args:
+        file_path (str): Path to the CSV file
+        required_columns (list): List of required column names
+
+    Returns:
+        pd.DataFrame
+    """
+
+    df = pd.read_csv(file_path)
+
+    # Remove trailing whitespace from column names
+    df.columns = df.columns.str.strip()
+
+    # Uppercase the column names to match the expected format
+    df.columns = df.columns.str.upper()
+
+    # Check if the required columns are present
+    if not all(col in df.columns for col in required_columns):
+        raise ValueError(
+            f"{file_path} must contain the following columns: {required_columns}"
+        )
+
+    return df
 
 
 if __name__ == "__main__":
-    # TODO: Add test evaluation argument to run on the first 10 rows of the config file
+    # TODO: Add test evaluation argument to run on the first 10 rows of the dataset file
 
-    # TODO: Add CLI argument to specify the metrics to be computed
-    parser = argparse.ArgumentParser(
-        description="Evaluate LLM outputs using multiple metrics and compute associated costs"
-    )
-    parser.add_argument("--config", "-c", required=True, help="Path to config CSV file")
+    parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--reference", "-r", required=True, help="Path to reference CSV file"
+        "--experiments", "-e", required=True, help="Path to experiments CSV file"
     )
-    parser.add_argument("--output", "-o", required=True, help="Path to output CSV file")
+    parser.add_argument(
+        "--dataset", "-d", required=True, help="Path to dataset CSV file"
+    )
+    parser.add_argument(
+        "--results", "-r", required=True, help="Path to results CSV file"
+    )
 
     args = parser.parse_args()
 
-    df_config = pd.read_csv(args.config)
-    logging.info(f"Config DataFrame shape: {df_config.shape}")
-    logging.info(f"Config DataFrame columns: {df_config.columns.tolist()}")
-
-    # Remove the trailing whitespace from column names
-    df_config.columns = df_config.columns.str.strip()
-
-    # Check if the required columns are present
-    # TODO: Make this more flexible by allowing the user to use default instructions
-    required_columns = ["Model Name", "Query"]
-    if not all(col in df_config.columns for col in required_columns):
-        raise ValueError(
-            f"Config DataFrame must contain the following columns: {required_columns}"
-        )
-
-    # Check if all models in the config are supported by ModelFactory
+    df_experiment = load_csv(
+        args.experiments, required_columns=["MODEL", "INSTRUCTIONS"]
+    )
+    # Check if all models are supported by ModelFactory
     if not all(
         model in ModelFactory.HANDLERS.keys()
-        for model in df_config["Model Name"].unique()
+        for model in df_experiment["MODEL"].unique()
     ):
         raise ValueError(
-            f"Unsupported model(s) found in config: {set(df_config['Model Name'].unique()) - set(ModelFactory.HANDLERS.keys())}"
+            f"Unsupported model(s) found: {set(df_experiment['MODEL'].unique()) - set(ModelFactory.HANDLERS.keys())}"
         )
+    df_dataset = load_csv(args.dataset, required_columns=["INPUT"])
 
-    df_reference = pd.read_csv(args.reference)
-    logging.info(f"Reference DataFrame shape: {df_reference.shape}")
-    logging.info(f"Reference DataFrame columns: {df_reference.columns.tolist()}")
+    # Bulk model and prompt experimentation: Cross join the experiment and dataset DataFrames
+    df_in = df_experiment.merge(df_dataset, how="cross")
 
-    # Remove the trailing whitespace from column names
-    df_reference.columns = df_reference.columns.str.strip()
-    # Check if the required columns are present
-    required_columns = ["Context"]
-    if not all(col in df_reference.columns for col in required_columns):
-        raise ValueError(
-            f"Reference DataFrame must contain the following columns: {required_columns}"
-        )
+    # Evaluate each row in the input DataFrame
+    results = []
+    for index, row in enumerate(df_in.itertuples(index=False)):
+        result = evaluate_response(row.MODEL, row.INSTRUCTIONS, row.INPUT)
+        results.append(result)
 
-    # Cross join the config and reference DataFrames
-    df_in = df_config.merge(df_reference, how="cross")
-
-    # TODO: Parallelize the evaluation process for each row in df_in using concurrent.futures or similar libraries
-    df_evals = pd.DataFrame()
-    for index, row in df_in.iterrows():
-        df_evals = pd.concat(
-            [
-                df_evals,
-                evaluate_response(row["Model Name"], row["Query"], row["Context"]),
-            ],
-            axis=0,
-        )
-
+        # TODO: Use tqdm or similar library to show progress bar
         logging.info(f"Processed row {index + 1}/{len(df_in)}")
 
-    # Concatenate the input and evaluations DataFrames
+    df_evals = pd.concat(results, axis=0, ignore_index=True)
 
+    # Concatenate the input and evaluations DataFrames
     df_out = pd.concat(
         [df_in.reset_index(drop=True), df_evals.reset_index(drop=True)], axis=1
     )
-
-    df_out.to_csv(args.output, index=False)
-    logging.info(f"Output DataFrame shape: {df_out.shape}")
-    logging.info(f"Results saved to {args.output}")
+    df_out.to_csv(args.results, index=False)
+    logging.info(f"Results saved to {args.results}")
     logging.info("Evaluation completed successfully.")

@@ -21,9 +21,9 @@ API usage:
 * Estimated cost in USD
 * Duration (in seconds)
 
-### Test Data: 
+### Test Data
 
-Generate the reference file by connecting to a database of references
+Generate the dataset file by connecting to a database of references
 
 Connect to the Postgres database of your local Balancer instance:
 
@@ -48,7 +48,7 @@ from sqlalchemy import create_engine
 engine = create_engine("postgresql://<USER>@localhost:5432/<DB_NAME>")
 ```
 
-Generate the reference CSV file:
+Generate the dataset CSV file:
 
 ```
 import pandas as pd
@@ -63,7 +63,7 @@ df = df.sort_values(by=['name', 'upload_file_id', 'chunk_number'])
 df_grouped = df.groupby(['name', 'upload_file_id'])['formatted_chunk'].apply(lambda chunks: "\n".join(chunks)).reset_index()
 
 df_grouped = df_grouped.rename(columns={'formatted_chunk': 'concatenated_chunks'})
-df_grouped.to_csv('<REFERENCE_CSV_PATH>', index=False)
+df_grouped.to_csv('<DATASET_CSV_PATH>', index=False)
 ```
 
 
@@ -94,7 +94,7 @@ data = [
 df = pd.DataFrame.from_records(data)
 
 # Write to CSV
-df.to_csv("<CONFIG_CSV_PATH>", index=False)
+df.to_csv("<EXPERIMENTS_CSV_PATH>", index=False)
 ```
 
 
@@ -104,13 +104,13 @@ df.to_csv("<CONFIG_CSV_PATH>", index=False)
 Execute [using `uv` to manage depenendices](https://docs.astral.sh/uv/guides/scripts/) without manually managing enviornments:
 
 ```sh
-uv run evals.py --config path/to/<CONFIG_CSV> --reference path/to/<REFERENCE_CSV> --output path/to/<OUTPUT_CSV>
+uv run evals.py --experiments path/to/<EXPERIMENTS_CSV> --dataset path/to/<DATASET_CSV> --results path/to/<RESULTS_CSV>
 ```
 
 Execute without using uv run by ensuring it is executable:
 
 ```sh
-./evals.py --config path/to/<CONFIG_CSV> --reference path/to/<REFERENCE_CSV> --output path/to/<OUTPUT_CSV>
+./evals.py --experiments path/to/<EXPERIMENTS_CSV> --dataset path/to/<DATASET_CSV> --results path/to/<RESULTS_CSV>
 ```
 
 ### Analyzing Test Results
@@ -120,7 +120,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 
-df = pd.read_csv("<OUTPUT_CSV_PATH>")
+df = pd.read_csv("<RESULTS_CSV_PATH>")
 
 # Define the metrics of interest
 extractiveness_cols = ['Extractiveness Coverage', 'Extractiveness Density', 'Extractiveness Compression']
@@ -132,7 +132,7 @@ all_metrics = extractiveness_cols + token_cols + other_metrics
 plt.style.use('default')
 fig, axes = plt.subplots(len(all_metrics), 1, figsize=(12, 4 * len(all_metrics)))
 
-models = df['Model Name'].unique()
+models = df['MODEL'].unique()
 colors = plt.cm.Set3(np.linspace(0, 1, len(models)))
 
 for i, metric in enumerate(all_metrics):
@@ -140,7 +140,7 @@ for i, metric in enumerate(all_metrics):
     
     # Create histogram for each model
     for j, model in enumerate(models):
-        model_data = df[df['Model Name'] == model][metric]
+        model_data = df[df['MODEL'] == model][metric]
         ax.hist(model_data, alpha=0.7, label=model, bins=min(8, len(model_data)), 
                 color=colors[j], edgecolor='black', linewidth=0.5)
     
@@ -152,5 +152,4 @@ for i, metric in enumerate(all_metrics):
 
 plt.tight_layout()
 plt.show()
-
 ```

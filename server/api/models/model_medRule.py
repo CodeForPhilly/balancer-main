@@ -11,12 +11,14 @@ class MedRule(models.Model):
     history_type = models.CharField(max_length=255)
     reason = models.TextField(blank=True, null=True)
     label = models.CharField(max_length=255, blank=True, null=True)
-    medications = models.ManyToManyField(Medication, related_name='med_rules')
+
     sources = models.ManyToManyField(
         Embeddings,
         related_name='med_rules',
-        blank=True
+        blank=True,
+        through='MedRuleSource'
     )
+
     explanation = models.TextField(blank=True, null=True)
 
     class Meta:
@@ -25,3 +27,14 @@ class MedRule(models.Model):
 
     def __str__(self):
         return f"{self.rule_type} - {self.label}"
+
+
+class MedRuleSource(models.Model):
+    medrule = models.ForeignKey(MedRule, on_delete=models.CASCADE)
+    embedding = models.ForeignKey(Embeddings, on_delete=models.CASCADE)
+    medication = models.ForeignKey(
+        Medication, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'api_medrule_sources'
+        unique_together = ('medrule', 'embedding', 'medication')

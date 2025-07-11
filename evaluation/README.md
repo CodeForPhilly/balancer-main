@@ -1,63 +1,27 @@
 # Evaluations
 
-## LLM Output Evaluator
+## `evals`: LLM evaluations to test and improve model outputs
 
-The `evals` script evaluates the outputs of Large Language Models (LLMs) and estimates the associated token usage and cost
+LLM evals test a prompt with a set of test data by scoring each item in the data set
 
-This script helps teams compare LLM outputs using extractiveness metrics, token usage, and cost. It is especially useful for evaluating multiple models over a batch of queries and reference answers.
+To test Balancer's structured text extraction of medication rules, `evals` computes:
 
-It supports batch evaluation via a configuration CSV and produces a detailed metrics report in CSV format.
+[Extractiveness](https://huggingface.co/docs/lighteval/en/metric-list#automatic-metrics-for-generative-tasks):
 
-### Usage
+* Extractiveness Coverage: 
+    - Percentage of words in the summary that are part of an extractive fragment with the article
+* Extractiveness Density: 
+    - Average length of the extractive fragment to which each word in the summary belongs
+* Extractiveness Compression: 
+    - Word ratio between the article and the summary
 
-Execute [using `uv` to manage depenendices](https://docs.astral.sh/uv/guides/scripts/) without manually managing enviornments:
+API usage:
 
-```sh
-uv run evals.py --config path/to/<CONFIG_CSV> --reference path/to/<REFERENCE_CSV> --output path/to/<OUTPUT_CSV>
-```
+* Token usage (input/output)
+* Estimated cost in USD
+* Duration (in seconds)
 
-Execute without using uv run by ensuring it is executable:
-
-```sh
-./evals.py --config path/to/<CONFIG_CSV> --reference path/to/<REFERENCE_CSV> --output path/to/<OUTPUT_CSV>
-```
-
-The arguments to the script are:
-
-- Path to the config CSV file: Must include the columns "Model Name" and "Query"
-- Path to the reference CSV file: Must include the columns "Context" and "Reference"
-- Path where the evaluation results will be saved
-
-### Configuration File
-
-Generate the config CSV file:
-
-```
-import pandas as pd
-
-# Define the data
-data = [
-
-    {
-      "Model Name": "<MODEL_NAME_1>",
-      "Query": """<YOUR_QUERY_1>"""
-    },
-
-    {
-        "Model Name": "<MODEL_NAME_2>",
-        "Query": """<YOUR_QUERY_2>"""
-    },
-]
-
-# Create DataFrame from records
-df = pd.DataFrame.from_records(data)
-
-# Write to CSV
-df.to_csv("<CONFIG_CSV_PATH>", index=False)
-```
-
-
-### Reference File
+### Test Data: 
 
 Generate the reference file by connecting to a database of references
 
@@ -77,7 +41,10 @@ echo 'export PATH="/Applications/Postgres.app/Contents/Versions/latest/bin:$PATH
 
 createdb <DB_NAME>
 pg_restore -v -d <DB_NAME> <PATH_TO_BACKUP>.sql
+```
 
+```
+from sqlalchemy import create_engine
 engine = create_engine("postgresql://<USER>@localhost:5432/<DB_NAME>")
 ```
 
@@ -99,26 +66,54 @@ df_grouped = df_grouped.rename(columns={'formatted_chunk': 'concatenated_chunks'
 df_grouped.to_csv('<REFERENCE_CSV_PATH>', index=False)
 ```
 
-### Output File
 
-The script outputs a CSV with the following columns:
+### Running an Evaluation
 
-Extractiveness Metrics based on the methodology from: https://aclanthology.org/N18-1065.pdf
+#### Test Input: Bulk model and prompt experimentation
 
-* Evaluates LLM outputs for:
+Compare the results of many different prompts and models at once
 
-  * Extractiveness Coverage: Percentage of words in the summary that are part of an extractive fragment with the article
-  * Extractiveness Density: Average length of the extractive fragment to which each word in the summary belongs
-  * Extractiveness Compression: Word ratio between the article and the summary
+```
+import pandas as pd
 
-* Computes:
+# Define the data
+data = [
 
-  * Token usage (input/output)
-  * Estimated cost in USD
-  * Duration (in seconds)
+    {
+      "Model Name": "<MODEL_NAME_1>",
+      "Query": """<YOUR_QUERY_1>"""
+    },
+
+    {
+    "Model Name": "<MODEL_NAME_2>",
+    "Query": """<YOUR_QUERY_2>"""
+    },
+]
+
+# Create DataFrame from records
+df = pd.DataFrame.from_records(data)
+
+# Write to CSV
+df.to_csv("<CONFIG_CSV_PATH>", index=False)
+```
 
 
-Exploratory data analysis:
+#### Execute on the command line
+
+
+Execute [using `uv` to manage depenendices](https://docs.astral.sh/uv/guides/scripts/) without manually managing enviornments:
+
+```sh
+uv run evals.py --config path/to/<CONFIG_CSV> --reference path/to/<REFERENCE_CSV> --output path/to/<OUTPUT_CSV>
+```
+
+Execute without using uv run by ensuring it is executable:
+
+```sh
+./evals.py --config path/to/<CONFIG_CSV> --reference path/to/<REFERENCE_CSV> --output path/to/<OUTPUT_CSV>
+```
+
+### Analyzing Test Results
 
 ```
 import pandas as pd
@@ -157,7 +152,5 @@ for i, metric in enumerate(all_metrics):
 
 plt.tight_layout()
 plt.show()
-
-#TODO: Calculate efficiency metrics: Total Token Usage, Cost per Token, Tokens per Second, Cost per Second
 
 ```

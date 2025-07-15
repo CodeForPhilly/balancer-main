@@ -98,9 +98,9 @@ const Sidebar: React.FC = () => {
                                         sidebarCollapsed ? "justify-center" : ""
                                     }`}
                                 >
-                                    <File className="mr-2 h-4 w-4 text-gray-500"/>
+                                    <File className="mr-2 h-4 w-4 text-gray-500 flex-shrink-0"/>
                                     {!sidebarCollapsed && (
-                                        <span className="truncate w-44">
+                                        <span className="truncate">
                       {file.title || file.file_name.replace(/\.[^/.]+$/, "")}
                     </span>
                                     )}

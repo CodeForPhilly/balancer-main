@@ -4,7 +4,10 @@
 # dependencies = [
 #   "pandas==2.2.3",
 #   "lighteval==0.10.0",
-#   "openai==1.83.0"
+#   "openai==1.83.0",
+#   "spacy==3.8.7",
+#   "pip"
+#
 # ]
 # ///
 

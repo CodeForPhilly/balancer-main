@@ -9,6 +9,7 @@ from abc import ABC, abstractmethod
 
 import openai
 
+
 class BaseModelHandler(ABC):
     @abstractmethod
     def handle_request(
@@ -16,10 +17,12 @@ class BaseModelHandler(ABC):
     ) -> tuple[str, dict[str, int], dict[str, float], float]:
         pass
 
+
 # LLM Pricing Calculator: https://www.llm-prices.com/
 # TODO: Add support for more models and their pricing
 
 # Anthropic  Model Pricing: https://docs.anthropic.com/en/docs/about-claude/pricing#model-pricing
+
 
 class GPT4OMiniHandler(BaseModelHandler):
     MODEL = "gpt-4o-mini"
@@ -44,10 +47,7 @@ class GPT4OMiniHandler(BaseModelHandler):
         start_time = time.time()
         # TODO: Add error handling for API requests and invalid responses
         response = self.client.responses.create(
-            model=self.MODEL,
-            instructions=query,
-            input=context,
-            temperature=0.0
+            model=self.MODEL, instructions=query, input=context, temperature=0.0
         )
         duration = time.time() - start_time
 
@@ -67,7 +67,7 @@ class GPT41NanoHandler(BaseModelHandler):
 
     # GPT 4.1 Prompting Guide: https://cookbook.openai.com/examples/gpt4-1_prompting_guide
 
-    # Long context performance can degrade as more items are required to be retrieved, 
+    # Long context performance can degrade as more items are required to be retrieved,
     # or perform complex reasoning that requires knowledge of the state of the entire context
 
     #
@@ -82,7 +82,7 @@ class GPT41NanoHandler(BaseModelHandler):
 
     # Instructions
 
-    - Identify decision points for bipolar medications #TODO: "pharmacological and procedurl interventions" 
+    - Identify decision points for bipolar medications
 
     - For each decision point you find, return a JSON object using the following format:
 
@@ -92,14 +92,10 @@ class GPT41NanoHandler(BaseModelHandler):
             "medications": ["<medication 1>", "<medication 2>", ...],
             "reason": "<short explanation for why this criterion applies>",
             "sources": ["<ID-X>"]
-            "hierarchy": Primary: Contraindictions for allergies
-            "override" Exclude for allergy
         }
 
 
     - Only extract bipolar medication decision points that are explicitly stated or strongly implied in the context and never rely on your own knowledge
-
-    - TODO: Test against medication indication file 
 
     # Output Format
 
@@ -145,15 +141,11 @@ class GPT41NanoHandler(BaseModelHandler):
         if not query:
             query = self.INSTRUCTIONS
 
-
         start_time = time.time()
         # TODO: Add error handling for API requests and invalid responses
 
         response = self.client.responses.create(
-            model=self.MODEL,
-            instructions=query,
-            input=context,
-            temperature=0.0
+            model=self.MODEL, instructions=query, input=context, temperature=0.0
         )
         duration = time.time() - start_time
 
@@ -166,10 +158,8 @@ class GPT41NanoHandler(BaseModelHandler):
 
 
 class ModelFactory:
-
-    #TODO: Define structured fields to extract from unstructured input data
-    #https://platform.openai.com/docs/guides/structured-outputs?api-mode=responses&example=structured-data#examples
-
+    # TODO: Define structured fields to extract from unstructured input data
+    # https://platform.openai.com/docs/guides/structured-outputs?api-mode=responses&example=structured-data#examples
 
     HANDLERS = {
         "GPT_4O_MINI": GPT4OMiniHandler,

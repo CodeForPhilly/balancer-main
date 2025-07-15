@@ -2,11 +2,11 @@
 
 ## `evals`: LLM evaluations to test and improve model outputs
 
-### Metrics
-
-[Extractiveness](https://huggingface.co/docs/lighteval/en/metric-list#automatic-metrics-for-generative-tasks):
+### Evaluation Metrics
 
 Natural Language Generation Performance:
+
+[Extractiveness](https://huggingface.co/docs/lighteval/en/metric-list#automatic-metrics-for-generative-tasks):
 
 * Extractiveness Coverage: 
     - Percentage of words in the summary that are part of an extractive fragment with the article
@@ -23,7 +23,7 @@ API Performance:
 
 ### Test Data
 
-Generate the dataset file by connecting to a database of references
+Generate the dataset file by connecting to a database of research papers:
 
 Connect to the Postgres database of your local Balancer instance:
 
@@ -36,72 +36,63 @@ engine = create_engine("postgresql+psycopg2://balancer:balancer@localhost:5433/b
 Connect to the Postgres database of the production Balancer instance using a SQL file:
 
 ```
-# Install Postgres.app and add binaries to the PATH 
+# Add Postgres.app binaries to the PATH 
 echo 'export PATH="/Applications/Postgres.app/Contents/Versions/latest/bin:$PATH"' >> ~/.zshrc
 
 createdb <DB_NAME>
 pg_restore -v -d <DB_NAME> <PATH_TO_BACKUP>.sql
 ```
 
-```
-from sqlalchemy import create_engine
-engine = create_engine("postgresql://<USER>@localhost:5432/<DB_NAME>")
-```
-
 Generate the dataset CSV file:
 
 ```
+from sqlalchemy import create_engine
 import pandas as pd
+
+engine = create_engine("postgresql://<USER>@localhost:5432/<DB_NAME>")
 
 query = "SELECT * FROM api_embeddings;"
 df = pd.read_sql(query, engine)
 
-df['formatted_chunk'] = df.apply(lambda row: f"ID: {row['chunk_number']} | CONTENT: {row['text']}", axis=1)
+df['INPUT'] = df.apply(lambda row: f"ID: {row['chunk_number']} | CONTENT: {row['text']}", axis=1)
 
 # Ensure the chunks are joined in order of chunk_number by sorting the DataFrame before grouping and joining
 df = df.sort_values(by=['name', 'upload_file_id', 'chunk_number'])
-df_grouped = df.groupby(['name', 'upload_file_id'])['formatted_chunk'].apply(lambda chunks: "\n".join(chunks)).reset_index()
+df_grouped = df.groupby(['name', 'upload_file_id'])['INPUT'].apply(lambda chunks: "\n".join(chunks)).reset_index()
 
-df_grouped = df_grouped.rename(columns={'formatted_chunk': 'concatenated_chunks'})
 df_grouped.to_csv('<DATASET_CSV_PATH>', index=False)
 ```
 
-
 ### Running an Evaluation
 
-#### Test Input: Bulk model and prompt experimentation
+#### Bulk Model and Prompt Experimentation
 
 Compare the results of many different prompts and models at once
 
 ```
 import pandas as pd
 
-# Define the data
 data = [
-
     {
-      "Model Name": "<MODEL_NAME_1>",
-      "Query": """<YOUR_QUERY_1>"""
+    "MODEL": "<MODEL_NAME_1>",
+    "INSTRUCTIONS": """<YOUR_QUERY_1>"""
     },
-
     {
-    "Model Name": "<MODEL_NAME_2>",
-    "Query": """<YOUR_QUERY_2>"""
+    "MODEL": "<MODEL_NAME_2>",
+    "INSTRUCTIONS": """<YOUR_QUERY_2>"""
     },
 ]
 
-# Create DataFrame from records
 df = pd.DataFrame.from_records(data)
 
-# Write to CSV
 df.to_csv("<EXPERIMENTS_CSV_PATH>", index=False)
 ```
 
 
-#### Execute on the command line
+#### Execute on the Command Line
 
 
-Execute [using `uv` to manage depenendices](https://docs.astral.sh/uv/guides/scripts/) without manually managing enviornments:
+Execute [using `uv` to manage dependencies](https://docs.astral.sh/uv/guides/scripts/) without manually managing enviornments:
 
 ```sh
 uv run evals.py --experiments path/to/<EXPERIMENTS_CSV> --dataset path/to/<DATASET_CSV> --results path/to/<RESULTS_CSV>
@@ -156,3 +147,5 @@ plt.show()
 ```
 
 ### Contributing
+
+You're welcome to add LLM models to test in `server/api/services/llm_services`

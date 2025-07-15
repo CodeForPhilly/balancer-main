@@ -2,11 +2,11 @@
 
 ## `evals`: LLM evaluations to test and improve model outputs
 
-LLM evals test a prompt with a set of test data by scoring each item in the data set
-
-To test Balancer's structured text extraction of medication rules, `evals` computes:
+### Metrics
 
 [Extractiveness](https://huggingface.co/docs/lighteval/en/metric-list#automatic-metrics-for-generative-tasks):
+
+Natural Language Generation Performance:
 
 * Extractiveness Coverage: 
     - Percentage of words in the summary that are part of an extractive fragment with the article
@@ -15,10 +15,10 @@ To test Balancer's structured text extraction of medication rules, `evals` compu
 * Extractiveness Compression: 
     - Word ratio between the article and the summary
 
-API usage:
+API Performance:
 
-* Token usage (input/output)
-* Estimated cost in USD
+* Token Usage (input/output)
+* Estimated Cost in USD
 * Duration (in seconds)
 
 ### Test Data
@@ -152,4 +152,7 @@ for i, metric in enumerate(all_metrics):
 
 plt.tight_layout()
 plt.show()
+
 ```
+
+### Contributing

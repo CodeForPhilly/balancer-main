@@ -8,17 +8,9 @@ Natural Language Generation Performance:
 
 [Extractiveness](https://huggingface.co/docs/lighteval/en/metric-list#automatic-metrics-for-generative-tasks):
 
-* Extractiveness Coverage: 
-    - Extent to which a summary is derivative of a text
-    - Percentage of words in the summary that are part of an extractive fragment with the article
-* Extractiveness Density: 
-    - How well the word sequence can be described as series of extractions
-    - A summary might contain many individual words from the article and therefore have a high coverage. 
-    - However, if arranged in a new order, the words of the summary could still be used to convey ideas not present in the article
-    - Average length of the extractive fragment to which each word in the summary belongs
-* Extractiveness Compression: 
-    - Word ratio between the article and the summary
-    - Summarizing with higher compression is challenging as it requires capturing more precisely the critical aspects of the article text.
+* Extractiveness Coverage: Extent to which a summary is derivative of a text
+* Extractiveness Density: How well the word sequence can be described as series of extractions
+* Extractiveness Compression: Word ratio between the article and the summary
 
 API Performance:
 

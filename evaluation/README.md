@@ -9,11 +9,16 @@ Natural Language Generation Performance:
 [Extractiveness](https://huggingface.co/docs/lighteval/en/metric-list#automatic-metrics-for-generative-tasks):
 
 * Extractiveness Coverage: 
+    - Extent to which a summary is derivative of a text
     - Percentage of words in the summary that are part of an extractive fragment with the article
 * Extractiveness Density: 
+    - How well the word sequence can be described as series of extractions
+    - A summary might contain many individual words from the article and therefore have a high coverage. 
+    - However, if arranged in a new order, the words of the summary could still be used to convey ideas not present in the article
     - Average length of the extractive fragment to which each word in the summary belongs
 * Extractiveness Compression: 
     - Word ratio between the article and the summary
+    - Summarizing with higher compression is challenging as it requires capturing more precisely the critical aspects of the article text.
 
 API Performance:
 
@@ -119,7 +124,7 @@ token_cols = ['Input Token Usage', 'Output Token Usage']
 other_metrics = ['Cost (USD)', 'Duration (s)']
 all_metrics = extractiveness_cols + token_cols + other_metrics
 
-# Metric histograms by model
+# Metric Histograms by Model
 plt.style.use('default')
 fig, axes = plt.subplots(len(all_metrics), 1, figsize=(12, 4 * len(all_metrics)))
 
@@ -143,6 +148,36 @@ for i, metric in enumerate(all_metrics):
 
 plt.tight_layout()
 plt.show()
+
+# Metric Statistics by Model
+for metric in all_metrics:
+    print(f"\n{metric.upper()}:")
+    desc_stats = df.groupby('MODEL')[metric].agg([
+        'count', 'mean', 'std', 'min', 'median','max'
+    ])
+
+    print(desc_stats)
+
+
+# Calculate Efficiency Metrics By model
+df_analysis = df.copy()
+df_analysis['Total Token Usage'] = df_analysis['Input Token Usage'] + df_analysis['Output Token Usage']
+df_analysis['Cost per Token'] = df_analysis['Cost (USD)'] / df_analysis['Total Token Usage']
+df_analysis['Tokens per Second'] = df_analysis['Total Token Usage'] / df_analysis['Duration (s)']
+df_analysis['Cost per Second'] = df_analysis['Cost (USD)'] / df_analysis['Duration (s)']
+
+efficiency_metrics = ['Cost per Token', 'Tokens per Second', 'Cost per Second']
+
+for metric in efficiency_metrics:
+    print(f"\n{metric.upper()}:")
+    eff_stats = df_analysis.groupby('MODEL')[metric].agg([
+        'count', 'mean', 'std', 'min', 'median', 'max'
+    ])
+
+    for col in ['mean', 'std', 'min', 'median', 'max']:
+        eff_stats[col] = eff_stats[col].apply(lambda x: f"{x:.3g}")
+    print(eff_stats)
+
 
 ```
 

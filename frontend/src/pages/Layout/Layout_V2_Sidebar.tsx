@@ -56,6 +56,20 @@ const Sidebar: React.FC = () => {
         }
     };
 
+    useEffect(() => {
+        const handleResize = () => {
+            if (window.innerWidth < 640) {
+                setSidebarCollapsed(true)
+            } else {
+                setSidebarCollapsed(false)
+            }
+        }
+
+        handleResize()
+        window.addEventListener('resize', handleResize)
+        return () => window.removeEventListener('resize', handleResize)
+    }, [])
+
     return (
         <div
             className={`z-10 h-screen ${

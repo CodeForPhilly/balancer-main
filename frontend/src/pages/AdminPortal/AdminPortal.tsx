@@ -98,7 +98,7 @@ const AdminPortal = () => {
                                            Medications Database
                                        </span>
                                         <span className="text-textGray block text-sm truncate ">
-                                           Manager the Medications store currently inside Balancer's
+                                           Manage the Medications store currently inside Balancer's
                                            brain
                                        </span>
                                     </div>

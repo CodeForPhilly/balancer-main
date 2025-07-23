@@ -72,11 +72,11 @@ import pandas as pd
 data = [
     {
     "MODEL": "<MODEL_NAME_1>",
-    "INSTRUCTIONS": """<YOUR_QUERY_1>"""
+    "INSTRUCTIONS": """<YOUR_INSTRUCTIONS_1>"""
     },
     {
     "MODEL": "<MODEL_NAME_2>",
-    "INSTRUCTIONS": """<YOUR_QUERY_2>"""
+    "INSTRUCTIONS": """<YOUR_INSTRUCTIONS_2>"""
     },
 ]
 

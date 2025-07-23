@@ -23,6 +23,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 import argparse
 import logging
+import asyncio
 
 import pandas as pd
 
@@ -37,7 +38,7 @@ logging.basicConfig(
 )
 
 
-def evaluate_response(model: str, instructions: str, input: str) -> pd.DataFrame:
+async def evaluate_response(model: str, instructions: str, input: str) -> pd.DataFrame:
     """
     Test a prompt with a set of test data by scoring each item in the data set
     """
@@ -45,7 +46,7 @@ def evaluate_response(model: str, instructions: str, input: str) -> pd.DataFrame
     try:
         handler = ModelFactory.get_handler(model)
 
-        generated_text, token_usage, pricing, duration = handler.handle_request(
+        generated_text, token_usage, pricing, duration = await handler.handle_request(
             instructions, input
         )
 
@@ -145,7 +146,7 @@ def load_csv(file_path: str, required_columns: list) -> pd.DataFrame:
     return df
 
 
-if __name__ == "__main__":
+async def main():
     # TODO: Add test evaluation argument to run on the first 10 rows of the dataset file
 
     parser = argparse.ArgumentParser()
@@ -177,14 +178,15 @@ if __name__ == "__main__":
     # Bulk model and prompt experimentation: Cross join the experiment and dataset DataFrames
     df_in = df_experiment.merge(df_dataset, how="cross")
 
-    # Evaluate each row in the input DataFrame
-    results = []
-    for index, row in enumerate(df_in.itertuples(index=False)):
-        result = evaluate_response(row.MODEL, row.INSTRUCTIONS, row.INPUT)
-        results.append(result)
+    # Evaluate each row in the input DataFrame concurrently
+    logging.info(f"Starting evaluation of {len(df_in)} rows")
+    tasks = [
+        evaluate_response(row.MODEL, row.INSTRUCTIONS, row.INPUT)
+        for row in df_in.itertuples(index=False)
+    ]
 
-        # TODO: Use tqdm or similar library to show progress bar
-        logging.info(f"Processed row {index + 1}/{len(df_in)}")
+    results = await asyncio.gather(*tasks)
+    logging.info(f"Completed evaluation of {len(results)} rows")
 
     df_evals = pd.concat(results, axis=0, ignore_index=True)
 
@@ -195,3 +197,7 @@ if __name__ == "__main__":
     df_out.to_csv(args.results, index=False)
     logging.info(f"Results saved to {args.results}")
     logging.info("Evaluation completed successfully.")
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

@@ -24,6 +24,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 import argparse
 import logging
 import asyncio
+import time
 
 import pandas as pd
 
@@ -117,19 +118,22 @@ def calculate_cost_metrics(token_usage: dict, pricing: dict) -> dict:
     }
 
 
-def load_csv(file_path: str, required_columns: list) -> pd.DataFrame:
+def load_csv(file_path: str, required_columns: list, nrows: int = None) -> pd.DataFrame:
     """
     Load a CSV file and validate that it contains the required columns
 
     Args:
         file_path (str): Path to the CSV file
         required_columns (list): List of required column names
-
+        nrows (int): Number of rows to read from the CSV file
     Returns:
         pd.DataFrame
     """
 
-    df = pd.read_csv(file_path)
+    if nrows is not None:
+        logging.info(f"Test mode enabled: Reading first {nrows} rows of {file_path}")
+
+    df = pd.read_csv(file_path, nrows=nrows)
 
     # Remove trailing whitespace from column names
     df.columns = df.columns.str.strip()
@@ -147,8 +151,6 @@ def load_csv(file_path: str, required_columns: list) -> pd.DataFrame:
 
 
 async def main():
-    # TODO: Add test evaluation argument to run on the first 10 rows of the dataset file
-
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--experiments", "-e", required=True, help="Path to experiments CSV file"
@@ -159,34 +161,35 @@ async def main():
     parser.add_argument(
         "--results", "-r", required=True, help="Path to results CSV file"
     )
+    parser.add_argument(
+        "--test", "-t", type=int, help="Run evaluation on first n rows of dataset only"
+    )
 
     args = parser.parse_args()
 
+    # Load the experiment DataFrame
     df_experiment = load_csv(
         args.experiments, required_columns=["MODEL", "INSTRUCTIONS"]
     )
-    # Check if all models are supported by ModelFactory
-    if not all(
-        model in ModelFactory.HANDLERS.keys()
-        for model in df_experiment["MODEL"].unique()
-    ):
-        raise ValueError(
-            f"Unsupported model(s) found: {set(df_experiment['MODEL'].unique()) - set(ModelFactory.HANDLERS.keys())}"
-        )
-    df_dataset = load_csv(args.dataset, required_columns=["INPUT"])
+
+    # Load the dataset DataFrame
+    df_dataset = load_csv(args.dataset, required_columns=["INPUT"], nrows=args.test)
 
     # Bulk model and prompt experimentation: Cross join the experiment and dataset DataFrames
     df_in = df_experiment.merge(df_dataset, how="cross")
 
     # Evaluate each row in the input DataFrame concurrently
     logging.info(f"Starting evaluation of {len(df_in)} rows")
+    start_time = time.time()
     tasks = [
         evaluate_response(row.MODEL, row.INSTRUCTIONS, row.INPUT)
         for row in df_in.itertuples(index=False)
     ]
 
     results = await asyncio.gather(*tasks)
-    logging.info(f"Completed evaluation of {len(results)} rows")
+    end_time = time.time()
+    duration = end_time - start_time
+    logging.info(f"Completed evaluation of {len(results)} rows in {duration} seconds")
 
     df_evals = pd.concat(results, axis=0, ignore_index=True)
 

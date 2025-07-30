@@ -9,6 +9,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 
 from ...services.openai_services import openAIServices
+from ...services.prompt_services import PromptTemplates
 from api.models.model_embeddings import Embeddings
 
 # This is to use openai to extract the rules to save cost
@@ -37,29 +38,7 @@ class RuleExtractionAPIOpenAIView(APIView):
 
     def get(self, request):
         try:
-            user_prompt = """
-            You're analyzing medical text from multiple sources. Each chunk is labeled [chunk-X].
-
-            Act as a seasoned physician or medical professional who treats patients with bipolar disorder.
-
-            Identify rules for medication inclusion or exclusion based on medical history or concerns.
-
-            For each rule you find, return a JSON object using the following format:
-
-            {
-              "rule": "<condition or concern>",
-              "type": "INCLUDE" or "EXCLUDE",
-              "reason": "<short explanation for why this rule applies>",
-              "medications": ["<medication 1>", "<medication 2>", ...],
-              "source": "<chunk-X>"
-            }
-
-            Only include rules that are explicitly stated or strongly implied in the chunk.
-
-            Only use the chunks provided. If no rule is found in a chunk, skip it.
-
-            Return the entire output as a JSON array.
-            """
+            user_prompt = PromptTemplates.get_text_extraction_prompt()
 
             guid = request.query_params.get("guid")
             query = Embeddings.objects.filter(upload_file__guid=guid)

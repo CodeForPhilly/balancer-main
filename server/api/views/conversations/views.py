@@ -16,6 +16,7 @@ from django.views.decorators.csrf import csrf_exempt
 from .models import Conversation, Message
 from .serializers import ConversationSerializer
 from ...services.tools.tools import tools, execute_tool
+from ...services.prompt_services import PromptTemplates
 
 
 @csrf_exempt
@@ -47,7 +48,7 @@ def extract_text(request: str) -> JsonResponse:
         messages=[
             {
                 "role": "system",
-                "content": "Give a brief description of this medicine: %s" % tokens,
+                "content": PromptTemplates.get_medicine_description_prompt(tokens),
             }
         ],
         max_tokens=500,
@@ -64,8 +65,10 @@ def get_tokens(string: str, encoding_name: str) -> str:
     output_string = encoding.decode(tokens)
     return output_string
 
+
 class OpenAIAPIException(APIException):
     """Custom exception for OpenAI API errors."""
+
     status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
     default_detail = "An error occurred while communicating with the OpenAI API."
     default_code = "openai_api_error"
@@ -76,6 +79,7 @@ class OpenAIAPIException(APIException):
         else:
             self.detail = {"error": self.default_detail}
         self.status_code = code or self.status_code
+
 
 class ConversationViewSet(viewsets.ModelViewSet):
     serializer_class = ConversationSerializer
@@ -93,26 +97,29 @@ class ConversationViewSet(viewsets.ModelViewSet):
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=["post"])
     def continue_conversation(self, request, pk=None):
         conversation = self.get_object()
-        user_message = request.data.get('message')
-        page_context = request.data.get('page_context')
+        user_message = request.data.get("message")
+        page_context = request.data.get("page_context")
 
         if not user_message:
             return Response({"error": "Message is required"}, status=400)
 
         # Save user message
-        Message.objects.create(conversation=conversation,
-                               content=user_message, is_user=True)
+        Message.objects.create(
+            conversation=conversation, content=user_message, is_user=True
+        )
 
         # Get ChatGPT response
         chatgpt_response = self.get_chatgpt_response(
-            conversation, user_message, page_context)
+            conversation, user_message, page_context
+        )
 
         # Save ChatGPT response
-        Message.objects.create(conversation=conversation,
-                               content=chatgpt_response, is_user=False)
+        Message.objects.create(
+            conversation=conversation, content=chatgpt_response, is_user=False
+        )
 
         # Generate or update title if it's the first message or empty
         if conversation.messages.count() <= 2 or not conversation.title:
@@ -121,27 +128,35 @@ class ConversationViewSet(viewsets.ModelViewSet):
 
         return Response({"response": chatgpt_response, "title": conversation.title})
 
-    @action(detail=True, methods=['patch'])
+    @action(detail=True, methods=["patch"])
     def update_title(self, request, pk=None):
         conversation = self.get_object()
-        new_title = request.data.get('title')
+        new_title = request.data.get("title")
 
         if not new_title:
-            return Response({"error": "New title is required"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "New title is required"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         conversation.title = new_title
         conversation.save()
 
-        return Response({"status": "Title updated successfully", "title": conversation.title})
+        return Response(
+            {"status": "Title updated successfully", "title": conversation.title}
+        )
 
     def get_chatgpt_response(self, conversation, user_message, page_context=None):
-        messages = [{
-            "role": "system", 
-            "content": "You are a knowledgeable assistant. Balancer is a powerful tool for selecting bipolar medication for patients. We are open-source and available for free use. Your primary role is to assist licensed clinical professionals with information related to Balancer and bipolar medication selection. If applicable, use the supplied tools to assist the professional."
-        }]
+        messages = [
+            {
+                "role": "system",
+                "content": PromptTemplates.get_conversation_system_prompt(),
+            }
+        ]
 
         if page_context:
-            context_message = f"If applicable, please use the following content to ask questions. If not applicable, please answer to the best of your ability: {page_context}"
+            context_message = PromptTemplates.get_conversation_page_context_prompt(
+                page_context
+            )
             messages.append({"role": "system", "content": context_message})
 
         for msg in conversation.messages.all():
@@ -155,46 +170,50 @@ class ConversationViewSet(viewsets.ModelViewSet):
                 model="gpt-3.5-turbo",
                 messages=messages,
                 tools=tools,
-                tool_choice="auto"
+                tool_choice="auto",
             )
 
             response_message = response.choices[0].message
-            tool_calls = response_message.get('tool_calls', [])
+            tool_calls = response_message.get("tool_calls", [])
 
             if not tool_calls:
-                return response_message['content']
-
+                return response_message["content"]
 
             # Handle tool calls
             # Add the assistant's message with tool calls to the conversation
-            messages.append({
-                "role": "assistant",
-                "content": response_message.get('content', ''),
-                "tool_calls": tool_calls
-            })
-            
+            messages.append(
+                {
+                    "role": "assistant",
+                    "content": response_message.get("content", ""),
+                    "tool_calls": tool_calls,
+                }
+            )
+
             # Process each tool call
             for tool_call in tool_calls:
-                tool_call_id = tool_call['id']
-                tool_function_name = tool_call['function']['name']
-                tool_arguments = json.loads(tool_call['function'].get('arguments', '{}'))
-                
+                tool_call_id = tool_call["id"]
+                tool_function_name = tool_call["function"]["name"]
+                tool_arguments = json.loads(
+                    tool_call["function"].get("arguments", "{}")
+                )
+
                 # Execute the tool
                 results = execute_tool(tool_function_name, tool_arguments)
-                
+
                 # Add the tool response message
-                messages.append({
-                    "role": "tool",
-                    "content": str(results),  # Convert results to string
-                    "tool_call_id": tool_call_id
-                })
-            
+                messages.append(
+                    {
+                        "role": "tool",
+                        "content": str(results),  # Convert results to string
+                        "tool_call_id": tool_call_id,
+                    }
+                )
+
             # Final API call with tool results
             final_response = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo",
-                    messages=messages
-                )
-            return final_response.choices[0].message['content']
+                model="gpt-3.5-turbo", messages=messages
+            )
+            return final_response.choices[0].message["content"]
         except openai.error.OpenAIError as e:
             logging.error("OpenAI API Error: %s", str(e))
             raise OpenAIAPIException(detail=str(e))
@@ -206,14 +225,17 @@ class ConversationViewSet(viewsets.ModelViewSet):
         # Get the first two messages
         messages = conversation.messages.all()[:2]
         context = "\n".join([msg.content for msg in messages])
-        prompt = f"Based on the following conversation, generate a short, descriptive title (max 6 words):\n\n{context}"
+        prompt = PromptTemplates.get_title_generation_user_prompt(context)
 
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "You are a helpful assistant that generates short, descriptive titles."},
-                {"role": "user", "content": prompt}
-            ]
+                {
+                    "role": "system",
+                    "content": PromptTemplates.get_title_generation_system_prompt(),
+                },
+                {"role": "user", "content": prompt},
+            ],
         )
 
-        return response.choices[0].message['content'].strip()
+        return response.choices[0].message["content"].strip()

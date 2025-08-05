@@ -1,53 +1,212 @@
-
-from unittest.mock import patch, MagicMock
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = "==3.11.11"
+# dependencies = [
+#   "pandas==2.2.3",
+#   "lighteval==0.10.0",
+#   "openai==1.83.0",
+#   "spacy==3.8.7",
+#   "pytest==8.3.3",
+#   "pytest-asyncio==0.24.0",
+#   "pip"
+# ]
+# ///
 
 import pytest
 import pandas as pd
+from unittest.mock import Mock, patch, AsyncMock
+import tempfile
+import os
+import sys
 
-from evals import evaluate_response  
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from evaluation.evals import evaluate_response, calculate_cost_metrics, load_csv
 
-class MockTokenUsage:
-    def __init__(self, input_tokens, output_tokens):
-        self.input_tokens = input_tokens
-        self.output_tokens = output_tokens
 
-@patch("evals.ModelFactory.get_handler")
-@patch("evals.Extractiveness.compute")
-def test_evaluate_response(mock_extractiveness_compute, mock_get_handler):
+@pytest.fixture
+def mock_token_usage():
+    token_usage = Mock()
+    token_usage.input_tokens = 100
+    token_usage.output_tokens = 50
+    return token_usage
 
-    # Mock BaseModelHandler
-    mock_handler = MagicMock()
-    mock_handler.handle_request.return_value = (
-        "This is a summary.",
-        MockTokenUsage(input_tokens=100, output_tokens=50),
-        {"input": 15.0, "output": 30.0},  # $15 and $30 per 1M tokens
-        1.23,  # duration
+
+@pytest.fixture
+def temp_csv():
+    def _create_csv(content):
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as f:
+            f.write(content)
+            return f.name
+
+    return _create_csv
+
+
+class TestCalculateCostMetrics:
+    @pytest.mark.parametrize(
+        "input_tokens,output_tokens,input_price,output_price,expected_input,expected_output,expected_total",
+        [
+            (1000, 500, 5.0, 15.0, 0.005, 0.0075, 0.0125),
+            (0, 0, 5.0, 15.0, 0.0, 0.0, 0.0),
+            (1_000_000, 2_000_000, 10.0, 30.0, 10.0, 60.0, 70.0),
+        ],
     )
+    def test_calculate_cost_metrics(
+        self,
+        input_tokens,
+        output_tokens,
+        input_price,
+        output_price,
+        expected_input,
+        expected_output,
+        expected_total,
+    ):
+        token_usage = Mock(input_tokens=input_tokens, output_tokens=output_tokens)
+        pricing = {"input": input_price, "output": output_price}
 
-    mock_get_handler.return_value = mock_handler
+        result = calculate_cost_metrics(token_usage, pricing)
 
-    mock_extractiveness_compute.return_value = {
-        "summarization_coverage": 0.8,
-        "summarization_density": 1.5,
-        "summarization_compression": 2.0,
-    }
+        assert pytest.approx(result["input_cost"]) == expected_input
+        assert pytest.approx(result["output_cost"]) == expected_output
+        assert pytest.approx(result["total_cost"]) == expected_total
 
-    df = evaluate_response(
-        model_name="mock-model",
-        query="What is the summary?",
-        context="This is a long article about something important.",
-        reference="This is a reference summary.",
+
+class TestLoadCsv:
+    @pytest.mark.parametrize(
+        "csv_content,required_columns,expected_len",
+        [
+            (
+                "model,instructions\ngpt-4,Test prompt\ngpt-3.5,Another prompt\n",
+                ["MODEL", "INSTRUCTIONS"],
+                2,
+            ),
+            (
+                " model , instructions \ngpt-4,Test prompt\n",
+                ["MODEL", "INSTRUCTIONS"],
+                1,
+            ),
+            ("input\nTest input 1\nTest input 2\n", ["INPUT"], 2),
+        ],
     )
+    def test_load_csv_valid(
+        self, temp_csv, csv_content, required_columns, expected_len
+    ):
+        temp_path = temp_csv(csv_content)
+        try:
+            df = load_csv(temp_path, required_columns)
+            assert len(df) == expected_len
+            assert list(df.columns) == required_columns
+        finally:
+            os.unlink(temp_path)
 
-    assert isinstance(df, pd.DataFrame)
-    assert df.shape == (1, 8)
-    assert df["Output Text"].iloc[0] == "This is a summary."
-    assert df["Extractiveness Coverage"].iloc[0] == 0.8
-    assert df["Extractiveness Density"].iloc[0] == 1.5
-    assert df["Extractiveness Compression"].iloc[0] == 2.0
-    assert df["Input Token Usage"].iloc[0] == 100
-    assert df["Output Token Usage"].iloc[0] == 50
+    @pytest.mark.parametrize(
+        "csv_content,required_columns",
+        [
+            ("model,prompt\ngpt-4,Test prompt\n", ["MODEL", "INSTRUCTIONS"]),
+            ("wrong,columns\nval1,val2\n", ["MODEL", "INSTRUCTIONS"]),
+        ],
+    )
+    def test_load_csv_missing_columns(self, temp_csv, csv_content, required_columns):
+        temp_path = temp_csv(csv_content)
+        try:
+            with pytest.raises(ValueError, match="must contain the following columns"):
+                load_csv(temp_path, required_columns)
+        finally:
+            os.unlink(temp_path)
 
-    expected_cost = (15.0 / 1_000_000) * 100 + (30.0 / 1_000_000) * 50
-    assert pytest.approx(df["Cost (USD)"].iloc[0], rel=1e-4) == expected_cost
-    assert pytest.approx(df["Duration (s)"].iloc[0], rel=1e-4) == 1.23
+    def test_load_csv_nonexistent_file(self):
+        with pytest.raises(FileNotFoundError):
+            load_csv("nonexistent_file.csv", ["MODEL"])
+
+
+class TestEvaluateResponse:
+    @pytest.mark.asyncio
+    async def test_evaluate_response_success(self, mock_token_usage):
+        mock_handler = AsyncMock()
+        mock_handler.handle_request.return_value = (
+            "Generated response text",
+            mock_token_usage,
+            {"input": 5.0, "output": 15.0},
+            1.5,
+        )
+
+        mock_extractiveness = Mock()
+        mock_extractiveness.compute.return_value = {
+            "summarization_coverage": 0.8,
+            "summarization_density": 0.6,
+            "summarization_compression": 0.4,
+        }
+
+        with (
+            patch(
+                "evaluation.evals.ModelFactory.get_handler", return_value=mock_handler
+            ),
+            patch("evaluation.evals.Extractiveness", return_value=mock_extractiveness),
+        ):
+            result = await evaluate_response("gpt-4", "Test instructions", "Test input")
+
+            assert isinstance(result, pd.DataFrame)
+            assert len(result) == 1
+            row = result.iloc[0]
+            assert row["Generated Text"] == "Generated response text"
+            assert row["Extractiveness Coverage"] == 0.8
+            assert row["Input Token Usage"] == 100
+            assert row["Output Token Usage"] == 50
+            assert row["Duration (s)"] == 1.5
+
+    @pytest.mark.parametrize(
+        "exception_side_effect", ["get_handler", "handle_request", "extractiveness"]
+    )
+    @pytest.mark.asyncio
+    async def test_evaluate_response_exceptions(
+        self, mock_token_usage, exception_side_effect
+    ):
+        if exception_side_effect == "get_handler":
+            with patch(
+                "evaluation.evals.ModelFactory.get_handler",
+                side_effect=Exception("Test error"),
+            ):
+                result = await evaluate_response(
+                    "invalid-model", "Test instructions", "Test input"
+                )
+
+        elif exception_side_effect == "handle_request":
+            mock_handler = AsyncMock()
+            mock_handler.handle_request.side_effect = Exception("Handler error")
+            with patch(
+                "evaluation.evals.ModelFactory.get_handler", return_value=mock_handler
+            ):
+                result = await evaluate_response(
+                    "gpt-4", "Test instructions", "Test input"
+                )
+
+        elif exception_side_effect == "extractiveness":
+            mock_handler = AsyncMock()
+            mock_handler.handle_request.return_value = (
+                "text",
+                mock_token_usage,
+                {"input": 5.0, "output": 15.0},
+                1.5,
+            )
+            mock_extractiveness = Mock()
+            mock_extractiveness.compute.side_effect = Exception("Extractiveness error")
+
+            with (
+                patch(
+                    "evaluation.evals.ModelFactory.get_handler",
+                    return_value=mock_handler,
+                ),
+                patch(
+                    "evaluation.evals.Extractiveness", return_value=mock_extractiveness
+                ),
+            ):
+                result = await evaluate_response(
+                    "gpt-4", "Test instructions", "Test input"
+                )
+
+        assert isinstance(result, pd.DataFrame)
+        assert len(result) == 1
+        assert pd.isna(result.iloc[0]["Generated Text"])
+
+
+if __name__ == "__main__":
+    pytest.main([__file__])

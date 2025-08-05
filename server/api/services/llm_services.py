@@ -7,12 +7,12 @@ import time
 import logging
 from abc import ABC, abstractmethod
 
-import openai
+from openai import AsyncOpenAI
 
 
 class BaseModelHandler(ABC):
     @abstractmethod
-    def handle_request(
+    async def handle_request(
         self, query: str, context: str
     ) -> tuple[str, dict[str, int], dict[str, float], float]:
         pass
@@ -31,9 +31,9 @@ class GPT4OMiniHandler(BaseModelHandler):
     PRICING_DOLLARS_PER_MILLION_TOKENS = {"input": 0.15, "output": 0.60}
 
     def __init__(self) -> None:
-        self.client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+        self.client = AsyncOpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
-    def handle_request(
+    async def handle_request(
         self, query: str, context: str
     ) -> tuple[str, dict[str, int], dict[str, float], float]:
         """
@@ -46,7 +46,7 @@ class GPT4OMiniHandler(BaseModelHandler):
         """
         start_time = time.time()
         # TODO: Add error handling for API requests and invalid responses
-        response = self.client.responses.create(
+        response = await self.client.responses.create(
             model=self.MODEL, instructions=query, input=context, temperature=0.0
         )
         duration = time.time() - start_time
@@ -123,9 +123,9 @@ class GPT41NanoHandler(BaseModelHandler):
     """
 
     def __init__(self) -> None:
-        self.client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+        self.client = AsyncOpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
-    def handle_request(
+    async def handle_request(
         self, query: str, context: str
     ) -> tuple[str, dict[str, int], dict[str, float], float]:
         """
@@ -144,7 +144,7 @@ class GPT41NanoHandler(BaseModelHandler):
         start_time = time.time()
         # TODO: Add error handling for API requests and invalid responses
 
-        response = self.client.responses.create(
+        response = await self.client.responses.create(
             model=self.MODEL, instructions=query, input=context, temperature=0.0
         )
         duration = time.time() - start_time

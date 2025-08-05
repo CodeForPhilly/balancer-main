@@ -72,11 +72,11 @@ import pandas as pd
 data = [
     {
     "MODEL": "<MODEL_NAME_1>",
-    "INSTRUCTIONS": """<YOUR_QUERY_1>"""
+    "INSTRUCTIONS": """<YOUR_INSTRUCTIONS_1>"""
     },
     {
     "MODEL": "<MODEL_NAME_2>",
-    "INSTRUCTIONS": """<YOUR_QUERY_2>"""
+    "INSTRUCTIONS": """<YOUR_INSTRUCTIONS_2>"""
     },
 ]
 
@@ -175,4 +175,32 @@ for metric in efficiency_metrics:
 
 ### Contributing
 
-You're welcome to add LLM models to test in `server/api/services/llm_services`
+#### Adding Evaluation Metrics
+
+To add new evaluation metrics, modify the `evaluate_response()` function in `evaluation/evals.py`:
+
+**Update dependencies** in script header and ensure exception handling includes new metrics with `None` values.
+
+#### Adding New LLM Models
+
+To add a new LLM model for evaluation, implement a handler in `server/api/services/llm_services.py`:
+
+1. **Create a handler class** inheriting from `BaseModelHandler`:
+2. **Register in ModelFactory** by adding to the `HANDLERS` dictionary:
+3. **Use in experiments** by referencing the handler key in your experiments CSV:
+
+The evaluation system will automatically use your handler through the Factory Method pattern.
+
+
+#### Running Tests
+
+The evaluation module includes comprehensive tests for all core functions. Run the test suite using:
+
+```sh
+uv run test_evals.py
+```
+
+The tests cover:
+- **Cost calculation** with various token usage and pricing scenarios
+- **CSV loading** with validation and error handling
+- **Response evaluation** including async operations and exception handling

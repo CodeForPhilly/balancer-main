@@ -23,6 +23,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 import argparse
 import logging
+import asyncio
+import time
 
 import pandas as pd
 
@@ -37,7 +39,7 @@ logging.basicConfig(
 )
 
 
-def evaluate_response(model: str, instructions: str, input: str) -> pd.DataFrame:
+async def evaluate_response(model: str, instructions: str, input: str) -> pd.DataFrame:
     """
     Test a prompt with a set of test data by scoring each item in the data set
     """
@@ -45,7 +47,7 @@ def evaluate_response(model: str, instructions: str, input: str) -> pd.DataFrame
     try:
         handler = ModelFactory.get_handler(model)
 
-        generated_text, token_usage, pricing, duration = handler.handle_request(
+        generated_text, token_usage, pricing, duration = await handler.handle_request(
             instructions, input
         )
 
@@ -116,19 +118,22 @@ def calculate_cost_metrics(token_usage: dict, pricing: dict) -> dict:
     }
 
 
-def load_csv(file_path: str, required_columns: list) -> pd.DataFrame:
+def load_csv(file_path: str, required_columns: list, nrows: int = None) -> pd.DataFrame:
     """
     Load a CSV file and validate that it contains the required columns
 
     Args:
         file_path (str): Path to the CSV file
         required_columns (list): List of required column names
-
+        nrows (int): Number of rows to read from the CSV file
     Returns:
         pd.DataFrame
     """
 
-    df = pd.read_csv(file_path)
+    if nrows is not None:
+        logging.info(f"Test mode enabled: Reading first {nrows} rows of {file_path}")
+
+    df = pd.read_csv(file_path, nrows=nrows)
 
     # Remove trailing whitespace from column names
     df.columns = df.columns.str.strip()
@@ -145,9 +150,7 @@ def load_csv(file_path: str, required_columns: list) -> pd.DataFrame:
     return df
 
 
-if __name__ == "__main__":
-    # TODO: Add test evaluation argument to run on the first 10 rows of the dataset file
-
+async def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--experiments", "-e", required=True, help="Path to experiments CSV file"
@@ -158,33 +161,35 @@ if __name__ == "__main__":
     parser.add_argument(
         "--results", "-r", required=True, help="Path to results CSV file"
     )
+    parser.add_argument(
+        "--test", "-t", type=int, help="Run evaluation on first n rows of dataset only"
+    )
 
     args = parser.parse_args()
 
+    # Load the experiment DataFrame
     df_experiment = load_csv(
         args.experiments, required_columns=["MODEL", "INSTRUCTIONS"]
     )
-    # Check if all models are supported by ModelFactory
-    if not all(
-        model in ModelFactory.HANDLERS.keys()
-        for model in df_experiment["MODEL"].unique()
-    ):
-        raise ValueError(
-            f"Unsupported model(s) found: {set(df_experiment['MODEL'].unique()) - set(ModelFactory.HANDLERS.keys())}"
-        )
-    df_dataset = load_csv(args.dataset, required_columns=["INPUT"])
+
+    # Load the dataset DataFrame
+    df_dataset = load_csv(args.dataset, required_columns=["INPUT"], nrows=args.test)
 
     # Bulk model and prompt experimentation: Cross join the experiment and dataset DataFrames
     df_in = df_experiment.merge(df_dataset, how="cross")
 
-    # Evaluate each row in the input DataFrame
-    results = []
-    for index, row in enumerate(df_in.itertuples(index=False)):
-        result = evaluate_response(row.MODEL, row.INSTRUCTIONS, row.INPUT)
-        results.append(result)
+    # Evaluate each row in the input DataFrame concurrently
+    logging.info(f"Starting evaluation of {len(df_in)} rows")
+    start_time = time.time()
+    tasks = [
+        evaluate_response(row.MODEL, row.INSTRUCTIONS, row.INPUT)
+        for row in df_in.itertuples(index=False)
+    ]
 
-        # TODO: Use tqdm or similar library to show progress bar
-        logging.info(f"Processed row {index + 1}/{len(df_in)}")
+    results = await asyncio.gather(*tasks)
+    end_time = time.time()
+    duration = end_time - start_time
+    logging.info(f"Completed evaluation of {len(results)} rows in {duration} seconds")
 
     df_evals = pd.concat(results, axis=0, ignore_index=True)
 
@@ -195,3 +200,7 @@ if __name__ == "__main__":
     df_out.to_csv(args.results, index=False)
     logging.info(f"Results saved to {args.results}")
     logging.info("Evaluation completed successfully.")
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

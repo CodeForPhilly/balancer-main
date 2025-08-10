@@ -32,21 +32,26 @@ class GetMedication(APIView):
         if diag_query.count() <= 0:
             return Response({'error': 'Diagnosis not found'}, status=status.HTTP_404_NOT_FOUND)
         diagnosis = diag_query[0]
-        meds = {'first': '', 'second': '', 'third': ''}
+        meds = {'first': [], 'second': [], 'third': []}
+
+        included_set = set(include_result)
+        excluded_set = set(exclude_result)
+
         for med in include_result:
-            meds['first'] += med + ", "
-        for i, line in enumerate(['first', 'second', 'third']):
-            for suggestion in Suggestion.objects.filter(diagnosis=diagnosis, tier=(i + 1)):
-                to_exclude = False
-                for med in exclude_result:
-                    if med in suggestion.medication.name:
-                        to_exclude = True
-                        break
-                if i > 0 and suggestion.medication.name in include_result:
-                    to_exclude = True
-                if not to_exclude:
-                    meds[line] += suggestion.medication.name + ", "
-            meds[line] = meds[line][:-2] if meds[line] else 'None'
+            meds['first'].append({'name': med, 'source': 'include'})
+
+        for i, tier_label in enumerate(['first', 'second', 'third']):
+            suggestions = Suggestion.objects.filter(
+                diagnosis=diagnosis, tier=i+1)
+            for suggestion in suggestions:
+                med_name = suggestion.medication.name
+                if med_name in excluded_set:
+                    continue
+                if i > 0 and med_name in included_set:
+                    continue
+                meds[tier_label].append(
+                    {'name': med_name, 'source': 'diagnosis'})
+
         return Response(meds)
 
 

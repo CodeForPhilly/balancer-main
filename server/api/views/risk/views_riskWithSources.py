@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from api.views.listMeds.models import Medication, Diagnosis, Suggestion
+from api.views.listMeds.models import Medication
 from api.models.model_medRule import MedRule, MedRuleSource
 import openai
 import os

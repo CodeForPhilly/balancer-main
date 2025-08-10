@@ -7,7 +7,7 @@ from django.http import JsonResponse
 from bs4 import BeautifulSoup
 from nltk.stem import PorterStemmer
 import requests
-from openai import OpenAI, OpenAIError
+from openai import OpenAI
 import tiktoken
 import os
 import json

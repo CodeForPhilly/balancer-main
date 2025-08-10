@@ -67,6 +67,18 @@ const handleRuleExtraction = async (guid: string) => {
   }
 };
 
+const fetchRiskDataWithSources = async (medication: string, source: "include" | "diagnosis" = "include") => {
+  try {
+    const response = await api.post(`/v1/api/riskWithSources`, {
+      drug: medication,
+      source: source,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching risk data: ", error);
+    throw error;
+  }
+};
 
 interface StreamCallbacks {
   onContent?: (content: string) => void;
@@ -165,7 +177,6 @@ const handleSendDrugSummaryStream = async (
   }
 };
 
-
 // Legacy function for backward compatibility
 const handleSendDrugSummaryStreamLegacy = async (
   message: string,
@@ -256,7 +267,6 @@ const updateConversationTitle = async (
   }
 };
 
-
 export {
   handleSubmitFeedback,
   handleSendDrugSummary,
@@ -268,5 +278,6 @@ export {
   deleteConversation,
   updateConversationTitle,
   handleSendDrugSummaryStream,
-  handleSendDrugSummaryStreamLegacy
+  handleSendDrugSummaryStreamLegacy,
+  fetchRiskDataWithSources
 };

@@ -154,6 +154,12 @@ const Header: React.FC<LoginFormProps> = ({
                         >
                             Leave Feedback
                         </Link>
+                        <a href="https://www.flipcause.com/secure/cause_pdetails/MjMyMTIw"
+                          target="_blank"
+                          className="text-black hover:border-blue-600 hover:text-blue-600 hover:no-underline"
+                        >
+                          Donate
+                        </a>
                         {isSuperuser && (
                             <div
                                 onMouseEnter={handleMouseEnter}
@@ -164,8 +170,8 @@ const Header: React.FC<LoginFormProps> = ({
                 <span
                     className={` text-black ${
                         showFeaturesMenu
-                            ? "mx-4 cursor-pointer border-b-2 border-blue-600 hover:border-b-2 hover:border-blue-600 hover:text-blue-600 hover:no-underline"
-                            : "mx-4 cursor-pointer hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
+                            ? "cursor-pointer border-b-2 border-blue-600 hover:border-b-2 hover:border-blue-600 hover:text-blue-600 hover:no-underline"
+                            : "cursor-pointer hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
                     }`}
                 >
                   Admin Portal

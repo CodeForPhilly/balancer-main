@@ -28,11 +28,11 @@ function Footer() {
 
   return (
     // <div className="xl:px-50 mx-auto hidden h-20 items-center justify-between border-t border-gray-300 bg-white  px-4 sm:px-6 md:px-8 lg:flex lg:px-8 2xl:px-56">
-    <div className=" mt-20 flex w-full border-t border-gray-300  ">
+    <div className="mt-20 flex w-full border-t border-gray-300  ">
       {/* <div className="footer-content footer-content mr-5 mt-5 rounded-md border-l border-r border-t border-gray-300 "> */}{" "}
       {/* Added mt-5 and mr-5 */}
       <footer className=" font_body mt-10 w-full ">
-        <div className="m-auto  grid max-w-[900px] grid-cols-2 flex-wrap items-center justify-between gap-5 px-5 py-3 md:grid-cols-5 md:py-12">
+        <div className="m-auto  grid max-w-[900px] sm:justify-center md:grid-cols-6 md:py-12 lg:grid-cols-6 flex-wrap items-center md:justify-between gap-4 px-5 py-3">
           <Link
             to="/"
             className=" flex justify-center text-black hover:border-blue-600 hover:text-blue-600 hover:no-underline"
@@ -61,6 +61,12 @@ function Footer() {
           >
             Leave feedback
           </Link>
+          <a href="https://www.flipcause.com/secure/cause_pdetails/MjMyMTIw"
+            target="_blank"
+            className="flex justify-center text-black hover:border-blue-600 hover:text-blue-600 hover:no-underline"
+          >
+            Donate
+          </a>
           <Link
             to="/help"
             className="flex justify-center text-black hover:border-blue-600 hover:text-blue-600 hover:no-underline"

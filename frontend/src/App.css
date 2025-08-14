@@ -170,7 +170,7 @@ The heading directly under the nav bar.
 }
 
 .desc1 {
-    @apply mx-auto mt-5 hidden max-w-[75%] text-center  font-satoshi text-lg text-gray-400 sm:text-xl  md:block;
+    @apply mx-auto mt-5 text-center font-satoshi text-lg text-gray-400 sm:text-xl md:block;
     font-size: 100%;
     letter-spacing: 0.03em;
 }

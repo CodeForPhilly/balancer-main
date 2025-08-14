@@ -102,10 +102,21 @@ const Header: React.FC<LoginFormProps> = ({
         <header className="z-50 fixed w-full items-center no-print">
             <div className="hidden w-full items-center justify-center border-b border-gray-300 bg-blue-100 p-1 text-center text-sm font-light text-gray-500 lg:flex">
                 <p className="">
-                    This app is currently in its beta testing phase. The information and
-                    tools provided herein are intended for general informational purposes
-                    only and should NOT be construed as medical advice, diagnosis, or
-                    treatment.
+                    Welcome to Balancer’s first release! Found a bug or have feedback? Let us know {" "}
+                  <Link
+                      to="/feedback"
+                      className="underline hover:border-blue-600 hover:text-blue-600 hover:no-underline"
+                  >
+                    here
+                  </Link> {" "}
+                  or email {" "}
+                  <a
+                    href="mailto:balancerteam@codeforphilly.org"
+                    className="underline hover:border-blue-600 hover:text-blue-600 hover:no-underline"
+                    target="_blank"
+                  >
+                    balancerteam@codeforphilly.org
+                  </a>.
                 </p>
             </div>
             <div className="flex items-center justify-center border-b border-gray-300 bg-blue-100 p-1 text-center text-sm font-light text-gray-500 lg:hidden ">

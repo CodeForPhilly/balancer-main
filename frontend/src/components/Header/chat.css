@@ -7,7 +7,7 @@
 }
 
 .show_chat.windowed {
-  @apply h-[50%] w-[320px];
+  @apply h-[75%] sm:w-[75%] md:w-[550px];
 }
 
 .show_chat.full-screen {

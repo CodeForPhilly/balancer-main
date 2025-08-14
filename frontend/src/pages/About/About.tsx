@@ -110,8 +110,14 @@ function About() {
             </div>
           </div>
 
-          <div className="mb-20 mt-5 flex flex-row flex-wrap">
-            <a href="mailto:balancerteam@codeforphilly.org">
+          <div className="mb-20 mt-5 flex flex-row flex-wrap justify-center gap-4">
+            <a href="https://www.flipcause.com/secure/cause_pdetails/MjMyMTIw" target="_blank">
+              <button className="btnBlue transition-transform focus:outline-none focus:ring focus:ring-blue-200">
+                Donate
+              </button>
+            </a>
+
+            <a href="mailto:balancerteam@codeforphilly.org" target="_blank" >
               <button className="btnBlue transition-transform focus:outline-none focus:ring focus:ring-blue-200">
                 Contact Us
               </button>

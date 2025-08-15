@@ -1,7 +1,7 @@
 import {useState, useRef, useEffect, Fragment} from "react";
 // import { useState, Fragment } from "react";
 import accountLogo from "../../assets/account.svg";
-import {Link, useNavigate, useLocation} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import LoginMenuDropDown from "./LoginMenuDropDown";
 import "../../components/Header/header.css";
 import Chat from "./Chat";
@@ -98,9 +98,6 @@ const Header: React.FC<LoginFormProps> = ({
         navigate("/");
     };
 
-    const location = useLocation();
-    const currentPath = location.pathname;
-
     return (
         <header className="z-50 fixed w-full items-center no-print">
             <div className="hidden w-full items-center justify-center border-b border-gray-300 bg-blue-100 p-1 text-center text-sm font-light text-gray-500 lg:flex">
@@ -139,38 +136,38 @@ const Header: React.FC<LoginFormProps> = ({
                     <Link
                         to="/"
                         onClick={() => handleForm()}
-                        className={currentPath === "/" ? "header-nav-item header-nav-item-selected" : "header-nav-item"}
+                        className="  text-black hover:border-blue-600 hover:text-blue-600 hover:no-underline"
                     >
                         Medication Suggester
                     </Link>
                     <>
                         <Link
                             to="/medications"
-                            className={currentPath === "/medications" ? "header-nav-item header-nav-item-selected" : "header-nav-item"}
+                            className=" text-black hover:border-blue-600 hover:text-blue-600 hover:no-underline"
                         >
                             Medication List
                         </Link>
                         <Link
                             to="/about"
-                            className={currentPath === "/about" ? "header-nav-item header-nav-item-selected" : "header-nav-item" }
+                            className="  text-black hover:border-blue-600 hover:text-blue-600 hover:no-underline"
                         >
                             About
                         </Link>
                         <Link
                             to="/help"
-                            className={currentPath === "/help" ? "header-nav-item header-nav-item-selected" : "header-nav-item" }
+                            className=" text-black hover:border-blue-600 hover:text-blue-600 hover:no-underline"
                         >
                             Help
                         </Link>
                         <Link
                             to="/feedback"
-                            className={currentPath === "/feedback" ? "header-nav-item header-nav-item-selected" : "header-nav-item" }
+                            className=" text-black hover:border-blue-600 hover:text-blue-600 hover:no-underline"
                         >
                             Leave Feedback
                         </Link>
                         <a href="https://www.flipcause.com/secure/cause_pdetails/MjMyMTIw"
                           target="_blank"
-                          className="header-nav-item"
+                          className="text-black hover:border-blue-600 hover:text-blue-600 hover:no-underline"
                         >
                           Donate
                         </a>
@@ -182,12 +179,11 @@ const Header: React.FC<LoginFormProps> = ({
                                 className=""
                             >
                 <span
-                    className={`header-nav-item ${
-                        showFeaturesMenu && "text-blue-600"
-                    } ${
-                        (currentPath === "/rulesmanager" || currentPath === "/ManageMeds") && "header-nav-item-selected"
-                    }`
-                  }
+                    className={` text-black ${
+                        showFeaturesMenu
+                            ? "cursor-pointer border-b-2 border-blue-600 hover:border-b-2 hover:border-blue-600 hover:text-blue-600 hover:no-underline"
+                            : "cursor-pointer hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
+                    }`}
                 >
                   Admin Portal
                   <span

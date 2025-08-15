@@ -29,12 +29,12 @@ const PatientManager = () => {
     weight_gain: "",
     Reproductive: "",
     risk_pregnancy: "",
+    any_pregnancy: "",
     PossibleMedications: {
       first: [],
       second: [],
       third: [],
     },
-    any_pregnancy: "",
   });
 
   const handlePatientDeleted = (deletedId: string) => {

@@ -198,6 +198,7 @@ const MedicationItem = ({
 
 const MedicationTier = ({
   title,
+  tier,
   medications,
   clickedMedication,
   riskData,
@@ -205,6 +206,7 @@ const MedicationTier = ({
   onMedicationClick,
 }: {
   title: string;
+  tier: string;
   medications: MedicationWithSource[];
   clickedMedication: string | null;
   riskData: RiskData | null;
@@ -215,19 +217,23 @@ const MedicationTier = ({
     <dt className="flex ml-2 text-sm font-medium leading-6 text-gray-900">
       {title}:
     </dt>
-    <ul className="border border-gray-200 divide-y divide-gray-100 rounded-md">
-      {medications.map((medicationObj) => (
-        <MedicationItem
-          key={medicationObj.name}
-          medication={medicationObj.name}
-          source={medicationObj.source}
-          isClicked={medicationObj.name === clickedMedication}
-          riskData={riskData}
-          loading={loading}
-          onClick={() => onMedicationClick(medicationObj)}
-        />
-      ))}
-    </ul>
+    { medications.length ?
+      <ul className="border border-gray-200 divide-y divide-gray-100 rounded-md">
+        {medications.map((medicationObj) => (
+            <MedicationItem
+              key={medicationObj.name}
+              medication={medicationObj.name}
+              source={medicationObj.source}
+              isClicked={medicationObj.name === clickedMedication}
+              riskData={riskData}
+              loading={loading}
+              onClick={() => onMedicationClick(medicationObj)}
+            />
+          ))
+        }
+      </ul> :
+      <em className="ml-2">{`Patient's other health concerns may contraindicate typical ${tier} line options.`}</em>
+    }
   </>
 );
 
@@ -364,6 +370,7 @@ const PatientSummary = ({
           <>
             <MedicationTier
               title="Tier 1: First-line Options"
+              tier="first"
               medications={patientInfo.PossibleMedications.first ?? []}
               clickedMedication={clickedMedication}
               riskData={riskData}
@@ -373,6 +380,7 @@ const PatientSummary = ({
             <div className="mt-6">
               <MedicationTier
                 title="Tier 2: Second-line Options"
+                tier="second"
                 medications={patientInfo.PossibleMedications.second ?? []}
                 clickedMedication={clickedMedication}
                 riskData={riskData}
@@ -383,6 +391,7 @@ const PatientSummary = ({
             <div className="mt-6">
               <MedicationTier
                 title="Tier 3: Third-line Options"
+                tier="third"
                 medications={patientInfo.PossibleMedications.third ?? []}
                 clickedMedication={clickedMedication}
                 riskData={riskData}

@@ -1,49 +1,49 @@
 services:
-  db:
-      build:
-        context: ./db
-        dockerfile: Dockerfile
-      volumes:
-        - postgres_data:/var/lib/postgresql/data/
-      environment:
-        - POSTGRES_USER=balancer
-        - POSTGRES_PASSWORD=balancer
-        - POSTGRES_DB=balancer_dev
-      ports:
-      - "5433:5432"
-      networks:
-        app_net:
-          ipv4_address: 192.168.0.2  
-  pgadmin:
-    container_name: pgadmin4
-    image: dpage/pgadmin4
-    environment:
-      PGADMIN_DEFAULT_EMAIL: balancer-noreply@codeforphilly.org
-      PGADMIN_DEFAULT_PASSWORD: balancer
-      # PGADMIN_LISTEN_PORT = 80
-    # volumes:
-    #   - ./pgadmin-data:/var/lib/pgadmin
-    #       # PGADMIN_LISTEN_PORT = 80
-    ports:
-      - "5050:80"
-    networks:
-      app_net:
-        ipv4_address: 192.168.0.4
-  backend:
-    image: balancer-backend
-    build: ./server
-    command: python manage.py runserver 0.0.0.0:8000
-    ports:
-      - "8000:8000"
-    env_file:
-      - ./config/env/env.dev
-    depends_on:
-      - db
-    volumes:
-      - ./server:/usr/src/server
-    networks:
-      app_net:
-        ipv4_address: 192.168.0.3
+  # db:
+  #   build:
+  #     context: ./db
+  #     dockerfile: Dockerfile
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data/
+  #   environment:
+  #     - POSTGRES_USER=balancer
+  #     - POSTGRES_PASSWORD=balancer
+  #     - POSTGRES_DB=balancer_dev
+  #   ports:
+  #     - "5433:5432"
+  #   networks:
+  #     app_net:
+  #       ipv4_address: 192.168.0.2
+  # pgadmin:
+  #   container_name: pgadmin4
+  #   image: dpage/pgadmin4
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: balancer-noreply@codeforphilly.org
+  #     PGADMIN_DEFAULT_PASSWORD: balancer
+  #     # PGADMIN_LISTEN_PORT = 80
+  #   # volumes:
+  #   #   - ./pgadmin-data:/var/lib/pgadmin
+  #   #       # PGADMIN_LISTEN_PORT = 80
+  #   ports:
+  #     - "5050:80"
+  #   networks:
+  #     app_net:
+  #       ipv4_address: 192.168.0.4
+  # backend:
+  #   image: balancer-backend
+  #   build: ./server
+  #   command: python manage.py runserver 0.0.0.0:8000
+  #   ports:
+  #     - "8000:8000"
+  #   env_file:
+  #     - ./config/env/env.dev
+  #   depends_on:
+  #     - db
+  #   volumes:
+  #     - ./server:/usr/src/server
+  #   networks:
+  #     app_net:
+  #       ipv4_address: 192.168.0.3
   frontend:
     image: balancer-frontend
     build:
@@ -52,15 +52,15 @@ services:
       args:
         - IMAGE_NAME=balancer-frontend
     ports:
-        - "3000:3000"
+      - "3000:3000"
     environment:
-        - CHOKIDAR_USEPOLLING=true
-        # - VITE_API_BASE_URL=https://balancertestsite.com/
+      - CHOKIDAR_USEPOLLING=true
+      # - VITE_API_BASE_URL=https://balancertestsite.com/
     volumes:
-        - "./frontend:/usr/src/app:delegated"
-        - "/usr/src/app/node_modules/"
-    depends_on:
-      - backend
+      - "./frontend:/usr/src/app:delegated"
+      - "/usr/src/app/node_modules/"
+    # depends_on:
+    #   - backend
     networks:
       app_net:
         ipv4_address: 192.168.0.5

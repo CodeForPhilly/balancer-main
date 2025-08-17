@@ -130,6 +130,11 @@ This is the wording logo in the nav bar
     @apply bg-gradient-to-r from-blue-600 via-blue-700 to-blue-600 bg-clip-text text-transparent;
 }
 
+/* Using logo-like styles outside of the header */
+.body_logo {
+  @apply bg-gradient-to-r from-blue-500 via-blue-700 to-blue-300 bg-clip-text font-quicksand font-bold text-transparent
+}
+
 /* Tailwind Styles */
 
 /*

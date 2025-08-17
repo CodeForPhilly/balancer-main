@@ -21,3 +21,19 @@
 .arrow:hover {
   animation: none;
 }
+
+.header-nav-item {
+  @apply text-black border-transparent border-b-2 hover:border-blue-600 hover:text-blue-600 hover:border-b-2 hover:border-blue-600;
+}
+
+.header-nav-item.header-nav-item-selected {
+  @apply text-blue-600;
+}
+
+.subheader-nav-item {
+  @apply cursor-pointer rounded-lg p-3 transition duration-300 hover:bg-gray-100;
+}
+
+.subheader-nav-item.subheader-nav-item-selected {
+  @apply text-blue-600;
+}

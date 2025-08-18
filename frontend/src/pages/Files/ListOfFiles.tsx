@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import { api } from "../../api/apiClient";
 import Layout from "../Layout/Layout";
 import FileRow from "./FileRow";
 import Table from "../../components/Table/Table";
@@ -30,17 +30,17 @@ const ListOfFiles: React.FC<{ showTable?: boolean }> = ({
   const [downloading, setDownloading] = useState<string | null>(null);
   const [opening, setOpening] = useState<string | null>(null);
 
+  const baseUrl = import.meta.env.VITE_API_BASE_URL;
+
   useEffect(() => {
     const fetchFiles = async () => {
       try {
-        const baseUrl = import.meta.env.VITE_API_BASE_URL;
-        const response = await axios.get(`${baseUrl}/v1/api/uploadFile`, {
-          headers: {
-            Authorization: `JWT ${localStorage.getItem("access")}`,
-          },
-        });
-        if (Array.isArray(response.data)) {
-          setFiles(response.data);
+        const url = `${baseUrl}/v1/api/uploadFile`;
+
+        const { data } = await api.get(url);
+
+        if (Array.isArray(data)) {
+          setFiles(data);
         }
       } catch (error) {
         console.error("Error fetching files", error);
@@ -50,7 +50,7 @@ const ListOfFiles: React.FC<{ showTable?: boolean }> = ({
     };
 
     fetchFiles();
-  }, []);
+  }, [baseUrl]);
 
   const updateFileName = (guid: string, updatedFile: Partial<File>) => {
     setFiles((prevFiles) =>
@@ -63,15 +63,9 @@ const ListOfFiles: React.FC<{ showTable?: boolean }> = ({
   const handleDownload = async (guid: string, fileName: string) => {
     try {
       setDownloading(guid);
-      const baseUrl = import.meta.env.VITE_API_BASE_URL;
-      const response = await axios.get(`${baseUrl}/v1/api/uploadFile/${guid}`, {
-        headers: {
-          Authorization: `JWT ${localStorage.getItem("access")}`,
-        },
-        responseType: "blob",
-      });
+      const { data } = await api.get(`/v1/api/uploadFile/${guid}`, { responseType: 'blob' });
 
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const url = window.URL.createObjectURL(new Blob([data]));
       const link = document.createElement("a");
       link.href = url;
       link.setAttribute("download", fileName);
@@ -90,15 +84,9 @@ const ListOfFiles: React.FC<{ showTable?: boolean }> = ({
   const handleOpen = async (guid: string) => {
     try {
       setOpening(guid);
-      const baseUrl = import.meta.env.VITE_API_BASE_URL;
-      const response = await axios.get(`${baseUrl}/v1/api/uploadFile/${guid}`, {
-        headers: {
-          Authorization: `JWT ${localStorage.getItem("access")}`,
-        },
-        responseType: "arraybuffer",
-      });
+      const { data } = await api.get(`/v1/api/uploadFile/${guid}`, { responseType: 'arraybuffer' });
 
-      const file = new Blob([response.data], { type: 'application/pdf' });
+      const file = new Blob([data], { type: 'application/pdf' });
       const fileURL = window.URL.createObjectURL(file);
       window.open(fileURL);
     } catch (error) {
@@ -118,17 +106,24 @@ const ListOfFiles: React.FC<{ showTable?: boolean }> = ({
       { Header: 'Date Published', accessor: 'publication_date' },
       { Header: '', accessor: 'file_open' },
     ];
+
+    const formatUTCDate = (dateStr: string | null) => {
+      if (!dateStr) return "N/A";
+      const formatter = new Intl.DateTimeFormat("en-US", {
+        timeZone: "UTC",
+        year: "numeric",
+        month: "numeric",
+        day: "numeric"
+      });
+      const formattedDate = formatter.format(new Date(dateStr));
+      return formattedDate;
+    }
+
     const data = files.map((file) => (
       {
         file_name: file?.title || file.file_name.replace(/\.[^/.]+$/, ""),
         publication: file?.publication || '',
-        publication_date: file.publication_date
-          ? new Intl.DateTimeFormat("en-US", {
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit"
-          }).format(new Date(file.publication_date))
-          : "",
+        publication_date: formatUTCDate(file.publication_date),
         file_open:
         <a
           key={file.guid}

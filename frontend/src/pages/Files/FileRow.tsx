@@ -84,6 +84,18 @@ const FileRow: React.FC<FileRowProps> = ({
     setIsEditing(false);
   };
 
+  const formatUTCDate = (dateStr: string | null) => {
+    if (!dateStr) return "N/A";
+    const formatter = new Intl.DateTimeFormat("en-US", {
+      timeZone: "UTC",
+      year: "numeric",
+      month: "numeric",
+      day: "numeric"
+    });
+    const formattedDate = formatter.format(new Date(dateStr));
+    return formattedDate;
+  }
+
   return (
     <li className="border-b p-4">
       {isEditing ? (
@@ -187,7 +199,7 @@ const FileRow: React.FC<FileRowProps> = ({
         <div className="w-full">
           <p>
             <strong>Publication Date:</strong>{" "}
-            {isEditing ? (
+            {isEditing ?
               <input
                 type="date"
                 value={publicationDate || ''}
@@ -196,15 +208,7 @@ const FileRow: React.FC<FileRowProps> = ({
                 disabled={loading}
                 placeholder="Publication Date"
               />
-            ) : (
-              file.publication_date
-              ? new Intl.DateTimeFormat("en-US", {
-                year: "numeric",
-                month: "2-digit",
-                day: "2-digit"
-              }).format(new Date(file.publication_date))
-              : "N/A"
-            )}
+            : formatUTCDate(file.publication_date)}
           </p>
         </div>
       </div>

@@ -31,7 +31,7 @@ urls = [
     "embeddings",
     "medRules",
     "text_extraction",
-    "assistants",
+    "assistant",
 ]
 
 # Loop through each application name and dynamically import and add its URL patterns

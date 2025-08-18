@@ -1,0 +1,217 @@
+import os
+import json
+import logging
+from typing import Callable
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+
+from openai import OpenAI
+
+from ...services.embedding_services import get_closest_embeddings
+from ...services.conversions_services import convert_uuids
+
+# Configure logging
+logger = logging.getLogger(__name__)
+
+
+# Open AI Cookbook: Handling Function Calls with Reasoning Models
+# https://cookbook.openai.com/examples/reasoning_function_calls
+def invoke_functions_from_response(
+    response, tool_mapping: dict[str, Callable]
+) -> list[dict]:
+    """Extract all function calls from the response, look up the corresponding tool function(s) and execute them.
+    (This would be a good place to handle asynchroneous tool calls, or ones that take a while to execute.)
+    This returns a list of messages to be added to the conversation history.
+
+    Parameters
+    ----------
+    response : OpenAI Response
+        The response object from OpenAI containing output items that may include function calls
+    tool_mapping : dict[str, Callable]
+        A dictionary mapping function names (as strings) to their corresponding Python functions.
+        Keys should match the function names defined in the tools schema.
+
+    Returns
+    -------
+    list[dict]
+        List of function call output messages formatted for the OpenAI conversation.
+        Each message contains:
+        - type: "function_call_output"
+        - call_id: The unique identifier for the function call
+        - output: The result returned by the executed function (string or error message)
+    """
+    intermediate_messages = []
+    for response_item in response.output:
+        if response_item.type == "function_call":
+            target_tool = tool_mapping.get(response_item.name)
+            if target_tool:
+                try:
+                    arguments = json.loads(response_item.arguments)
+                    logger.info(
+                        f"Invoking tool: {response_item.name} with arguments: {arguments}"
+                    )
+                    tool_output = target_tool(**arguments)
+                    logger.debug(f"Tool {response_item.name} completed successfully")
+                except Exception as e:
+                    msg = f"Error executing function call: {response_item.name}: {e}"
+                    tool_output = msg
+                    logger.error(msg, exc_info=True)
+            else:
+                msg = f"ERROR - No tool registered for function call: {response_item.name}"
+                tool_output = msg
+                logger.error(msg)
+            intermediate_messages.append(
+                {
+                    "type": "function_call_output",
+                    "call_id": response_item.call_id,
+                    "output": tool_output,
+                }
+            )
+        elif response_item.type == "reasoning":
+            logger.debug("Reasoning step")
+    return intermediate_messages
+
+
+@method_decorator(csrf_exempt, name="dispatch")
+class Assistant(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            user = request.user
+
+            client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+
+            TOOL_DESCRIPTION = """
+            Search through the user's uploaded documents using semantic similarity matching.
+            This function finds the most relevant document chunks based on the input query and
+            returns contextual information including page numbers, chunk locations, and similarity scores.
+            Use this to answer the user's questions.
+            """
+
+            TOOL_PROPERTY_DESCRIPTION = """
+            The search query to find semantically similar content in uploaded documents.
+            Should be a natural language question or keyword phrase.
+            """
+
+            tools = [
+                {
+                    "type": "function",
+                    "name": "search_documents",
+                    "description": TOOL_DESCRIPTION,
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "query": {
+                                "type": "string",
+                                "description": TOOL_PROPERTY_DESCRIPTION,
+                            }
+                        },
+                        "required": ["query"],
+                    },
+                }
+            ]
+
+            def search_documents(query: str, user=user) -> str:
+                """
+                Search through user's uploaded  documents using semantic similarity.
+
+                This function performs vector similarity search against the user's document corpus
+                and returns formatted results with context information for the LLM to use.
+
+                Parameters
+                ----------
+                query : str
+                    The search query string
+                user : User
+                    The authenticated user whose documents to search
+
+                Returns
+                -------
+                str
+                    Formatted search results containing document excerpts with metadata
+
+                Raises
+                ------
+                Exception
+                    If embedding search fails
+                """
+
+                try:
+                    embeddings_results = get_closest_embeddings(
+                        user=user, message_data=query.strip()
+                    )
+                    embeddings_results = convert_uuids(embeddings_results)
+
+                    if not embeddings_results:
+                        return "No relevant documents found for your query. Please try different search terms or upload documents first."
+
+                    # Format results with clear structure and metadata
+                    prompt_texts = [
+                        f"[Document {i + 1} - File: {obj['file_id']}, Page: {obj['page_number']}, Chunk: {obj['chunk_number']}, Similarity: {1 - obj['distance']:.3f}]\n{obj['text']}\n[End Document {i + 1}]"
+                        for i, obj in enumerate(embeddings_results)
+                    ]
+
+                    return "\n\n".join(prompt_texts)
+
+                except Exception as e:
+                    return f"Error searching documents: {str(e)}. Please try again if the issue persists."
+
+            MODEL_DEFAULTS = {
+                "model": "gpt-5-nano",  # 400,000 token context window
+                "reasoning": {"effort": "medium"},
+                "tools": tools,
+            }
+
+            # We fetch a response and then kick off a loop to handle the response
+
+            request_data = request.data.get("message", None)
+            if not request_data:
+                return Response(
+                    {"error": "Message data is required."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            message = str(request_data)
+
+            response = client.responses.create(
+                input=[{"type": "text", "text": message}], **MODEL_DEFAULTS
+            )
+
+            # Open AI Cookbook: Handling Function Calls with Reasoning Models
+            # https://cookbook.openai.com/examples/reasoning_function_calls
+            while True:
+                # Mapping of the tool names we tell the model about and the functions that implement them
+                function_responses = invoke_functions_from_response(
+                    response, tool_mapping={"search_documents": search_documents}
+                )
+                if len(function_responses) == 0:  # We're done reasoning
+                    logger.info(f"Reasoning completed for user {user.id}")
+                    final_response = response.output_text
+                    logger.debug(
+                        f"Final response length: {len(final_response)} characters"
+                    )
+                    break
+                else:
+                    logger.debug("More reasoning required, continuing...")
+                    response = client.responses.create(
+                        input=function_responses,
+                        previous_response_id=response.id,
+                        **MODEL_DEFAULTS,
+                    )
+
+            return Response({"response": final_response}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            logger.error(
+                f"Unexpected error in Assistant view for user {request.user.id if hasattr(request, 'user') else 'unknown'}: {e}",
+                exc_info=True,
+            )
+            return Response(
+                {"error": "An unexpected error occurred. Please try again later."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )

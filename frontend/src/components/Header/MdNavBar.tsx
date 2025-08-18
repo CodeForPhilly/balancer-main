@@ -128,6 +128,14 @@ const MdNavBar = (props: LoginFormProps) => {
                             Leave Feedback
                         </Link>
                     </li>
+                    <li className="border-b border-gray-300 p-4">
+                        <a href="https://www.flipcause.com/secure/cause_pdetails/MjMyMTIw"
+                          target="_blank"
+                          className="text-black hover:border-blue-600 hover:text-blue-600 hover:no-underline"
+                        >
+                          Donate
+                        </a>
+                    </li>
                     {isAuthenticated &&
                         <li className="border-b border-gray-300 p-4">
                             <a

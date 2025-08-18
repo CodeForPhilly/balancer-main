@@ -1,9 +1,18 @@
-import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import {
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+  useRef,
+  useTransition,
+  useDeferredValue,
+} from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
+import ZoomMenu from "./ZoomMenu";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
@@ -17,6 +26,10 @@ const PDFViewer = () => {
   const [numPages, setNumPages] = useState<number | null>(null);
   const [pageNumber, setPageNumber] = useState(1);
   const [scale, setScale] = useState(1.0);
+  const [uiScalePct, setUiScalePct] = useState(100);
+  const deferredScale = useDeferredValue(scale);
+  const [isPending, startTransition] = useTransition();
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pdfData, setPdfData] = useState<Uint8Array | null>(null);
@@ -42,10 +55,10 @@ const PDFViewer = () => {
   const baseURL = import.meta.env.VITE_API_BASE_URL as string | undefined;
 
   const pdfUrl = useMemo(() => {
-    const url = guid && baseURL ? `${baseURL}/v1/api/uploadFile/${guid}` : null;
-
-    return url;
+    return guid && baseURL ? `${baseURL}/v1/api/uploadFile/${guid}` : null;
   }, [guid, baseURL]);
+
+  useEffect(() => setUiScalePct(Math.round(scale * 100)), [scale]);
 
   useEffect(() => {
     const nextPage = pageParam ? parseInt(pageParam, 10) : 1;
@@ -59,20 +72,73 @@ const PDFViewer = () => {
       setPageNumber(1);
     }
 
-    if (!isNaN(nextPage) && nextPage > 0) {
-      setTargetPageAfterLoad(nextPage);
-    } else {
-      setTargetPageAfterLoad(1);
-    }
-
+    setTargetPageAfterLoad(!isNaN(nextPage) && nextPage > 0 ? nextPage : 1);
     prevGuidRef.current = guid;
   }, [guid, pageParam, location.pathname, location.search]);
 
+  const updateCurrentPageFromScroll = useCallback(() => {
+    if (!numPages || !contentRef.current) return;
+
+    const container = contentRef.current;
+    const containerRectTop = container.getBoundingClientRect().top;
+    const containerCenter = containerRectTop + container.clientHeight / 2;
+
+    let bestPage = 1;
+    let bestDist = Infinity;
+
+    for (let i = 1; i <= (numPages ?? 0); i++) {
+      const el = pageRefs.current[i];
+      if (!el) continue;
+      const r = el.getBoundingClientRect();
+      const pageCenter = r.top + r.height / 2;
+      const dist = Math.abs(pageCenter - containerCenter);
+      if (dist < bestDist) {
+        bestDist = dist;
+        bestPage = i;
+      }
+    }
+
+    if (bestPage !== pageNumber) {
+      setPageNumber(bestPage);
+      const newParams = new URLSearchParams(location.search);
+      newParams.set("page", String(bestPage));
+      navigate(`${location.pathname}?${newParams.toString()}`, {
+        replace: true,
+      });
+    }
+  }, [numPages, pageNumber, location.pathname, location.search, navigate]);
+
+  useEffect(() => {
+    const container = contentRef.current;
+    if (!container) return;
+
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        updateCurrentPageFromScroll();
+        ticking = false;
+      });
+    };
+
+    container.addEventListener("scroll", onScroll, { passive: true });
+    return () => container.removeEventListener("scroll", onScroll);
+  }, [updateCurrentPageFromScroll]);
+
+  useEffect(() => {
+    updateCurrentPageFromScroll();
+  }, [
+    numPages,
+    deferredScale,
+    containerSize.width,
+    containerSize.height,
+    updateCurrentPageFromScroll,
+  ]);
+
   const scrollToPage = useCallback(
     (page: number) => {
-      if (!numPages || page < 1 || page > numPages) {
-        return;
-      }
+      if (!numPages || page < 1 || page > numPages) return;
 
       const targetRef = pageRefs.current[page];
       if (!targetRef) {
@@ -90,28 +156,27 @@ const PDFViewer = () => {
       const oldPage = newParams.get("page");
       if (oldPage !== String(page)) {
         newParams.set("page", String(page));
-        const newUrl = `${location.pathname}?${newParams.toString()}`;
-        navigate(newUrl, { replace: true });
+        navigate(`${location.pathname}?${newParams.toString()}`, {
+          replace: true,
+        });
       }
 
       setPageNumber(page);
     },
-    [numPages, location.pathname, location.search, navigate, pageNumber]
+    [numPages, location.pathname, location.search, navigate]
   );
 
-  // Preload-aware navigation: if not loaded yet, just remember target page.
   const goToPage = useCallback(
     (page: number) => {
       if (typeof page !== "number" || isNaN(page)) return;
 
       const clamped = Math.max(1, numPages ? Math.min(page, numPages) : page);
-
       if (!isDocumentLoaded || !numPages) {
         setTargetPageAfterLoad(clamped);
         return;
       }
-
       if (clamped === pageNumber) return;
+
       setPageNumber(clamped);
       scrollToPage(clamped);
     },
@@ -146,20 +211,39 @@ const PDFViewer = () => {
   }, [isDocumentLoaded, numPages, targetPageAfterLoad, scrollToPage]);
 
   useEffect(() => {
-    const calculateSize = () => {
-      if (containerRef.current && headerRef.current && contentRef.current) {
-        const headerHeight = headerRef.current.offsetHeight;
-        const contentPadding = 32;
-        const availableHeight =
-          containerRef.current.clientHeight - headerHeight - contentPadding;
-        const availableWidth = contentRef.current.clientWidth - contentPadding;
-
-        setContainerSize({ width: availableWidth, height: availableHeight });
-      }
+    const calc = () => {
+      if (!containerRef.current || !headerRef.current || !contentRef.current)
+        return;
+      const headerHeight = headerRef.current.offsetHeight;
+      const contentPadding = 32;
+      const availableHeight =
+        containerRef.current.clientHeight - headerHeight - contentPadding;
+      const availableWidth = contentRef.current.clientWidth - contentPadding;
+      setContainerSize({
+        width: Math.max(0, availableWidth),
+        height: Math.max(0, availableHeight),
+      });
     };
-    calculateSize();
-    window.addEventListener("resize", calculateSize);
-    return () => window.removeEventListener("resize", calculateSize);
+
+    const id = requestAnimationFrame(calc);
+
+    let ro: ResizeObserver | null = null;
+    if ("ResizeObserver" in window && contentRef.current) {
+      ro = new ResizeObserver(() => calc());
+      ro.observe(contentRef.current);
+    } else {
+      const onResize = () => requestAnimationFrame(calc);
+      window.addEventListener("resize", onResize);
+      return () => {
+        cancelAnimationFrame(id);
+        window.removeEventListener("resize", onResize);
+      };
+    }
+
+    return () => {
+      cancelAnimationFrame(id);
+      if (ro && contentRef.current) ro.disconnect();
+    };
   }, []);
 
   const pdfOptions = useMemo(
@@ -180,11 +264,7 @@ const PDFViewer = () => {
   }, []);
 
   const fetchPdf = useCallback(async () => {
-    if (!pdfUrl) return;
-    if (isFetchingRef.current) {
-      console.log("⏳ fetchPdf already in progress, skipping duplicate call");
-      return;
-    }
+    if (!pdfUrl || isFetchingRef.current) return;
 
     try {
       isFetchingRef.current = true;
@@ -231,6 +311,9 @@ const PDFViewer = () => {
   if (!guid)
     return <div className="p-4 text-gray-600">No document specified.</div>;
 
+  const baseWidth = Math.max(0, (containerSize.width || 0) - 50);
+  const readyToRender = !!file && containerSize.width > 0;
+
   return (
     <div
       ref={containerRef}
@@ -238,43 +321,84 @@ const PDFViewer = () => {
     >
       <div
         ref={headerRef}
-        className="flex justify-between items-center p-2 bg-gray-50 border-b"
+        className="flex justify-between items-center p-3 bg-white border-b border-gray-200 relative"
       >
-        <div className="flex items-center space-x-2">
+        <div className="relative">
+          <ZoomMenu
+            valuePct={uiScalePct}
+            onDeferPct={(pct) => setUiScalePct(pct)}
+            onSelectPct={(pct) => {
+              setUiScalePct(pct);
+              startTransition(() => setScale(pct / 100));
+            }}
+            onPageFit={() => {
+              const pct = 100;
+              setUiScalePct(pct);
+              startTransition(() => setScale(pct / 100));
+            }}
+          />
+        </div>
+
+        <div className="absolute left-1/2 -translate-x-1/2 flex items-center space-x-3">
           <button
             onClick={() => goToPage(Math.max(pageNumber - 1, 1))}
             disabled={pageNumber <= 1}
-            className="px-3 py-1 bg-white border rounded"
+            className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            ←
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              className="text-gray-600"
+            >
+              <path
+                d="M15 18L9 12L15 6"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
           </button>
-          <span className="text-sm">
-            Page {pageNumber} of {numPages ?? "-"}
-          </span>
+
+          <div className="flex items-center space-x-2 text-sm text-gray-600">
+            <span className="font-medium">{pageNumber}</span>
+            <span>of {numPages || "-"}</span>
+          </div>
+
           <button
             onClick={() => goToPage(pageNumber + 1)}
             disabled={!numPages || pageNumber >= (numPages ?? 1)}
-            className="px-3 py-1 bg-white border rounded"
+            className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            →
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              className="text-gray-600"
+            >
+              <path
+                d="M9 18L15 12L9 6"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
           </button>
         </div>
-        <div className="flex items-center space-x-2">
-          <button
-            onClick={() => setScale((prev) => Math.max(prev - 0.1, 0.5))}
-            className="px-3 py-1 bg-white border rounded"
-          >
-            −
-          </button>
-          <span className="text-sm">{Math.round(scale * 100)}%</span>
-          <button
-            onClick={() => setScale((prev) => Math.min(prev + 0.1, 2.0))}
-            className="px-3 py-1 bg-white border rounded"
-          >
-            +
-          </button>
+
+        <div className="w-16 relative">
+          {isPending && (
+            <div className="absolute right-0 top-0 text-xs text-gray-500 select-none">
+              Rendering…
+            </div>
+          )}
         </div>
       </div>
+
       <div
         ref={contentRef}
         className="flex-grow overflow-auto p-4 w-full flex items-center justify-center"
@@ -292,48 +416,50 @@ const PDFViewer = () => {
               Retry
             </button>
           </div>
-        ) : (
-          file && (
-            <div
-              className="pdf-document-container flex flex-col items-center"
-              style={{ maxHeight: containerSize.height }}
+        ) : readyToRender ? (
+          <div
+            className="pdf-document-container flex flex-col items-center"
+            style={{ maxHeight: containerSize.height }}
+          >
+            <Document
+              key={guid ?? "doc"}
+              file={file}
+              onLoadSuccess={onDocumentLoadSuccess}
+              onLoadError={(err) => setError(err.message)}
+              options={pdfOptions}
             >
-              <Document
-                key={guid ?? "doc"}
-                file={file}
-                onLoadSuccess={onDocumentLoadSuccess}
-                onLoadError={(err) => setError(err.message)}
-                options={pdfOptions}
-              >
-                <div className="flex flex-col items-center w-full">
-                  {Array.from({ length: numPages || 0 }, (_, index) => {
-                    const pageNum = index + 1;
-                    return (
-                      <div
-                        key={pageNum}
-                        ref={(el) => {
-                          pageRefs.current[pageNum] = el;
-                        }}
-                        className="mb-4 w-full"
-                        data-page={pageNum}
-                      >
-                        <Page
-                          pageNumber={pageNum}
-                          width={Math.max(0, (containerSize.width || 0) - 50)}
-                          renderTextLayer={true}
-                          renderAnnotationLayer={false}
-                          className="shadow-lg"
-                        />
-                        <div className="text-center text-gray-500 text-sm mt-1">
-                          Page {pageNum} of {numPages}
-                        </div>
+              <div className="flex flex-col items-center w-full">
+                {Array.from({ length: numPages || 0 }, (_, index) => {
+                  const pageNum = index + 1;
+                  return (
+                    <div
+                      key={pageNum}
+                      ref={(el) => {
+                        pageRefs.current[pageNum] = el;
+                      }}
+                      className="mb-4 w-full"
+                      data-page={pageNum}
+                    >
+                      <Page
+                        key={`${guid}-${pageNum}`}
+                        pageNumber={pageNum}
+                        width={baseWidth}
+                        scale={deferredScale}
+                        renderTextLayer={true}
+                        renderAnnotationLayer={false}
+                        className="shadow-lg"
+                      />
+                      <div className="text-center text-gray-500 text-sm mt-1">
+                        Page {pageNum} of {numPages}
                       </div>
-                    );
-                  })}
-                </div>
-              </Document>
-            </div>
-          )
+                    </div>
+                  );
+                })}
+              </div>
+            </Document>
+          </div>
+        ) : (
+          <div className="h-8" />
         )}
       </div>
     </div>

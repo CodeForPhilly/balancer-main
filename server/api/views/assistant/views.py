@@ -73,7 +73,7 @@ def invoke_functions_from_response(
                 }
             )
         elif response_item.type == "reasoning":
-            logger.debug("Reasoning step")
+            logger.debug(f"Reasoning step: {response_item.summary}")
     return intermediate_messages
 
 
@@ -88,15 +88,16 @@ class Assistant(APIView):
             client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
             TOOL_DESCRIPTION = """
-            Search through the user's uploaded documents using semantic similarity matching.
-            This function finds the most relevant document chunks based on the input query and
-            returns contextual information including page numbers, chunk locations, and similarity scores.
-            Use this to answer the user's questions.
+            Search the user's uploaded documents for information relevant to answering their question.
+            Call this function when you need to find specific information from the user's documents
+            to provide an accurate, citation-backed response. Always search before answering questions
+            about document content.
             """
 
             TOOL_PROPERTY_DESCRIPTION = """
-            The search query to find semantically similar content in uploaded documents.
-            Should be a natural language question or keyword phrase.
+            A specific search query to find relevant information in the user's documents.
+            Use keywords, phrases, or questions related to what the user is asking about.
+            Be specific rather than generic - use terms that would appear in the relevant documents.
             """
 
             tools = [
@@ -119,7 +120,7 @@ class Assistant(APIView):
 
             def search_documents(query: str, user=user) -> str:
                 """
-                Search through user's uploaded  documents using semantic similarity.
+                Search through user's uploaded documents using semantic similarity.
 
                 This function performs vector similarity search against the user's document corpus
                 and returns formatted results with context information for the LLM to use.
@@ -162,25 +163,58 @@ class Assistant(APIView):
                 except Exception as e:
                     return f"Error searching documents: {str(e)}. Please try again if the issue persists."
 
+            INSTRUCTIONS = """
+            You are an AI assistant that helps users find and understand information about bipolar disorder
+            from their uploaded bipolar disorder research documents using semantic search.
+
+            SEMANTIC SEARCH STRATEGY:
+            - Always perform semantic search using the search_documents function when users ask questions
+            - Use conceptually related terms and synonyms, not just exact keyword matches
+            - Search for the meaning and context of the user's question, not just literal words
+            - Consider medical terminology, lay terms, and related conditions when searching
+
+            FUNCTION USAGE:
+            - When a user asks about information that might be in their documents ALWAYS use the search_documents function first
+            - Perform semantic searches using concepts, symptoms, treatments, and related terms from the user's question
+            - Only provide answers based on information found through document searches
+
+            RESPONSE FORMAT:
+            After gathering information through semantic searches, provide responses that:
+            1. Answer the user's question directly using only the found information
+            2. Structure responses with clear sections and paragraphs
+            3. Include citations after EACH sentence using this exact format: ***[File ID {file_id}, Page {page_number}, Chunk {chunk_number}]***
+            4. Only cite information that directly supports your statements
+
+            If no relevant information is found in the documents, clearly state that the information is not available in the uploaded documents.
+            """
+
             MODEL_DEFAULTS = {
+                "instructions": INSTRUCTIONS,
                 "model": "gpt-5-nano",  # 400,000 token context window
-                "reasoning": {"effort": "medium"},
+                "reasoning": {"effort": "medium", "summary": "auto"},
                 "tools": tools,
             }
 
             # We fetch a response and then kick off a loop to handle the response
 
-            request_data = request.data.get("message", None)
-            if not request_data:
-                return Response(
-                    {"error": "Message data is required."},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-            message = str(request_data)
+            message = request.data.get("message", None)
+            previous_response_id = request.data.get("previous_response_id", None)
 
-            response = client.responses.create(
-                input=[{"type": "text", "text": message}], **MODEL_DEFAULTS
-            )
+            if not previous_response_id:
+                response = client.responses.create(
+                    input=[
+                        {"type": "message", "role": "user", "content": str(message)}
+                    ],
+                    **MODEL_DEFAULTS,
+                )
+            else:
+                response = client.responses.create(
+                    input=[
+                        {"type": "message", "role": "user", "content": str(message)}
+                    ],
+                    previous_response_id=str(previous_response_id),
+                    **MODEL_DEFAULTS,
+                )
 
             # Open AI Cookbook: Handling Function Calls with Reasoning Models
             # https://cookbook.openai.com/examples/reasoning_function_calls
@@ -190,10 +224,11 @@ class Assistant(APIView):
                     response, tool_mapping={"search_documents": search_documents}
                 )
                 if len(function_responses) == 0:  # We're done reasoning
-                    logger.info(f"Reasoning completed for user {user.id}")
-                    final_response = response.output_text
+                    logger.info("Reasoning completed")
+                    final_response_output_text = response.output_text
+                    final_response_id = response.id
                     logger.debug(
-                        f"Final response length: {len(final_response)} characters"
+                        f"Final response length: {len(final_response_output_text)} characters"
                     )
                     break
                 else:
@@ -204,7 +239,13 @@ class Assistant(APIView):
                         **MODEL_DEFAULTS,
                     )
 
-            return Response({"response": final_response}, status=status.HTTP_200_OK)
+            return Response(
+                {
+                    "response_output_text": final_response_output_text,
+                    "final_response_id": final_response_id,
+                },
+                status=status.HTTP_200_OK,
+            )
 
         except Exception as e:
             logger.error(

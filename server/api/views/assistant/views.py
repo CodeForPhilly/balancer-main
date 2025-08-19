@@ -56,7 +56,7 @@ def invoke_functions_from_response(
                         f"Invoking tool: {response_item.name} with arguments: {arguments}"
                     )
                     tool_output = target_tool(**arguments)
-                    logger.debug(f"Tool {response_item.name} completed successfully")
+                    logger.info(f"Tool {response_item.name} completed successfully")
                 except Exception as e:
                     msg = f"Error executing function call: {response_item.name}: {e}"
                     tool_output = msg
@@ -73,7 +73,7 @@ def invoke_functions_from_response(
                 }
             )
         elif response_item.type == "reasoning":
-            logger.debug(f"Reasoning step: {response_item.summary}")
+            logger.info(f"Reasoning step: {response_item.summary}")
     return intermediate_messages
 
 
@@ -227,12 +227,12 @@ class Assistant(APIView):
                     logger.info("Reasoning completed")
                     final_response_output_text = response.output_text
                     final_response_id = response.id
-                    logger.debug(
+                    logger.info(
                         f"Final response length: {len(final_response_output_text)} characters"
                     )
                     break
                 else:
-                    logger.debug("More reasoning required, continuing...")
+                    logger.info("More reasoning required, continuing...")
                     response = client.responses.create(
                         input=function_responses,
                         previous_response_id=response.id,

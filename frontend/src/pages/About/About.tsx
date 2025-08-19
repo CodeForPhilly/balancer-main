@@ -50,6 +50,14 @@ function About() {
             <li><p className="mt-2 text-gray-600">Clinical decisions should always be based on the prescriber's expertise, knowledge of the patient, and official medical guidelines.</p></li>
           </ul>
         </div>
+        {/* Our mission */}
+        <div className="flex w-full flex-col justify-center md:mt-20 md:max-w-6xl mb-20 md:mb-0">
+          <div className="text-3xl font-bold mb-5">
+            Our mission
+          </div>
+          <p className="text-gray-600">Bipolar disorder affects approximately 5.7 million adult Americans <u>every year</u>. Delays in the correct diagnosis and proper treatment of bipolar disorder may result in social, occupational, and economic burdens, as well as an <u>increase in completed suicides</u>.</p>
+          <p className="mt-2 text-gray-600">The team behind Balancer believes that building a searchable, interactive and user-friendly research tool for bipolar medications has the potential to improve the health and well-being of people with bipolar disorder.</p>
+        </div>
         {/* Support Us section */}
         <div className="flex w-full flex-col items-center justify-center md:mt-28 md:max-w-6xl">
           <div className="text-3xl font-bold">Support Us</div>

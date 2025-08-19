@@ -87,14 +87,17 @@ const PatientManager = () => {
 
   const descriptionEl = (
     <div className="md:mt-10">
-      Use our tool to get medication suggestions for bipolar disorder based on
-      patient characteristics.{" "}
-      <Link
-        to="/data-sources"
-        className="mr-5 underline hover:border-blue-600 hover:text-blue-600 hover:no-underline"
-      >
-        Read about where we get our data.
-      </Link>
+      <p>Use our tool to explore medication options for bipolar disorder based on patient characteristics.</p>
+      <p>
+        <Link
+          to="/data-sources"
+          className="mr-5 underline hover:border-blue-600 hover:text-blue-600 hover:no-underline"
+        >
+          Read about where we get our data.
+        </Link>
+      </p>
+      <p className="text-gray-600 mt-4 text-sm font-light italic">Balancer is an educational resource designed to support —never replace— the judgment of licensed U.S. clinicians.</p>
+      <p className="text-gray-600 text-sm font-light italic">Final prescribing decisions must always be made by the treating clinician.</p>
     </div>
   );
 

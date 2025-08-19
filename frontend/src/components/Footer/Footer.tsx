@@ -107,8 +107,14 @@ function Footer() {
             </button>
           </div>
         </div>
-        <div className="flex justify-center rounded  px-4 py-2 ">
-          © 2025 Balancer. All rights reserved. V1 2-04-2025
+        <div className="flex justify-center rounded px-4 py-2 ">
+          <p>© 2025 Balancer. All rights reserved. V1 2-04-2025</p>
+        </div>
+        <div className="flex justify-center rounded px-4 py-2 ">
+          <p className="text-gray-600 text-sm font-light italic">
+            Balancer is an educational resource designed to support{" "}
+            —never replace— the judgment of licensed U.S. clinicians. Final prescribing decisions must always be made by the treating clinician.
+          </p>
         </div>
       </footer>
     </div>

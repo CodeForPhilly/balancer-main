@@ -10,6 +10,10 @@ export default {
         lora: "'Lora', serif",
         'quicksand': ['Quicksand', 'sans-serif']
       },
+      animation: {
+        'pulse-bounce': 'pulse-bounce 2s infinite', // Adjust duration and iteration as needed
+      },
+      plugins: [],
     },
   },
   plugins: [],

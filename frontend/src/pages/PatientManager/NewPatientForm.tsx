@@ -32,6 +32,7 @@ interface PatientInfoInterface {
   weightGainConcern: boolean;
   reproductive: boolean;
   riskPregnancy: boolean;
+  anyPregnancy: boolean;
 }
 
 // TODO: refactor with Formik
@@ -145,6 +146,7 @@ const NewPatientForm = ({
       weightGainConcern: newPatientInfo.weight_gain == "Yes",
       reproductive: newPatientInfo.Reproductive == "Yes",
       riskPregnancy: newPatientInfo.risk_pregnancy == "Yes",
+      anyPregnancy: newPatientInfo.any_pregnancy == "Yes",
     };
 
     setIsLoading(true); // Start loading
@@ -263,6 +265,7 @@ const NewPatientForm = ({
       blood_pressure: "No",
       Reproductive: "No",
       risk_pregnancy: "No",
+      any_pregnancy: "No",
     }));
   };
 

@@ -1,6 +1,7 @@
 import os
 import json
 import logging
+import time
 from typing import Callable
 
 from rest_framework.views import APIView
@@ -17,6 +18,37 @@ from ...services.conversions_services import convert_uuids
 
 # Configure logging
 logger = logging.getLogger(__name__)
+
+GPT_5_NANO_PRICING_DOLLARS_PER_MILLION_TOKENS = {"input": 0.05, "output": 0.40}
+
+
+def calculate_cost_metrics(token_usage: dict, pricing: dict) -> dict:
+    """
+    Calculate cost metrics based on token usage and pricing
+
+    Args:
+        token_usage: Dictionary containing input_tokens and output_tokens
+        pricing: Dictionary containing input and output pricing per million tokens
+
+    Returns:
+        Dictionary containing input_cost, output_cost, and total_cost in USD
+    """
+    TOKENS_PER_MILLION = 1_000_000
+
+    # Pricing is in dollars per million tokens
+    input_cost_dollars = (pricing["input"] / TOKENS_PER_MILLION) * token_usage.get(
+        "input_tokens", 0
+    )
+    output_cost_dollars = (pricing["output"] / TOKENS_PER_MILLION) * token_usage.get(
+        "output_tokens", 0
+    )
+    total_cost_dollars = input_cost_dollars + output_cost_dollars
+
+    return {
+        "input_cost": input_cost_dollars,
+        "output_cost": output_cost_dollars,
+        "total_cost": total_cost_dollars,
+    }
 
 
 # Open AI Cookbook: Handling Function Calls with Reasoning Models
@@ -200,6 +232,10 @@ class Assistant(APIView):
             message = request.data.get("message", None)
             previous_response_id = request.data.get("previous_response_id", None)
 
+            # Track total duration and cost metrics
+            start_time = time.time()
+            total_token_usage = {"input_tokens": 0, "output_tokens": 0}
+
             if not previous_response_id:
                 response = client.responses.create(
                     input=[
@@ -214,6 +250,15 @@ class Assistant(APIView):
                     ],
                     previous_response_id=str(previous_response_id),
                     **MODEL_DEFAULTS,
+                )
+
+            # Accumulate token usage from initial response
+            if hasattr(response, "usage"):
+                total_token_usage["input_tokens"] += getattr(
+                    response.usage, "input_tokens", 0
+                )
+                total_token_usage["output_tokens"] += getattr(
+                    response.usage, "output_tokens", 0
                 )
 
             # Open AI Cookbook: Handling Function Calls with Reasoning Models
@@ -238,6 +283,29 @@ class Assistant(APIView):
                         previous_response_id=response.id,
                         **MODEL_DEFAULTS,
                     )
+                    # Accumulate token usage from reasoning iterations
+                    if hasattr(response, "usage"):
+                        total_token_usage["input_tokens"] += getattr(
+                            response.usage, "input_tokens", 0
+                        )
+                        total_token_usage["output_tokens"] += getattr(
+                            response.usage, "output_tokens", 0
+                        )
+
+            # Calculate total duration and cost metrics
+            total_duration = time.time() - start_time
+            cost_metrics = calculate_cost_metrics(
+                total_token_usage, GPT_5_NANO_PRICING_DOLLARS_PER_MILLION_TOKENS
+            )
+
+            # Log cost and duration metrics
+            logger.info(
+                f"Request completed: "
+                f"Duration: {total_duration:.2f}s, "
+                f"Input tokens: {total_token_usage['input_tokens']}, "
+                f"Output tokens: {total_token_usage['output_tokens']}, "
+                f"Total cost: ${cost_metrics['total_cost']:.6f}"
+            )
 
             return Response(
                 {

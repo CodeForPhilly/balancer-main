@@ -223,7 +223,7 @@ class Assistant(APIView):
             MODEL_DEFAULTS = {
                 "instructions": INSTRUCTIONS,
                 "model": "gpt-5-nano",  # 400,000 token context window
-                "reasoning": {"effort": "medium", "summary": "auto"},
+                "reasoning": {"effort": "low", "summary": "auto"},
                 "tools": tools,
             }
 
@@ -272,9 +272,7 @@ class Assistant(APIView):
                     logger.info("Reasoning completed")
                     final_response_output_text = response.output_text
                     final_response_id = response.id
-                    logger.info(
-                        f"Final response length: {len(final_response_output_text)} characters"
-                    )
+                    logger.info(f"Final response: {final_response_output_text}")
                     break
                 else:
                     logger.info("More reasoning required, continuing...")

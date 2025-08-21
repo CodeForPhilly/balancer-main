@@ -186,7 +186,7 @@ class Assistant(APIView):
 
                     # Format results with clear structure and metadata
                     prompt_texts = [
-                        f"[Document {i + 1} - File: {obj['file_id']}, Page: {obj['page_number']}, Chunk: {obj['chunk_number']}, Similarity: {1 - obj['distance']:.3f}]\n{obj['text']}\n[End Document {i + 1}]"
+                        f"[Document {i + 1} - File: {obj['file_id']}, Name: {obj['name']}, Page: {obj['page_number']}, Chunk: {obj['chunk_number']}, Similarity: {1 - obj['distance']:.3f}]\n{obj['text']}\n[End Document {i + 1}]"
                         for i, obj in enumerate(embeddings_results)
                     ]
 
@@ -214,7 +214,7 @@ class Assistant(APIView):
             After gathering information through semantic searches, provide responses that:
             1. Answer the user's question directly using only the found information
             2. Structure responses with clear sections and paragraphs
-            3. Include citations after EACH sentence using this exact format: ***[File ID {file_id}, Page {page_number}, Chunk {chunk_number}]***
+            3. Include citations using this exact format: ***[Name {name}, Page {page_number}]***
             4. Only cite information that directly supports your statements
 
             If no relevant information is found in the documents, clearly state that the information is not available in the uploaded documents.

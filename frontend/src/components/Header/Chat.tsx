@@ -4,7 +4,6 @@ import "../../components/Header/chat.css";
 import { useState, useEffect, useRef } from "react";
 import TypingAnimation from "./components/TypingAnimation";
 import ErrorMessage from "../ErrorMessage";
-import ParseStringWithLinks from "../../services/parsing/ParseWithSource";
 import axios from "axios";
 import {
   FaPlus,
@@ -321,30 +320,15 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
                           <FaComment className="chat_text_icon" />
                         </div>
                         <div className="chat_text_wrap">
-                          {message.is_user ? (
-                            <pre
-                              style={{
-                                fontFamily: "inherit",
-                                whiteSpace: "pre-wrap",
-                                wordWrap: "break-word",
-                              }}
-                            >
-                              {message.content}
-                            </pre>
-                          ) : (
-                            <div
-                              style={{
-                                fontFamily: "inherit",
-                                whiteSpace: "pre-wrap",
-                                wordWrap: "break-word",
-                              }}
-                            >
-                              <ParseStringWithLinks 
-                                text={message.content} 
-                                chunkData={[]} 
-                              />
-                            </div>
-                          )}
+                          <pre
+                            style={{
+                              fontFamily: "inherit",
+                              whiteSpace: "pre-wrap",
+                              wordWrap: "break-word",
+                            }}
+                          >
+                            {message.content}
+                          </pre>
                         </div>
                       </div>
                     ))

@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "./authHooks.ts";
 import { useGlobalContext } from "../../../src/contexts/GlobalContext.tsx";
@@ -7,30 +6,11 @@ interface LoginFormProps {
   isAuthenticated: boolean;
 }
 
-const Header: React.FC<LoginFormProps> = ({ isAuthenticated }) => {
-  const [showLoginMenu, setShowLoginMenu] = useState(false);
+const Header: React.FC<LoginFormProps> = () => {
   const location = useLocation();
   const { setShowMetaPanel } = useGlobalContext();
 
   const isOnDrugSummaryPage = location.pathname.includes("/drugsummary");
-
-  useEffect(() => {
-    // only show the login menu on non‑auth pages
-    if (!isAuthenticated) {
-      const path = location.pathname;
-      const isAuthPage =
-        path === "/login" ||
-        path === "/resetpassword" ||
-        path.includes("password") ||
-        path.includes("reset");
-
-      setShowLoginMenu(!isAuthPage);
-    }
-  }, [isAuthenticated, location.pathname]);
-
-  const handleLoginMenu = () => {
-    setShowLoginMenu((prev) => !prev);
-  };
 
   useAuth();
 

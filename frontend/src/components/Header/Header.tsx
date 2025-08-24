@@ -1,15 +1,12 @@
-import { useState, useRef, useEffect, Fragment } from "react";
-// import { useState, Fragment } from "react";
-import accountLogo from "../../assets/account.svg";
+import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import "../../components/Header/header.css";
 import Chat from "./Chat";
 import { FeatureMenuDropDown } from "./FeatureMenuDropDown";
 import MdNavBar from "./MdNavBar";
-import { connect, useDispatch } from "react-redux";
+import { connect } from "react-redux";
 import { RootState } from "../../services/actions/types";
-import { logout, AppDispatch } from "../../services/actions/auth";
-import { HiChevronDown } from "react-icons/hi";
+import { FaChevronDown, FaSignOutAlt } from "react-icons/fa";
 import { useGlobalContext } from "../../contexts/GlobalContext.tsx";
 
 interface LoginFormProps {
@@ -23,24 +20,14 @@ const Header: React.FC<LoginFormProps> = ({ isAuthenticated, isSuperuser }) => {
   const dropdownRef = useRef(null);
   let delayTimeout: number | null = null;
   const [showChat, setShowChat] = useState(false);
-  const [redirect, setRedirect] = useState(false);
   const { setShowSummary, setEnterNewPatient, triggerFormReset, setIsEditing } =
     useGlobalContext();
 
-  const dispatch = useDispatch<AppDispatch>();
-
-  const logout_user = () => {
-    dispatch(logout());
-    setRedirect(false);
-  };
-
   const authLinks = () => (
-    <nav onClick={logout_user} className="flex cursor-pointer items-center">
-      <img src={accountLogo} alt="logo" className="mr-5 h-5  object-contain " />
-      <span className=" text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline lg:text-sm xl:text-lg">
-        Sign out
-      </span>
-    </nav>
+    <Link to="/logout" className="font-satoshi flex cursor-pointer items-center text-black hover:text-blue-600">
+        Sign Out
+        <FaSignOutAlt className="ml-2 inline-block" />
+    </Link>
   );
 
   const handleMouseEnter = () => {
@@ -201,14 +188,12 @@ const Header: React.FC<LoginFormProps> = ({ isAuthenticated, isSuperuser }) => {
                         : "absolute ml-1.5 "
                     }`}
                   >
-                    <HiChevronDown className="inline-block" />
+                    <FaChevronDown className="inline-block" />
                   </span>
                 </span>
                 {showFeaturesMenu && <FeatureMenuDropDown />}
               </div>
             )}
-
-            {redirect ? navigate("/") : <Fragment></Fragment>}
           </>
         </nav>
         {isAuthenticated && (

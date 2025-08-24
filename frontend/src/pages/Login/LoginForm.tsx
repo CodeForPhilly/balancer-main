@@ -70,7 +70,7 @@ function LoginForm({ isAuthenticated, loginError }: LoginFormProps) {
                   <FaExclamationTriangle size={24} />
                 </div>
                 <div>
-                  <p className="text-gray-800">This login is for Code for Philly administrators. Providers can use all site features without logging in. <Link to="/" className="underline hover:text-blue-600 hover:no-underline" style={{ 'white-space': 'nowrap' }}>Return to Homepage</Link></p>
+                  <p className="text-gray-800">This login is for Code for Philly administrators. Providers can use all site features without logging in. <Link to="/" className="underline hover:text-blue-600 hover:no-underline" style={{ 'whiteSpace': 'nowrap' }}>Return to Homepage</Link></p>
                 </div>
             </blockquote>
           </div>

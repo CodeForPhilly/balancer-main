@@ -1,11 +1,10 @@
 // Layout.tsx
-import {ReactNode, useState, useEffect} from "react";
+import {ReactNode} from "react";
 import Header from "../../components/Header/Header";
 import Footer from "../../components/Footer/Footer";
 import {connect} from "react-redux";
 import {useAuth} from "./authHooks.ts";
 import {RootState} from "../../services/actions/types";
-import {useLocation} from "react-router-dom";
 
 interface LayoutProps {
     children: ReactNode;
@@ -16,32 +15,8 @@ interface LoginFormProps {
 }
 
 export const Layout = ({
-                           children,
-                           isAuthenticated,
-                       }: LayoutProps & LoginFormProps): JSX.Element => {
-    const [showLoginMenu, setShowLoginMenu] = useState(false);
-    const location = useLocation();
-
-
-    useEffect(() => {
-        if (!isAuthenticated) {
-            if (
-                location.pathname === "/login" ||
-                location.pathname === "/resetpassword" ||
-                location.pathname.includes("password") ||
-                location.pathname.includes("reset")
-            ) {
-                setShowLoginMenu(false);
-            } else {
-                setShowLoginMenu(true);
-            }
-        }
-    }, [isAuthenticated, location.pathname]);
-
-    const handleLoginMenu = () => {
-        setShowLoginMenu(!showLoginMenu);
-    };
-
+    children
+}: LayoutProps & LoginFormProps): JSX.Element => {
     useAuth();
     return (
         <main>

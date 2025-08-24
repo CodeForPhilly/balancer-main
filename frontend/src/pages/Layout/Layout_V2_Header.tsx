@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import LoginMenuDropDown from "../../components/Header/LoginMenuDropDown.tsx";
 import { useAuth } from "./authHooks.ts";
 import { useGlobalContext } from "../../../src/contexts/GlobalContext.tsx";
 
@@ -65,14 +64,6 @@ const Header: React.FC<LoginFormProps> = ({ isAuthenticated }) => {
           )}
         </div>
       </nav>
-      {!isAuthenticated && showLoginMenu && (
-        <div className="flex w-1/6 flex-none justify-end">
-          <LoginMenuDropDown
-            showLoginMenu={showLoginMenu}
-            handleLoginMenu={handleLoginMenu}
-          />
-        </div>
-      )}
     </header>
   );
 };

@@ -109,11 +109,6 @@ function LoginForm({ isAuthenticated, loginError }: LoginFormProps) {
           </div>
 
           <div className="flex items-center justify-between">
-            {/* <Link to="/resetpassword">
-              <button className="btnGray" type="submit">
-                Forgot Password?
-              </button>
-            </Link> */}
             <button className="btnBlue w-full text-lg" type="submit">
               Sign In
             </button>

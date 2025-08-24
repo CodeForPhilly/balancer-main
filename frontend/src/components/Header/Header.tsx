@@ -2,7 +2,6 @@ import { useState, useRef, useEffect, Fragment } from "react";
 // import { useState, Fragment } from "react";
 import accountLogo from "../../assets/account.svg";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import LoginMenuDropDown from "./LoginMenuDropDown";
 import "../../components/Header/header.css";
 import Chat from "./Chat";
 import { FeatureMenuDropDown } from "./FeatureMenuDropDown";
@@ -24,7 +23,6 @@ const Header: React.FC<LoginFormProps> = ({ isAuthenticated, isSuperuser }) => {
   const dropdownRef = useRef(null);
   let delayTimeout: number | null = null;
   const [showChat, setShowChat] = useState(false);
-  const [showLoginMenu, setShowLoginMenu] = useState(false);
   const [redirect, setRedirect] = useState(false);
   const { setShowSummary, setEnterNewPatient, triggerFormReset, setIsEditing } =
     useGlobalContext();
@@ -36,19 +34,6 @@ const Header: React.FC<LoginFormProps> = ({ isAuthenticated, isSuperuser }) => {
     setRedirect(false);
   };
 
-  const guestLinks = () => (
-    <nav onClick={handleLoginMenu} className="flex cursor-pointer items-center">
-      <img
-        src={accountLogo}
-        alt="logo"
-        className="mr-5 h-5  object-contain lg:h-4 "
-      />
-      <span className=" text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline lg:text-sm xl:text-lg">
-        Sign in
-      </span>
-    </nav>
-  );
-
   const authLinks = () => (
     <nav onClick={logout_user} className="flex cursor-pointer items-center">
       <img src={accountLogo} alt="logo" className="mr-5 h-5  object-contain " />
@@ -57,10 +42,6 @@ const Header: React.FC<LoginFormProps> = ({ isAuthenticated, isSuperuser }) => {
       </span>
     </nav>
   );
-
-  const handleLoginMenu = () => {
-    setShowLoginMenu(!showLoginMenu);
-  };
 
   const handleMouseEnter = () => {
     if (delayTimeout !== null) {
@@ -136,7 +117,7 @@ const Header: React.FC<LoginFormProps> = ({ isAuthenticated, isSuperuser }) => {
             Balancer
           </span>
         </Link>
-        <nav className=" flex space-x-2 font-satoshi lg:space-x-3 xl:gap-3 xl:font-bold ">
+        <nav className="flex space-x-2 font-satoshi lg:space-x-3 xl:gap-3 xl:font-bold ">
           <Link
             to="/"
             onClick={() => handleForm()}
@@ -196,7 +177,7 @@ const Header: React.FC<LoginFormProps> = ({ isAuthenticated, isSuperuser }) => {
             >
               Donate
             </a>
-            {isSuperuser && (
+            {(isAuthenticated && isSuperuser) && (
               <div
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
@@ -230,15 +211,12 @@ const Header: React.FC<LoginFormProps> = ({ isAuthenticated, isSuperuser }) => {
             {redirect ? navigate("/") : <Fragment></Fragment>}
           </>
         </nav>
-        <LoginMenuDropDown
-          showLoginMenu={showLoginMenu}
-          handleLoginMenu={handleLoginMenu}
-        />
         {isAuthenticated && (
-          <Chat showChat={showChat} setShowChat={setShowChat} />
+          <>
+            <Chat showChat={showChat} setShowChat={setShowChat} />
+          </>
         )}
-        {/* <Chat showChat={showChat} setShowChat={setShowChat} /> */}
-        {isAuthenticated ? authLinks() : guestLinks()}
+        {isAuthenticated && authLinks()}
       </div>
       <MdNavBar handleForm={handleForm} isAuthenticated={isAuthenticated} />
     </header>

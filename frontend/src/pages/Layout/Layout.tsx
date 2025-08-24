@@ -2,7 +2,6 @@
 import {ReactNode, useState, useEffect} from "react";
 import Header from "../../components/Header/Header";
 import Footer from "../../components/Footer/Footer";
-import LoginMenuDropDown from "../../components/Header/LoginMenuDropDown";
 import {connect} from "react-redux";
 import {useAuth} from "./authHooks.ts";
 import {RootState} from "../../services/actions/types";
@@ -50,12 +49,6 @@ export const Layout = ({
                 <div className="gradient"/>
             </div>
             <div className="relative z-10 mx-auto flex w-full flex-col items-center">
-                {!isAuthenticated && showLoginMenu && (
-                    <LoginMenuDropDown
-                        showLoginMenu={showLoginMenu}
-                        handleLoginMenu={handleLoginMenu}
-                    />
-                )}
                 <Header/>
                 {children}
                 <Footer/>

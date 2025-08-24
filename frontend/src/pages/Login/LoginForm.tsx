@@ -1,6 +1,5 @@
 import { useFormik } from "formik";
-// import { Link, useNavigate } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { login, AppDispatch } from "../../services/actions/auth";
 import { connect, useDispatch } from "react-redux";
 import { RootState } from "../../services/actions/types";
@@ -59,11 +58,16 @@ function LoginForm({ isAuthenticated, loginError }: LoginFormProps) {
           onSubmit={handleSubmit}
           className="mb-4 rounded-md  bg-white px-3 pb-12 pt-6 shadow-md ring-1 md:px-12"
         >
-          <div className="flex items-center justify-center">
+          <div className="flex flex-col items-center justify-center">
             {/* {errorMessage && <div className="text-red-500">{errorMessage}</div>} */}
             <h2 className="blue_gradient mb-6 font-satoshi text-3xl font-bold text-gray-600">
               Welcome
             </h2>
+
+            <blockquote className="p-4 my-4 border-s-4 border-yellow-500 bg-amber-50">
+                <p className="text-gray-800">This login is for Code for Philly administrators. Providers can use all site features without logging in.</p>
+                <Link to="/" className="underline hover:text-blue-600 hover:no-underline">Return to Medication Suggester</Link>
+            </blockquote>
           </div>
           <ErrorMessage errors={errors} />
           <div className="mb-4 mt-5">

@@ -65,7 +65,7 @@ function LoginForm({ isAuthenticated, loginError }: LoginFormProps) {
               Welcome
             </h2>
 
-            <blockquote className="p-4 my-4 border-s-4 border-yellow-500 bg-amber-50 flex gap-5 items-center">
+            <blockquote className="p-4 mb-4 border-s-4 border-yellow-500 bg-amber-50 flex gap-5 items-center">
                 <div className="mb-2 text-yellow-500">
                   <FaExclamationTriangle size={24} />
                 </div>

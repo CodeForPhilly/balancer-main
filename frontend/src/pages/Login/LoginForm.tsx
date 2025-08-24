@@ -6,6 +6,7 @@ import { RootState } from "../../services/actions/types";
 import { useState, useEffect } from "react";
 import ErrorMessage from "../../components/ErrorMessage";
 import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
+import { FaExclamationTriangle } from "react-icons/fa";
 
 interface LoginFormProps {
   isAuthenticated: boolean;
@@ -64,9 +65,13 @@ function LoginForm({ isAuthenticated, loginError }: LoginFormProps) {
               Welcome
             </h2>
 
-            <blockquote className="p-4 my-4 border-s-4 border-yellow-500 bg-amber-50">
-                <p className="text-gray-800">This login is for Code for Philly administrators. Providers can use all site features without logging in.</p>
-                <Link to="/" className="underline hover:text-blue-600 hover:no-underline">Return to Medication Suggester</Link>
+            <blockquote className="p-4 my-4 border-s-4 border-yellow-500 bg-amber-50 flex gap-5 items-center">
+                <div className="mb-2 text-yellow-500">
+                  <FaExclamationTriangle size={24} />
+                </div>
+                <div>
+                  <p className="text-gray-800">This login is for Code for Philly administrators. Providers can use all site features without logging in. <Link to="/" className="underline hover:text-blue-600 hover:no-underline" style={{ 'white-space': 'nowrap' }}>Return to Homepage</Link></p>
+                </div>
             </blockquote>
           </div>
           <ErrorMessage errors={errors} />

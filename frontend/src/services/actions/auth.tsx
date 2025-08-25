@@ -169,6 +169,9 @@ export const login =
   };
 
 export const logout = () => async (dispatch: AppDispatch) => {
+  // Clear chat conversation data on logout for security
+  sessionStorage.removeItem('currentConversation');
+  
   dispatch({
     type: LOGOUT,
   });

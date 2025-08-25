@@ -18,7 +18,7 @@ import {
 } from "react-icons/fa";
 import { sendAssistantMessage } from "../../api/apiClient";
 
-interface ChatLogItem {
+export interface ChatLogItem {
   is_user: boolean;
   content: string;
   timestamp: string; // EX: 2025-01-16T16:21:14.981090Z
@@ -46,6 +46,28 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
+  // Session storage functions for conversation management
+  const saveConversationToStorage = (messages: ChatLogItem[], responseId?: string) => {
+    const conversationData = {
+      messages,
+      responseId,
+      timestamp: new Date().toISOString(),
+    };
+    sessionStorage.setItem('currentConversation', JSON.stringify(conversationData));
+  };
+
+  const loadConversationFromStorage = () => {
+    const stored = sessionStorage.getItem('currentConversation');
+    if (stored) {
+      try {
+        return JSON.parse(stored);
+      } catch (error) {
+        console.error('Error parsing stored conversation:', error);
+      }
+    }
+    return null;
+  };
+
   const suggestionPrompts = [
     "What are the side effects of Latuda?",
     "Why is cariprazine better than valproate for a pregnant patient?",
@@ -57,6 +79,24 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
   const [bottom, setBottom] = useState(false);
+
+  // Load conversation from sessionStorage on component mount
+  useEffect(() => {
+    const storedConversation = loadConversationFromStorage();
+    if (storedConversation) {
+      setCurrentMessages(storedConversation.messages || []);
+      setCurrentResponseId(storedConversation.responseId);
+    }
+  }, []);
+
+  // Save conversation to sessionStorage when component unmounts
+  useEffect(() => {
+    return () => {
+      if (currentMessages.length > 0) {
+        saveConversationToStorage(currentMessages, currentResponseId);
+      }
+    };
+  }, [currentMessages, currentResponseId]);
 
   const handleScroll = (event: React.UIEvent<HTMLElement>) => {
     const target = event.target as HTMLElement;
@@ -120,6 +160,9 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
       // Add user message to current conversation
       const updatedMessages = [...currentMessages, newMessage];
       setCurrentMessages(updatedMessages);
+      
+      // Save user message immediately to prevent loss
+      saveConversationToStorage(updatedMessages, currentResponseId);
 
       // Call assistant API with previous response ID for continuity
       const data = await sendAssistantMessage(
@@ -135,8 +178,12 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
       };
 
       // Update messages and store new response ID for next message
-      setCurrentMessages((prev) => [...prev, assistantMessage]);
+      const finalMessages = [...updatedMessages, assistantMessage];
+      setCurrentMessages(finalMessages);
       setCurrentResponseId(data.final_response_id);
+      
+      // Save conversation to sessionStorage
+      saveConversationToStorage(finalMessages, data.final_response_id);
     } catch (error) {
       console.error("Error handling message:", error);
       let errorMessage = "Error submitting message";
@@ -207,6 +254,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
                   onClick={() => {
                     setCurrentMessages([]);
                     setCurrentResponseId(undefined);
+                    sessionStorage.removeItem('currentConversation');
                   }}
                   className="flex items-center justify-center"
                   title="New Conversation"

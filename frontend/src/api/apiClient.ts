@@ -3,7 +3,11 @@ import { FormValues } from "../pages/Feedback/FeedbackForm";
 import { Conversation } from "../components/Header/Chat";
 const baseURL = import.meta.env.VITE_API_BASE_URL;
 
-export const api = axios.create({
+export const publicApi = axios.create({
+  baseURL
+});
+
+export const adminApi = axios.create({
   baseURL,
   headers: {
     Authorization: `JWT ${localStorage.getItem("access")}`,
@@ -11,7 +15,7 @@ export const api = axios.create({
 });
 
 // Request interceptor to set the Authorization header
-api.interceptors.request.use(
+adminApi.interceptors.request.use(
   (configuration) => {
     const token = localStorage.getItem("access");
     if (token) {
@@ -29,7 +33,7 @@ const handleSubmitFeedback = async (
   message: FormValues["message"],
 ) => {
   try {
-    const response = await api.post(`/v1/api/feedback/`, {
+    const response = await publicApi.post(`/v1/api/feedback/`, {
       feedbacktype: feedbackType,
       name,
       email,
@@ -45,7 +49,7 @@ const handleSubmitFeedback = async (
 const handleSendDrugSummary = async (message: FormValues["message"], guid: string) => {
   try {
     const endpoint = guid ? `/v1/api/embeddings/ask_embeddings?guid=${guid}` : '/v1/api/embeddings/ask_embeddings';
-    const response = await api.post(endpoint, {
+    const response = await adminApi.post(endpoint, {
       message,
     });
     console.log("Response data:", JSON.stringify(response.data, null, 2));
@@ -58,7 +62,7 @@ const handleSendDrugSummary = async (message: FormValues["message"], guid: strin
 
 const handleRuleExtraction = async (guid: string) => {
   try {
-    const response = await api.get(`/v1/api/rule_extraction_openai?guid=${guid}`);
+    const response = await adminApi.get(`/v1/api/rule_extraction_openai?guid=${guid}`);
     // console.log("Rule extraction response:", JSON.stringify(response.data, null, 2));
     return response.data;
   } catch (error) {
@@ -69,7 +73,7 @@ const handleRuleExtraction = async (guid: string) => {
 
 const fetchRiskDataWithSources = async (medication: string, source: "include" | "diagnosis" = "include") => {
   try {
-    const response = await api.post(`/v1/api/riskWithSources`, {
+    const response = await adminApi.post(`/v1/api/riskWithSources`, {
       drug: medication,
       source: source,
     });
@@ -192,7 +196,7 @@ const handleSendDrugSummaryStreamLegacy = async (
 
 const fetchConversations = async (): Promise<Conversation[]> => {
   try {
-    const response = await api.get(`/chatgpt/conversations/`);
+    const response = await publicApi.get(`/chatgpt/conversations/`);
     return response.data;
   } catch (error) {
     console.error("Error(s) during getConversations: ", error);
@@ -202,7 +206,7 @@ const fetchConversations = async (): Promise<Conversation[]> => {
 
 const fetchConversation = async (id: string): Promise<Conversation> => {
   try {
-    const response = await api.get(`/chatgpt/conversations/${id}/`);
+    const response = await publicApi.get(`/chatgpt/conversations/${id}/`);
     return response.data;
   } catch (error) {
     console.error("Error(s) during getConversation: ", error);
@@ -212,7 +216,7 @@ const fetchConversation = async (id: string): Promise<Conversation> => {
 
 const newConversation = async (): Promise<Conversation> => {
   try {
-    const response = await api.post(`/chatgpt/conversations/`, {
+    const response = await publicApi.post(`/chatgpt/conversations/`, {
       messages: [],
     });
     return response.data;
@@ -228,7 +232,7 @@ const continueConversation = async (
   page_context?: string,
 ): Promise<{ response: string; title: Conversation["title"] }> => {
   try {
-    const response = await api.post(
+    const response = await publicApi.post(
       `/chatgpt/conversations/${id}/continue_conversation/`,
       {
         message,
@@ -244,7 +248,7 @@ const continueConversation = async (
 
 const deleteConversation = async (id: string) => {
   try {
-    const response = await api.delete(`/chatgpt/conversations/${id}/`);
+    const response = await publicApi.delete(`/chatgpt/conversations/${id}/`);
     return response.data;
   } catch (error) {
     console.error("Error(s) during deleteConversation: ", error);
@@ -257,7 +261,7 @@ const updateConversationTitle = async (
   newTitle: Conversation["title"],
 ): Promise<{status: string, title: Conversation["title"]} | {error: string}> => {
   try {
-    const response = await api.patch(`/chatgpt/conversations/${id}/update_title/`, {
+    const response = await publicApi.patch(`/chatgpt/conversations/${id}/update_title/`, {
       title: newTitle,
     });
     return response.data;

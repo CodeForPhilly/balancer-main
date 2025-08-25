@@ -89,10 +89,13 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
     }
   }, []);
 
+
   // Save conversation to sessionStorage when component unmounts
   useEffect(() => {
     return () => {
-      if (currentMessages.length > 0) {
+      // Only save if the user hasn't logged out
+      const isLoggingOut = !localStorage.getItem("access"); 
+      if (!isLoggingOut && currentMessages.length > 0) {
         saveConversationToStorage(currentMessages, currentResponseId);
       }
     };

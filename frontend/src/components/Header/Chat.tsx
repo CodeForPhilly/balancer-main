@@ -31,7 +31,6 @@ export interface Conversation {
   id: string;
 }
 
-
 interface ChatDropDownProps {
   showChat: boolean;
   setShowChat: React.Dispatch<React.SetStateAction<boolean>>;
@@ -41,7 +40,9 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
   const CHATBOT_NAME = "JJ";
   const [inputValue, setInputValue] = useState("");
   const [currentMessages, setCurrentMessages] = useState<ChatLogItem[]>([]);
-  const [currentResponseId, setCurrentResponseId] = useState<string | undefined>(undefined);
+  const [currentResponseId, setCurrentResponseId] = useState<
+    string | undefined
+  >(undefined);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -54,7 +55,6 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
     "What medications could cause liver issues?",
   ];
   const chatContainerRef = useRef<HTMLDivElement>(null);
-
 
   const [bottom, setBottom] = useState(false);
 
@@ -76,18 +76,17 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
         chatContainer.scrollTop = chatContainer.scrollHeight;
         setBottom(
           chatContainer.scrollHeight - chatContainer.scrollTop ===
-            chatContainer.clientHeight
+            chatContainer.clientHeight,
         );
       }, 0);
     }
   }, [currentMessages]);
 
-
   const scrollToBottom = (element: HTMLElement) =>
     element.scroll({ top: element.scrollHeight, behavior: "smooth" });
 
   const handleScrollDown = (
-    event: React.MouseEvent<HTMLButtonElement, MouseEvent>
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
   ) => {
     event.preventDefault();
     const element = document.getElementById("inside_chat");
@@ -101,7 +100,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
     event:
       | React.FormEvent<HTMLFormElement>
       | React.MouseEvent<HTMLButtonElement, MouseEvent>,
-    suggestion?: string
+    suggestion?: string,
   ) => {
     event.preventDefault();
 
@@ -123,7 +122,10 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
       setCurrentMessages(updatedMessages);
 
       // Call assistant API with previous response ID for continuity
-      const data = await sendAssistantMessage(messageContent, currentResponseId);
+      const data = await sendAssistantMessage(
+        messageContent,
+        currentResponseId,
+      );
 
       // Create assistant response message
       const assistantMessage = {
@@ -133,9 +135,8 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
       };
 
       // Update messages and store new response ID for next message
-      setCurrentMessages(prev => [...prev, assistantMessage]);
+      setCurrentMessages((prev) => [...prev, assistantMessage]);
       setCurrentResponseId(data.final_response_id);
-
     } catch (error) {
       console.error("Error handling message:", error);
       let errorMessage = "Error submitting message";
@@ -212,7 +213,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
                 >
                   <FaPlus className="chat_icon" />
                 </button>
-                
+
                 <button
                   onClick={() => setExpandChat((prevState) => !prevState)}
                   className="flex items-center justify-center"
@@ -223,7 +224,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
                     <FaExpandArrowsAlt className="chat_icon" />
                   )}
                 </button>
-                
+
                 <button
                   className="delete flex items-center justify-center"
                   onClick={() => setShowChat(false)}
@@ -254,11 +255,33 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
                       <h5>Hi there, I'm {CHATBOT_NAME}!</h5>
                       <p>
                         You can ask me questions about your uploaded documents.
-                        I'll search through them to provide accurate, cited answers.
+                        I'll search through them to provide accurate, cited
+                        answers.
                       </p>
                       <Link to="/data-sources" className="chat_link">
                         Learn more about my sources.
                       </Link>
+                    </div>
+                    <div className="chat_bubble chat_bubble_header" style={{ 
+                      backgroundColor: '#fef3c7', 
+                      border: '1px solid #f59e0b', 
+                      marginTop: '10px' 
+                    }}>
+                      <h6 style={{ color: '#92400e', fontWeight: 'bold', marginBottom: '8px' }}>
+                        ⚠️ IMPORTANT NOTICE
+                      </h6>
+                      <p style={{ 
+                        fontSize: '0.85em', 
+                        color: '#92400e', 
+                        lineHeight: '1.4',
+                        margin: '0'
+                      }}>
+                        Balancer is NOT configured for use with Protected Health Information (PHI) as defined under HIPAA. 
+                        You must NOT enter any patient-identifiable information including names, addresses, dates of birth, 
+                        medical record numbers, or any other identifying information. Your queries may be processed by 
+                        third-party AI services that retain data for up to 30 days for abuse monitoring. By using Balancer, 
+                        you certify that you understand these restrictions and will not enter any PHI.
+                      </p>
                     </div>
                     <div className="chat_suggestion_section">
                       <div className="chat_suggestion_header">
@@ -305,7 +328,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
                     .sort(
                       (a, b) =>
                         new Date(a.timestamp).getTime() -
-                        new Date(b.timestamp).getTime()
+                        new Date(b.timestamp).getTime(),
                     )
                     .map((message, index) => (
                       <div
@@ -334,7 +357,10 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
                     ))
                 )}
                 {isLoading && (
-                  <div key={currentMessages.length} className="flex justify-center">
+                  <div
+                    key={currentMessages.length}
+                    className="flex justify-center"
+                  >
                     <div className="max-w-sm rounded-lg p-4 text-white">
                       <TypingAnimation />
                     </div>
@@ -355,10 +381,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
           </div>
         </div>
       ) : (
-        <div
-          onClick={() => setShowChat(true)}
-          className="chat_button no-print"
-        >
+        <div onClick={() => setShowChat(true)} className="chat_button no-print">
           <FaComments className="relative text-white w-10 h-10 z-10" />
         </div>
       )}

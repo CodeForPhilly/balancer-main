@@ -42,14 +42,10 @@ type MedicationWithSource = {
 
 const truncate = (s = "", n = 220) =>
   s.length > n ? s.slice(0, n).trim() + "…" : s;
-const badge = (label: string) => (
-  <span className="ml-2 inline-flex items-center rounded-md bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700">
-    {label}
-  </span>
-);
+
 const MedicationItem = ({
   medication,
-  source,
+
   isClicked,
   riskData,
   loading,
@@ -79,10 +75,7 @@ const MedicationItem = ({
       <li className="flex items-center justify-between py-4 pl-4 pr-5 text-sm leading-4 hover:bg-indigo-100">
         <div className="flex items-center flex-1 w-0">
           <div className="flex flex-1 min-w-0 gap-2 ml-4">
-            <span className="font-medium truncate">
-              {medication}
-              <span className="ml-2 text-xs text-gray-400">({source})</span>
-            </span>
+            <span className="font-medium truncate">{medication}</span>
             {loading && isClicked && (
               <div className="flex items-start max-w-sm mt-0 ml-3 text-white">
                 <TypingAnimation />
@@ -144,17 +137,11 @@ const MedicationItem = ({
             <div className="mt-6">
               <div className="flex items-center">
                 <h4 className="text-sm font-medium text-indigo-600">Sources</h4>
-                {riskData.source && badge(riskData.source.toUpperCase())}
               </div>
 
               <ul className="mt-3 divide-y divide-gray-200 rounded-md border border-gray-200 bg-white">
                 {riskData.sources.map((s, idx) => (
                   <li key={idx} className="px-4 py-3">
-                    <div className="flex flex-wrap items-center gap-2">
-                      {s.rule_type && badge(s.rule_type)}
-                      {s.history_type && badge(s.history_type)}
-                    </div>
-
                     <div className="mt-1 text-sm font-medium text-gray-900 flex items-center justify-between">
                       <span>{s.title || "Untitled source"}</span>
 
@@ -217,23 +204,23 @@ const MedicationTier = ({
     <dt className="flex ml-2 text-sm font-medium leading-6 text-gray-900">
       {title}:
     </dt>
-    { medications.length ?
+    {medications.length ? (
       <ul className="border border-gray-200 divide-y divide-gray-100 rounded-md">
         {medications.map((medicationObj) => (
-            <MedicationItem
-              key={medicationObj.name}
-              medication={medicationObj.name}
-              source={medicationObj.source}
-              isClicked={medicationObj.name === clickedMedication}
-              riskData={riskData}
-              loading={loading}
-              onClick={() => onMedicationClick(medicationObj)}
-            />
-          ))
-        }
-      </ul> :
+          <MedicationItem
+            key={medicationObj.name}
+            medication={medicationObj.name}
+            source={medicationObj.source}
+            isClicked={medicationObj.name === clickedMedication}
+            riskData={riskData}
+            loading={loading}
+            onClick={() => onMedicationClick(medicationObj)}
+          />
+        ))}
+      </ul>
+    ) : (
       <em className="ml-2">{`Patient's other health concerns may contraindicate typical ${tier} line options.`}</em>
-    }
+    )}
   </>
 );
 

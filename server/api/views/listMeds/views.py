@@ -1,4 +1,5 @@
 from rest_framework import status
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -21,6 +22,8 @@ MED_EXCLUDE = {
 
 
 class GetMedication(APIView):
+    permission_classes = [AllowAny]
+
     def post(self, request):
         data = request.data
         state_query = data.get('state', '')
@@ -67,6 +70,8 @@ class GetMedication(APIView):
 
 
 class ListOrDetailMedication(APIView):
+    permission_classes = [AllowAny]
+
     def get(self, request):
         name_query = request.query_params.get('name', None)
         if name_query:
@@ -95,7 +100,7 @@ class AddMedication(APIView):
         name = data.get('name', '').strip()
         benefits = data.get('benefits', '').strip()
         risks = data.get('risks', '').strip()
-        
+
         # Validate required fields
         if not name:
             return Response({'error': 'Medication name is required'}, status=status.HTTP_400_BAD_REQUEST)
@@ -103,7 +108,7 @@ class AddMedication(APIView):
             return Response({'error': 'Medication benefits are required'}, status=status.HTTP_400_BAD_REQUEST)
         if not risks:
             return Response({'error': 'Medication risks are required'}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         # Check if medication already exists
         if Medication.objects.filter(name=name).exists():
             return Response({'error': f'Medication "{name}" already exists'}, status=status.HTTP_400_BAD_REQUEST)
@@ -123,11 +128,11 @@ class DeleteMedication(APIView):
     def delete(self, request):
         data = request.data
         name = data.get('name', '').strip()
-        
+
         # Validate required fields
         if not name:
             return Response({'error': 'Medication name is required'}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         # Check if medication exists and delete
         try:
             medication = Medication.objects.get(name=name)

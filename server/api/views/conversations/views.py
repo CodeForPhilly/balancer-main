@@ -1,7 +1,7 @@
 from rest_framework.response import Response
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny
 from rest_framework.exceptions import APIException
 from django.http import JsonResponse
 from bs4 import BeautifulSoup
@@ -81,7 +81,7 @@ class OpenAIAPIException(APIException):
 
 class ConversationViewSet(viewsets.ModelViewSet):
     serializer_class = ConversationSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get_queryset(self):
         return Conversation.objects.filter(user=self.request.user)

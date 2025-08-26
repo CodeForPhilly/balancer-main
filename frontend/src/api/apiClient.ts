@@ -3,9 +3,7 @@ import { FormValues } from "../pages/Feedback/FeedbackForm";
 import { Conversation } from "../components/Header/Chat";
 const baseURL = import.meta.env.VITE_API_BASE_URL;
 
-export const publicApi = axios.create({
-  baseURL
-});
+export const publicApi = axios.create({ baseURL });
 
 export const adminApi = axios.create({
   baseURL,

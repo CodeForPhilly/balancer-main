@@ -23,6 +23,7 @@ MED_EXCLUDE = {
 class GetMedication(APIView):
     def post(self, request):
         data = request.data
+        print(data)
         state_query = data.get('state', '')
         include_result = []
         exclude_result = []
@@ -42,6 +43,9 @@ class GetMedication(APIView):
             return Response({'error': 'Diagnosis not found'}, status=status.HTTP_404_NOT_FOUND)
         meds = {'first': [], 'second': [], 'third': []}
 
+        priorMeds = data.get('priorMedications', "").split(',')
+        exclude_result.extend([med.strip() for med in priorMeds if med.strip()])
+        print(exclude_result)
         included_set = set(include_result)
         excluded_set = set(exclude_result)
 

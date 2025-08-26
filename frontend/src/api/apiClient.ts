@@ -214,7 +214,7 @@ const fetchConversation = async (id: string): Promise<Conversation> => {
 
 const newConversation = async (): Promise<Conversation> => {
   try {
-    const response = await publicApi.post(`/chatgpt/conversations/`, {
+    const response = await adminApi.post(`/chatgpt/conversations/`, {
       messages: [],
     });
     return response.data;
@@ -230,7 +230,7 @@ const continueConversation = async (
   page_context?: string,
 ): Promise<{ response: string; title: Conversation["title"] }> => {
   try {
-    const response = await publicApi.post(
+    const response = await adminApi.post(
       `/chatgpt/conversations/${id}/continue_conversation/`,
       {
         message,
@@ -246,7 +246,7 @@ const continueConversation = async (
 
 const deleteConversation = async (id: string) => {
   try {
-    const response = await publicApi.delete(`/chatgpt/conversations/${id}/`);
+    const response = await adminApi.delete(`/chatgpt/conversations/${id}/`);
     return response.data;
   } catch (error) {
     console.error("Error(s) during deleteConversation: ", error);
@@ -259,7 +259,7 @@ const updateConversationTitle = async (
   newTitle: Conversation["title"],
 ): Promise<{status: string, title: Conversation["title"]} | {error: string}> => {
   try {
-    const response = await publicApi.patch(`/chatgpt/conversations/${id}/update_title/`, {
+    const response = await adminApi.patch(`/chatgpt/conversations/${id}/update_title/`, {
       title: newTitle,
     });
     return response.data;

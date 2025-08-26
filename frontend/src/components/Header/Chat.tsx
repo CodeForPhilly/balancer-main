@@ -47,22 +47,28 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
   const [error, setError] = useState<Error | null>(null);
 
   // Session storage functions for conversation management
-  const saveConversationToStorage = (messages: ChatLogItem[], responseId?: string) => {
+  const saveConversationToStorage = (
+    messages: ChatLogItem[],
+    responseId?: string,
+  ) => {
     const conversationData = {
       messages,
       responseId,
       timestamp: new Date().toISOString(),
     };
-    sessionStorage.setItem('currentConversation', JSON.stringify(conversationData));
+    sessionStorage.setItem(
+      "currentConversation",
+      JSON.stringify(conversationData),
+    );
   };
 
   const loadConversationFromStorage = () => {
-    const stored = sessionStorage.getItem('currentConversation');
+    const stored = sessionStorage.getItem("currentConversation");
     if (stored) {
       try {
         return JSON.parse(stored);
       } catch (error) {
-        console.error('Error parsing stored conversation:', error);
+        console.error("Error parsing stored conversation:", error);
       }
     }
     return null;
@@ -89,12 +95,11 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
     }
   }, []);
 
-
   // Save conversation to sessionStorage when component unmounts
   useEffect(() => {
     return () => {
       // Only save if the user hasn't logged out
-      const isLoggingOut = !localStorage.getItem("access"); 
+      const isLoggingOut = !localStorage.getItem("access");
       if (!isLoggingOut && currentMessages.length > 0) {
         saveConversationToStorage(currentMessages, currentResponseId);
       }
@@ -163,7 +168,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
       // Add user message to current conversation
       const updatedMessages = [...currentMessages, newMessage];
       setCurrentMessages(updatedMessages);
-      
+
       // Save user message immediately to prevent loss
       saveConversationToStorage(updatedMessages, currentResponseId);
 
@@ -184,7 +189,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
       const finalMessages = [...updatedMessages, assistantMessage];
       setCurrentMessages(finalMessages);
       setCurrentResponseId(data.final_response_id);
-      
+
       // Save conversation to sessionStorage
       saveConversationToStorage(finalMessages, data.final_response_id);
     } catch (error) {
@@ -257,7 +262,7 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
                   onClick={() => {
                     setCurrentMessages([]);
                     setCurrentResponseId(undefined);
-                    sessionStorage.removeItem('currentConversation');
+                    sessionStorage.removeItem("currentConversation");
                   }}
                   className="flex items-center justify-center"
                   title="New Conversation"
@@ -313,25 +318,38 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
                         Learn more about my sources.
                       </Link>
                     </div>
-                    <div className="chat_bubble chat_bubble_header" style={{ 
-                      backgroundColor: '#fef3c7', 
-                      border: '1px solid #f59e0b', 
-                      marginTop: '10px' 
-                    }}>
-                      <h6 style={{ color: '#92400e', fontWeight: 'bold', marginBottom: '8px' }}>
+                    <div
+                      className="chat_bubble chat_bubble_header"
+                      style={{
+                        backgroundColor: "#fef3c7",
+                        border: "1px solid #f59e0b",
+                        marginTop: "10px",
+                      }}
+                    >
+                      <h6
+                        style={{
+                          color: "#92400e",
+                          fontWeight: "bold",
+                          marginBottom: "8px",
+                        }}
+                      >
                         ⚠️ IMPORTANT NOTICE
                       </h6>
-                      <p style={{ 
-                        fontSize: '0.85em', 
-                        color: '#92400e', 
-                        lineHeight: '1.4',
-                        margin: '0'
-                      }}>
-                        Balancer is NOT configured for use with Protected Health Information (PHI) as defined under HIPAA. 
-                        You must NOT enter any patient-identifiable information including names, addresses, dates of birth, 
-                        medical record numbers, or any other identifying information. Your queries may be processed by 
-                        third-party AI services that retain data for up to 30 days for abuse monitoring. By using Balancer, 
-                        you certify that you understand these restrictions and will not enter any PHI.
+                      <p
+                        style={{
+                          fontSize: "0.85em",
+                          color: "#92400e",
+                          lineHeight: "1.4",
+                          margin: "0",
+                        }}
+                      >
+                        Balancer is NOT configured for use with Protected Health
+                        Information (PHI) as defined under HIPAA. You must NOT
+                        enter any patient-identifiable information including
+                        names, addresses, dates of birth, medical record
+                        numbers, or any other identifying information. By using
+                        Balancer, you certify that you understand these
+                        restrictions and will not enter any PHI.
                       </p>
                     </div>
                     <div className="chat_suggestion_section">

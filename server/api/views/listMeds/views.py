@@ -44,7 +44,6 @@ class GetMedication(APIView):
 
         priorMeds = data.get('priorMedications', "").split(',')
         exclude_result.extend([med.strip() for med in priorMeds if med.strip()])
-        print(exclude_result)
         included_set = set(include_result)
         excluded_set = set(exclude_result)
 

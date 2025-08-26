@@ -23,7 +23,6 @@ MED_EXCLUDE = {
 class GetMedication(APIView):
     def post(self, request):
         data = request.data
-        print(data)
         state_query = data.get('state', '')
         include_result = []
         exclude_result = []

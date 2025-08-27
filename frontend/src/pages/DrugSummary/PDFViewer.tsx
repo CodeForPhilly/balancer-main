@@ -20,8 +20,6 @@ interface DocumentLoadSuccess {
   numPages: number;
 }
 
-const PAGE_INIT_DELAY = 800;
-
 const PDFViewer = () => {
   const [numPages, setNumPages] = useState<number | null>(null);
   const [pageNumber, setPageNumber] = useState(1);
@@ -45,13 +43,13 @@ const PDFViewer = () => {
   const pageRefs = useRef<Record<number, HTMLDivElement | null>>({});
   const prevGuidRef = useRef<string | null>(null);
   const isFetchingRef = useRef(false);
+  const isAutoScrollingRef = useRef(false);
 
   const location = useLocation();
   const navigate = useNavigate();
   const params = new URLSearchParams(location.search);
   const guid = params.get("guid");
   const pageParam = params.get("page");
-
   const baseURL = import.meta.env.VITE_API_BASE_URL as string | undefined;
 
   const pdfUrl = useMemo(() => {
@@ -65,19 +63,36 @@ const PDFViewer = () => {
     const guidChanged = guid !== prevGuidRef.current;
 
     if (guidChanged) {
-      pageRefs.current = {};
       setIsDocumentLoaded(false);
       setNumPages(null);
       setPdfData(null);
-      setPageNumber(1);
+      setTargetPageAfterLoad(null);
+      const validPage = !isNaN(nextPage) && nextPage > 0 ? nextPage : 1;
+      setPageNumber(validPage);
+      setTargetPageAfterLoad(validPage);
+      prevGuidRef.current = guid;
+      return;
     }
 
-    setTargetPageAfterLoad(!isNaN(nextPage) && nextPage > 0 ? nextPage : 1);
+    const desired = !isNaN(nextPage) && nextPage > 0 ? nextPage : 1;
+    if (pageNumber !== desired) {
+      if (isDocumentLoaded && numPages) {
+        const clampedPage = Math.max(1, Math.min(desired, numPages));
+        setPageNumber(clampedPage);
+        scrollToPage(clampedPage);
+      } else {
+        setPageNumber(desired);
+        setTargetPageAfterLoad(desired);
+      }
+    }
+
     prevGuidRef.current = guid;
-  }, [guid, pageParam, location.pathname, location.search]);
+  }, [guid, pageParam, pageNumber, isDocumentLoaded, numPages]);
 
   const updateCurrentPageFromScroll = useCallback(() => {
     if (!numPages || !contentRef.current) return;
+
+    if (isAutoScrollingRef.current) return;
 
     const container = contentRef.current;
     const containerRectTop = container.getBoundingClientRect().top;
@@ -86,7 +101,7 @@ const PDFViewer = () => {
     let bestPage = 1;
     let bestDist = Infinity;
 
-    for (let i = 1; i <= (numPages ?? 0); i++) {
+    for (let i = 1; i <= numPages; i++) {
       const el = pageRefs.current[i];
       if (!el) continue;
       const r = el.getBoundingClientRect();
@@ -99,6 +114,9 @@ const PDFViewer = () => {
     }
 
     if (bestPage !== pageNumber) {
+      console.log(
+        `Scroll detected: updating page from ${pageNumber} to ${bestPage}`
+      );
       setPageNumber(bestPage);
       const newParams = new URLSearchParams(location.search);
       newParams.set("page", String(bestPage));
@@ -126,16 +144,6 @@ const PDFViewer = () => {
     return () => container.removeEventListener("scroll", onScroll);
   }, [updateCurrentPageFromScroll]);
 
-  useEffect(() => {
-    updateCurrentPageFromScroll();
-  }, [
-    numPages,
-    deferredScale,
-    containerSize.width,
-    containerSize.height,
-    updateCurrentPageFromScroll,
-  ]);
-
   const scrollToPage = useCallback(
     (page: number) => {
       if (!numPages || page < 1 || page > numPages) return;
@@ -146,6 +154,7 @@ const PDFViewer = () => {
         return;
       }
 
+      isAutoScrollingRef.current = true;
       targetRef.scrollIntoView({
         behavior: "smooth",
         block: "start",
@@ -153,17 +162,25 @@ const PDFViewer = () => {
       });
 
       const newParams = new URLSearchParams(location.search);
-      const oldPage = newParams.get("page");
-      if (oldPage !== String(page)) {
+      if (newParams.get("page") !== String(page)) {
         newParams.set("page", String(page));
         navigate(`${location.pathname}?${newParams.toString()}`, {
           replace: true,
         });
       }
 
-      setPageNumber(page);
+      setTimeout(() => {
+        isAutoScrollingRef.current = false;
+        updateCurrentPageFromScroll();
+      }, 500);
     },
-    [numPages, location.pathname, location.search, navigate]
+    [
+      numPages,
+      location.pathname,
+      location.search,
+      navigate,
+      updateCurrentPageFromScroll,
+    ]
   );
 
   const goToPage = useCallback(
@@ -171,10 +188,13 @@ const PDFViewer = () => {
       if (typeof page !== "number" || isNaN(page)) return;
 
       const clamped = Math.max(1, numPages ? Math.min(page, numPages) : page);
+
       if (!isDocumentLoaded || !numPages) {
         setTargetPageAfterLoad(clamped);
+        setPageNumber(clamped);
         return;
       }
+
       if (clamped === pageNumber) return;
 
       setPageNumber(clamped);
@@ -197,16 +217,19 @@ const PDFViewer = () => {
   }, [goToPage]);
 
   useEffect(() => {
-    if (isDocumentLoaded && numPages && targetPageAfterLoad) {
-      const validPage = Math.min(Math.max(1, targetPageAfterLoad), numPages);
-      setPageNumber(validPage);
+    if (isDocumentLoaded && numPages && targetPageAfterLoad !== null) {
+      const validPage = Math.max(1, Math.min(targetPageAfterLoad, numPages));
 
-      const timer = setTimeout(() => {
+      console.log(`Navigating to page ${validPage} after document load`);
+      const timeoutId = setTimeout(() => {
         scrollToPage(validPage);
-        setTargetPageAfterLoad(null);
-      }, PAGE_INIT_DELAY);
 
-      return () => clearTimeout(timer);
+        setTimeout(() => {
+          setTargetPageAfterLoad(null);
+        }, 600);
+      }, 100);
+
+      return () => clearTimeout(timeoutId);
     }
   }, [isDocumentLoaded, numPages, targetPageAfterLoad, scrollToPage]);
 
@@ -301,6 +324,7 @@ const PDFViewer = () => {
 
   const onDocumentLoadSuccess = useCallback(
     ({ numPages }: DocumentLoadSuccess) => {
+      console.log(`Document loaded with ${numPages} pages`);
       setNumPages(numPages);
       setError(null);
       setIsDocumentLoaded(true);
@@ -441,7 +465,7 @@ const PDFViewer = () => {
                       data-page={pageNum}
                     >
                       <Page
-                        key={`${guid}-${pageNum}`}
+                        key={pageNum}
                         pageNumber={pageNum}
                         width={baseWidth}
                         scale={deferredScale}

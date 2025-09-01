@@ -49,14 +49,18 @@ const MedicationItem = ({
   isClicked,
   riskData,
   loading,
-  onClick,
+  onSourcesClick,
+  onBenefitsRisksClick,
+  activePanel,
 }: {
   medication: string;
   source: string;
   isClicked: boolean;
   riskData: RiskData | null;
   loading: boolean;
-  onClick: () => void;
+  onSourcesClick: () => void;
+  onBenefitsRisksClick: () => void;
+  activePanel: "sources" | "benefits-risks" | null;
 }) => {
   if (medication === "None") {
     return (
@@ -85,25 +89,29 @@ const MedicationItem = ({
         </div>
         <div className="flex-shrink-0 ml-4">
           <span
-            className={`font-medium text-indigo-600 hover:text-indigo-500 ${
-              isClicked ? "bg-indigo-100" : ""
-            } cursor-pointer`}
-            onClick={onClick}
+            className={`font-medium text-indigo-600 hover:text-indigo-500 border border-transparent hover:border-indigo-300 cursor-pointer px-2 py-1 rounded ${
+              isClicked && activePanel === "sources" ? "bg-indigo-100" : ""
+            }`}
+            onClick={onSourcesClick}
           >
             Sources
           </span>
         </div>
         <div className="flex-shrink-0 ml-4">
           <span
-            className="font-medium text-indigo-600 hover:text-indigo-500"
-            onClick={onClick}
+            className={`font-medium text-indigo-600 hover:text-indigo-500 border border-transparent hover:border-indigo-300 cursor-pointer px-2 py-1 rounded ${
+              isClicked && activePanel === "benefits-risks"
+                ? "bg-indigo-100"
+                : ""
+            }`}
+            onClick={onBenefitsRisksClick}
           >
             Benefits and risks
           </span>
         </div>
       </li>
 
-      {isClicked && riskData && (
+      {isClicked && riskData && activePanel === "benefits-risks" && (
         <div className="px-6 py-4 bg-gray-50">
           <div className="flex">
             <div className="w-1/2 pr-4">
@@ -131,51 +139,54 @@ const MedicationItem = ({
               </ul>
             </div>
           </div>
+        </div>
+      )}
 
-          {/* SOURCES */}
-          {!!riskData.sources?.length && (
-            <div className="mt-6">
-              <div className="flex items-center">
-                <h4 className="text-sm font-medium text-indigo-600">Sources</h4>
-              </div>
+      {isClicked && riskData && activePanel === "sources" && (
+        <div className="px-6 py-4 bg-gray-50">
+          <div className="flex items-center">
+            <h4 className="text-sm font-medium text-indigo-600">Sources</h4>
+          </div>
 
-              <ul className="mt-3 divide-y divide-gray-200 rounded-md border border-gray-200 bg-white">
-                {riskData.sources.map((s, idx) => (
-                  <li key={idx} className="px-4 py-3">
-                    <div className="mt-1 text-sm font-medium text-gray-900 flex items-center justify-between">
-                      <span>{s.title || "Untitled source"}</span>
+          {riskData.sources?.length ? (
+            <ul className="mt-3 divide-y divide-gray-200 rounded-md border border-gray-200 bg-white">
+              {riskData.sources.map((s, idx) => (
+                <li key={idx} className="px-4 py-3">
+                  <div className="mt-1 text-sm font-medium text-gray-900 flex items-center justify-between">
+                    <span>{s.title || "Untitled source"}</span>
 
-                      {s.link_url && (
-                        <a
-                          href={s.link_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
-                        >
-                          View PDF
-                        </a>
-                      )}
+                    {s.link_url && (
+                      <a
+                        href={s.link_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
+                      >
+                        View PDF
+                      </a>
+                    )}
+                  </div>
+
+                  {s.publication && (
+                    <div className="text-xs text-gray-500">{s.publication}</div>
+                  )}
+
+                  <p className="mt-2 text-sm text-gray-700">
+                    {truncate(s.text)}
+                  </p>
+
+                  {s.page && (
+                    <div className="mt-1 text-xs text-gray-400">
+                      Page {s.page}
                     </div>
-
-                    {s.publication && (
-                      <div className="text-xs text-gray-500">
-                        {s.publication}
-                      </div>
-                    )}
-
-                    <p className="mt-2 text-sm text-gray-700">
-                      {truncate(s.text)}
-                    </p>
-
-                    {s.page && (
-                      <div className="mt-1 text-xs text-gray-400">
-                        Page {s.page}
-                      </div>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-3 text-sm text-gray-500">
+              No sources available for this medication.
+            </p>
           )}
         </div>
       )}
@@ -190,7 +201,9 @@ const MedicationTier = ({
   clickedMedication,
   riskData,
   loading,
-  onMedicationClick,
+  onSourcesClick,
+  onBenefitsRisksClick,
+  activePanel,
 }: {
   title: string;
   tier: string;
@@ -198,7 +211,9 @@ const MedicationTier = ({
   clickedMedication: string | null;
   riskData: RiskData | null;
   loading: boolean;
-  onMedicationClick: (medication: MedicationWithSource) => void;
+  onSourcesClick: (medication: MedicationWithSource) => void;
+  onBenefitsRisksClick: (medication: MedicationWithSource) => void;
+  activePanel: "sources" | "benefits-risks" | null;
 }) => (
   <>
     <dt className="flex ml-2 text-sm font-medium leading-6 text-gray-900">
@@ -214,7 +229,9 @@ const MedicationTier = ({
             isClicked={medicationObj.name === clickedMedication}
             riskData={riskData}
             loading={loading}
-            onClick={() => onMedicationClick(medicationObj)}
+            onSourcesClick={() => onSourcesClick(medicationObj)}
+            onBenefitsRisksClick={() => onBenefitsRisksClick(medicationObj)}
+            activePanel={activePanel}
           />
         ))}
       </ul>
@@ -237,6 +254,9 @@ const PatientSummary = ({
   const [clickedMedication, setClickedMedication] = useState<string | null>(
     null
   );
+  const [activePanel, setActivePanel] = useState<
+    "sources" | "benefits-risks" | null
+  >(null);
 
   const [isModalOpen, setIsModalOpen] = useState({ status: false, id: "" });
 
@@ -256,27 +276,58 @@ const PatientSummary = ({
       setLoading(false);
       setRiskData(null);
       setClickedMedication(null);
+      setActivePanel(null);
     }
   }, [isPatientDeleted, setShowSummary]);
 
   useEffect(() => {
     setRiskData(null);
     setClickedMedication(null);
+    setActivePanel(null);
   }, [patientInfo]);
 
   const handleClickSummary = () => {
     setShowSummary(!showSummary);
   };
-  const handleMedicationClick = async (medicationObj: MedicationWithSource) => {
+  const handleSourcesClick = async (medicationObj: MedicationWithSource) => {
     const { name: medication, source } = medicationObj;
 
-    if (clickedMedication === medication) {
+    if (clickedMedication === medication && activePanel === "sources") {
       setClickedMedication(null);
+      setActivePanel(null);
       setRiskData(null);
       return;
     }
 
     setClickedMedication(medication);
+    setActivePanel("sources");
+    setLoading(true);
+
+    try {
+      const data = await fetchRiskDataWithSources(medication, source);
+      setRiskData(data as RiskData);
+    } catch (error) {
+      console.error("Error fetching risk data: ", error);
+      setRiskData(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleBenefitsRisksClick = async (
+    medicationObj: MedicationWithSource
+  ) => {
+    const { name: medication, source } = medicationObj;
+
+    if (clickedMedication === medication && activePanel === "benefits-risks") {
+      setClickedMedication(null);
+      setActivePanel(null);
+      setRiskData(null);
+      return;
+    }
+
+    setClickedMedication(medication);
+    setActivePanel("benefits-risks");
     setLoading(true);
 
     try {
@@ -362,7 +413,9 @@ const PatientSummary = ({
               clickedMedication={clickedMedication}
               riskData={riskData}
               loading={loading}
-              onMedicationClick={handleMedicationClick}
+              onSourcesClick={handleSourcesClick}
+              onBenefitsRisksClick={handleBenefitsRisksClick}
+              activePanel={activePanel}
             />
             <div className="mt-6">
               <MedicationTier
@@ -372,7 +425,9 @@ const PatientSummary = ({
                 clickedMedication={clickedMedication}
                 riskData={riskData}
                 loading={loading}
-                onMedicationClick={handleMedicationClick}
+                onSourcesClick={handleSourcesClick}
+                onBenefitsRisksClick={handleBenefitsRisksClick}
+                activePanel={activePanel}
               />
             </div>
             <div className="mt-6">
@@ -383,7 +438,9 @@ const PatientSummary = ({
                 clickedMedication={clickedMedication}
                 riskData={riskData}
                 loading={loading}
-                onMedicationClick={handleMedicationClick}
+                onSourcesClick={handleSourcesClick}
+                onBenefitsRisksClick={handleBenefitsRisksClick}
+                activePanel={activePanel}
               />
             </div>
           </>

@@ -621,15 +621,78 @@ const PatientSummary = ({
                             role="list"
                             className="border border-gray-200 divide-y divide-gray-100 rounded-md"
                           >
-                            {patientInfo.Psychotic === "Yes" && (
+                            {/* {patientInfo.Psychotic === "Yes" && (
                               <li className="flex items-center justify-between py-4 pl-4 pr-5 text-sm leading-4 border-b border-gray-900/10 hover:bg-indigo-100">
                                 Currently psychotic
                               </li>
-                            )}
+                            )} */}
                             {patientInfo.Suicide === "Yes" && (
                               <li className="flex items-center justify-between py-4 pl-4 pr-5 text-sm leading-4 border-b border-gray-900/10 hover:bg-indigo-100">
                                 <Tooltip text="Lithium is the only medication on the market that has been proven to reduce suicidality in patients with bipolar disorder, so it will be shown at the top of the suggested medications list.">
                                   Patient has a history of suicide attempts
+                                  <span className="ml-1 material-symbols-outlined">
+                                    info
+                                  </span>
+                                </Tooltip>
+                              </li>
+                            )}
+                            {patientInfo.Kidney === "Yes" && (
+                              <li className="flex items-center justify-between py-4 pl-4 pr-5 text-sm leading-4 border-b border-gray-900/10 hover:bg-indigo-100">
+                                <Tooltip text="Lithium can affect kidney function, so it will not be included in the suggested medication list for patients with a risk or history of kidney disease.">
+                                  Patient has a history or risk of kidney
+                                  disease
+                                  <span className="ml-1 material-symbols-outlined">
+                                    info
+                                  </span>
+                                </Tooltip>
+                              </li>
+                            )}
+                            {patientInfo.Liver === "Yes" && (
+                              <li className="flex items-center justify-between py-4 pl-4 pr-5 text-sm leading-4 border-b border-gray-900/10 hover:bg-indigo-100">
+                                <Tooltip text="Depakote is processed through the liver, so it will not be included in the suggested medication list for patients with a risk or history of liver disease.">
+                                  Patient has a history or risk of liver disease
+                                  <span className="ml-1 material-symbols-outlined">
+                                    info
+                                  </span>
+                                </Tooltip>
+                              </li>
+                            )}
+                            {patientInfo.blood_pressure === "Yes" && (
+                              <li className="flex items-center justify-between py-4 pl-4 pr-5 text-sm leading-4 border-b border-gray-900/10 hover:bg-indigo-100">
+                                <Tooltip text="Second-generation antipsychotics can cause low blood pressure upon standing, putting the patient at risk of passing out and hitting their head, so they will not be included in suggested medication list for patients with a risk or history of low blood pressure.">
+                                  Patient has a history or risk of low blood
+                                  pressure, or concern for falls
+                                  <span className="ml-1 material-symbols-outlined">
+                                    info
+                                  </span>
+                                </Tooltip>
+                              </li>
+                            )}
+                            {patientInfo.weight_gain === "Yes" && (
+                              <li className="flex items-center justify-between py-4 pl-4 pr-5 text-sm leading-4 border-b border-gray-900/10 hover:bg-indigo-100">
+                                <Tooltip text="Seroquel, Risperdal, Abilify, and Zyprexa are known for causing weight gain, so they will not be included in the suggested medications list for patients with concerns about weight gain.">
+                                  PatienthHas weight gain concerns
+                                  <span className="ml-1 material-symbols-outlined">
+                                    info
+                                  </span>
+                                </Tooltip>
+                              </li>
+                            )}
+
+                            {patientInfo.risk_pregnancy === "Yes" && (
+                              <li className="flex items-center justify-between py-4 pl-4 pr-5 text-sm leading-4 border-b border-gray-900/10 hover:bg-indigo-100">
+                                <Tooltip text="Depakote is known for causing birth defects and will not be included in the suggested medications list for patients interested in becoming pregnant.">
+                                  Patient wants to conceive in next 2 years
+                                  <span className="ml-1 material-symbols-outlined">
+                                    info
+                                  </span>
+                                </Tooltip>
+                              </li>
+                            )}
+                            {patientInfo.any_pregnancy === "Yes" && (
+                              <li className="flex items-center justify-between py-4 pl-4 pr-5 text-sm leading-4 border-b border-gray-900/10 hover:bg-indigo-100">
+                                <Tooltip text="Depakote is known for causing birth defects and will not be included in the suggested medications list for patients interested in becoming pregnant.">
+                                  Patient has a possibility of becoming pregnant
                                   <span className="ml-1 material-symbols-outlined">
                                     info
                                   </span>

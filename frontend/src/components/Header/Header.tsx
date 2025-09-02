@@ -106,21 +106,6 @@ const Header: React.FC<LoginFormProps> = ({ isAuthenticated, isSuperuser }) => {
           tools provided herein are intended for general informational purposes
           only and should NOT be construed as medical advice, diagnosis, or
           treatment.{" "}
-          <Link
-            to="/feedback"
-            className="underline hover:border-blue-600 hover:text-blue-600 hover:no-underline"
-          >
-            here
-          </Link>{" "}
-          or email{" "}
-          <a
-            href="mailto:balancerteam@codeforphilly.org"
-            className="underline hover:border-blue-600 hover:text-blue-600 hover:no-underline"
-            target="_blank"
-          >
-            balancerteam@codeforphilly.org
-          </a>
-          .
         </p>
       </div>
       <div className="flex items-center justify-center border-b border-gray-300 bg-blue-100 p-1 text-center text-sm font-light text-gray-500 lg:hidden ">

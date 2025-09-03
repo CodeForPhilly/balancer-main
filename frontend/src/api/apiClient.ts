@@ -267,6 +267,20 @@ const updateConversationTitle = async (
   }
 };
 
+// Assistant API functions
+const sendAssistantMessage = async (message: string, previousResponseId?: string) => {
+  try {
+    const response = await api.post(`/v1/api/assistant`, {
+      message,
+      previous_response_id: previousResponseId,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error(s) during sendAssistantMessage: ", error);
+    throw error;
+  }
+};
+
 export {
   handleSubmitFeedback,
   handleSendDrugSummary,
@@ -279,5 +293,6 @@ export {
   updateConversationTitle,
   handleSendDrugSummaryStream,
   handleSendDrugSummaryStreamLegacy,
-  fetchRiskDataWithSources
+  fetchRiskDataWithSources,
+  sendAssistantMessage
 };

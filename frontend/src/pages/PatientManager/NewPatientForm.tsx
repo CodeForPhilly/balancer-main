@@ -4,7 +4,7 @@ import { PatientInfo, Diagnosis } from "./PatientTypes";
 import { useMedications } from "../ListMeds/useMedications";
 import ChipsInput from "../../components/ChipsInput/ChipsInput";
 import Tooltip from "../../components/Tooltip";
-import { api } from "../../api/apiClient";
+import { publicApi } from "../../api/apiClient";
 import { useGlobalContext } from "../../contexts/GlobalContext.tsx";
 // import ErrorMessage from "../../components/ErrorMessage";
 
@@ -155,7 +155,7 @@ const NewPatientForm = ({
       const baseUrl = import.meta.env.VITE_API_BASE_URL;
       const url = `${baseUrl}/v1/api/get_med_recommend`;
 
-      const { data } = await api.post(url, payload);
+      const { data } = await publicApi.post(url, payload);
 
       const categorizedMedications = {
         first: data.first ?? [],

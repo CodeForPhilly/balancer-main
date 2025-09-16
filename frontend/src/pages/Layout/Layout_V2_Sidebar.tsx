@@ -25,11 +25,7 @@ const Sidebar: React.FC = () => {
         const fetchFiles = async () => {
             try {
                 const baseUrl = import.meta.env.VITE_API_BASE_URL;
-                const response = await axios.get(`${baseUrl}/v1/api/uploadFile`, {
-                    headers: {
-                        Authorization: `JWT ${localStorage.getItem("access")}`,
-                    },
-                });
+                const response = await axios.get(`${baseUrl}/v1/api/uploadFile`);
                 if (Array.isArray(response.data)) {
                     setFiles(response.data);
                 }

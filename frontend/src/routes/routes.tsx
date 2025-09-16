@@ -1,6 +1,7 @@
 import App from "../App";
 import RouteError from "../pages/404/404.tsx";
 import LoginForm from "../pages/Login/Login.tsx";
+import Logout from "../pages/Logout/Logout.tsx";
 import AdminPortal from "../pages/AdminPortal/AdminPortal.tsx";
 import ResetPassword from "../pages/Login/ResetPassword.tsx";
 import ResetPasswordConfirm from "../pages/Login/ResetPasswordConfirm.tsx";
@@ -49,6 +50,10 @@ const routes = [
   {
     path: "login",
     element: <LoginForm />,
+  },
+  {
+    path: "logout",
+    element: <Logout />,
   },
   {
     path: "resetPassword",

@@ -1,6 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import AllowAny
 from api.views.listMeds.models import Medication
 from api.models.model_medRule import MedRule, MedRuleSource
 import openai
@@ -8,6 +9,8 @@ import os
 
 
 class RiskWithSourcesView(APIView):
+    permission_classes = [AllowAny]
+
     def post(self, request):
         openai.api_key = os.environ.get("OPENAI_API_KEY")
 

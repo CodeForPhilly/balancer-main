@@ -5,8 +5,6 @@ import Chat from "./Chat";
 // import logo from "../../assets/balancer.png";
 import closeLogo from "../../assets/close.svg";
 import hamburgerLogo from "../../assets/hamburger.svg";
-import {useDispatch} from "react-redux";
-import {logout, AppDispatch} from "../../services/actions/auth";
 
 interface LoginFormProps {
     isAuthenticated: boolean;
@@ -21,13 +19,6 @@ const MdNavBar = (props: LoginFormProps) => {
     const handleNav = () => {
         setNav(!nav);
     };
-
-    const dispatch = useDispatch<AppDispatch>();
-
-    const logout_user = () => {
-        dispatch(logout());
-    };
-
 
     return (
         <div
@@ -131,20 +122,19 @@ const MdNavBar = (props: LoginFormProps) => {
                     <li className="border-b border-gray-300 p-4">
                         <a href="https://www.flipcause.com/secure/cause_pdetails/MjMyMTIw"
                           target="_blank"
-                          className="text-black hover:border-blue-600 hover:text-blue-600 hover:no-underline"
+                          className="mr-9 text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
                         >
                           Donate
                         </a>
                     </li>
                     {isAuthenticated &&
-                        <li className="border-b border-gray-300 p-4">
-                            <a
-                                onClick={logout_user}
-                                className="mr-9 text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
-                            >
-                                Sign Out
-                            </a>
-                        </li>
+                      <li className="border-b border-gray-300 p-4">
+                        <Link
+                              to="/logout"
+                              className="mr-9 text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
+                          >Sign Out
+                        </Link>
+                      </li>
                     }
                 </ul>
             </div>

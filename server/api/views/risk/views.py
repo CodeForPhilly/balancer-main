@@ -3,6 +3,7 @@ import os
 import openai
 import json
 from api.views.listMeds.models import Medication
+from api.services.prompt_services import PromptTemplates
 
 # XXX: remove csrf_exempt usage before production
 from django.views.decorators.csrf import csrf_exempt
@@ -33,7 +34,7 @@ def medication(request):
             messages=[
                 {
                     "role": "system",
-                    "content": f"You are to provide a concise list of 5 key benefits and 5 key risks for the medication suggested when taking it for Bipolar. Each point should be short, clear and be kept under 10 words. Begin the benefits section with !!!benefits!!! and the risks section with !!!risk!!!. Please provide this information for the medication: {diagnosis}."
+                    "content": PromptTemplates.get_risk_basic_medication_prompt(diagnosis)
                 }
             ]
         )

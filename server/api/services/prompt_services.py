@@ -149,3 +149,18 @@ Please provide your response to the user's question following these guidelines p
     def get_assistant_instructions(cls):
         """Get the assistant instructions."""
         return cls.ASSISTANT_INSTRUCTIONS
+
+    # Risk endpoint prompts
+    RISK_BASIC_MEDICATION_PROMPT = """You are to provide a concise list of 5 key benefits and 5 key risks for the medication suggested when taking it for Bipolar. Each point should be short, clear and be kept under 10 words. Begin the benefits section with !!!benefits!!! and the risks section with !!!risk!!!. Please provide this information for the medication: {medication}."""
+
+    RISK_DIAGNOSIS_MEDICATION_PROMPT = """You are providing medication information from a diagnosis/clinical perspective. Provide a concise list of 5 key benefits and 5 key risks for the medication {medication} when prescribed for Bipolar disorder, focusing on clinical evidence and diagnostic considerations. Each point should be short, clear and be kept under 10 words. Begin the benefits section with !!!benefits!!! and the risks section with !!!risk!!!."""
+
+    @classmethod
+    def get_risk_basic_medication_prompt(cls, medication):
+        """Get the basic medication risk/benefit prompt."""
+        return cls.RISK_BASIC_MEDICATION_PROMPT.format(medication=medication)
+
+    @classmethod
+    def get_risk_diagnosis_medication_prompt(cls, medication):
+        """Get the diagnosis-specific medication risk/benefit prompt."""
+        return cls.RISK_DIAGNOSIS_MEDICATION_PROMPT.format(medication=medication)

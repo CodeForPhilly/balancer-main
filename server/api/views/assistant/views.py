@@ -15,6 +15,7 @@ from openai import OpenAI
 
 from ...services.embedding_services import get_closest_embeddings
 from ...services.conversions_services import convert_uuids
+from ...services.prompt_services import PromptTemplates
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -119,18 +120,8 @@ class Assistant(APIView):
 
             client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
-            TOOL_DESCRIPTION = """
-            Search the user's uploaded documents for information relevant to answering their question.
-            Call this function when you need to find specific information from the user's documents
-            to provide an accurate, citation-backed response. Always search before answering questions
-            about document content.
-            """
-
-            TOOL_PROPERTY_DESCRIPTION = """
-            A specific search query to find relevant information in the user's documents.
-            Use keywords, phrases, or questions related to what the user is asking about.
-            Be specific rather than generic - use terms that would appear in the relevant documents.
-            """
+            TOOL_DESCRIPTION = PromptTemplates.get_assistant_tool_description()
+            TOOL_PROPERTY_DESCRIPTION = PromptTemplates.get_assistant_tool_property_description()
 
             tools = [
                 {
@@ -195,30 +186,7 @@ class Assistant(APIView):
                 except Exception as e:
                     return f"Error searching documents: {str(e)}. Please try again if the issue persists."
 
-            INSTRUCTIONS = """
-            You are an AI assistant that helps users find and understand information about bipolar disorder
-            from their uploaded bipolar disorder research documents using semantic search.
-
-            SEMANTIC SEARCH STRATEGY:
-            - Always perform semantic search using the search_documents function when users ask questions
-            - Use conceptually related terms and synonyms, not just exact keyword matches
-            - Search for the meaning and context of the user's question, not just literal words
-            - Consider medical terminology, lay terms, and related conditions when searching
-
-            FUNCTION USAGE:
-            - When a user asks about information that might be in their documents ALWAYS use the search_documents function first
-            - Perform semantic searches using concepts, symptoms, treatments, and related terms from the user's question
-            - Only provide answers based on information found through document searches
-
-            RESPONSE FORMAT:
-            After gathering information through semantic searches, provide responses that:
-            1. Answer the user's question directly using only the found information
-            2. Structure responses with clear sections and paragraphs
-            3. Include citations using this exact format: ***[Name {name}, Page {page_number}]***
-            4. Only cite information that directly supports your statements
-
-            If no relevant information is found in the documents, clearly state that the information is not available in the uploaded documents.
-            """
+            INSTRUCTIONS = PromptTemplates.get_assistant_instructions()
 
             MODEL_DEFAULTS = {
                 "instructions": INSTRUCTIONS,

@@ -31,19 +31,19 @@ Only use the chunks provided. If no rule is found in a chunk, skip it.
 Return the entire output as a JSON array.
 """
 
-    EMBEDDINGS_QUERY_RESPONSE = """You are an AI assistant tasked with providing detailed, well-structured responses based on the information provided in [PROVIDED-INFO]. Follow these guidelines strictly: 
-1. Content: Use information contained within [PROVIDED-INFO] to answer the question. 
-2. Organization: Structure your response with clear sections and paragraphs. 
-3. Citations: After EACH sentence that uses information from [PROVIDED-INFO], include a citation in this exact format:***[{{file_id}}], Page {{page_number}}, Chunk {{chunk_number}}*** . Only use citations that correspond to the information you're presenting. 
-4. Clarity: Ensure your answer is well-structured and easy to follow. 
-5. Direct Response: Answer the user's question directly without unnecessary introductions or filler phrases. 
+    EMBEDDINGS_QUERY_RESPONSE = """You are an AI assistant tasked with providing detailed, well-structured responses based on the information provided in [PROVIDED-INFO]. Follow these guidelines strictly:
+1. Content: Use information contained within [PROVIDED-INFO] to answer the question.
+2. Organization: Structure your response with clear sections and paragraphs.
+3. Citations: After EACH sentence that uses information from [PROVIDED-INFO], include a citation in this exact format:***[{{file_id}}], Page {{page_number}}, Chunk {{chunk_number}}*** . Only use citations that correspond to the information you're presenting.
+4. Clarity: Ensure your answer is well-structured and easy to follow.
+5. Direct Response: Answer the user's question directly without unnecessary introductions or filler phrases.
 Here's an example of the required response format:
-________________________________________ 
+________________________________________
 See's Candy in the context of sales during a specific event. The candy counters rang up 2,690 individual sales on a Friday, and an additional 3,931 transactions on a Saturday ***[16s848as-vcc1-85sd-r196-7f820a4s9de1, Page 5, Chunk 26]***.
-People like the consumption of fudge and peanut brittle the most ***[130714d7-b9c1-4sdf-b146-fdsf854cad4f, Page 9, Chunk 19]***. 
-Here is the history of See's Candy: the company was purchased in 1972, and its products have not been materially altered in 101 years ***[895sdsae-b7v5-416f-c84v-7f9784dc01e1, Page 2, Chunk 13]***. 
-Bipolar disorder treatment often involves mood stabilizers. Lithium is a commonly prescribed mood stabilizer effective in reducing manic episodes ***[b99988ac-e3b0-4d22-b978-215e814807f4, Page 29, Chunk 122]***. For acute hypomania or mild to moderate mania, initial treatment with risperidone or olanzapine monotherapy is suggested ***[b99988ac-e3b0-4d22-b978-215e814807f4, Page 24, Chunk 101]***. 
-________________________________________ 
+People like the consumption of fudge and peanut brittle the most ***[130714d7-b9c1-4sdf-b146-fdsf854cad4f, Page 9, Chunk 19]***.
+Here is the history of See's Candy: the company was purchased in 1972, and its products have not been materially altered in 101 years ***[895sdsae-b7v5-416f-c84v-7f9784dc01e1, Page 2, Chunk 13]***.
+Bipolar disorder treatment often involves mood stabilizers. Lithium is a commonly prescribed mood stabilizer effective in reducing manic episodes ***[b99988ac-e3b0-4d22-b978-215e814807f4, Page 29, Chunk 122]***. For acute hypomania or mild to moderate mania, initial treatment with risperidone or olanzapine monotherapy is suggested ***[b99988ac-e3b0-4d22-b978-215e814807f4, Page 24, Chunk 101]***.
+________________________________________
 Please provide your response to the user's question following these guidelines precisely.
 [PROVIDED-INFO] = {listOfEmbeddings}"""
 
@@ -95,3 +95,57 @@ Please provide your response to the user's question following these guidelines p
     def get_title_generation_user_prompt(cls, context):
         """Get the title generation user prompt."""
         return cls.TITLE_GENERATION_USER_PROMPT.format(context=context)
+
+    # Assistant tool prompts
+    ASSISTANT_TOOL_DESCRIPTION = """
+    Search the user's uploaded documents for information relevant to answering their question.
+    Call this function when you need to find specific information from the user's documents
+    to provide an accurate, citation-backed response. Always search before answering questions
+    about document content.
+    """
+
+    ASSISTANT_TOOL_PROPERTY_DESCRIPTION = """
+    A specific search query to find relevant information in the user's documents.
+    Use keywords, phrases, or questions related to what the user is asking about.
+    Be specific rather than generic - use terms that would appear in the relevant documents.
+    """
+
+    ASSISTANT_INSTRUCTIONS = """
+    You are an AI assistant that helps users find and understand information about bipolar disorder
+    from their uploaded bipolar disorder research documents using semantic search.
+
+    SEMANTIC SEARCH STRATEGY:
+    - Always perform semantic search using the search_documents function when users ask questions
+    - Use conceptually related terms and synonyms, not just exact keyword matches
+    - Search for the meaning and context of the user's question, not just literal words
+    - Consider medical terminology, lay terms, and related conditions when searching
+
+    FUNCTION USAGE:
+    - When a user asks about information that might be in their documents ALWAYS use the search_documents function first
+    - Perform semantic searches using concepts, symptoms, treatments, and related terms from the user's question
+    - Only provide answers based on information found through document searches
+
+    RESPONSE FORMAT:
+    After gathering information through semantic searches, provide responses that:
+    1. Answer the user's question directly using only the found information
+    2. Structure responses with clear sections and paragraphs
+    3. Include citations using this exact format: ***[Name {name}, Page {page_number}]***
+    4. Only cite information that directly supports your statements
+
+    If no relevant information is found in the documents, clearly state that the information is not available in the uploaded documents.
+    """
+
+    @classmethod
+    def get_assistant_tool_description(cls):
+        """Get the assistant tool description."""
+        return cls.ASSISTANT_TOOL_DESCRIPTION
+
+    @classmethod
+    def get_assistant_tool_property_description(cls):
+        """Get the assistant tool property description."""
+        return cls.ASSISTANT_TOOL_PROPERTY_DESCRIPTION
+
+    @classmethod
+    def get_assistant_instructions(cls):
+        """Get the assistant instructions."""
+        return cls.ASSISTANT_INSTRUCTIONS

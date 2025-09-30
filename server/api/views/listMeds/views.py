@@ -1,14 +1,21 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
 from .models import Diagnosis, Medication, Suggestion
 from .serializers import MedicationSerializer
 # Constants for medication inclusion and exclusion
-MEDS_INCLUDE = {'suicideHistory': ['Lithium']}
+MEDS_INCLUDE = {
+    'suicideHistory': ['Lithium']
+}
+
 MED_EXCLUDE = {
     'kidneyHistory': ['Lithium'],
     'liverHistory': ['Valproate'],
-    'bloodPressureHistory': ['Asenapine', 'Lurasidone', 'Olanzapine', 'Paliperidone', 'Quetiapine', 'Risperidone', 'Ziprasidone', 'Aripiprazole', 'Cariprazine'],
+    'bloodPressureHistory': [
+        'Asenapine', 'Lurasidone', 'Olanzapine', 'Paliperidone',
+        'Quetiapine', 'Risperidone', 'Ziprasidone', 'Aripiprazole', 'Cariprazine'
+    ],
     'weightGainConcern': ['Quetiapine', 'Risperidone', 'Aripiprazole', 'Olanzapine']
 }
 
@@ -26,27 +33,38 @@ class GetMedication(APIView):
             if data.get(condition, False):
                 # Remove any medication from include list that is in the exclude list
                 include_result = [
-                    med for med in include_result if med not in MED_EXCLUDE[condition]]
+                    med for med in include_result if med not in MED_EXCLUDE[condition]
+                ]
                 exclude_result.extend(MED_EXCLUDE[condition])
-        diag_query = Diagnosis.objects.filter(state=state_query)
-        if diag_query.count() <= 0:
+        try:
+            diagnosis = Diagnosis.objects.get(state=state_query)
+        except Diagnosis.DoesNotExist:
             return Response({'error': 'Diagnosis not found'}, status=status.HTTP_404_NOT_FOUND)
-        diagnosis = diag_query[0]
-        meds = {'first': '', 'second': '', 'third': ''}
+        meds = {'first': [], 'second': [], 'third': []}
+
+        priorMeds = data.get('priorMedications', "").split(',')
+        exclude_result.extend([med.strip() for med in priorMeds if med.strip()])
+        included_set = set(include_result)
+        excluded_set = set(exclude_result)
+
         for med in include_result:
-            meds['first'] += med + ", "
-        for i, line in enumerate(['first', 'second', 'third']):
-            for suggestion in Suggestion.objects.filter(diagnosis=diagnosis, tier=(i + 1)):
-                to_exclude = False
-                for med in exclude_result:
-                    if med in suggestion.medication.name:
-                        to_exclude = True
-                        break
-                if i > 0 and suggestion.medication.name in include_result:
-                    to_exclude = True
-                if not to_exclude:
-                    meds[line] += suggestion.medication.name + ", "
-            meds[line] = meds[line][:-2] if meds[line] else 'None'
+            meds['first'].append({'name': med, 'source': 'include'})
+
+        for i, tier_label in enumerate(['first', 'second', 'third']):
+            suggestions = Suggestion.objects.filter(
+                diagnosis=diagnosis, tier=i+1
+            )
+            for suggestion in suggestions:
+                med_name = suggestion.medication.name
+                if med_name in excluded_set:
+                    continue
+                if i > 0 and med_name in included_set:
+                    continue
+                meds[tier_label].append({
+                    'name': med_name,
+                    'source': 'diagnosis'
+                })
+
         return Response(meds)
 
 
@@ -66,20 +84,7 @@ class ListOrDetailMedication(APIView):
             return Response(serializer.data)
 
     def post(self, request):
-        # Implement logic for adding new medications (if needed)
-        # If adding medications, you would check if the medication already exists before creating it
-        data = request.data
-        name = data.get('name', '')
-        if not name:
-            return Response({'error': 'Medication name is required'}, status=status.HTTP_400_BAD_REQUEST)
-        if Medication.objects.filter(name=name).exists():
-            return Response({'error': 'Medication already exists'}, status=status.HTTP_400_BAD_REQUEST)
-        # Assuming Medication model has `name`, `benefits`, `risks` as fields
-        serializer = MedicationSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'Use AddMedication endpoint for creating medications'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 class AddMedication(APIView):
@@ -92,13 +97,15 @@ class AddMedication(APIView):
         name = data.get('name', '').strip()
         benefits = data.get('benefits', '').strip()
         risks = data.get('risks', '').strip()
-        # Validate the inputs
+        
+        # Validate required fields
         if not name:
             return Response({'error': 'Medication name is required'}, status=status.HTTP_400_BAD_REQUEST)
         if not benefits:
             return Response({'error': 'Medication benefits are required'}, status=status.HTTP_400_BAD_REQUEST)
         if not risks:
             return Response({'error': 'Medication risks are required'}, status=status.HTTP_400_BAD_REQUEST)
+        
         # Check if medication already exists
         if Medication.objects.filter(name=name).exists():
             return Response({'error': f'Medication "{name}" already exists'}, status=status.HTTP_400_BAD_REQUEST)
@@ -111,25 +118,22 @@ class AddMedication(APIView):
 
 
 class DeleteMedication(APIView):
-    "API endpoint to delete medication if medication in database"
+    """
+    API endpoint to delete medication if medication in database.
+    """
 
     def delete(self, request):
         data = request.data
         name = data.get('name', '').strip()
-        print("ok vin")
-        # Validate the inputs
+        
+        # Validate required fields
         if not name:
             return Response({'error': 'Medication name is required'}, status=status.HTTP_400_BAD_REQUEST)
-       # Check if medication exists
-        if Medication.objects.filter(name=name).exists():
-            # return f'Medication "{name}" exists'
-            # Get the medication object
+        
+        # Check if medication exists and delete
+        try:
             medication = Medication.objects.get(name=name)
-        # Delete the medication
             medication.delete()
-            return Response({'success': "medication exists and will now be deleted"}, status=status.HTTP_201_CREATED)
-        else:
-            return Response({'error': 'Medication does not exist'}, status=status.HTTP_400_BAD_REQUEST)
-        # ask user if sure to delete?
-        # delete med from database
-        # Medication.objects.filter(name=name)
+            return Response({'success': f'Medication "{name}" has been deleted'}, status=status.HTTP_200_OK)
+        except Medication.DoesNotExist:
+            return Response({'error': f'Medication "{name}" does not exist'}, status=status.HTTP_404_NOT_FOUND)

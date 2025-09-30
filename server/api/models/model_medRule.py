@@ -8,28 +8,24 @@ class MedRule(models.Model):
         ('INCLUDE', 'Include'),
         ('EXCLUDE', 'Exclude'),
     ]
-
     rule_type = models.CharField(max_length=7, choices=RULE_TYPE_CHOICES)
     history_type = models.CharField(max_length=255)
     reason = models.TextField(blank=True, null=True)
     label = models.CharField(max_length=255, blank=True, null=True)
     explanation = models.TextField(blank=True, null=True)
-
     medications = models.ManyToManyField(
         Medication,
         related_name='med_rules'
     )
-
     sources = models.ManyToManyField(
         Embeddings,
         related_name='med_rules',
         blank=True,
-        through='api.MedRuleSource'  # Correct fully-qualified through model reference
+        through='api.MedRuleSource'
     )
 
     class Meta:
         db_table = 'api_medrule'
-        # list of tuples is preferred
         unique_together = [('rule_type', 'history_type')]
 
     def __str__(self):
@@ -43,7 +39,6 @@ class MedRuleSource(models.Model):
 
     class Meta:
         db_table = 'api_medrule_sources'
-        # list of tuples
         unique_together = [('medrule', 'embedding', 'medication')]
 
     def __str__(self):

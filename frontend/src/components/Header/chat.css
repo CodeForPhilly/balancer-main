@@ -1,3 +1,11 @@
+.chat_button {
+  @apply fixed bottom-9 left-10 h-16 w-16 cursor-pointer rounded-full bg-blue-500 hover:cursor-pointer hover:bg-blue-300 md:bottom-20 md:right-20 flex items-center justify-center animate-pulse-bounce;
+}
+
+.chat_button_animations {
+  @apply flex justify-center items-center;
+}
+
 .inside_chat {
   @apply grow px-2 py-2 bg-neutral-100 overflow-y-auto overflow-x-hidden;
 }
@@ -7,7 +15,7 @@
 }
 
 .show_chat.windowed {
-  @apply h-[50%] w-[320px];
+  @apply h-[75%] sm:w-[75%] md:w-[550px];
 }
 
 .show_chat.full-screen {
@@ -87,4 +95,15 @@ ul.chat_suggestion_list {
 
 .scroll_down {
   @apply z-40 absolute bottom-[90px] left-[45%] text-3xl text-gray-400 hover:text-blue-500 rounded-full border-2 border-white bg-white;
+}
+
+@keyframes pulse-bounce {
+  0%, 100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: .5;
+    transform: translateY(-25%);
+  }
 }

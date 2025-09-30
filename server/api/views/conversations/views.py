@@ -7,7 +7,7 @@ from django.http import JsonResponse
 from bs4 import BeautifulSoup
 from nltk.stem import PorterStemmer
 import requests
-import openai
+from openai import OpenAI
 import tiktoken
 import os
 import json
@@ -26,7 +26,7 @@ def extract_text(request: str) -> JsonResponse:
 
     Currently only uses the first 3500 tokens.
     """
-    openai.api_key = os.environ.get("OPENAI_API_KEY")
+    OpenAI.api_key = os.environ.get("OPENAI_API_KEY")
     data = json.loads(request.body)
     webpage_url = data["webpage_url"]
 
@@ -43,7 +43,7 @@ def extract_text(request: str) -> JsonResponse:
 
     tokens = get_tokens(text_contents, "cl100k_base")
 
-    ai_response = openai.ChatCompletion.create(
+    ai_response = OpenAI.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=[
             {
@@ -146,19 +146,26 @@ class ConversationViewSet(viewsets.ModelViewSet):
         )
 
     def get_chatgpt_response(self, conversation, user_message, page_context=None):
+<<<<<<< HEAD
         messages = [
             {
                 "role": "system",
                 "content": PromptTemplates.get_conversation_system_prompt(),
             }
         ]
+=======
+        client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+        messages = [{
+            "role": "system",
+            "content": "You are a knowledgeable assistant. Balancer is a powerful tool for selecting bipolar medication for patients. We are open-source and available for free use. Your primary role is to assist licensed clinical professionals with information related to Balancer and bipolar medication selection. If applicable, use the supplied tools to assist the professional."
+        }]
+>>>>>>> listOfMed
 
         if page_context:
             context_message = PromptTemplates.get_conversation_page_context_prompt(
                 page_context
             )
             messages.append({"role": "system", "content": context_message})
-
         for msg in conversation.messages.all():
             role = "user" if msg.is_user else "assistant"
             messages.append({"role": role, "content": msg.content})
@@ -166,7 +173,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
         messages.append({"role": "user", "content": user_message})
 
         try:
-            response = openai.ChatCompletion.create(
+            response = client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=messages,
                 tools=tools,
@@ -174,6 +181,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
             )
 
             response_message = response.choices[0].message
+<<<<<<< HEAD
             tool_calls = response_message.get("tool_calls", [])
 
             if not tool_calls:
@@ -196,11 +204,35 @@ class ConversationViewSet(viewsets.ModelViewSet):
                 tool_arguments = json.loads(
                     tool_call["function"].get("arguments", "{}")
                 )
+=======
+            tool_calls = getattr(response_message, "tool_calls", [])
+
+            tool_calls = response_message.model_dump().get("tool_calls", [])
+
+            if not tool_calls:
+                return response_message['content']
+
+            # Handle tool calls
+            # Add the assistant's message with tool calls to the conversation
+            messages.append({
+                "role": "assistant",
+                "content": response_message.content or "",
+                "tool_calls": tool_calls
+            })
+
+            # Process each tool call
+            for tool_call in tool_calls:
+                tool_call_id = tool_call['id']
+                tool_function_name = tool_call['function']['name']
+                tool_arguments = json.loads(
+                    tool_call['function'].get('arguments', '{}'))
+>>>>>>> listOfMed
 
                 # Execute the tool
                 results = execute_tool(tool_function_name, tool_arguments)
 
                 # Add the tool response message
+<<<<<<< HEAD
                 messages.append(
                     {
                         "role": "tool",
@@ -215,6 +247,21 @@ class ConversationViewSet(viewsets.ModelViewSet):
             )
             return final_response.choices[0].message["content"]
         except openai.error.OpenAIError as e:
+=======
+                messages.append({
+                    "role": "tool",
+                    "content": str(results),  # Convert results to string
+                    "tool_call_id": tool_call_id
+                })
+
+            # Final API call with tool results
+            final_response = client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=messages
+            )
+            return final_response.choices[0].message.content
+        except OpenAI.error.OpenAIError as e:
+>>>>>>> listOfMed
             logging.error("OpenAI API Error: %s", str(e))
             raise OpenAIAPIException(detail=str(e))
         except Exception as e:
@@ -222,12 +269,12 @@ class ConversationViewSet(viewsets.ModelViewSet):
             raise OpenAIAPIException(detail="An unexpected error occurred.")
 
     def generate_title(self, conversation):
-        # Get the first two messages
         messages = conversation.messages.all()[:2]
         context = "\n".join([msg.content for msg in messages])
         prompt = PromptTemplates.get_title_generation_user_prompt(context)
 
-        response = openai.ChatCompletion.create(
+        client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+        response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
                 {
@@ -238,4 +285,8 @@ class ConversationViewSet(viewsets.ModelViewSet):
             ],
         )
 
+<<<<<<< HEAD
         return response.choices[0].message["content"].strip()
+=======
+        return response.choices[0].message.content.strip()
+>>>>>>> listOfMed

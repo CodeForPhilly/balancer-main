@@ -7,6 +7,7 @@ from django.http import JsonResponse
 from bs4 import BeautifulSoup
 from nltk.stem import PorterStemmer
 import requests
+import openai
 from openai import OpenAI
 import tiktoken
 import os
@@ -164,6 +165,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
         messages.append({"role": "user", "content": user_message})
 
         try:
+            client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
             response = client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=messages,

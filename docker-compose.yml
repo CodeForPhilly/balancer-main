@@ -1,19 +1,24 @@
 services:
   db:
-      build:
-        context: ./db
-        dockerfile: Dockerfile
-      volumes:
-        - postgres_data:/var/lib/postgresql/data/
-      environment:
-        - POSTGRES_USER=balancer
-        - POSTGRES_PASSWORD=balancer
-        - POSTGRES_DB=balancer_dev
-      ports:
+    # Workaround for PostgreSQL crash with pgvector v0.6.1 on ARM64
+    # image: pgvector/pgvector:pg15
+    # volumes:
+    #   - postgres_data:/var/lib/postgresql/data/
+    #   - ./db/init-vector-extension.sql:/docker-entrypoint-initdb.d/init-vector-extension.sql
+    build:
+      context: ./db
+      dockerfile: Dockerfile
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=balancer
+      - POSTGRES_PASSWORD=balancer
+      - POSTGRES_DB=balancer_dev
+    ports:
       - "5433:5432"
-      networks:
-        app_net:
-          ipv4_address: 192.168.0.2  
+    networks:
+      app_net:
+        ipv4_address: 192.168.0.2
   pgadmin:
     container_name: pgadmin4
     image: dpage/pgadmin4
@@ -52,13 +57,13 @@ services:
       args:
         - IMAGE_NAME=balancer-frontend
     ports:
-        - "3000:3000"
+      - "3000:3000"
     environment:
-        - CHOKIDAR_USEPOLLING=true
-        # - VITE_API_BASE_URL=https://balancertestsite.com/
+      - CHOKIDAR_USEPOLLING=true
+      # - VITE_API_BASE_URL=https://balancertestsite.com/
     volumes:
-        - "./frontend:/usr/src/app:delegated"
-        - "/usr/src/app/node_modules/"
+      - "./frontend:/usr/src/app:delegated"
+      - "/usr/src/app/node_modules/"
     depends_on:
       - backend
     networks:

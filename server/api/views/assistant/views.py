@@ -223,7 +223,8 @@ class Assistant(APIView):
             MODEL_DEFAULTS = {
                 "instructions": INSTRUCTIONS,
                 "model": "gpt-5-nano",  # 400,000 token context window
-                "reasoning": {"effort": "low", "summary": "auto"},
+                # A summary of the reasoning performed by the model. This can be useful for debugging and understanding the model's reasoning process.
+                "reasoning": {"effort": "low", "summary": None},
                 "tools": tools,
             }
 

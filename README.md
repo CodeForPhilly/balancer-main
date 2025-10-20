@@ -7,11 +7,11 @@ for patients with bipolar disorder, helping them shorten their journey to stabil
 
 You can view the current build of the website here: [https://balancertestsite.com](https://balancertestsite.com/)
 
-## Contributing 
+## Contributing
 
 ### Join the Balancer community
 
-Balancer is a [Code for Philly](https://www.codeforphilly.org/) project 
+Balancer is a [Code for Philly](https://www.codeforphilly.org/) project
 
 Join the [Code for Philly Slack and introduce yourself](https://codeforphilly.org/projects/balancer) in the #balancer channel
 
@@ -19,15 +19,14 @@ The project kanban board is [on GitHub here](https://github.com/orgs/CodeForPhil
 
 ### Code for Philly Code of Conduct
 
-The Code for Philly Code of Conduct is [here](https://codeforphilly.org/pages/code_of_conduct/) 
+The Code for Philly Code of Conduct is [here](https://codeforphilly.org/pages/code_of_conduct/)
 
-### Setting up a development environment   
+### Setting up a development environment
 
 Get the code using git by either forking or cloning `CodeForPhilly/balancer-main`
 
 Tools used to run Balancer:
 1. `OpenAI API`: Ask for an API key and add it to `config/env/env.dev`
-2. `Anthropic API`: Ask for an API key and add it to `config/env/env.dev`
 
 Tools used for development:
 1. `Docker`: Install Docker Desktop
@@ -36,15 +35,15 @@ Tools used for development:
 
 ### Running Balancer for development
 
-Start the Postgres, Django REST, and React services by starting Docker Desktop and running `docker compose up --build` 
+Start the Postgres, Django REST, and React services by starting Docker Desktop and running `docker compose up --build`
 
 #### Postgres
-- Download a sample of papers to upload from [https://balancertestsite.com](https://balancertestsite.com/) 
+- Download a sample of papers to upload from [https://balancertestsite.com](https://balancertestsite.com/)
 - The email and password of `pgAdmin` are specified in `balancer-main/docker-compose.yml`
 - The first time you use `pgAdmin` after building the Docker containers you will need to register the server.
     - The `Host name/address` is the Postgres server service name in the Docker Compose file
     - The `Username` and `Password` are the Postgres server environment variables in the Docker Compose file
-- You can use the below code snippet to  query the database from a Jupyter notebook: 
+- You can use the below code snippet to  query the database from a Jupyter notebook:
 
 ```
 from sqlalchemy import create_engine
@@ -100,6 +99,6 @@ The Balancer website is a Postgres, Django REST, and React project. The source c
 
 ![Architecture Drawing](Architecture.png)
 
-## License 
+## License
 
 Balancer is licensed under the [AGPL-3.0 license](https://choosealicense.com/licenses/agpl-3.0/)

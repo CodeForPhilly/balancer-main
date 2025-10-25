@@ -304,7 +304,16 @@ const PatientSummary = ({
     setLoading(true);
 
     try {
-      const data = await fetchRiskDataWithSources(medication, source);
+      // Map source based on patient's diagnosis
+      let apiSource: "include" | "diagnosis" | "diagnosis_depressed" = source;
+      if (source === "diagnosis" && patientInfo.Diagnosis === "Depressed") {
+        apiSource = "diagnosis_depressed";
+      }
+
+      const data = await fetchRiskDataWithSources(medication, apiSource);
+      console.log("Risk data received for", medication, "with source", apiSource, ":", data);
+      console.log("Sources array:", data.sources);
+      console.log("Sources length:", data.sources?.length);
       setRiskData(data as RiskData);
     } catch (error) {
       console.error("Error fetching risk data: ", error);
@@ -331,7 +340,13 @@ const PatientSummary = ({
     setLoading(true);
 
     try {
-      const data = await fetchRiskDataWithSources(medication, source);
+      // Map source based on patient's diagnosis
+      let apiSource: "include" | "diagnosis" | "diagnosis_depressed" = source;
+      if (source === "diagnosis" && patientInfo.Diagnosis === "Depressed") {
+        apiSource = "diagnosis_depressed";
+      }
+
+      const data = await fetchRiskDataWithSources(medication, apiSource);
       setRiskData(data as RiskData);
     } catch (error) {
       console.error("Error fetching risk data: ", error);

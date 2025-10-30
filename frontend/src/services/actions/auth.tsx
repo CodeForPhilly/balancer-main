@@ -170,8 +170,8 @@ export const login =
 
 export const logout = () => async (dispatch: AppDispatch) => {
   // Clear chat conversation data on logout for security
-  sessionStorage.removeItem('currentConversation');
-  
+  sessionStorage.removeItem("currentConversation");
+
   dispatch({
     type: LOGOUT,
   });
@@ -207,7 +207,7 @@ export const reset_password_confirm =
     uid: string,
     token: string,
     new_password: string,
-    re_new_password: string
+    re_new_password: string,
   ): ThunkType =>
   async (dispatch: AppDispatch) => {
     const config = {

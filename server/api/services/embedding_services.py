@@ -1,5 +1,4 @@
-# services/embedding_services.py
-
+from django.db.models import Q
 from pgvector.django import L2Distance
 
 from .sentencetTransformer_model import TransformerModel
@@ -39,17 +38,29 @@ def get_closest_embeddings(
         - file_id: GUID of the source file
     """
 
-    #
     transformerModel = TransformerModel.get_instance().model
     embedding_message = transformerModel.encode(message_data)
-    # Start building the query based on the message's embedding
-    closest_embeddings_query = (
-        Embeddings.objects.filter(upload_file__uploaded_by=user)
-        .annotate(
-            distance=L2Distance("embedding_sentence_transformers", embedding_message)
+
+    if user and user.is_authenticated:
+        # User sees their own files + files uploaded by superusers
+        closest_embeddings_query = (
+            Embeddings.objects.filter(
+                Q(upload_file__uploaded_by=user) | Q(upload_file__uploaded_by__is_superuser=True)
+            )
+            .annotate(
+                distance=L2Distance("embedding_sentence_transformers", embedding_message)
+            )
+            .order_by("distance")
         )
-        .order_by("distance")
-    )
+    else:
+        # Unauthenticated users only see superuser-uploaded files
+        closest_embeddings_query = (
+            Embeddings.objects.filter(upload_file__uploaded_by__is_superuser=True)
+            .annotate(
+                distance=L2Distance("embedding_sentence_transformers", embedding_message)
+            )
+            .order_by("distance")
+        )
 
     # Filter by GUID if provided, otherwise filter by document name if provided
     if guid:

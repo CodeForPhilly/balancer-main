@@ -620,7 +620,7 @@ const PatientSummary = ({
                       <div className="flex-row justify-between py-6 border-b border-gray-900/10 md:flex">
                         <div className="flex w-full md:p-0">
                           <dt className="w-1/2 text-sm font-medium leading-6 text-gray-900">
-                            Current State:
+                            Current or Most recent state
                           </dt>
                           <dd className="text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
                             {patientInfo.Diagnosis}

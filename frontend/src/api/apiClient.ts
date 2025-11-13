@@ -67,7 +67,7 @@ const handleRuleExtraction = async (guid: string) => {
   }
 };
 
-const fetchRiskDataWithSources = async (medication: string, source: "include" | "diagnosis" = "include") => {
+const fetchRiskDataWithSources = async (medication: string, source: "include" | "diagnosis" | "diagnosis_depressed" = "include") => {
   try {
     const response = await api.post(`/v1/api/riskWithSources`, {
       drug: medication,

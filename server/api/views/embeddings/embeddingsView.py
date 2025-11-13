@@ -90,7 +90,7 @@ class AskEmbeddingsAPIView(APIView):
             return Response({
                 "question": message,
                 "llm_response": answer,
-                "embeddings_info": embeddings_results,
+                "embeddings_info": listOfEmbeddings,
                 "sent_to_llm": prompt_text,
             }, status=status.HTTP_200_OK)
 

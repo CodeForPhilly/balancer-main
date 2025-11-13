@@ -365,7 +365,7 @@ const NewPatientForm = ({
                     htmlFor="current-state"
                     className="block text-sm font-semibold leading-6 text-gray-900"
                   >
-                    Current state
+                    Current or Most recent state
                   </label>
                 </div>
                 <div className="mr-6 md:mr-0 md:w-[500px] md:pl-16">

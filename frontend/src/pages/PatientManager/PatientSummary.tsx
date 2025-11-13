@@ -304,7 +304,16 @@ const PatientSummary = ({
     setLoading(true);
 
     try {
-      const data = await fetchRiskDataWithSources(medication, source);
+      // Map source based on patient's diagnosis
+      let apiSource: "include" | "diagnosis" | "diagnosis_depressed" = source;
+      if (source === "diagnosis" && patientInfo.Diagnosis === "Depressed") {
+        apiSource = "diagnosis_depressed";
+      }
+
+      const data = await fetchRiskDataWithSources(medication, apiSource);
+      console.log("Risk data received for", medication, "with source", apiSource, ":", data);
+      console.log("Sources array:", data.sources);
+      console.log("Sources length:", data.sources?.length);
       setRiskData(data as RiskData);
     } catch (error) {
       console.error("Error fetching risk data: ", error);
@@ -331,7 +340,13 @@ const PatientSummary = ({
     setLoading(true);
 
     try {
-      const data = await fetchRiskDataWithSources(medication, source);
+      // Map source based on patient's diagnosis
+      let apiSource: "include" | "diagnosis" | "diagnosis_depressed" = source;
+      if (source === "diagnosis" && patientInfo.Diagnosis === "Depressed") {
+        apiSource = "diagnosis_depressed";
+      }
+
+      const data = await fetchRiskDataWithSources(medication, apiSource);
       setRiskData(data as RiskData);
     } catch (error) {
       console.error("Error fetching risk data: ", error);
@@ -605,7 +620,7 @@ const PatientSummary = ({
                       <div className="flex-row justify-between py-6 border-b border-gray-900/10 md:flex">
                         <div className="flex w-full md:p-0">
                           <dt className="w-1/2 text-sm font-medium leading-6 text-gray-900">
-                            Current State:
+                            Current or Most recent state
                           </dt>
                           <dd className="text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
                             {patientInfo.Diagnosis}

@@ -86,7 +86,7 @@ const PatientHistory = ({
                                     </div>
                                     <div className="flex">
                                         <dt className="mr-2 sm:mr-4 text-sm font-extrabold leading-6 text-gray-900">
-                                            Current State:
+                                            Current or Most recent state
                                         </dt>
                                         <dd className="text-sm leading-6 text-gray-700">
                                             {item.Diagnosis}

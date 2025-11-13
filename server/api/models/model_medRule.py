@@ -8,7 +8,7 @@ class MedRule(models.Model):
         ('INCLUDE', 'Include'),
         ('EXCLUDE', 'Exclude'),
     ]
-    rule_type = models.CharField(max_length=7, choices=RULE_TYPE_CHOICES)
+    rule_type = models.CharField(max_length=500, choices=RULE_TYPE_CHOICES)
     history_type = models.CharField(max_length=255)
     reason = models.TextField(blank=True, null=True)
     label = models.CharField(max_length=255, blank=True, null=True)

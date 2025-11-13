@@ -14,17 +14,36 @@ class RiskWithSourcesView(APIView):
         drug = request.data.get("drug")
         if not drug:
             return Response({"error": "Drug not found. Request must include 'drug'."}, status=status.HTTP_400_BAD_REQUEST)
-
         source = request.data.get("source")
-        if source not in ["include", "diagnosis"]:
-            return Response({"error": "Source must be either 'include' or 'diagnosis'."}, status=status.HTTP_400_BAD_REQUEST)
+        print(f"Requested source: {source}")
+
+        # If source is provided, validate it
+        valid_sources = ["include", "diagnosis", "diagnosis_depressed", "diagnosis_manic", "diagnosis_hypomanic", "diagnosis_euthymic"]
+        if source and source not in valid_sources:
+            return Response({"error": f"Source must be one of: {', '.join(valid_sources)}."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # If no source is provided, return all sources
+        if not source:
+            try:
+                return self._handle_all_sources(drug)
+            except Exception as e:
+                print(f"Error in _handle_all_sources: {str(e)}")
+                return Response({"error": f"Failed to retrieve all sources data: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         # Handle diagnosis source by linking to medrules
-        if source == "diagnosis":
-            return self._handle_diagnosis_source(drug)
+        if source in ["diagnosis", "diagnosis_depressed", "diagnosis_manic", "diagnosis_hypomanic", "diagnosis_euthymic"]:
+            try:
+                return self._handle_diagnosis_source(drug, source)
+            except Exception as e:
+                print(f"Error in _handle_diagnosis_source: {str(e)}")
+                return Response({"error": f"Failed to retrieve diagnosis data: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         if source == "include":
-            return self._handle_include_source(drug)
+            try:
+                return self._handle_include_source(drug)
+            except Exception as e:
+                print(f"Error in _handle_include_source: {str(e)}")
+                return Response({"error": f"Failed to retrieve include data: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         # Handle include source (existing logic)
         try:
@@ -108,8 +127,14 @@ class RiskWithSourcesView(APIView):
                 for source_link in medrule_sources:
                     embedding = source_link.embedding
 
+                    # Get filename from upload_file if available
+                    filename = None
+                    if hasattr(embedding, 'upload_file') and embedding.upload_file:
+                        filename = embedding.upload_file.file_name
+
                     source_info = {
-                        'title': getattr(embedding, 'title', 'Unknown source'),
+                        'filename': filename,
+                        'title': getattr(embedding, 'title', None),
                         'publication': getattr(embedding, 'publication', ''),
                         'text': getattr(embedding, 'text', ''),
                         'rule_type': medrule.rule_type,
@@ -141,14 +166,13 @@ class RiskWithSourcesView(APIView):
                 return Response({
                     'benefits': basic_benefits,
                     'risks': basic_risks,
-                    'source': 'include',
+                    'sources': 'include',
                     'note': 'No specific medrule sources found, showing general medication information'
                 })
 
             return Response({
                 'benefits': [f'- {b.strip()}' for b in medication.benefits.split(',')],
                 'risks': risks if risks else [f'- {r.strip()}' for r in medication.risks.split(',')],
-                'source': 'include',
                 'sources': sources_info,
                 'medrules_found': len(medrules) + len(exclude_rules)
             })
@@ -156,59 +180,106 @@ class RiskWithSourcesView(APIView):
         except Medication.DoesNotExist:
             return Response({"error": f"Medication '{drug}' not found."}, status=status.HTTP_404_NOT_FOUND)
 
-    def _handle_diagnosis_source(self, drug):
+    def _handle_diagnosis_source(self, drug, source):
         """Handle diagnosis source by looking up medrules for the medication"""
         try:
             # Get the medication
             medication = Medication.objects.get(name=drug)
 
-            # Find medrules that include this medication
-            medrules = MedRule.objects.filter(
-                medications=medication,
-                rule_type='INCLUDE'
-            )
+            print(
+                f"Found medication '{medication.name}' for '{drug}' with ID {medication.id}")
 
+            # Map source parameter to history_type value
+            source_to_history_type = {
+                "diagnosis_depressed": "DIAGNOSIS_DEPRESSED",
+                "diagnosis_manic": "DIAGNOSIS_MANIC",
+                "diagnosis_hypomanic": "DIAGNOSIS_HYPOMANIC",
+                "diagnosis_euthymic": "DIAGNOSIS_EUTHYMIC",
+                "diagnosis": "DIAGNOSIS_DEPRESSED"  # default to depressed for backward compatibility
+            }
+
+            history_type = source_to_history_type.get(source, "DIAGNOSIS_DEPRESSED")
+            print(f"Using history_type: {history_type} for source: {source}")
+
+            # Find medrules that include this medication with the specified history type
+            medrule_ids = MedRuleSource.objects.filter(
+                medication=medication,
+                medrule__history_type=history_type
+            ).values_list('medrule_id', flat=True).distinct()
+
+            print(medrule_ids)
+
+            medrules = MedRule.objects.filter(id__in=medrule_ids)
+            print(f"Found {medrules.count()} medrules for {drug}")
             benefits = []
             risks = []
             sources_info = []
 
-            # Extract information from medrules and their sources
+            # Extract benefits and sources
             for medrule in medrules:
-                if medrule.explanation:
+                print(
+                    f"Medrule {medrule.id}: rule_type={medrule.rule_type}, explanation='{medrule.explanation}'")
+
+                # Only add INCLUDE rules to benefits
+                if medrule.rule_type == 'INCLUDE' and medrule.explanation:
                     benefits.append(f"- {medrule.explanation}")
+                elif medrule.rule_type == 'EXCLUDE' and medrule.explanation:
+                    # Add EXCLUDE rules to risks
+                    risks.append(f"- {medrule.explanation}")
+                else:
+                    print(
+                        f"Medrule {medrule.id} has no explanation or is not INCLUDE/EXCLUDE, skipping")
 
                 # Get associated sources through MedRuleSource
                 medrule_sources = MedRuleSource.objects.filter(
                     medrule=medrule,
                     medication=medication
                 )
+                print(
+                    f"Found {medrule_sources.count()} sources for medrule {medrule.id}")
 
                 for source_link in medrule_sources:
                     embedding = source_link.embedding
+
+                    # Get filename from upload_file if available
+                    filename = None
+                    if hasattr(embedding, 'upload_file') and embedding.upload_file:
+                        filename = embedding.upload_file.file_name
+
                     source_info = {
-                        'title': getattr(embedding, 'title', 'Unknown source'),
+                        'filename': filename,
+                        'title': getattr(embedding, 'title', None),
                         'publication': getattr(embedding, 'publication', ''),
                         'text': getattr(embedding, 'text', ''),
                         'rule_type': medrule.rule_type,
                         'history_type': medrule.history_type,
                         # Add link data for PDF navigation
-                        'guid': getattr(embedding, 'guid', None),
+                        'upload_fileid': getattr(embedding, 'upload_file_id', None),
                         'page': getattr(embedding, 'page_num', None),
                         'link_url': self._build_pdf_link(embedding)
                     }
+
                     sources_info.append(source_info)
 
-            # Also check for exclude rules (risks)
+            # Check EXCLUDE rules for risks with the specified history type
             exclude_rules = MedRule.objects.filter(
                 medications=medication,
-                rule_type='EXCLUDE'
+                rule_type='EXCLUDE',
+                history_type=history_type
             )
+            print(f"Found {exclude_rules.count()} exclude rules for {drug}")
 
             for rule in exclude_rules:
+                print(
+                    f"Exclude rule {rule.id}: explanation='{rule.explanation}'")
                 if rule.explanation:
                     risks.append(f"- {rule.explanation}")
+                else:
+                    print(
+                        f"Exclude rule {rule.id} has no explanation, skipping risks")
 
-            # If no medrule data found, fall back to basic medication data
+            print(
+                f"Total benefits collected: {len(benefits)}, Total risks collected: {len(risks)}")
             if not benefits and not risks:
                 basic_benefits = [
                     f'- {b.strip()}' for b in medication.benefits.split(',')]
@@ -218,21 +289,112 @@ class RiskWithSourcesView(APIView):
                 return Response({
                     'benefits': basic_benefits,
                     'risks': basic_risks,
-                    'source': 'diagnosis',
+                    'sources': sources_info,
                     'note': 'No specific medrule sources found, showing general medication information'
                 })
 
             return Response({
                 'benefits': benefits if benefits else [f'- {b.strip()}' for b in medication.benefits.split(',')],
                 'risks': risks if risks else [f'- {r.strip()}' for r in medication.risks.split(',')],
-                'source': 'diagnosis',
                 'sources': sources_info,
                 'medrules_found': len(medrules) + len(exclude_rules)
             })
 
         except Medication.DoesNotExist:
-            # If medication not in database, use AI fallback with diagnosis context
-            return self._get_ai_response_for_diagnosis(drug)
+            return Response({"error": f"Medication '{drug}' not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    def _handle_all_sources(self, drug):
+        """Handle request with no source specified - return all sources"""
+        try:
+            # Get the medication
+            medication = Medication.objects.get(name=drug)
+
+            print(
+                f"Found medication '{medication.name}' for '{drug}' with ID {medication.id}")
+
+            # Find all medrules that are related to this medication via MedRuleSource
+            medrule_ids = MedRuleSource.objects.filter(
+                medication=medication
+            ).values_list('medrule_id', flat=True).distinct()
+
+            medrules = MedRule.objects.filter(id__in=medrule_ids)
+            print(
+                f"Found {medrules.count()} total medrules for {drug} across all sources")
+
+            benefits = []
+            risks = []
+            sources_info = []
+
+            # Extract benefits, risks, and sources from all medrules
+            for medrule in medrules:
+                print(
+                    f"Medrule {medrule.id}: rule_type={medrule.rule_type}, history_type={medrule.history_type}")
+
+                # Add INCLUDE rules to benefits
+                if medrule.rule_type == 'INCLUDE' and medrule.explanation:
+                    benefits.append(f"- {medrule.explanation}")
+                # Add EXCLUDE rules to risks
+                elif medrule.rule_type == 'EXCLUDE' and medrule.explanation:
+                    risks.append(f"- {medrule.explanation}")
+
+                # Get associated sources through MedRuleSource
+                medrule_sources = MedRuleSource.objects.filter(
+                    medrule=medrule,
+                    medication=medication
+                )
+                print(
+                    f"Found {medrule_sources.count()} sources for medrule {medrule.id}")
+
+                for source_link in medrule_sources:
+                    embedding = source_link.embedding
+
+                    # Get filename from upload_file if available
+                    filename = None
+                    if hasattr(embedding, 'upload_file') and embedding.upload_file:
+                        filename = embedding.upload_file.file_name
+
+                    source_info = {
+                        'filename': filename,
+                        'title': getattr(embedding, 'title', None),
+                        'publication': getattr(embedding, 'publication', ''),
+                        'text': getattr(embedding, 'text', ''),
+                        'rule_type': medrule.rule_type,
+                        'history_type': medrule.history_type,
+                        # Add link data for PDF navigation
+                        'upload_fileid': getattr(embedding, 'upload_file_id', None),
+                        'page': getattr(embedding, 'page_num', None),
+                        'link_url': self._build_pdf_link(embedding)
+                    }
+
+                    sources_info.append(source_info)
+
+            print(
+                f"Total benefits collected: {len(benefits)}, Total risks collected: {len(risks)}, Total sources: {len(sources_info)}")
+
+            # If no medrule-based benefits or risks, fall back to basic medication info
+            if not benefits and not risks:
+                basic_benefits = [
+                    f'- {b.strip()}' for b in medication.benefits.split(',')]
+                basic_risks = [
+                    f'- {r.strip()}' for r in medication.risks.split(',')]
+
+                return Response({
+                    'benefits': basic_benefits,
+                    'risks': basic_risks,
+                    'sources': sources_info,
+                    'note': 'No specific medrule sources found, showing general medication information'
+                })
+
+            return Response({
+                'benefits': benefits if benefits else [f'- {b.strip()}' for b in medication.benefits.split(',')],
+                'risks': risks if risks else [f'- {r.strip()}' for r in medication.risks.split(',')],
+                'sources': sources_info,
+                'medrules_found': len(medrules),
+                'source_type': 'all'
+            })
+
+        except Medication.DoesNotExist:
+            return Response({"error": f"Medication '{drug}' not found."}, status=status.HTTP_404_NOT_FOUND)
 
     def _build_pdf_link(self, embedding):
         """Build the PDF viewer link URL by getting the document GUID from UploadFile"""

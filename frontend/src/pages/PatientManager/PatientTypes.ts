@@ -53,6 +53,5 @@ export interface NewPatientInfo {
 export enum Diagnosis {
   Manic = "Manic",
   Depressed = "Depressed",
-  Hypomanic = "Hypomanic",
-  Euthymic = "Euthymic",
+  Hypomanic = "Hypomanic"
 }

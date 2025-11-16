@@ -1,9 +1,18 @@
-import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import {
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+  useRef,
+  useTransition,
+  useDeferredValue,
+} from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
+import ZoomMenu from "./ZoomMenu";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
@@ -15,6 +24,10 @@ const PDFViewer = () => {
   const [numPages, setNumPages] = useState<number | null>(null);
   const [pageNumber, setPageNumber] = useState(1);
   const [scale, setScale] = useState(1.0);
+  const [uiScalePct, setUiScalePct] = useState(100);
+  const deferredScale = useDeferredValue(scale);
+  const [isPending, startTransition] = useTransition();
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pdfData, setPdfData] = useState<Uint8Array | null>(null);
@@ -24,81 +37,170 @@ const PDFViewer = () => {
     null
   );
 
-  const manualScrollInProgress = useRef(false);
-  const PAGE_INIT_DELAY = 800;
-
   const headerRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const pageRefs = useRef<Record<number, HTMLDivElement | null>>({});
-  const initializationRef = useRef(false);
+  const prevGuidRef = useRef<string | null>(null);
+  const isFetchingRef = useRef(false);
+  const isAutoScrollingRef = useRef(false);
 
   const location = useLocation();
   const navigate = useNavigate();
   const params = new URLSearchParams(location.search);
   const guid = params.get("guid");
   const pageParam = params.get("page");
+  const baseURL = import.meta.env.VITE_API_BASE_URL as string | undefined;
 
-  const baseURL = import.meta.env.VITE_API_BASE_URL;
-  const pdfUrl = useMemo(
-    () => (guid ? `${baseURL}/v1/api/uploadFile/${guid}` : null),
-    [guid, baseURL]
-  );
+  const pdfUrl = useMemo(() => {
+    return guid && baseURL ? `${baseURL}/v1/api/uploadFile/${guid}` : null;
+  }, [guid, baseURL]);
+
+  useEffect(() => setUiScalePct(Math.round(scale * 100)), [scale]);
 
   useEffect(() => {
-    pageRefs.current = {};
-    setIsDocumentLoaded(false);
-    initializationRef.current = false;
+    const nextPage = pageParam ? parseInt(pageParam, 10) : 1;
+    const guidChanged = guid !== prevGuidRef.current;
 
-    if (pageParam) {
-      const page = parseInt(pageParam, 10);
-      if (!isNaN(page) && page > 0) setTargetPageAfterLoad(page);
-    } else {
-      setTargetPageAfterLoad(1);
+    if (guidChanged) {
+      setIsDocumentLoaded(false);
+      setNumPages(null);
+      setPdfData(null);
+      setTargetPageAfterLoad(null);
+      const validPage = !isNaN(nextPage) && nextPage > 0 ? nextPage : 1;
+      setPageNumber(validPage);
+      setTargetPageAfterLoad(validPage);
+      prevGuidRef.current = guid;
+      return;
     }
-  }, [guid, pageParam]);
 
-  const scrollToPage = useCallback(
-    (page: number) => {
-      if (page < 1 || !numPages || page > numPages) return;
-      const targetRef = pageRefs.current[page];
-      if (!targetRef) return;
+    const desired = !isNaN(nextPage) && nextPage > 0 ? nextPage : 1;
+    if (pageNumber !== desired) {
+      if (isDocumentLoaded && numPages) {
+        const clampedPage = Math.max(1, Math.min(desired, numPages));
+        setPageNumber(clampedPage);
+        scrollToPage(clampedPage);
+      } else {
+        setPageNumber(desired);
+        setTargetPageAfterLoad(desired);
+      }
+    }
 
-      manualScrollInProgress.current = true;
-      targetRef.scrollIntoView({ behavior: "smooth", block: "start" });
+    prevGuidRef.current = guid;
+  }, [guid, pageParam, pageNumber, isDocumentLoaded, numPages]);
 
-      const observer = new IntersectionObserver(
-        (entries, obs) => {
-          const entry = entries[0];
-          if (entry?.isIntersecting) {
-            manualScrollInProgress.current = false;
-            obs.disconnect();
-          }
-        },
-        { threshold: 0.5 }
+  const updateCurrentPageFromScroll = useCallback(() => {
+    if (!numPages || !contentRef.current) return;
+
+    if (isAutoScrollingRef.current) return;
+
+    const container = contentRef.current;
+    const containerRectTop = container.getBoundingClientRect().top;
+    const containerCenter = containerRectTop + container.clientHeight / 2;
+
+    let bestPage = 1;
+    let bestDist = Infinity;
+
+    for (let i = 1; i <= numPages; i++) {
+      const el = pageRefs.current[i];
+      if (!el) continue;
+      const r = el.getBoundingClientRect();
+      const pageCenter = r.top + r.height / 2;
+      const dist = Math.abs(pageCenter - containerCenter);
+      if (dist < bestDist) {
+        bestDist = dist;
+        bestPage = i;
+      }
+    }
+
+    if (bestPage !== pageNumber) {
+      console.log(
+        `Scroll detected: updating page from ${pageNumber} to ${bestPage}`
       );
-      observer.observe(targetRef);
-
+      setPageNumber(bestPage);
       const newParams = new URLSearchParams(location.search);
-      newParams.set("page", String(page));
+      newParams.set("page", String(bestPage));
       navigate(`${location.pathname}?${newParams.toString()}`, {
         replace: true,
       });
-      setPageNumber(page);
+    }
+  }, [numPages, pageNumber, location.pathname, location.search, navigate]);
+
+  useEffect(() => {
+    const container = contentRef.current;
+    if (!container) return;
+
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        updateCurrentPageFromScroll();
+        ticking = false;
+      });
+    };
+
+    container.addEventListener("scroll", onScroll, { passive: true });
+    return () => container.removeEventListener("scroll", onScroll);
+  }, [updateCurrentPageFromScroll]);
+
+  const scrollToPage = useCallback(
+    (page: number) => {
+      if (!numPages || page < 1 || page > numPages) return;
+
+      const targetRef = pageRefs.current[page];
+      if (!targetRef) {
+        setTimeout(() => scrollToPage(page), 100);
+        return;
+      }
+
+      isAutoScrollingRef.current = true;
+      targetRef.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+        inline: "nearest",
+      });
+
+      const newParams = new URLSearchParams(location.search);
+      if (newParams.get("page") !== String(page)) {
+        newParams.set("page", String(page));
+        navigate(`${location.pathname}?${newParams.toString()}`, {
+          replace: true,
+        });
+      }
+
+      setTimeout(() => {
+        isAutoScrollingRef.current = false;
+        updateCurrentPageFromScroll();
+      }, 500);
     },
-    [numPages, navigate, location.pathname, location.search]
+    [
+      numPages,
+      location.pathname,
+      location.search,
+      navigate,
+      updateCurrentPageFromScroll,
+    ]
   );
 
   const goToPage = useCallback(
     (page: number) => {
       if (typeof page !== "number" || isNaN(page)) return;
-      if (page < 1) page = 1;
-      else if (numPages && page > numPages) page = numPages;
 
-      setPageNumber(page);
-      scrollToPage(page);
+      const clamped = Math.max(1, numPages ? Math.min(page, numPages) : page);
+
+      if (!isDocumentLoaded || !numPages) {
+        setTargetPageAfterLoad(clamped);
+        setPageNumber(clamped);
+        return;
+      }
+
+      if (clamped === pageNumber) return;
+
+      setPageNumber(clamped);
+      scrollToPage(clamped);
     },
-    [numPages, scrollToPage]
+    [isDocumentLoaded, numPages, pageNumber, scrollToPage]
   );
 
   useEffect(() => {
@@ -115,39 +217,56 @@ const PDFViewer = () => {
   }, [goToPage]);
 
   useEffect(() => {
-    if (
-      isDocumentLoaded &&
-      numPages &&
-      targetPageAfterLoad &&
-      Object.keys(pageRefs.current).length > 0
-    ) {
-      const validPage = Math.min(Math.max(1, targetPageAfterLoad), numPages);
-      setPageNumber(validPage);
+    if (isDocumentLoaded && numPages && targetPageAfterLoad !== null) {
+      const validPage = Math.max(1, Math.min(targetPageAfterLoad, numPages));
 
+      console.log(`Navigating to page ${validPage} after document load`);
       const timeoutId = setTimeout(() => {
         scrollToPage(validPage);
-        setTargetPageAfterLoad(null);
-      }, PAGE_INIT_DELAY);
+
+        setTimeout(() => {
+          setTargetPageAfterLoad(null);
+        }, 600);
+      }, 100);
 
       return () => clearTimeout(timeoutId);
     }
   }, [isDocumentLoaded, numPages, targetPageAfterLoad, scrollToPage]);
 
   useEffect(() => {
-    const calculateSize = () => {
-      if (containerRef.current && headerRef.current && contentRef.current) {
-        const headerHeight = headerRef.current.offsetHeight;
-        const contentPadding = 32;
-        const availableHeight =
-          containerRef.current.clientHeight - headerHeight - contentPadding;
-        const availableWidth = contentRef.current.clientWidth - contentPadding;
-
-        setContainerSize({ width: availableWidth, height: availableHeight });
-      }
+    const calc = () => {
+      if (!containerRef.current || !headerRef.current || !contentRef.current)
+        return;
+      const headerHeight = headerRef.current.offsetHeight;
+      const contentPadding = 32;
+      const availableHeight =
+        containerRef.current.clientHeight - headerHeight - contentPadding;
+      const availableWidth = contentRef.current.clientWidth - contentPadding;
+      setContainerSize({
+        width: Math.max(0, availableWidth),
+        height: Math.max(0, availableHeight),
+      });
     };
-    calculateSize();
-    window.addEventListener("resize", calculateSize);
-    return () => window.removeEventListener("resize", calculateSize);
+
+    const id = requestAnimationFrame(calc);
+
+    let ro: ResizeObserver | null = null;
+    if ("ResizeObserver" in window && contentRef.current) {
+      ro = new ResizeObserver(() => calc());
+      ro.observe(contentRef.current);
+    } else {
+      const onResize = () => requestAnimationFrame(calc);
+      window.addEventListener("resize", onResize);
+      return () => {
+        cancelAnimationFrame(id);
+        window.removeEventListener("resize", onResize);
+      };
+    }
+
+    return () => {
+      cancelAnimationFrame(id);
+      if (ro && contentRef.current) ro.disconnect();
+    };
   }, []);
 
   const pdfOptions = useMemo(
@@ -168,8 +287,10 @@ const PDFViewer = () => {
   }, []);
 
   const fetchPdf = useCallback(async () => {
-    if (!pdfUrl) return;
+    if (!pdfUrl || isFetchingRef.current) return;
+
     try {
+      isFetchingRef.current = true;
       setLoading(true);
       setError(null);
       const token = localStorage.getItem("access");
@@ -193,6 +314,7 @@ const PDFViewer = () => {
       setPdfData(null);
     } finally {
       setLoading(false);
+      isFetchingRef.current = false;
     }
   }, [pdfUrl, isPDF]);
 
@@ -202,6 +324,7 @@ const PDFViewer = () => {
 
   const onDocumentLoadSuccess = useCallback(
     ({ numPages }: DocumentLoadSuccess) => {
+      console.log(`Document loaded with ${numPages} pages`);
       setNumPages(numPages);
       setError(null);
       setIsDocumentLoaded(true);
@@ -212,6 +335,9 @@ const PDFViewer = () => {
   if (!guid)
     return <div className="p-4 text-gray-600">No document specified.</div>;
 
+  const baseWidth = Math.max(0, (containerSize.width || 0) - 50);
+  const readyToRender = !!file && containerSize.width > 0;
+
   return (
     <div
       ref={containerRef}
@@ -219,45 +345,84 @@ const PDFViewer = () => {
     >
       <div
         ref={headerRef}
-        className="flex justify-between items-center p-2 bg-gray-50 border-b"
+        className="flex justify-between items-center p-3 bg-white border-b border-gray-200 relative"
       >
-        <div className="flex items-center space-x-2">
+        <div className="relative">
+          <ZoomMenu
+            valuePct={uiScalePct}
+            onDeferPct={(pct) => setUiScalePct(pct)}
+            onSelectPct={(pct) => {
+              setUiScalePct(pct);
+              startTransition(() => setScale(pct / 100));
+            }}
+            onPageFit={() => {
+              const pct = 100;
+              setUiScalePct(pct);
+              startTransition(() => setScale(pct / 100));
+            }}
+          />
+        </div>
+
+        <div className="absolute left-1/2 -translate-x-1/2 flex items-center space-x-3">
           <button
             onClick={() => goToPage(Math.max(pageNumber - 1, 1))}
             disabled={pageNumber <= 1}
-            className="px-3 py-1 bg-white border rounded"
+            className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            ←
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              className="text-gray-600"
+            >
+              <path
+                d="M15 18L9 12L15 6"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
           </button>
-          <span className="text-sm">
-            Page {pageNumber} of {numPages || "-"}
-          </span>
+
+          <div className="flex items-center space-x-2 text-sm text-gray-600">
+            <span className="font-medium">{pageNumber}</span>
+            <span>of {numPages || "-"}</span>
+          </div>
+
           <button
-            onClick={() =>
-              goToPage(Math.min(pageNumber + 1, numPages || pageNumber))
-            }
-            disabled={!numPages || pageNumber >= numPages}
-            className="px-3 py-1 bg-white border rounded"
+            onClick={() => goToPage(pageNumber + 1)}
+            disabled={!numPages || pageNumber >= (numPages ?? 1)}
+            className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            →
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              className="text-gray-600"
+            >
+              <path
+                d="M9 18L15 12L9 6"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
           </button>
         </div>
-        <div className="flex items-center space-x-2">
-          <button
-            onClick={() => setScale((prev) => Math.max(prev - 0.1, 0.5))}
-            className="px-3 py-1 bg-white border rounded"
-          >
-            −
-          </button>
-          <span className="text-sm">{Math.round(scale * 100)}%</span>
-          <button
-            onClick={() => setScale((prev) => Math.min(prev + 0.1, 2.0))}
-            className="px-3 py-1 bg-white border rounded"
-          >
-            +
-          </button>
+
+        <div className="w-16 relative">
+          {isPending && (
+            <div className="absolute right-0 top-0 text-xs text-gray-500 select-none">
+              Rendering…
+            </div>
+          )}
         </div>
       </div>
+
       <div
         ref={contentRef}
         className="flex-grow overflow-auto p-4 w-full flex items-center justify-center"
@@ -275,48 +440,50 @@ const PDFViewer = () => {
               Retry
             </button>
           </div>
-        ) : (
-          file && (
-            <div
-              className="pdf-document-container flex flex-col items-center"
-              style={{ maxHeight: containerSize.height }}
+        ) : readyToRender ? (
+          <div
+            className="pdf-document-container flex flex-col items-center"
+            style={{ maxHeight: containerSize.height }}
+          >
+            <Document
+              key={guid ?? "doc"}
+              file={file}
+              onLoadSuccess={onDocumentLoadSuccess}
+              onLoadError={(err) => setError(err.message)}
+              options={pdfOptions}
             >
-              <Document
-                file={file}
-                onLoadSuccess={onDocumentLoadSuccess}
-                onLoadError={(err) => setError(err.message)}
-                options={pdfOptions}
-              >
-                <div className="flex flex-col items-center w-full">
-                  {Array.from({ length: numPages || 0 }, (_, index) => {
-                    const pageNum = index + 1;
-                    return (
-                      <div
+              <div className="flex flex-col items-center w-full">
+                {Array.from({ length: numPages || 0 }, (_, index) => {
+                  const pageNum = index + 1;
+                  return (
+                    <div
+                      key={pageNum}
+                      ref={(el) => {
+                        pageRefs.current[pageNum] = el;
+                      }}
+                      className="mb-4 w-full"
+                      data-page={pageNum}
+                    >
+                      <Page
                         key={pageNum}
-                        ref={(el) => {
-                          if (el) pageRefs.current[pageNum] = el;
-                        }}
-                        className="mb-4 w-full"
-                      >
-                        <Page
-                          pageNumber={pageNum}
-                          scale={scale}
-                          renderTextLayer={true}
-                          renderAnnotationLayer={true}
-                          className="shadow-lg"
-                          height={containerSize.height || undefined}
-                          width={(containerSize.width || 0) - 50}
-                        />
-                        <div className="text-center text-gray-500 text-sm mt-1">
-                          Page {pageNum} of {numPages}
-                        </div>
+                        pageNumber={pageNum}
+                        width={baseWidth}
+                        scale={deferredScale}
+                        renderTextLayer={true}
+                        renderAnnotationLayer={false}
+                        className="shadow-lg"
+                      />
+                      <div className="text-center text-gray-500 text-sm mt-1">
+                        Page {pageNum} of {numPages}
                       </div>
-                    );
-                  })}
-                </div>
-              </Document>
-            </div>
-          )
+                    </div>
+                  );
+                })}
+              </div>
+            </Document>
+          </div>
+        ) : (
+          <div className="h-8" />
         )}
       </div>
     </div>

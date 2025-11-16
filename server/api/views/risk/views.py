@@ -14,10 +14,11 @@ def medication(request):
     data = json.loads(request.body)
 
     if data is not None:
-        diagnosis = data["diagnosis"] # the variable name is diagnosis but this variable contain the medication name
+        # the variable name is diagnosis but this variable contain the medication name
+        diagnosis = data["diagnosis"]
     else:
         return JsonResponse({"error": "Diagnosis not found. Request must include diagnosis."})
-    
+
     try:
         med = Medication.objects.get(name=diagnosis)
         benefits = [f'- {benefit}' for benefit in med.benefits.split(', ')]

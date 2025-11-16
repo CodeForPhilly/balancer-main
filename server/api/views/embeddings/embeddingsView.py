@@ -3,7 +3,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from django.http import StreamingHttpResponse
-import os
 from ...services.embedding_services import get_closest_embeddings
 from ...services.conversions_services import convert_uuids
 from ...services.openai_services import openAIServices
@@ -91,7 +90,7 @@ class AskEmbeddingsAPIView(APIView):
             return Response({
                 "question": message,
                 "llm_response": answer,
-                "embeddings_info": embeddings_results,
+                "embeddings_info": listOfEmbeddings,
                 "sent_to_llm": prompt_text,
             }, status=status.HTTP_200_OK)
 

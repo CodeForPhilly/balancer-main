@@ -1,1 +1,1 @@
-from .authUser import UserAccount
+from .authUser import UserAccount # noqa: F401

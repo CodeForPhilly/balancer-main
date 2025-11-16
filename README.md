@@ -36,15 +36,29 @@ Tools used for development:
 
 ### Running Balancer for development
 
-Running Balancer:
-- Start Docker Desktop and run `docker compose up --build` 
-- The email and password are set in `server/api/management/commands/createsu.py`
-- Download a sample of papers to upload from [https://balancertestsite.com](https://balancertestsite.com/) 
+Start the Postgres, Django REST, and React services by starting Docker Desktop and running `docker compose up --build` 
 
-Running pgAdmin:
+#### Postgres
+- Download a sample of papers to upload from [https://balancertestsite.com](https://balancertestsite.com/) 
 - The email and password of `pgAdmin` are specified in `balancer-main/docker-compose.yml`
-- The first time you use `pgAdmin` after building the Docker containers you will need to register the server. 
-The `Host name/address`, `Username` and `Password` are specified in  `balancer-main/docker-compose.yml`
+- The first time you use `pgAdmin` after building the Docker containers you will need to register the server.
+    - The `Host name/address` is the Postgres server service name in the Docker Compose file
+    - The `Username` and `Password` are the Postgres server environment variables in the Docker Compose file
+- You can use the below code snippet to  query the database from a Jupyter notebook: 
+
+```
+from sqlalchemy import create_engine
+import pandas as pd
+
+engine = create_engine("postgresql+psycopg2://balancer:balancer@localhost:5433/balancer_dev")
+
+query = "SELECT * FROM api_embeddings;"
+
+df = pd.read_sql(query, engine)
+```
+
+#### Django REST
+- The email and password are set in `server/api/management/commands/createsu.py`
 
 ## Local Kubernetes Deployment
 

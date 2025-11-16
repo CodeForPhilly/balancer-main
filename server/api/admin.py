@@ -4,8 +4,6 @@ from .views.listMeds.models import Medication, Diagnosis, Suggestion
 from .models.authUser import UserAccount
 from .views.ai_settings.models import AI_Settings
 from .views.ai_promptStorage.models import AI_PromptStorage
-from .views.ai_settings.models import AI_Settings
-from .views.ai_promptStorage.models import AI_PromptStorage
 from .models.model_embeddings import Embeddings
 from .views.feedback.models import Feedback
 from .models.model_medRule import MedRule
@@ -14,7 +12,6 @@ from .models.model_medRule import MedRule
 @admin.register(MedRule)
 class MedRuleAdmin(admin.ModelAdmin):
     list_display = ['rule_type', 'history_type', 'label']
-    filter_horizontal = ['medications', 'sources']
     search_fields = ['label', 'history_type', 'reason']
 
 
@@ -24,7 +21,7 @@ class MedicationAdmin(admin.ModelAdmin):
 
 
 @admin.register(Medication)
-class MedicationAdmin(admin.ModelAdmin):
+class MedicationAdmin(admin.ModelAdmin):  # noqa: F811
     list_display = ['name', 'benefits', 'risks']
 
 

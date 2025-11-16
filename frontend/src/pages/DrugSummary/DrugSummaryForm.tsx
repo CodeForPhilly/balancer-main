@@ -27,7 +27,6 @@ const DrugSummaryForm = () => {
   const { search } = useLocation();
   const params = new URLSearchParams(search);
   const guid = params.get("guid") || "";
-  const pageParam = params.get("page");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -48,17 +47,6 @@ const DrugSummaryForm = () => {
   }, [chatLog]);
 
   useEffect(() => setHasPDF(!!guid), [guid]);
-
-  useEffect(() => {
-    if (pageParam && hasPDF) {
-      const page = parseInt(pageParam, 10);
-      if (!isNaN(page) && page > 0) {
-        window.dispatchEvent(
-          new CustomEvent("navigateToPdfPage", { detail: { pageNumber: page } })
-        );
-      }
-    }
-  }, [pageParam, hasPDF]);
 
   useEffect(() => {
     if (!isStreaming && !isLoading && textareaRef.current) {
@@ -184,7 +172,7 @@ const DrugSummaryForm = () => {
     <div className="flex h-full w-full justify-center">
       {hasPDF && (
         <div className={`${panelWidthClass} h-full`}>
-          <PDFViewer />
+          <PDFViewer key={guid} />
         </div>
       )}
       <div className={`${panelWidthClass} h-full flex flex-col p-2`}>

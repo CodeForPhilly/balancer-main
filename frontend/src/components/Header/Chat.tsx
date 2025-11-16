@@ -4,12 +4,9 @@ import "../../components/Header/chat.css";
 import { useState, useEffect, useRef } from "react";
 import TypingAnimation from "./components/TypingAnimation";
 import ErrorMessage from "../ErrorMessage";
-import ConversationList from "./ConversationList";
-import { extractContentFromDOM } from "../../services/domExtraction";
 import axios from "axios";
 import {
   FaPlus,
-  FaMinus,
   FaTimes,
   FaComment,
   FaComments,
@@ -19,20 +16,15 @@ import {
   FaExpandAlt,
   FaExpandArrowsAlt,
 } from "react-icons/fa";
-import {
-  fetchConversations,
-  continueConversation,
-  newConversation,
-  updateConversationTitle,
-  deleteConversation,
-} from "../../api/apiClient";
+import { sendAssistantMessage } from "../../api/apiClient";
 
-interface ChatLogItem {
+export interface ChatLogItem {
   is_user: boolean;
   content: string;
   timestamp: string; // EX: 2025-01-16T16:21:14.981090Z
 }
 
+// Keep interface for backward compatibility with existing imports
 export interface Conversation {
   title: string;
   messages: ChatLogItem[];
@@ -47,13 +39,40 @@ interface ChatDropDownProps {
 const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
   const CHATBOT_NAME = "JJ";
   const [inputValue, setInputValue] = useState("");
-  const [chatLog, setChatLog] = useState<ChatLogItem[]>([]); // Specify the type as ChatLogItem[]
+  const [currentMessages, setCurrentMessages] = useState<ChatLogItem[]>([]);
+  const [currentResponseId, setCurrentResponseId] = useState<
+    string | undefined
+  >(undefined);
   const [isLoading, setIsLoading] = useState(false);
-  const [showConversationList, setShowConversationList] = useState(false);
-  const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [activeConversation, setActiveConversation] =
-    useState<Conversation | null>(null);
   const [error, setError] = useState<Error | null>(null);
+
+  // Session storage functions for conversation management
+  const saveConversationToStorage = (
+    messages: ChatLogItem[],
+    responseId?: string,
+  ) => {
+    const conversationData = {
+      messages,
+      responseId,
+      timestamp: new Date().toISOString(),
+    };
+    sessionStorage.setItem(
+      "currentConversation",
+      JSON.stringify(conversationData),
+    );
+  };
+
+  const loadConversationFromStorage = () => {
+    const stored = sessionStorage.getItem("currentConversation");
+    if (stored) {
+      try {
+        return JSON.parse(stored);
+      } catch (error) {
+        console.error("Error parsing stored conversation:", error);
+      }
+    }
+    return null;
+  };
 
   const suggestionPrompts = [
     "What are the side effects of Latuda?",
@@ -63,27 +82,29 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
     "Risks associated with Lithium.",
     "What medications could cause liver issues?",
   ];
-  const [pageContent, setPageContent] = useState("");
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
+  const [bottom, setBottom] = useState(false);
+
+  // Load conversation from sessionStorage on component mount
   useEffect(() => {
-    const observer = new MutationObserver(() => {
-      const content = extractContentFromDOM();
-      setPageContent(content);
-    });
-
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true,
-      characterData: true,
-    });
-
-    const extractedContent = extractContentFromDOM();
-    // console.log(extractedContent);
-    setPageContent(extractedContent);
+    const storedConversation = loadConversationFromStorage();
+    if (storedConversation) {
+      setCurrentMessages(storedConversation.messages || []);
+      setCurrentResponseId(storedConversation.responseId);
+    }
   }, []);
 
-  const [bottom, setBottom] = useState(false);
+  // Save conversation to sessionStorage when component unmounts
+  useEffect(() => {
+    return () => {
+      // Only save if the user hasn't logged out
+      const isLoggingOut = !localStorage.getItem("access");
+      if (!isLoggingOut && currentMessages.length > 0) {
+        saveConversationToStorage(currentMessages, currentResponseId);
+      }
+    };
+  }, [currentMessages, currentResponseId]);
 
   const handleScroll = (event: React.UIEvent<HTMLElement>) => {
     const target = event.target as HTMLElement;
@@ -96,34 +117,24 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
   const [expandChat, setExpandChat] = useState(false);
 
   useEffect(() => {
-    if (chatContainerRef.current && activeConversation) {
+    if (chatContainerRef.current) {
       const chatContainer = chatContainerRef.current;
       // Use setTimeout to ensure the new message has been rendered
       setTimeout(() => {
         chatContainer.scrollTop = chatContainer.scrollHeight;
         setBottom(
           chatContainer.scrollHeight - chatContainer.scrollTop ===
-            chatContainer.clientHeight
+            chatContainer.clientHeight,
         );
       }, 0);
     }
-  }, [activeConversation?.messages]);
-
-  const loadConversations = async () => {
-    try {
-      const data = await fetchConversations();
-      setConversations(data);
-      // setLoading(false);
-    } catch (error) {
-      console.error("Error loading conversations: ", error);
-    }
-  };
+  }, [currentMessages]);
 
   const scrollToBottom = (element: HTMLElement) =>
     element.scroll({ top: element.scrollHeight, behavior: "smooth" });
 
   const handleScrollDown = (
-    event: React.MouseEvent<HTMLButtonElement, MouseEvent>
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
   ) => {
     event.preventDefault();
     const element = document.getElementById("inside_chat");
@@ -137,72 +148,52 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
     event:
       | React.FormEvent<HTMLFormElement>
       | React.MouseEvent<HTMLButtonElement, MouseEvent>,
-    suggestion?: string
+    suggestion?: string,
   ) => {
     event.preventDefault();
 
+    const messageContent = (inputValue || suggestion) ?? "";
+    if (!messageContent.trim()) return;
+
     const newMessage = {
-      content: (inputValue || suggestion) ?? "",
+      content: messageContent,
       is_user: true,
       timestamp: new Date().toISOString(),
     };
 
-    const newMessages = [...chatLog, newMessage];
-
-    setChatLog(newMessages);
-
-    // sendMessage(newMessages);
     try {
-      let conversation = activeConversation;
-      let conversationCreated = false;
-
-      // Create a new conversation if none exists
-      if (!conversation) {
-        conversation = await newConversation();
-        setActiveConversation(conversation);
-        setShowConversationList(false);
-        conversationCreated = true;
-      }
-
-      // Update the conversation with the new user message
-      const updatedMessages = [...conversation.messages, newMessage];
-      setActiveConversation({
-        ...conversation,
-        title: "Asking JJ...",
-        messages: updatedMessages,
-      });
-
       setIsLoading(true);
+      setError(null);
 
-      // Continue the conversation and update with the bot's response
-      const data = await continueConversation(
-        conversation.id,
-        newMessage.content,
-        pageContent
+      // Add user message to current conversation
+      const updatedMessages = [...currentMessages, newMessage];
+      setCurrentMessages(updatedMessages);
+
+      // Save user message immediately to prevent loss
+      saveConversationToStorage(updatedMessages, currentResponseId);
+
+      // Call assistant API with previous response ID for continuity
+      const data = await sendAssistantMessage(
+        messageContent,
+        currentResponseId,
       );
 
-      // Update the ConversationList component after previous function creates a title
-      if (conversationCreated) loadConversations(); // Note: no 'await' so this can occur in the background
+      // Create assistant response message
+      const assistantMessage = {
+        content: data.response_output_text,
+        is_user: false,
+        timestamp: new Date().toISOString(),
+      };
 
-      setActiveConversation((prevConversation: any) => {
-        if (!prevConversation) return null;
+      // Update messages and store new response ID for next message
+      const finalMessages = [...updatedMessages, assistantMessage];
+      setCurrentMessages(finalMessages);
+      setCurrentResponseId(data.final_response_id);
 
-        return {
-          ...prevConversation,
-          messages: [
-            ...prevConversation.messages,
-            {
-              is_user: false,
-              content: data.response,
-              timestamp: new Date().toISOString(),
-            },
-          ],
-          title: data.title,
-        };
-      });
-      setError(null);
+      // Save conversation to sessionStorage
+      saveConversationToStorage(finalMessages, data.final_response_id);
     } catch (error) {
-      console.error("Error(s) handling conversation:", error);
+      console.error("Error handling message:", error);
       let errorMessage = "Error submitting message";
       if (error instanceof Error) {
         errorMessage = error.message;
@@ -222,25 +213,8 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
     }
   };
 
-  const handleSelectConversation = (id: Conversation["id"]) => {
-    const selectedConversation = conversations.find(
-      (conversation: any) => conversation.id === id
-    );
-
-    if (selectedConversation) {
-      setActiveConversation(selectedConversation);
-      setShowConversationList(false);
-    }
-  };
-
-  const handleNewConversation = () => {
-    setActiveConversation(null);
-    setShowConversationList(false);
-  };
-
   useEffect(() => {
     if (showChat) {
-      loadConversations();
       const resizeObserver = new ResizeObserver((entries) => {
         if (!entries || entries.length === 0) return;
 
@@ -278,53 +252,35 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
             className=" mx-auto flex h-full  flex-col overflow-auto rounded "
           >
             <div className="chat_top_nav">
-              <button
-                onClick={() =>
-                  setShowConversationList((prevState) => !prevState)
-                }
-                className="flex items-center justify-center"
-              >
-                {showConversationList ? (
-                  // Icon for "Hide"
-                  <FaMinus className="chat_icon" />
-                ) : (
-                  // Icon for "Show"
-                  <FaPlus className="chat_icon" />
-                )}
-              </button>
-
-              <div
-                className="truncate mx-2 font-semibold"
-                title={
-                  activeConversation !== null && !showConversationList
-                    ? activeConversation.title
-                    : `Ask ${CHATBOT_NAME}`
-                }
-              >
-                {activeConversation !== null && !showConversationList ? (
-                  activeConversation.title
-                ) : (
-                  <>
-                    <FaComments className="chatbot_icon" />
-                    <span className="chatbot_name">Ask {CHATBOT_NAME}</span>
-                  </>
-                )}
-                <br />
+              <div className="truncate mx-2 font-semibold">
+                <FaComments className="chatbot_icon" />
+                <span className="chatbot_name">Ask {CHATBOT_NAME}</span>
               </div>
 
               <div className="flex space-x-2">
+                <button
+                  onClick={() => {
+                    setCurrentMessages([]);
+                    setCurrentResponseId(undefined);
+                    sessionStorage.removeItem("currentConversation");
+                  }}
+                  className="flex items-center justify-center"
+                  title="New Conversation"
+                >
+                  <FaPlus className="chat_icon" />
+                </button>
+
                 <button
                   onClick={() => setExpandChat((prevState) => !prevState)}
                   className="flex items-center justify-center"
                 >
                   {expandChat ? (
-                    // Icon for "Shrink"
                     <FaExpandAlt className="chat_icon" />
                   ) : (
-                    // Icon for "expand"
                     <FaExpandArrowsAlt className="chat_icon" />
                   )}
                 </button>
+
                 <button
                   className="delete flex items-center justify-center"
                   onClick={() => setShowChat(false)}
@@ -348,118 +304,139 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
               >
                 <FaArrowCircleDown />
               </button>
-              {showConversationList ? (
-                <div className="chat_list">
-                  <ConversationList
-                    conversations={conversations}
-                    onSelectConversation={handleSelectConversation}
-                    onNewConversation={handleNewConversation}
-                    onSubmitConversationTitle={updateConversationTitle}
-                    onDeleteConversation={deleteConversation}
-                  />
-                </div>
-              ) : (
-                <div className="chat_intro">
-                  {activeConversation === null ||
-                  activeConversation.messages.length === 0 ? (
-                    <>
-                      <div className="chat_bubble chat_bubble_header">
-                        <h5>Hi there, I'm {CHATBOT_NAME}!</h5>
-                        <p>
-                          You can ask me all your bipolar disorder treatment
-                          questions.
-                        </p>
-                        <Link to="/data-sources" className="chat_link">
-                          Learn more about my sources.
-                        </Link>
-                      </div>
-                      <div className="chat_suggestion_section">
-                        <div className="chat_suggestion_header">
-                          <FaPills className="text-rose-400 text-xl align-bottom inline-block mr-2" />
-                          <h5 className="inline-block">Explore a medication</h5>
-                        </div>
-                        <ul className="chat_suggestion_list">
-                          {suggestionPrompts.map((suggestion, index) => (
-                            <li key={index}>
-                              <button
-                                type="button"
-                                className="chat_suggestion"
-                                onClick={(e) => handleSubmit(e, suggestion)}
-                              >
-                                {suggestion}
-                              </button>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                      <div className="chat_suggestion_section">
-                        <div className="chat_suggestion_header">
-                          <FaLightbulb className="text-amber-400 text-xl align-bottom inline-block mr-2" />
-                          <h5 className="inline-block">Refresh your memory</h5>
-                        </div>
-                        <ul className="chat_suggestion_list">
-                          {refreshPrompts.map((suggestion, index) => (
-                            <li key={index}>
-                              <button
-                                type="button"
-                                className="chat_suggestion"
-                                onClick={(e) => handleSubmit(e, suggestion)}
-                              >
-                                {suggestion}
-                              </button>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </>
-                  ) : (
-                    activeConversation.messages
-                      .slice()
-                      .sort(
-                        (a, b) =>
-                          new Date(a.timestamp).getTime() -
-                          new Date(b.timestamp).getTime()
-                      )
-                      .map((message, index) => (
-                        <div
-                          key={index}
-                          className={`flex flex-row space-x-2 ${
-                            message.is_user
-                              ? "chat_text chat_text_user "
-                              : "chat_text chat_text_bot"
-                          }`}
-                        >
-                          <div>
-                            {message.is_user ? (
-                              <FaComment className="chat_text_icon" />
-                            ) : (
-                              <FaComment className="chat_text_icon" />
-                            )}
-                          </div>
-                          <div className="chat_text_wrap">
-                            <pre
-                              style={{
-                                fontFamily: "inherit",
-                                whiteSpace: "pre-wrap",
-                                wordWrap: "break-word",
-                              }}
-                            >
-                              {message.content}
-                            </pre>
-                          </div>
-                        </div>
-                      ))
-                  )}
-                  {isLoading && (
-                    <div key={chatLog.length} className="flex justify-center">
-                      <div className="max-w-sm rounded-lg p-4 text-white">
-                        <TypingAnimation />
-                      </div>
+              <div className="chat_intro">
+                {currentMessages.length === 0 ? (
+                  <>
+                    <div className="chat_bubble chat_bubble_header">
+                      <h5>Hi there, I'm {CHATBOT_NAME}!</h5>
+                      <p>
+                        You can ask me questions about your uploaded documents.
+                        I'll search through them to provide accurate, cited
+                        answers.
+                      </p>
+                      <Link to="/data-sources" className="chat_link">
+                        Learn more about my sources.
+                      </Link>
                     </div>
-                  )}
-                  {error && <ErrorMessage errors={[error.message]} />}
-                </div>
-              )}
+                    <div
+                      className="chat_bubble chat_bubble_header"
+                      style={{
+                        backgroundColor: "#fef3c7",
+                        border: "1px solid #f59e0b",
+                        marginTop: "10px",
+                      }}
+                    >
+                      <h6
+                        style={{
+                          color: "#92400e",
+                          fontWeight: "bold",
+                          marginBottom: "8px",
+                        }}
+                      >
+                        ⚠️ IMPORTANT NOTICE
+                      </h6>
+                      <p
+                        style={{
+                          fontSize: "0.85em",
+                          color: "#92400e",
+                          lineHeight: "1.4",
+                          margin: "0",
+                        }}
+                      >
+                        Balancer is NOT configured for use with Protected Health
+                        Information (PHI) as defined under HIPAA. You must NOT
+                        enter any patient-identifiable information including
+                        names, addresses, dates of birth, medical record
+                        numbers, or any other identifying information. By using
+                        Balancer, you certify that you understand these
+                        restrictions and will not enter any PHI.
+                      </p>
+                    </div>
+                    <div className="chat_suggestion_section">
+                      <div className="chat_suggestion_header">
+                        <FaPills className="text-rose-400 text-xl align-bottom inline-block mr-2" />
+                        <h5 className="inline-block">Explore a medication</h5>
+                      </div>
+                      <ul className="chat_suggestion_list">
+                        {suggestionPrompts.map((suggestion, index) => (
+                          <li key={index}>
+                            <button
+                              type="button"
+                              className="chat_suggestion"
+                              onClick={(e) => handleSubmit(e, suggestion)}
+                            >
+                              {suggestion}
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div className="chat_suggestion_section">
+                      <div className="chat_suggestion_header">
+                        <FaLightbulb className="text-amber-400 text-xl align-bottom inline-block mr-2" />
+                        <h5 className="inline-block">Refresh your memory</h5>
+                      </div>
+                      <ul className="chat_suggestion_list">
+                        {refreshPrompts.map((suggestion, index) => (
+                          <li key={index}>
+                            <button
+                              type="button"
+                              className="chat_suggestion"
+                              onClick={(e) => handleSubmit(e, suggestion)}
+                            >
+                              {suggestion}
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </>
+                ) : (
+                  currentMessages
+                    .slice()
+                    .sort(
+                      (a, b) =>
+                        new Date(a.timestamp).getTime() -
+                        new Date(b.timestamp).getTime(),
+                    )
+                    .map((message, index) => (
+                      <div
+                        key={index}
+                        className={`flex flex-row space-x-2 ${
+                          message.is_user
+                            ? "chat_text chat_text_user "
+                            : "chat_text chat_text_bot"
+                        }`}
+                      >
+                        <div>
+                          <FaComment className="chat_text_icon" />
+                        </div>
+                        <div className="chat_text_wrap">
+                          <pre
+                            style={{
+                              fontFamily: "inherit",
+                              whiteSpace: "pre-wrap",
+                              wordWrap: "break-word",
+                            }}
+                          >
+                            {message.content}
+                          </pre>
+                        </div>
+                      </div>
+                    ))
+                )}
+                {isLoading && (
+                  <div
+                    key={currentMessages.length}
+                    className="flex justify-center"
+                  >
+                    <div className="max-w-sm rounded-lg p-4 text-white">
+                      <TypingAnimation />
+                    </div>
+                  </div>
+                )}
+                {error && <ErrorMessage errors={[error.message]} />}
+              </div>
             </div>
             <form onSubmit={handleSubmit} className="chat_footer">
               <input
@@ -473,14 +450,8 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
           </div>
         </div>
       ) : (
-        <div
-          onClick={() => setShowChat(true)}
-          className="fixed bottom-9 left-10 h-16 w-16 inline-block cursor-pointer flex items-center justify-center rounded-full bg-blue-500 object-contain hover:cursor-pointer hover:bg-blue-300 md:bottom-20 md:right-20 no-print"
-        >
-          <FaComments className="text-white h-10 w-10" />
-          <div className="absolute bottom-20 mt-2 hidden w-32 rounded bg-gray-700 px-2 py-1 text-sm text-white before:absolute before:-top-2 before:left-1/2 before:-translate-x-1/2 before:transform before:border-8 before:border-transparent before:border-b-gray-700 group-hover:block">
-            Any questions? Click here to to chat!
-          </div>
+        <div onClick={() => setShowChat(true)} className="chat_button no-print">
+          <FaComments className="relative text-white w-10 h-10 z-10" />
         </div>
       )}
     </>

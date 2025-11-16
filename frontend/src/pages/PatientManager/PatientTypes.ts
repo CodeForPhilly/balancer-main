@@ -1,3 +1,8 @@
+export type MedicationWithSource = {
+  name: string;
+  source: "include" | "diagnosis";
+};
+
 export interface PatientInfo {
   ID?: string;
   Diagnosis?: Diagnosis;
@@ -8,10 +13,10 @@ export interface PatientInfo {
   Mania?: string;
   CurrentMedications?: string;
   PriorMedications?: string;
-  PossibleMedications?: {
-    first?: string;
-    second?: string;
-    third?: string;
+  PossibleMedications: {
+    first: MedicationWithSource[];
+    second: MedicationWithSource[];
+    third: MedicationWithSource[];
   };
   Psychotic: string;
   Suicide: string;
@@ -48,6 +53,5 @@ export interface NewPatientInfo {
 export enum Diagnosis {
   Manic = "Manic",
   Depressed = "Depressed",
-  Hypomanic = "Hypomanic",
-  Euthymic = "Euthymic",
+  Hypomanic = "Hypomanic"
 }

@@ -2,22 +2,22 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: balancer
-  annotations:
-    cert-manager.io/cluster-issuer: "letsencrypt-staging"
+  annotations: {}
 spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - balancertestsite.com
+        - HOSTNAME_PLACEHOLDER
       secretName: balancer-tls
   rules:
-    - host: balancertestsite.com
+    - host: HOSTNAME_PLACEHOLDER
       http:
         paths:
+          # All traffic routes to balancer service (which serves both API and frontend)
           - path: /
             pathType: Prefix
             backend:
               service:
                 name: balancer
                 port:
-                  number: 80
+                  number: 8000

@@ -1,12 +1,13 @@
 name: balancer-prod
 version: "3.8"
+
 services:
-  backend:
-    image: balancer-backend
+  app:
+    image: balancer-app
     build:
-      context: server
+      context: .
       dockerfile: Dockerfile.prod
     ports:
       - "8000:8000"
     env_file:
-      - ./config/env/env.dev
+      - ./config/env/prod.env

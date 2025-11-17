@@ -1,0 +1,3 @@
+server/.gitignore
+server/Dockerfile
+server/entrypoint.sh

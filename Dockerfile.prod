@@ -1,0 +1,52 @@
+# Multi-stage Dockerfile for Balancer Application
+# Produces a single image with Django backend serving the React frontend
+
+# Stage 1: Build Frontend
+FROM node:18 AS frontend-builder
+
+WORKDIR /frontend
+
+# Copy frontend package files
+COPY frontend/package*.json ./
+
+# Install dependencies
+RUN npm ci --legacy-peer-deps
+
+# Copy frontend source
+COPY frontend/ ./
+
+# Build frontend - outputs to dist/ as configured in vite.config.ts
+RUN npm run build
+
+# Stage 2: Build Backend
+FROM python:3.11.4-slim-bullseye
+
+# Set work directory
+WORKDIR /usr/src/app
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y netcat && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
+RUN pip install --upgrade pip
+COPY server/requirements.txt .
+RUN pip install -r requirements.txt
+
+# Copy backend application code
+COPY server/ .
+
+# Copy frontend build from frontend-builder stage to where Django expects it
+COPY --from=frontend-builder /frontend/dist ./build
+
+# Expose port
+EXPOSE 8000
+
+# Run entrypoint
+ENTRYPOINT ["./entrypoint.prod.sh"]
+
+# Start gunicorn
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000", "--noreload"]

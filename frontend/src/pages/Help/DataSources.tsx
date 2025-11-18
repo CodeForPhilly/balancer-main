@@ -22,7 +22,7 @@ const data: DataProps = {
 function HowTo() {
   return (
     <Layout>
-      <div className="mt-20 flex w-full max-w-6xl flex-col items-center justify-center px-8">
+      <div className="mt-20 flex min-w-[445px] w-full max-w-6xl flex-col items-center justify-center px-8">
         <div className="mt-10 h-44 w-44">
         <LineChart />
         </div>

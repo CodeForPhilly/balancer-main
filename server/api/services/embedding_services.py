@@ -1,17 +1,12 @@
-# services/embedding_services.py
-
 import time
 import logging
+
 from pgvector.django import L2Distance
 
 from .sentencetTransformer_model import TransformerModel
-
-# Adjust import path as needed
 from ..models.model_embeddings import Embeddings
 
-# Configure logging
 logger = logging.getLogger(__name__)
-
 
 def get_closest_embeddings(
     user, message_data, document_name=None, guid=None, num_results=10, return_metrics=False
@@ -51,24 +46,19 @@ def get_closest_embeddings(
             - encoding_time: Time to encode query (seconds)
             - db_query_time: Time for database query (seconds)
             - total_time: Total execution time (seconds)
-            - total_embeddings: Number of embeddings searched
             - num_results_returned: Number of results returned
-            - avg_similarity: Average similarity score (0-1)
             - min_distance: Minimum L2 distance
             - max_distance: Maximum L2 distance
             - avg_distance: Average L2 distance
     """
 
-    # Track total execution time
     start_time = time.time()
 
-    # Track transformer encoding time
     encoding_start = time.time()
     transformerModel = TransformerModel.get_instance().model
     embedding_message = transformerModel.encode(message_data)
     encoding_time = time.time() - encoding_start
 
-    # Track database query time
     db_query_start = time.time()
 
     # Start building the query based on the message's embedding
@@ -80,10 +70,7 @@ def get_closest_embeddings(
         .order_by("distance")
     )
 
-    # Get total embeddings in search space before filtering
-    total_embeddings = closest_embeddings_query.count()
-
-    # Filter by GUID if provided, otherwise filter by document name if provided
+    # Filtering results to a document GUID takes precedence over filtering results to document name
     if guid:
         closest_embeddings_query = closest_embeddings_query.filter(
             upload_file__guid=guid
@@ -95,6 +82,7 @@ def get_closest_embeddings(
     closest_embeddings_query = closest_embeddings_query[:num_results]
 
     # Format the results to be returned
+    # TODO: Research improving the query evaluation performance
     results = [
         {
             "name": obj.name,
@@ -112,37 +100,30 @@ def get_closest_embeddings(
 
     # Calculate distance/similarity statistics
     num_results_returned = len(results)
-    if num_results_returned > 0:
-        distances = [r["distance"] for r in results]
-        min_distance = min(distances)
-        max_distance = max(distances)
-        avg_distance = sum(distances) / num_results_returned
-        # Convert distance to similarity score (1 - distance for L2)
-        avg_similarity = 1 - avg_distance
-    else:
-        min_distance = max_distance = avg_distance = avg_similarity = 0.0
+    
+    #TODO: Handle user having no uploaded docs or doc filtering returning no matches
+    
+    distances = [r["distance"] for r in results]
+    min_distance = min(distances)
+    max_distance = max(distances)
+    avg_distance = sum(distances) / num_results_returned
 
-    # Log performance metrics similar to assistant/views.py pattern
     logger.info(
         f"Embedding search completed: "
         f"Encoding time: {encoding_time:.3f}s, "
         f"DB query time: {db_query_time:.3f}s, "
         f"Total time: {total_time:.3f}s, "
-        f"Searched: {total_embeddings} embeddings, "
         f"Returned: {num_results_returned} results, "
-        f"Avg similarity: {avg_similarity:.3f}, "
-        f"Distance range: [{min_distance:.3f}, {max_distance:.3f}]"
+        f"Distance range: [{min_distance:.3f}, {max_distance:.3f}], "
+        f"Average distance: {avg_distance:.3f}"
     )
 
-    # Optionally return metrics along with results
     if return_metrics:
         metrics = {
             "encoding_time": encoding_time,
             "db_query_time": db_query_time,
             "total_time": total_time,
-            "total_embeddings": total_embeddings,
             "num_results_returned": num_results_returned,
-            "avg_similarity": avg_similarity,
             "min_distance": min_distance,
             "max_distance": max_distance,
             "avg_distance": avg_distance,

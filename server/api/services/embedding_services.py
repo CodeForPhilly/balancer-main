@@ -1,15 +1,17 @@
 import time
 import logging
+from statistics import median
 
 from pgvector.django import L2Distance
 
 from .sentencetTransformer_model import TransformerModel
 from ..models.model_embeddings import Embeddings
+from ..models.model_search_usage import SemanticSearchUsage
 
 logger = logging.getLogger(__name__)
 
 def get_closest_embeddings(
-    user, message_data, document_name=None, guid=None, num_results=10, return_metrics=False
+    user, message_data, document_name=None, guid=None, num_results=10
 ):
     """
     Find the closest embeddings to a given message for a specific user.
@@ -26,33 +28,18 @@ def get_closest_embeddings(
         Filter results to a specific document GUID (takes precedence over document_name)
     num_results : int, default 10
         Maximum number of results to return
-    return_metrics : bool, default False
-        If True, return a tuple of (results, metrics) instead of just results
 
     Returns
     -------
-    list[dict] or tuple[list[dict], dict]
-        If return_metrics is False (default):
-            List of dictionaries containing embedding results with keys:
-            - name: document name
-            - text: embedded text content
-            - page_number: page number in source document
-            - chunk_number: chunk number within the document
-            - distance: L2 distance from query embedding
-            - file_id: GUID of the source file
-
-        If return_metrics is True:
-            Tuple of (results, metrics) where metrics is a dictionary containing:
-            - encoding_time: Time to encode query (seconds)
-            - db_query_time: Time for database query (seconds)
-            - total_time: Total execution time (seconds)
-            - num_results_returned: Number of results returned
-            - min_distance: Minimum L2 distance
-            - max_distance: Maximum L2 distance
-            - avg_distance: Average L2 distance
+    list[dict]
+        List of dictionaries containing embedding results with keys:
+        - name: document name
+        - text: embedded text content
+        - page_number: page number in source document
+        - chunk_number: chunk number within the document
+        - distance: L2 distance from query embedding
+        - file_id: GUID of the source file
     """
-
-    start_time = time.time()
 
     encoding_start = time.time()
     transformerModel = TransformerModel.get_instance().model
@@ -61,7 +48,7 @@ def get_closest_embeddings(
 
     db_query_start = time.time()
 
-    # Start building the query based on the message's embedding
+    # Django QuerySets are lazily evaluated
     closest_embeddings_query = (
         Embeddings.objects.filter(upload_file__uploaded_by=user)
         .annotate(
@@ -70,7 +57,7 @@ def get_closest_embeddings(
         .order_by("distance")
     )
 
-    # Filtering results to a document GUID takes precedence over filtering results to document name
+    # Filtering to a document GUID takes precedence over a document name
     if guid:
         closest_embeddings_query = closest_embeddings_query.filter(
             upload_file__guid=guid
@@ -78,10 +65,10 @@ def get_closest_embeddings(
     elif document_name:
         closest_embeddings_query = closest_embeddings_query.filter(name=document_name)
 
-    # Slice the results to limit to num_results
+    # Slicing is equivalent to SQL's LIMIT clause
     closest_embeddings_query = closest_embeddings_query[:num_results]
 
-    # Format the results to be returned
+    # Iterating evaluates the QuerySet and hits the database
     # TODO: Research improving the query evaluation performance
     results = [
         {
@@ -96,38 +83,41 @@ def get_closest_embeddings(
     ]
 
     db_query_time = time.time() - db_query_start
-    total_time = time.time() - start_time
 
-    # Calculate distance/similarity statistics
-    num_results_returned = len(results)
-    
-    #TODO: Handle user having no uploaded docs or doc filtering returning no matches
-    
-    distances = [r["distance"] for r in results]
-    min_distance = min(distances)
-    max_distance = max(distances)
-    avg_distance = sum(distances) / num_results_returned
+    try:
+        # Handle user having no uploaded docs or doc filtering returning no matches
+        if results:
+            distances = [r["distance"] for r in results]
+            SemanticSearchUsage.objects.create(
+                query_text=message_data,
+                user=user if (user and user.is_authenticated) else None,
+                document_guid=guid,
+                document_name=document_name,
+                num_results_requested=num_results,
+                encoding_time=encoding_time,
+                db_query_time=db_query_time,
+                num_results_returned=len(results),
+                max_distance=max(distances),
+                median_distance=median(distances),
+                min_distance=min(distances)
+            )
+        else:
+            logger.warning("Semantic search returned no results")
 
-    logger.info(
-        f"Embedding search completed: "
-        f"Encoding time: {encoding_time:.3f}s, "
-        f"DB query time: {db_query_time:.3f}s, "
-        f"Total time: {total_time:.3f}s, "
-        f"Returned: {num_results_returned} results, "
-        f"Distance range: [{min_distance:.3f}, {max_distance:.3f}], "
-        f"Average distance: {avg_distance:.3f}"
-    )
-
-    if return_metrics:
-        metrics = {
-            "encoding_time": encoding_time,
-            "db_query_time": db_query_time,
-            "total_time": total_time,
-            "num_results_returned": num_results_returned,
-            "min_distance": min_distance,
-            "max_distance": max_distance,
-            "avg_distance": avg_distance,
-        }
-        return results, metrics
+            SemanticSearchUsage.objects.create(
+                query_text=message_data,
+                user=user if (user and user.is_authenticated) else None,
+                document_guid=guid,
+                document_name=document_name,
+                num_results_requested=num_results,
+                encoding_time=encoding_time,
+                db_query_time=db_query_time,
+                num_results_returned=0,
+                max_distance=None,
+                median_distance=None,
+                min_distance=None
+            )
+    except Exception as e:
+        logger.error(f"Failed to create semantic search usage database record: {e}")
 
     return results

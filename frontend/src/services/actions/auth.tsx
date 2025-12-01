@@ -76,6 +76,7 @@ export const checkAuthenticated = () => async (dispatch: AppDispatch) => {
 
     const body = JSON.stringify({ token: localStorage.getItem("access") });
     const baseUrl = import.meta.env.VITE_API_BASE_URL;
+    console.log(baseUrl);
     const url = `${baseUrl}/auth/jwt/verify/`;
     try {
       const res = await axios.post(url, body, config);
@@ -113,6 +114,7 @@ export const load_user = (): ThunkType => async (dispatch: AppDispatch) => {
       },
     };
     const baseUrl = import.meta.env.VITE_API_BASE_URL;
+    console.log(baseUrl);
     const url = `${baseUrl}/auth/users/me/`;
     try {
       const res = await axios.get(url, config);
@@ -144,6 +146,7 @@ export const login =
 
     const body = JSON.stringify({ email, password });
     const baseUrl = import.meta.env.VITE_API_BASE_URL;
+    console.log(baseUrl);
     const url = `${baseUrl}/auth/jwt/create/`;
     try {
       const res = await axios.post(url, body, config);
@@ -170,8 +173,8 @@ export const login =
 
 export const logout = () => async (dispatch: AppDispatch) => {
   // Clear chat conversation data on logout for security
-  sessionStorage.removeItem('currentConversation');
-  
+  sessionStorage.removeItem("currentConversation");
+
   dispatch({
     type: LOGOUT,
   });

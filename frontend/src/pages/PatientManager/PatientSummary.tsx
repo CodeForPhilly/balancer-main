@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { PatientInfo } from "./PatientTypes";
 import Tooltip from "../../components/Tooltip";
 import TypingAnimation from "../../components/Header/components/TypingAnimation.tsx";
-import { FaPencilAlt, FaPrint, FaMinus, FaRegThumbsDown } from "react-icons/fa";
+import { FaPencilAlt, FaPrint, FaMinus, FaRegThumbsDown, FaAngleDown, FaAngleUp } from "react-icons/fa";
 import FeedbackForm from "../Feedback/FeedbackForm";
 import Modal from "../../components/Modal/Modal";
 import { EllipsisVertical } from "lucide-react";
@@ -45,22 +45,17 @@ const truncate = (s = "", n = 220) =>
 
 const MedicationItem = ({
   medication,
-
   isClicked,
   riskData,
   loading,
-  onSourcesClick,
-  onBenefitsRisksClick,
-  activePanel,
+  onTierClick,
 }: {
   medication: string;
   source: string;
   isClicked: boolean;
   riskData: RiskData | null;
   loading: boolean;
-  onSourcesClick: () => void;
-  onBenefitsRisksClick: () => void;
-  activePanel: "sources" | "benefits-risks" | null;
+  onTierClick: () => void;
 }) => {
   if (medication === "None") {
     return (
@@ -76,7 +71,7 @@ const MedicationItem = ({
 
   return (
     <div className="border-b last:border-b-0">
-      <li className="flex items-center justify-between py-4 pl-4 pr-5 text-sm leading-4 hover:bg-indigo-100">
+      <li className="flex items-center justify-between py-4 pl-4 pr-5 text-sm leading-4 hover:bg-indigo-100" onClick={onTierClick}>
         <div className="flex items-center flex-1 w-0">
           <div className="flex flex-1 min-w-0 gap-2 ml-4">
             <span className="font-medium truncate">{medication}</span>
@@ -88,108 +83,103 @@ const MedicationItem = ({
           </div>
         </div>
         <div className="flex-shrink-0 ml-4">
-          <span
-            className={`font-medium text-indigo-600 hover:text-indigo-500 border border-transparent hover:border-indigo-300 cursor-pointer px-2 py-1 rounded ${
-              isClicked && activePanel === "sources" ? "bg-indigo-100" : ""
-            }`}
-            onClick={onSourcesClick}
-          >
-            Sources
-          </span>
-        </div>
-        <div className="flex-shrink-0 ml-4">
-          <span
-            className={`font-medium text-indigo-600 hover:text-indigo-500 border border-transparent hover:border-indigo-300 cursor-pointer px-2 py-1 rounded ${
-              isClicked && activePanel === "benefits-risks"
-                ? "bg-indigo-100"
-                : ""
-            }`}
-            onClick={onBenefitsRisksClick}
-          >
-            Benefits and risks
-          </span>
+          {isClicked ? <FaAngleUp /> : <FaAngleDown />}
         </div>
       </li>
 
-      {isClicked && riskData && activePanel === "benefits-risks" && (
+      {isClicked && riskData && (
         <div className="px-6 py-4 bg-gray-50">
-          <div className="flex">
+          <div className="flex flex-wrap">
             <div className="w-1/2 pr-4">
               <h4 className="mb-3 text-sm font-medium text-indigo-600">
                 Benefits:
               </h4>
-              <ul className="space-y-2">
-                {riskData.benefits.map((b, i) => (
-                  <li key={i} className="text-sm hover:bg-indigo-100">
-                    {b}
-                  </li>
-                ))}
-              </ul>
+              {
+                riskData.benefits?.length ? (
+                  <ul className="space-y-2">
+                    {riskData.benefits.map((r, i) => (
+                      <li key={i} className="text-sm hover:bg-indigo-100">
+                        {r}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="mt-3 text-sm text-gray-500">
+                    No benefits identified.
+                  </p>
+                )
+              }
             </div>
             <div className="w-1/2 pl-4">
               <h4 className="mb-3 text-sm font-medium text-indigo-600">
                 Risks:
               </h4>
-              <ul className="space-y-2">
-                {riskData.risks.map((r, i) => (
-                  <li key={i} className="text-sm hover:bg-indigo-100">
-                    {r}
-                  </li>
-                ))}
-              </ul>
+              {
+                riskData.risks?.length ? (
+                  <ul className="space-y-2">
+                    {riskData.risks.map((r, i) => (
+                      <li key={i} className="text-sm hover:bg-indigo-100">
+                        {r}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="mt-3 text-sm text-gray-500">
+                    No risks identified.
+                  </p>
+                )
+              }
+            </div>
+            <div className="w-full mt-8">
+              <h4 className="mb-3 text-sm font-medium text-indigo-600">
+                Sources:
+              </h4>
+              {riskData.sources?.length ? (
+                <ul>
+                  {riskData.sources.map((s, idx) => (
+                    <li key={idx} className="py-3">
+                      <div className="mt-1 text-sm font-medium text-gray-900 flex items-center justify-between">
+                        <span>{s.title || "Untitled source"}</span>
+
+                        {s.link_url && (
+                          <a
+                            href={s.link_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
+                          >
+                            View PDF
+                          </a>
+                        )}
+                      </div>
+
+                      {s.publication && (
+                        <div className="text-xs text-gray-500">{s.publication}</div>
+                      )}
+
+                      <p className="mt-2 text-sm text-gray-700">
+                        {truncate(s.text)}
+                      </p>
+
+                      {s.page && (
+                        <div className="mt-1 text-xs text-gray-400">
+                          Page {s.page}
+                        </div>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="mt-3 text-sm text-gray-500">
+                  No sources available for this medication.
+                </p>
+              )}
             </div>
           </div>
         </div>
       )}
 
-      {isClicked && riskData && activePanel === "sources" && (
-        <div className="px-6 py-4 bg-gray-50">
-          <div className="flex items-center">
-            <h4 className="text-sm font-medium text-indigo-600">Sources</h4>
-          </div>
 
-          {riskData.sources?.length ? (
-            <ul className="mt-3 divide-y divide-gray-200 rounded-md border border-gray-200 bg-white">
-              {riskData.sources.map((s, idx) => (
-                <li key={idx} className="px-4 py-3">
-                  <div className="mt-1 text-sm font-medium text-gray-900 flex items-center justify-between">
-                    <span>{s.title || "Untitled source"}</span>
-
-                    {s.link_url && (
-                      <a
-                        href={s.link_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
-                      >
-                        View PDF
-                      </a>
-                    )}
-                  </div>
-
-                  {s.publication && (
-                    <div className="text-xs text-gray-500">{s.publication}</div>
-                  )}
-
-                  <p className="mt-2 text-sm text-gray-700">
-                    {truncate(s.text)}
-                  </p>
-
-                  {s.page && (
-                    <div className="mt-1 text-xs text-gray-400">
-                      Page {s.page}
-                    </div>
-                  )}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="mt-3 text-sm text-gray-500">
-              No sources available for this medication.
-            </p>
-          )}
-        </div>
-      )}
     </div>
   );
 };
@@ -201,9 +191,7 @@ const MedicationTier = ({
   clickedMedication,
   riskData,
   loading,
-  onSourcesClick,
-  onBenefitsRisksClick,
-  activePanel,
+  onTierClick,
 }: {
   title: string;
   tier: string;
@@ -211,9 +199,7 @@ const MedicationTier = ({
   clickedMedication: string | null;
   riskData: RiskData | null;
   loading: boolean;
-  onSourcesClick: (medication: MedicationWithSource) => void;
-  onBenefitsRisksClick: (medication: MedicationWithSource) => void;
-  activePanel: "sources" | "benefits-risks" | null;
+  onTierClick: (medication: MedicationWithSource) => void;
 }) => (
   <>
     <dt className="flex ml-2 text-sm font-medium leading-6 text-gray-900">
@@ -229,9 +215,7 @@ const MedicationTier = ({
             isClicked={medicationObj.name === clickedMedication}
             riskData={riskData}
             loading={loading}
-            onSourcesClick={() => onSourcesClick(medicationObj)}
-            onBenefitsRisksClick={() => onBenefitsRisksClick(medicationObj)}
-            activePanel={activePanel}
+            onTierClick={() => onTierClick(medicationObj)}
           />
         ))}
       </ul>
@@ -254,9 +238,6 @@ const PatientSummary = ({
   const [clickedMedication, setClickedMedication] = useState<string | null>(
     null
   );
-  const [activePanel, setActivePanel] = useState<
-    "sources" | "benefits-risks" | null
-  >(null);
 
   const [isModalOpen, setIsModalOpen] = useState({ status: false, id: "" });
 
@@ -276,31 +257,28 @@ const PatientSummary = ({
       setLoading(false);
       setRiskData(null);
       setClickedMedication(null);
-      setActivePanel(null);
     }
   }, [isPatientDeleted, setShowSummary]);
 
   useEffect(() => {
     setRiskData(null);
     setClickedMedication(null);
-    setActivePanel(null);
   }, [patientInfo]);
 
   const handleClickSummary = () => {
     setShowSummary(!showSummary);
   };
-  const handleSourcesClick = async (medicationObj: MedicationWithSource) => {
+
+  const handleTierClick = async (medicationObj: MedicationWithSource) => {
     const { name: medication, source } = medicationObj;
 
-    if (clickedMedication === medication && activePanel === "sources") {
+    if (clickedMedication === medication) {
       setClickedMedication(null);
-      setActivePanel(null);
       setRiskData(null);
       return;
     }
 
     setClickedMedication(medication);
-    setActivePanel("sources");
     setLoading(true);
 
     try {
@@ -311,46 +289,13 @@ const PatientSummary = ({
       }
 
       const data = await fetchRiskDataWithSources(medication, apiSource);
-      console.log("Risk data received for", medication, "with source", apiSource, ":", data);
-      console.log("Sources array:", data.sources);
-      console.log("Sources length:", data.sources?.length);
+      // console.log("Risk data received for", medication, "with source", apiSource, ":", data);
+      // console.log("Sources array:", data.sources);
+      // console.log("Sources length:", data.sources?.length);
       setRiskData(data as RiskData);
     } catch (error) {
       console.error("Error fetching risk data: ", error);
-      setRiskData(null);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleBenefitsRisksClick = async (
-    medicationObj: MedicationWithSource
-  ) => {
-    const { name: medication, source } = medicationObj;
-
-    if (clickedMedication === medication && activePanel === "benefits-risks") {
-      setClickedMedication(null);
-      setActivePanel(null);
-      setRiskData(null);
-      return;
-    }
-
-    setClickedMedication(medication);
-    setActivePanel("benefits-risks");
-    setLoading(true);
-
-    try {
-      // Map source based on patient's diagnosis
-      let apiSource: "include" | "diagnosis" | "diagnosis_depressed" = source;
-      if (source === "diagnosis" && patientInfo.Diagnosis === "Depressed") {
-        apiSource = "diagnosis_depressed";
-      }
-
-      const data = await fetchRiskDataWithSources(medication, apiSource);
-      setRiskData(data as RiskData);
-    } catch (error) {
-      console.error("Error fetching risk data: ", error);
-      setRiskData(null);
+      setRiskData({ benefits: [], risks: [], source: "", sources: []});
     } finally {
       setLoading(false);
     }
@@ -428,9 +373,7 @@ const PatientSummary = ({
               clickedMedication={clickedMedication}
               riskData={riskData}
               loading={loading}
-              onSourcesClick={handleSourcesClick}
-              onBenefitsRisksClick={handleBenefitsRisksClick}
-              activePanel={activePanel}
+              onTierClick={handleTierClick}
             />
             <div className="mt-6">
               <MedicationTier
@@ -440,9 +383,7 @@ const PatientSummary = ({
                 clickedMedication={clickedMedication}
                 riskData={riskData}
                 loading={loading}
-                onSourcesClick={handleSourcesClick}
-                onBenefitsRisksClick={handleBenefitsRisksClick}
-                activePanel={activePanel}
+                onTierClick={handleTierClick}
               />
             </div>
             <div className="mt-6">
@@ -453,9 +394,7 @@ const PatientSummary = ({
                 clickedMedication={clickedMedication}
                 riskData={riskData}
                 loading={loading}
-                onSourcesClick={handleSourcesClick}
-                onBenefitsRisksClick={handleBenefitsRisksClick}
-                activePanel={activePanel}
+                onTierClick={handleTierClick}
               />
             </div>
           </>

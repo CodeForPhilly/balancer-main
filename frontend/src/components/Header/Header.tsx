@@ -69,7 +69,7 @@ const Header: React.FC<LoginFormProps> = ({ isAuthenticated, isSuperuser }) => {
   return (
     <header className="z-50 fixed w-full items-center no-print">
       <div className="w-full items-center justify-center border-b border-gray-300 bg-blue-100 p-1 text-center text-sm font-light text-gray-500 lg:flex">
-        <p className="">
+        <p className="hidden md:block">
           Welcome to Balancer’s first release! Found a bug or have feedback? Let us know {" "}
           <Link
             to="/feedback"
@@ -78,6 +78,13 @@ const Header: React.FC<LoginFormProps> = ({ isAuthenticated, isSuperuser }) => {
           here {" "}
           </Link>
           or email {" "}
+          <a href="mailto:balancerteam@codeforphilly.org" className="underline hover:border-blue-600 hover:text-blue-600 hover:no-underline">
+            balancerteam@codeforphilly.org
+          </a>
+          .
+        </p>
+        <p className="sm:block md:hidden">
+          App is in beta; report issues to {" "}
           <a href="mailto:balancerteam@codeforphilly.org" className="underline hover:border-blue-600 hover:text-blue-600 hover:no-underline">
             balancerteam@codeforphilly.org
           </a>

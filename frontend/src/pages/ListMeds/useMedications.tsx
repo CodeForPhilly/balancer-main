@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api } from "../../api/apiClient";
+import { publicApi } from "../../api/apiClient";
 
 export interface MedData {
   name: string;
@@ -18,7 +18,7 @@ export function useMedications() {
       try {
         const url = `${baseUrl}/v1/api/get_full_list_med`;
 
-        const { data } = await api.get(url);
+        const { data } = await publicApi.get(url);
 
         data.sort((a: MedData, b: MedData) => {
           const nameA = a.name.toUpperCase();

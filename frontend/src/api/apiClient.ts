@@ -44,7 +44,10 @@ const handleSubmitFeedback = async (
   }
 };
 
-const handleSendDrugSummary = async (message: FormValues["message"], guid: string) => {
+const handleSendDrugSummary = async (
+  message: FormValues["message"],
+  guid: string,
+) => {
   try {
     const endpoint = guid ? `/v1/api/embeddings/ask_embeddings?guid=${guid}` : '/v1/api/embeddings/ask_embeddings';
     const response = await adminApi.post(endpoint, {
@@ -69,7 +72,10 @@ const handleRuleExtraction = async (guid: string) => {
   }
 };
 
-const fetchRiskDataWithSources = async (medication: string, source: "include" | "diagnosis" = "include") => {
+const fetchRiskDataWithSources = async (
+  medication: string,
+  source: "include" | "diagnosis" | "diagnosis_depressed" = "include",
+) => {
   try {
     const response = await publicApi.post(`/v1/api/riskWithSources`, {
       drug: medication,
@@ -92,7 +98,7 @@ interface StreamCallbacks {
 const handleSendDrugSummaryStream = async (
   message: string,
   guid: string,
-  callbacks: StreamCallbacks
+  callbacks: StreamCallbacks,
 ): Promise<void> => {
   const token = localStorage.getItem("access");
   const endpoint = `/v1/api/embeddings/ask_embeddings?stream=true${
@@ -167,12 +173,18 @@ const handleSendDrugSummaryStream = async (
             }
           }
         } catch (parseError) {
-          console.error("Failed to parse SSE data:", parseError, "Raw line:", line);
+          console.error(
+            "Failed to parse SSE data:",
+            parseError,
+            "Raw line:",
+            line,
+          );
         }
       }
     }
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
     console.error("Error in stream:", errorMessage);
     callbacks.onError?.(errorMessage);
     throw error;
@@ -188,7 +200,7 @@ const handleSendDrugSummaryStreamLegacy = async (
   return handleSendDrugSummaryStream(message, guid, {
     onContent: onChunk,
     onError: (error) => console.error("Stream error:", error),
-    onComplete: () => console.log("Stream completed")
+    onComplete: () => console.log("Stream completed"),
   });
 };
 
@@ -257,7 +269,9 @@ const deleteConversation = async (id: string) => {
 const updateConversationTitle = async (
   id: Conversation["id"],
   newTitle: Conversation["title"],
-): Promise<{status: string, title: Conversation["title"]} | {error: string}> => {
+): Promise<
+  { status: string; title: Conversation["title"] } | { error: string }
+> => {
   try {
     const response = await adminApi.patch(`/chatgpt/conversations/${id}/update_title/`, {
       title: newTitle,
@@ -265,6 +279,23 @@ const updateConversationTitle = async (
     return response.data;
   } catch (error) {
     console.error("Error(s) during getConversation: ", error);
+    throw error;
+  }
+};
+
+// Assistant API functions
+const sendAssistantMessage = async (
+  message: string,
+  previousResponseId?: string,
+) => {
+  try {
+    const response = await publicApi.post(`/v1/api/assistant`, {
+      message,
+      previous_response_id: previousResponseId,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error(s) during sendAssistantMessage: ", error);
     throw error;
   }
 };
@@ -281,5 +312,6 @@ export {
   updateConversationTitle,
   handleSendDrugSummaryStream,
   handleSendDrugSummaryStreamLegacy,
-  fetchRiskDataWithSources
+  fetchRiskDataWithSources,
+  sendAssistantMessage,
 };

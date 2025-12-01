@@ -14,7 +14,8 @@ const data: DataProps = {
     "publicly available peer-reviewed medical research, as well as " +
     "through extensive interviews with physicians and medical professionals " +
     "who treat patients with bipolar disorder." +
-    " You may use this table to view all of our data sources."
+    " You may use this table to view all of our data sources." +
+    " To help us build our database, send your recommended publicly-available sources to "
   ],
 };
 
@@ -32,6 +33,9 @@ function HowTo() {
           <div className="flex flex-col px-2 py-2">
             <p className="font-satoshi text-sm text-gray-700">
               {data.paragraph[0]}
+              <a href="mailto:balancerteam@codeforphilly.org" className="underline hover:border-blue-600 hover:text-blue-600 hover:no-underline">
+                balancerteam@codeforphilly.org
+              </a>.
             </p>
           </div>
           <div className="flex flex-col px-2 py-2 font-satoshi text-sm text-gray-700">

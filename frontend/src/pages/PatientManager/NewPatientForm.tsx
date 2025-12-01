@@ -365,7 +365,7 @@ const NewPatientForm = ({
                     htmlFor="current-state"
                     className="block text-sm font-semibold leading-6 text-gray-900"
                   >
-                    Current state
+                    Current or Most recent state
                   </label>
                 </div>
                 <div className="mr-6 md:mr-0 md:w-[500px] md:pl-16">
@@ -388,7 +388,7 @@ const NewPatientForm = ({
                 <p className="text-sm leading-6 text-gray-600 ">
                   Select patient characteristics
                 </p>
-                <fieldset className="justify-between mt-6 md:mt-0 md:grid md:grid-cols-3 md:gap-4 md:px-4 md:py-6">
+                {/* <fieldset className="justify-between mt-6 md:mt-0 md:grid md:grid-cols-3 md:gap-4 md:px-4 md:py-6">
                   <dt className="flex text-sm font-semibold leading-6 text-gray-900 ">
                     Currently psychotic
                   </dt>
@@ -428,7 +428,7 @@ const NewPatientForm = ({
                       </label>
                     </div>
                   </dd>
-                </fieldset>
+                </fieldset> */}
                 <fieldset className="justify-between mt-6 md:mt-0 md:grid md:grid-cols-3 md:gap-4 md:px-4 md:py-6">
                   <dt className="flex text-sm font-semibold leading-6 text-gray-900">
                     History of suicide attempt(s)

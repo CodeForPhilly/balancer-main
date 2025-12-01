@@ -27,6 +27,7 @@ class GetMedication(APIView):
     def post(self, request):
         data = request.data
         state_query = data.get('state', '')
+        print(state_query)
         include_result = []
         exclude_result = []
         for condition in MEDS_INCLUDE:
@@ -45,6 +46,9 @@ class GetMedication(APIView):
             return Response({'error': 'Diagnosis not found'}, status=status.HTTP_404_NOT_FOUND)
         meds = {'first': [], 'second': [], 'third': []}
 
+        priorMeds = data.get('priorMedications', "").split(',')
+        exclude_result.extend([med.strip()
+                              for med in priorMeds if med.strip()])
         included_set = set(include_result)
         excluded_set = set(exclude_result)
 
@@ -63,7 +67,7 @@ class GetMedication(APIView):
                     continue
                 meds[tier_label].append({
                     'name': med_name,
-                    'source': 'diagnosis'
+                    'source': 'diagnosis_' + state_query.lower()
                 })
 
         return Response(meds)

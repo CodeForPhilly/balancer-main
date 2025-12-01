@@ -59,7 +59,6 @@ const ChipsInput: React.FC<ChipsInputProps> = ({
 
   const handleSuggestionClick = (selected: string) => {
     onChange([...value, selected]);
-    setInputFocused(false); // Close dropdown after selection
     setInputValue("");
   };
 
@@ -131,7 +130,10 @@ const ChipsInput: React.FC<ChipsInputProps> = ({
           {filteredSuggestions.map((item, idx) => (
             <li
               key={idx}
-              onClick={() => handleSuggestionClick(item)}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                handleSuggestionClick(item)
+              }}
               className="px-3 py-2 cursor-pointer hover:bg-gray-100 text-sm"
             >
               {item}

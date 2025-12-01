@@ -49,14 +49,18 @@ const MedicationItem = ({
   isClicked,
   riskData,
   loading,
-  onClick,
+  onSourcesClick,
+  onBenefitsRisksClick,
+  activePanel,
 }: {
   medication: string;
   source: string;
   isClicked: boolean;
   riskData: RiskData | null;
   loading: boolean;
-  onClick: () => void;
+  onSourcesClick: () => void;
+  onBenefitsRisksClick: () => void;
+  activePanel: "sources" | "benefits-risks" | null;
 }) => {
   if (medication === "None") {
     return (
@@ -85,25 +89,29 @@ const MedicationItem = ({
         </div>
         <div className="flex-shrink-0 ml-4">
           <span
-            className={`font-medium text-indigo-600 hover:text-indigo-500 ${
-              isClicked ? "bg-indigo-100" : ""
-            } cursor-pointer`}
-            onClick={onClick}
+            className={`font-medium text-indigo-600 hover:text-indigo-500 border border-transparent hover:border-indigo-300 cursor-pointer px-2 py-1 rounded ${
+              isClicked && activePanel === "sources" ? "bg-indigo-100" : ""
+            }`}
+            onClick={onSourcesClick}
           >
             Sources
           </span>
         </div>
         <div className="flex-shrink-0 ml-4">
           <span
-            className="font-medium text-indigo-600 hover:text-indigo-500"
-            onClick={onClick}
+            className={`font-medium text-indigo-600 hover:text-indigo-500 border border-transparent hover:border-indigo-300 cursor-pointer px-2 py-1 rounded ${
+              isClicked && activePanel === "benefits-risks"
+                ? "bg-indigo-100"
+                : ""
+            }`}
+            onClick={onBenefitsRisksClick}
           >
             Benefits and risks
           </span>
         </div>
       </li>
 
-      {isClicked && riskData && (
+      {isClicked && riskData && activePanel === "benefits-risks" && (
         <div className="px-6 py-4 bg-gray-50">
           <div className="flex">
             <div className="w-1/2 pr-4">
@@ -131,51 +139,54 @@ const MedicationItem = ({
               </ul>
             </div>
           </div>
+        </div>
+      )}
 
-          {/* SOURCES */}
-          {!!riskData.sources?.length && (
-            <div className="mt-6">
-              <div className="flex items-center">
-                <h4 className="text-sm font-medium text-indigo-600">Sources</h4>
-              </div>
+      {isClicked && riskData && activePanel === "sources" && (
+        <div className="px-6 py-4 bg-gray-50">
+          <div className="flex items-center">
+            <h4 className="text-sm font-medium text-indigo-600">Sources</h4>
+          </div>
 
-              <ul className="mt-3 divide-y divide-gray-200 rounded-md border border-gray-200 bg-white">
-                {riskData.sources.map((s, idx) => (
-                  <li key={idx} className="px-4 py-3">
-                    <div className="mt-1 text-sm font-medium text-gray-900 flex items-center justify-between">
-                      <span>{s.title || "Untitled source"}</span>
+          {riskData.sources?.length ? (
+            <ul className="mt-3 divide-y divide-gray-200 rounded-md border border-gray-200 bg-white">
+              {riskData.sources.map((s, idx) => (
+                <li key={idx} className="px-4 py-3">
+                  <div className="mt-1 text-sm font-medium text-gray-900 flex items-center justify-between">
+                    <span>{s.title || "Untitled source"}</span>
 
-                      {s.link_url && (
-                        <a
-                          href={s.link_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
-                        >
-                          View PDF
-                        </a>
-                      )}
+                    {s.link_url && (
+                      <a
+                        href={s.link_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
+                      >
+                        View PDF
+                      </a>
+                    )}
+                  </div>
+
+                  {s.publication && (
+                    <div className="text-xs text-gray-500">{s.publication}</div>
+                  )}
+
+                  <p className="mt-2 text-sm text-gray-700">
+                    {truncate(s.text)}
+                  </p>
+
+                  {s.page && (
+                    <div className="mt-1 text-xs text-gray-400">
+                      Page {s.page}
                     </div>
-
-                    {s.publication && (
-                      <div className="text-xs text-gray-500">
-                        {s.publication}
-                      </div>
-                    )}
-
-                    <p className="mt-2 text-sm text-gray-700">
-                      {truncate(s.text)}
-                    </p>
-
-                    {s.page && (
-                      <div className="mt-1 text-xs text-gray-400">
-                        Page {s.page}
-                      </div>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-3 text-sm text-gray-500">
+              No sources available for this medication.
+            </p>
           )}
         </div>
       )}
@@ -190,7 +201,9 @@ const MedicationTier = ({
   clickedMedication,
   riskData,
   loading,
-  onMedicationClick,
+  onSourcesClick,
+  onBenefitsRisksClick,
+  activePanel,
 }: {
   title: string;
   tier: string;
@@ -198,7 +211,9 @@ const MedicationTier = ({
   clickedMedication: string | null;
   riskData: RiskData | null;
   loading: boolean;
-  onMedicationClick: (medication: MedicationWithSource) => void;
+  onSourcesClick: (medication: MedicationWithSource) => void;
+  onBenefitsRisksClick: (medication: MedicationWithSource) => void;
+  activePanel: "sources" | "benefits-risks" | null;
 }) => (
   <>
     <dt className="flex ml-2 text-sm font-medium leading-6 text-gray-900">
@@ -214,7 +229,9 @@ const MedicationTier = ({
             isClicked={medicationObj.name === clickedMedication}
             riskData={riskData}
             loading={loading}
-            onClick={() => onMedicationClick(medicationObj)}
+            onSourcesClick={() => onSourcesClick(medicationObj)}
+            onBenefitsRisksClick={() => onBenefitsRisksClick(medicationObj)}
+            activePanel={activePanel}
           />
         ))}
       </ul>
@@ -237,6 +254,9 @@ const PatientSummary = ({
   const [clickedMedication, setClickedMedication] = useState<string | null>(
     null
   );
+  const [activePanel, setActivePanel] = useState<
+    "sources" | "benefits-risks" | null
+  >(null);
 
   const [isModalOpen, setIsModalOpen] = useState({ status: false, id: "" });
 
@@ -256,31 +276,77 @@ const PatientSummary = ({
       setLoading(false);
       setRiskData(null);
       setClickedMedication(null);
+      setActivePanel(null);
     }
   }, [isPatientDeleted, setShowSummary]);
 
   useEffect(() => {
     setRiskData(null);
     setClickedMedication(null);
+    setActivePanel(null);
   }, [patientInfo]);
 
   const handleClickSummary = () => {
     setShowSummary(!showSummary);
   };
-  const handleMedicationClick = async (medicationObj: MedicationWithSource) => {
+  const handleSourcesClick = async (medicationObj: MedicationWithSource) => {
     const { name: medication, source } = medicationObj;
 
-    if (clickedMedication === medication) {
+    if (clickedMedication === medication && activePanel === "sources") {
       setClickedMedication(null);
+      setActivePanel(null);
       setRiskData(null);
       return;
     }
 
     setClickedMedication(medication);
+    setActivePanel("sources");
     setLoading(true);
 
     try {
-      const data = await fetchRiskDataWithSources(medication, source);
+      // Map source based on patient's diagnosis
+      let apiSource: "include" | "diagnosis" | "diagnosis_depressed" = source;
+      if (source === "diagnosis" && patientInfo.Diagnosis === "Depressed") {
+        apiSource = "diagnosis_depressed";
+      }
+
+      const data = await fetchRiskDataWithSources(medication, apiSource);
+      console.log("Risk data received for", medication, "with source", apiSource, ":", data);
+      console.log("Sources array:", data.sources);
+      console.log("Sources length:", data.sources?.length);
+      setRiskData(data as RiskData);
+    } catch (error) {
+      console.error("Error fetching risk data: ", error);
+      setRiskData(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleBenefitsRisksClick = async (
+    medicationObj: MedicationWithSource
+  ) => {
+    const { name: medication, source } = medicationObj;
+
+    if (clickedMedication === medication && activePanel === "benefits-risks") {
+      setClickedMedication(null);
+      setActivePanel(null);
+      setRiskData(null);
+      return;
+    }
+
+    setClickedMedication(medication);
+    setActivePanel("benefits-risks");
+    setLoading(true);
+
+    try {
+      // Map source based on patient's diagnosis
+      let apiSource: "include" | "diagnosis" | "diagnosis_depressed" = source;
+      if (source === "diagnosis" && patientInfo.Diagnosis === "Depressed") {
+        apiSource = "diagnosis_depressed";
+      }
+
+      const data = await fetchRiskDataWithSources(medication, apiSource);
       setRiskData(data as RiskData);
     } catch (error) {
       console.error("Error fetching risk data: ", error);
@@ -362,7 +428,9 @@ const PatientSummary = ({
               clickedMedication={clickedMedication}
               riskData={riskData}
               loading={loading}
-              onMedicationClick={handleMedicationClick}
+              onSourcesClick={handleSourcesClick}
+              onBenefitsRisksClick={handleBenefitsRisksClick}
+              activePanel={activePanel}
             />
             <div className="mt-6">
               <MedicationTier
@@ -372,7 +440,9 @@ const PatientSummary = ({
                 clickedMedication={clickedMedication}
                 riskData={riskData}
                 loading={loading}
-                onMedicationClick={handleMedicationClick}
+                onSourcesClick={handleSourcesClick}
+                onBenefitsRisksClick={handleBenefitsRisksClick}
+                activePanel={activePanel}
               />
             </div>
             <div className="mt-6">
@@ -383,7 +453,9 @@ const PatientSummary = ({
                 clickedMedication={clickedMedication}
                 riskData={riskData}
                 loading={loading}
-                onMedicationClick={handleMedicationClick}
+                onSourcesClick={handleSourcesClick}
+                onBenefitsRisksClick={handleBenefitsRisksClick}
+                activePanel={activePanel}
               />
             </div>
           </>
@@ -548,7 +620,7 @@ const PatientSummary = ({
                       <div className="flex-row justify-between py-6 border-b border-gray-900/10 md:flex">
                         <div className="flex w-full md:p-0">
                           <dt className="w-1/2 text-sm font-medium leading-6 text-gray-900">
-                            Current State:
+                            Current or Most recent state
                           </dt>
                           <dd className="text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
                             {patientInfo.Diagnosis}
@@ -564,15 +636,78 @@ const PatientSummary = ({
                             role="list"
                             className="border border-gray-200 divide-y divide-gray-100 rounded-md"
                           >
-                            {patientInfo.Psychotic === "Yes" && (
+                            {/* {patientInfo.Psychotic === "Yes" && (
                               <li className="flex items-center justify-between py-4 pl-4 pr-5 text-sm leading-4 border-b border-gray-900/10 hover:bg-indigo-100">
                                 Currently psychotic
                               </li>
-                            )}
+                            )} */}
                             {patientInfo.Suicide === "Yes" && (
                               <li className="flex items-center justify-between py-4 pl-4 pr-5 text-sm leading-4 border-b border-gray-900/10 hover:bg-indigo-100">
                                 <Tooltip text="Lithium is the only medication on the market that has been proven to reduce suicidality in patients with bipolar disorder, so it will be shown at the top of the suggested medications list.">
                                   Patient has a history of suicide attempts
+                                  <span className="ml-1 material-symbols-outlined">
+                                    info
+                                  </span>
+                                </Tooltip>
+                              </li>
+                            )}
+                            {patientInfo.Kidney === "Yes" && (
+                              <li className="flex items-center justify-between py-4 pl-4 pr-5 text-sm leading-4 border-b border-gray-900/10 hover:bg-indigo-100">
+                                <Tooltip text="Lithium can affect kidney function, so it will not be included in the suggested medication list for patients with a risk or history of kidney disease.">
+                                  Patient has a history or risk of kidney
+                                  disease
+                                  <span className="ml-1 material-symbols-outlined">
+                                    info
+                                  </span>
+                                </Tooltip>
+                              </li>
+                            )}
+                            {patientInfo.Liver === "Yes" && (
+                              <li className="flex items-center justify-between py-4 pl-4 pr-5 text-sm leading-4 border-b border-gray-900/10 hover:bg-indigo-100">
+                                <Tooltip text="Depakote is processed through the liver, so it will not be included in the suggested medication list for patients with a risk or history of liver disease.">
+                                  Patient has a history or risk of liver disease
+                                  <span className="ml-1 material-symbols-outlined">
+                                    info
+                                  </span>
+                                </Tooltip>
+                              </li>
+                            )}
+                            {patientInfo.blood_pressure === "Yes" && (
+                              <li className="flex items-center justify-between py-4 pl-4 pr-5 text-sm leading-4 border-b border-gray-900/10 hover:bg-indigo-100">
+                                <Tooltip text="Second-generation antipsychotics can cause low blood pressure upon standing, putting the patient at risk of passing out and hitting their head, so they will not be included in suggested medication list for patients with a risk or history of low blood pressure.">
+                                  Patient has a history or risk of low blood
+                                  pressure, or concern for falls
+                                  <span className="ml-1 material-symbols-outlined">
+                                    info
+                                  </span>
+                                </Tooltip>
+                              </li>
+                            )}
+                            {patientInfo.weight_gain === "Yes" && (
+                              <li className="flex items-center justify-between py-4 pl-4 pr-5 text-sm leading-4 border-b border-gray-900/10 hover:bg-indigo-100">
+                                <Tooltip text="Seroquel, Risperdal, Abilify, and Zyprexa are known for causing weight gain, so they will not be included in the suggested medications list for patients with concerns about weight gain.">
+                                  PatienthHas weight gain concerns
+                                  <span className="ml-1 material-symbols-outlined">
+                                    info
+                                  </span>
+                                </Tooltip>
+                              </li>
+                            )}
+
+                            {patientInfo.risk_pregnancy === "Yes" && (
+                              <li className="flex items-center justify-between py-4 pl-4 pr-5 text-sm leading-4 border-b border-gray-900/10 hover:bg-indigo-100">
+                                <Tooltip text="Depakote is known for causing birth defects and will not be included in the suggested medications list for patients interested in becoming pregnant.">
+                                  Patient wants to conceive in next 2 years
+                                  <span className="ml-1 material-symbols-outlined">
+                                    info
+                                  </span>
+                                </Tooltip>
+                              </li>
+                            )}
+                            {patientInfo.any_pregnancy === "Yes" && (
+                              <li className="flex items-center justify-between py-4 pl-4 pr-5 text-sm leading-4 border-b border-gray-900/10 hover:bg-indigo-100">
+                                <Tooltip text="Depakote is known for causing birth defects and will not be included in the suggested medications list for patients interested in becoming pregnant.">
+                                  Patient has a possibility of becoming pregnant
                                   <span className="ml-1 material-symbols-outlined">
                                     info
                                   </span>

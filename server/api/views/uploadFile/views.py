@@ -3,8 +3,6 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.generics import UpdateAPIView
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
 import pdfplumber
 from .models import UploadFile  # Import your UploadFile model
 from .serializers import UploadFileSerializer
@@ -16,7 +14,6 @@ from django.db import transaction
 from .title import generate_title
 
 
-@method_decorator(csrf_exempt, name='dispatch')
 class UploadFileView(APIView):
     def get_permissions(self):
         if self.request.method == 'GET':
@@ -114,6 +111,7 @@ class UploadFileView(APIView):
                     Embeddings.objects.create(
                         upload_file=new_file,
                         name=new_file.file_name,  # You may adjust the naming convention
+                        title=title,  # Set the title from the document
                         text=chunk,
                         chunk_number=i,
                         page_num=page_num,  # Store the page number here
@@ -156,7 +154,6 @@ class UploadFileView(APIView):
             return Response({"message": f"Error deleting file and embeddings: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@method_decorator(csrf_exempt, name='dispatch')
 class RetrieveUploadFileView(APIView):
     permission_classes = [AllowAny]
 
@@ -171,7 +168,6 @@ class RetrieveUploadFileView(APIView):
             return Response({"message": "No file found or access denied."}, status=status.HTTP_404_NOT_FOUND)
 
 
-@method_decorator(csrf_exempt, name='dispatch')
 class EditFileMetadataView(UpdateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = UploadFileSerializer

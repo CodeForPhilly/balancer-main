@@ -193,11 +193,7 @@ const Header: React.FC<LoginFormProps> = ({ isAuthenticated, isSuperuser }) => {
             )}
           </>
         </nav>
-        {isAuthenticated && (
-          <>
-            <Chat showChat={showChat} setShowChat={setShowChat} />
-          </>
-        )}
+        <Chat showChat={showChat} setShowChat={setShowChat} />
         {isAuthenticated && authLinks()}
       </div>
       <MdNavBar handleForm={handleForm} isAuthenticated={isAuthenticated} />

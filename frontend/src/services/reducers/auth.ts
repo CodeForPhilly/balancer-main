@@ -99,7 +99,8 @@ export default function authReducer(state = initialState, action: ActionType): S
                 user: action.payload
             }
         case AUTHENTICATED_FAIL:
-            sessionStorage.clear();
+            // Don't clear sessionStorage here - this is triggered on every page load
+            // for unauthenticated users who are allowed to use the app
             return {
                 ...state,
                 isAuthenticated: false

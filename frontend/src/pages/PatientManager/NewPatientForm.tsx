@@ -113,14 +113,14 @@ const NewPatientForm = ({
   };
 
   useEffect(() => {
-    const patientInfoFromLocalStorage = JSON.parse(
+    const patientInfoFromSessionStorage = JSON.parse(
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
-      localStorage.getItem("patientInfos")
+      sessionStorage.getItem("patientInfos")
     );
 
-    if (patientInfoFromLocalStorage) {
-      setAllPatientInfo(patientInfoFromLocalStorage);
+    if (patientInfoFromSessionStorage) {
+      setAllPatientInfo(patientInfoFromSessionStorage);
     }
   }, []);
 
@@ -190,11 +190,11 @@ const NewPatientForm = ({
         updatedAllPatientInfo = [updatedPatientInfo, ...allPatientInfo];
       }
 
-      // Update state and localStorage
+      // Update state and sessionStorage
       setPatientInfo(updatedPatientInfo);
       setAllPatientInfo(updatedAllPatientInfo);
       setShowSummary(true);
-      localStorage.setItem(
+      sessionStorage.setItem(
         "patientInfos",
         JSON.stringify(updatedAllPatientInfo)
       );

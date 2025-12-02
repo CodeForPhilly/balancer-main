@@ -99,6 +99,7 @@ export default function authReducer(state = initialState, action: ActionType): S
                 user: action.payload
             }
         case AUTHENTICATED_FAIL:
+            sessionStorage.clear();
             return {
                 ...state,
                 isAuthenticated: false
@@ -113,6 +114,7 @@ export default function authReducer(state = initialState, action: ActionType): S
         case LOGIN_FAIL:
             localStorage.removeItem('access');
             localStorage.removeItem('refresh');
+            sessionStorage.clear();
             return {
                 ...state,
                 access: null,

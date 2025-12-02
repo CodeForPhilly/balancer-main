@@ -18,6 +18,7 @@ import UploadFile from "../pages/DocumentManager/UploadFile.tsx";
 import ListofFiles from "../pages/Files/ListOfFiles.tsx";
 import RulesManager from "../pages/RulesManager/RulesManager.tsx";
 import ManageMeds from "../pages/ManageMeds/ManageMeds.tsx";
+import ProtectedRoute from "../components/ProtectedRoute/ProtectedRoute.tsx";
 
 const routes = [
   {
@@ -85,7 +86,7 @@ const routes = [
   },
   {
     path: "adminportal",
-    element: <AdminPortal />,
+    element: <ProtectedRoute><AdminPortal /></ProtectedRoute>,
   },
   {
     path: "Settings",

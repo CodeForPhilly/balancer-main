@@ -28,21 +28,21 @@ const routes = [
   },
   {
     path: "listoffiles",
-    element: <ListofFiles />,
+    element: <ProtectedRoute><ListofFiles /></ProtectedRoute>,
     errorElement: <RouteError />,
   },
   {
     path: "rulesmanager",
-    element: <RulesManager />,
+    element: <ProtectedRoute><RulesManager /></ProtectedRoute>,
     errorElement: <RouteError />,
   },
   {
     path: "uploadfile",
-    element: <UploadFile />,
+    element: <ProtectedRoute><UploadFile /></ProtectedRoute>,
   },
   {
     path: "drugSummary",
-    element: <DrugSummary />,
+    element: <ProtectedRoute><DrugSummary /></ProtectedRoute>,
   },
   {
     path: "register",
@@ -90,7 +90,7 @@ const routes = [
   },
   {
     path: "Settings",
-    element: <Settings />,
+    element: <ProtectedRoute><Settings /></ProtectedRoute>,
   },
   {
     path: "medications",
@@ -98,7 +98,7 @@ const routes = [
   },
   {
     path: "managemeds",
-    element: <ManageMeds />,
+    element: <ProtectedRoute><ManageMeds /></ProtectedRoute>,
   },
 ];
 

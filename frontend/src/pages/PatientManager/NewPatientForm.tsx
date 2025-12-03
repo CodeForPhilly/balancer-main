@@ -4,7 +4,7 @@ import { PatientInfo, Diagnosis } from "./PatientTypes";
 import { useMedications } from "../ListMeds/useMedications";
 import ChipsInput from "../../components/ChipsInput/ChipsInput";
 import Tooltip from "../../components/Tooltip";
-import { api } from "../../api/apiClient";
+import { publicApi } from "../../api/apiClient";
 import { useGlobalContext } from "../../contexts/GlobalContext.tsx";
 // import ErrorMessage from "../../components/ErrorMessage";
 
@@ -113,14 +113,14 @@ const NewPatientForm = ({
   };
 
   useEffect(() => {
-    const patientInfoFromLocalStorage = JSON.parse(
+    const patientInfoFromSessionStorage = JSON.parse(
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
-      localStorage.getItem("patientInfos")
+      sessionStorage.getItem("patientInfos")
     );
 
-    if (patientInfoFromLocalStorage) {
-      setAllPatientInfo(patientInfoFromLocalStorage);
+    if (patientInfoFromSessionStorage) {
+      setAllPatientInfo(patientInfoFromSessionStorage);
     }
   }, []);
 
@@ -155,7 +155,7 @@ const NewPatientForm = ({
       const baseUrl = import.meta.env.VITE_API_BASE_URL;
       const url = `${baseUrl}/v1/api/get_med_recommend`;
 
-      const { data } = await api.post(url, payload);
+      const { data } = await publicApi.post(url, payload);
 
       const categorizedMedications = {
         first: data.first ?? [],
@@ -190,11 +190,11 @@ const NewPatientForm = ({
         updatedAllPatientInfo = [updatedPatientInfo, ...allPatientInfo];
       }
 
-      // Update state and localStorage
+      // Update state and sessionStorage
       setPatientInfo(updatedPatientInfo);
       setAllPatientInfo(updatedAllPatientInfo);
       setShowSummary(true);
-      localStorage.setItem(
+      sessionStorage.setItem(
         "patientInfos",
         JSON.stringify(updatedAllPatientInfo)
       );

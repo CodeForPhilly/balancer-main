@@ -1,6 +1,7 @@
 import App from "../App";
 import RouteError from "../pages/404/404.tsx";
 import LoginForm from "../pages/Login/Login.tsx";
+import Logout from "../pages/Logout/Logout.tsx";
 import AdminPortal from "../pages/AdminPortal/AdminPortal.tsx";
 import ResetPassword from "../pages/Login/ResetPassword.tsx";
 import ResetPasswordConfirm from "../pages/Login/ResetPasswordConfirm.tsx";
@@ -17,6 +18,7 @@ import UploadFile from "../pages/DocumentManager/UploadFile.tsx";
 import ListofFiles from "../pages/Files/ListOfFiles.tsx";
 import RulesManager from "../pages/RulesManager/RulesManager.tsx";
 import ManageMeds from "../pages/ManageMeds/ManageMeds.tsx";
+import ProtectedRoute from "../components/ProtectedRoute/ProtectedRoute.tsx";
 
 const routes = [
   {
@@ -26,21 +28,21 @@ const routes = [
   },
   {
     path: "listoffiles",
-    element: <ListofFiles />,
+    element: <ProtectedRoute><ListofFiles /></ProtectedRoute>,
     errorElement: <RouteError />,
   },
   {
     path: "rulesmanager",
-    element: <RulesManager />,
+    element: <ProtectedRoute><RulesManager /></ProtectedRoute>,
     errorElement: <RouteError />,
   },
   {
     path: "uploadfile",
-    element: <UploadFile />,
+    element: <ProtectedRoute><UploadFile /></ProtectedRoute>,
   },
   {
     path: "drugSummary",
-    element: <DrugSummary />,
+    element: <ProtectedRoute><DrugSummary /></ProtectedRoute>,
   },
   {
     path: "register",
@@ -49,6 +51,10 @@ const routes = [
   {
     path: "login",
     element: <LoginForm />,
+  },
+  {
+    path: "logout",
+    element: <Logout />,
   },
   {
     path: "resetPassword",
@@ -80,11 +86,11 @@ const routes = [
   },
   {
     path: "adminportal",
-    element: <AdminPortal />,
+    element: <ProtectedRoute><AdminPortal /></ProtectedRoute>,
   },
   {
     path: "Settings",
-    element: <Settings />,
+    element: <ProtectedRoute><Settings /></ProtectedRoute>,
   },
   {
     path: "medications",
@@ -92,7 +98,7 @@ const routes = [
   },
   {
     path: "managemeds",
-    element: <ManageMeds />,
+    element: <ProtectedRoute><ManageMeds /></ProtectedRoute>,
   },
 ];
 

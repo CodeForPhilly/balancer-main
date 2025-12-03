@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import Layout from "../Layout/Layout";
 import Welcome from "../../components/Welcome/Welcome";
 import ErrorMessage from "../../components/ErrorMessage";
-import { api } from "../../api/apiClient";
+import { adminApi } from "../../api/apiClient";
 function ManageMedications() {
   interface MedData {
     id: string;
@@ -23,7 +23,7 @@ function ManageMedications() {
   const fetchMedications = async () => {
     try {
       const url = `${baseUrl}/v1/api/get_full_list_med`;
-      const { data } = await api.get(url);
+      const { data } = await adminApi.get(url);
       data.sort((a: MedData, b: MedData) => a.name.localeCompare(b.name));
       setMedications(data);
     } catch (e: unknown) {
@@ -36,7 +36,7 @@ function ManageMedications() {
   // Handle Delete Medication
   const handleDelete = async (name: string) => {
     try {
-      await api.delete(`${baseUrl}/v1/api/delete_med`, { data: { name } });
+      await adminApi.delete(`${baseUrl}/v1/api/delete_med`, { data: { name } });
       setMedications((prev) => prev.filter((med) => med.name !== name));
       setConfirmDelete(null);
     } catch (e: unknown) {
@@ -56,7 +56,7 @@ function ManageMedications() {
       return;
     }
     try {
-      await api.post(`${baseUrl}/v1/api/add_medication`, {
+      await adminApi.post(`${baseUrl}/v1/api/add_medication`, {
         name: newMedName,
         benefits: newMedBenefits,
         risks: newMedRisks,

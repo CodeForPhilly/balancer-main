@@ -151,6 +151,10 @@ export const login =
     try {
       const res = await axios.post(url, body, config);
 
+      // Clear session data from previous unauthenticated session
+      sessionStorage.removeItem('currentConversation');
+      sessionStorage.removeItem('patientInfos');
+
       dispatch({
         type: LOGIN_SUCCESS,
         payload: res.data,
@@ -172,8 +176,9 @@ export const login =
   };
 
 export const logout = () => async (dispatch: AppDispatch) => {
-  // Clear chat conversation data on logout for security
-  sessionStorage.removeItem("currentConversation");
+  // Clear session data on logout for privacy
+  sessionStorage.removeItem('currentConversation');
+  sessionStorage.removeItem('patientInfos');
 
   dispatch({
     type: LOGOUT,

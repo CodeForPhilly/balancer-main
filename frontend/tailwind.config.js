@@ -10,8 +10,15 @@ export default {
         lora: "'Lora', serif",
         'quicksand': ['Quicksand', 'sans-serif']
       },
+      keyframes: {
+        'loading': {
+          '0%': { left: '-40%' },
+          '100%': { left: '100%' },
+        },
+      },
       animation: {
-        'pulse-bounce': 'pulse-bounce 2s infinite', // Adjust duration and iteration as needed
+        'pulse-bounce': 'pulse-bounce 2s infinite',
+        'loading': 'loading 3s infinite',
       },
       plugins: [],
     },

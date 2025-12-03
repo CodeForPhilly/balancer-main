@@ -44,7 +44,7 @@ const PatientHistory = ({
             (patient) => patient.ID !== patientIDToDelete
         );
 
-        localStorage.setItem("patientInfos", JSON.stringify(updatedPatientInfo));
+        sessionStorage.setItem("patientInfos", JSON.stringify(updatedPatientInfo));
         setAllPatientInfo(updatedPatientInfo);
 
         onPatientDeleted(patientIDToDelete);

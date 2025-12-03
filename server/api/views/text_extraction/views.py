@@ -3,7 +3,7 @@ import json
 import re
 
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework import status
 from django.utils.decorators import method_decorator
@@ -139,7 +139,7 @@ def openai_extraction(content_chunks, user_prompt):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class RuleExtractionAPIOpenAIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get(self, request):
         try:

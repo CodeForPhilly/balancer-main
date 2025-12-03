@@ -63,7 +63,7 @@ const handleSendDrugSummary = async (
 
 const handleRuleExtraction = async (guid: string) => {
   try {
-    const response = await adminApi.get(`/v1/api/rule_extraction_openai?guid=${guid}`);
+    const response = await publicApi.get(`/v1/api/rule_extraction_openai?guid=${guid}`);
     // console.log("Rule extraction response:", JSON.stringify(response.data, null, 2));
     return response.data;
   } catch (error) {
@@ -105,13 +105,19 @@ const handleSendDrugSummaryStream = async (
     guid ? `&guid=${guid}` : ""
   }`;
 
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+
+  // Only add Authorization header if token exists
+  if (token) {
+    headers.Authorization = `JWT ${token}`;
+  }
+
   try {
     const response = await fetch(baseURL + endpoint, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `JWT ${token}`,
-      },
+      headers,
       body: JSON.stringify({ message }),
     });
 

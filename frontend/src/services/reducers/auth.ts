@@ -99,8 +99,6 @@ export default function authReducer(state = initialState, action: ActionType): S
                 user: action.payload
             }
         case AUTHENTICATED_FAIL:
-            // Don't clear sessionStorage here - this is triggered on every page load
-            // for unauthenticated users who are allowed to use the app
             return {
                 ...state,
                 isAuthenticated: false
@@ -113,8 +111,6 @@ export default function authReducer(state = initialState, action: ActionType): S
         case GOOGLE_AUTH_FAIL:
         case FACEBOOK_AUTH_FAIL:
         case LOGIN_FAIL:
-            // Don't clear sessionStorage on login failure - users may have entered
-            // patient data while unauthenticated, and a login typo shouldn't delete their work
             localStorage.removeItem('access');
             localStorage.removeItem('refresh');
             return {

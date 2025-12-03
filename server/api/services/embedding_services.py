@@ -41,7 +41,7 @@ def get_closest_embeddings(
     transformerModel = TransformerModel.get_instance().model
     embedding_message = transformerModel.encode(message_data)
 
-    if user and user.is_authenticated:
+    if user.is_authenticated:
         # User sees their own files + files uploaded by superusers
         closest_embeddings_query = (
             Embeddings.objects.filter(

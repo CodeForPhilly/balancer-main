@@ -42,7 +42,7 @@ const routes = [
   },
   {
     path: "drugSummary",
-    element: <DrugSummary />,
+    element: <ProtectedRoute><DrugSummary /></ProtectedRoute>,
   },
   {
     path: "register",

@@ -9,15 +9,7 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const location = useLocation();
-  const { isAuthenticated, loading } = useSelector((state: RootState) => state.auth);
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-gray-600">Loading...</div>
-      </div>
-    );
-  }
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
 
   // If not authenticated, redirect to login and include the original location
   if (!isAuthenticated) {

@@ -138,9 +138,7 @@ const MdNavBar = (props: LoginFormProps) => {
                     }
                 </ul>
             </div>
-            {isAuthenticated && (
-                <Chat showChat={showChat} setShowChat={setShowChat}/>
-            )}
+            <Chat showChat={showChat} setShowChat={setShowChat}/>
         </div>
     );
 };

@@ -29,7 +29,7 @@ DEBUG = bool(os.environ.get("DEBUG", default=0))
 
 # Fetching the value from the environment and splitting to list if necessary.
 # Fallback to '*' if the environment variable is not set.
-ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "*").split()
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "*").split()
 
 # If the environment variable contains '*', the split method would create a list with an empty string.
 # So you need to check for this case and adjust accordingly.

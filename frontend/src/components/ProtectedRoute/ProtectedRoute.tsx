@@ -10,6 +10,11 @@ interface ProtectedRouteProps {
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const location = useLocation();
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+  
+  // Wait for auth check to complete (null means not checked yet)
+  if (isAuthenticated === null) {
+    return <div>Loading...</div>; // or a spinner component
+  }
 
   // If not authenticated, redirect to login and include the original location
   if (!isAuthenticated) {

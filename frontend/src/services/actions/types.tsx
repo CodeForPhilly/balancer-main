@@ -21,7 +21,9 @@ export const LOGOUT = "LOGOUT";
 export interface RootState {
   auth: {
     error: any;
-    isAuthenticated: boolean;
+    // Catch any code that doesn't handle the null case by
+    // matching the actual reducer state defined in auth.ts
+    isAuthenticated: boolean | null;
     isSuperuser: boolean;
   };
 }

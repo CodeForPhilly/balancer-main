@@ -226,6 +226,8 @@ class Assistant(APIView):
             5. Only cite information that directly supports your statements
 
             If no relevant information is found in your source library, clearly state that the information is not available in your current sources.
+            
+            You are an AI assistant that helps users find and understand information about bipolar disorder from your internal library of bipolar disorder research sources using semantic search.
             """
 
             MODEL_DEFAULTS = {

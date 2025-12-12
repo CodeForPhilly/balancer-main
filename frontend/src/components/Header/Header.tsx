@@ -10,7 +10,7 @@ import { FaChevronDown, FaSignOutAlt } from "react-icons/fa";
 import { useGlobalContext } from "../../contexts/GlobalContext.tsx";
 
 interface LoginFormProps {
-  isAuthenticated: boolean;
+  isAuthenticated: boolean | null;
   isSuperuser: boolean;
 }
 
@@ -24,9 +24,12 @@ const Header: React.FC<LoginFormProps> = ({ isAuthenticated, isSuperuser }) => {
     useGlobalContext();
 
   const authLinks = () => (
-    <Link to="/logout" className="font-satoshi flex cursor-pointer items-center text-black hover:text-blue-600">
-        Sign Out
-        <FaSignOutAlt className="ml-2 inline-block" />
+    <Link
+      to="/logout"
+      className="font-satoshi flex cursor-pointer items-center text-black hover:text-blue-600"
+    >
+      Sign Out
+      <FaSignOutAlt className="ml-2 inline-block" />
     </Link>
   );
 
@@ -70,22 +73,29 @@ const Header: React.FC<LoginFormProps> = ({ isAuthenticated, isSuperuser }) => {
     <header className="z-50 fixed w-full items-center no-print">
       <div className="w-full items-center justify-center border-b border-gray-300 bg-blue-100 p-1 text-center text-sm font-light text-gray-500 lg:flex">
         <p className="hidden md:block">
-          Welcome to Balancer’s first release! Found a bug or have feedback? Let us know {" "}
+          Welcome to Balancer’s first release! Found a bug or have feedback? Let
+          us know{" "}
           <Link
             to="/feedback"
             className="text-black hover:border-blue-600 hover:text-blue-600 hover:no-underline"
           >
-          here {" "}
+            here{" "}
           </Link>
-          or email {" "}
-          <a href="mailto:balancerteam@codeforphilly.org" className="underline hover:border-blue-600 hover:text-blue-600 hover:no-underline">
+          or email{" "}
+          <a
+            href="mailto:balancerteam@codeforphilly.org"
+            className="underline hover:border-blue-600 hover:text-blue-600 hover:no-underline"
+          >
             balancerteam@codeforphilly.org
           </a>
           .
         </p>
         <p className="sm:block md:hidden">
-          App is in beta; report issues to {" "}
-          <a href="mailto:balancerteam@codeforphilly.org" className="underline hover:border-blue-600 hover:text-blue-600 hover:no-underline">
+          App is in beta; report issues to{" "}
+          <a
+            href="mailto:balancerteam@codeforphilly.org"
+            className="underline hover:border-blue-600 hover:text-blue-600 hover:no-underline"
+          >
             balancerteam@codeforphilly.org
           </a>
           .
@@ -161,7 +171,7 @@ const Header: React.FC<LoginFormProps> = ({ isAuthenticated, isSuperuser }) => {
             >
               Donate
             </a>
-            {(isAuthenticated && isSuperuser) && (
+            {isAuthenticated && isSuperuser && (
               <div
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
@@ -193,6 +203,9 @@ const Header: React.FC<LoginFormProps> = ({ isAuthenticated, isSuperuser }) => {
             )}
           </>
         </nav>
+        <span className="invisible bg-gradient-to-r from-blue-500 via-blue-700 to-blue-300 bg-clip-text font-quicksand text-xl font-bold text-transparent lg:text-2xl xl:text-5xl">
+          Balancer
+        </span>
         <Chat showChat={showChat} setShowChat={setShowChat} />
         {isAuthenticated && authLinks()}
       </div>

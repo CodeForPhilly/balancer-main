@@ -3,7 +3,7 @@ import { useAuth } from "./authHooks.ts";
 import { useGlobalContext } from "../../../src/contexts/GlobalContext.tsx";
 
 interface LoginFormProps {
-  isAuthenticated: boolean;
+  isAuthenticated: boolean | null;
 }
 
 const Header: React.FC<LoginFormProps> = () => {

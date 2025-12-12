@@ -9,7 +9,7 @@ import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
 import { FaExclamationTriangle } from "react-icons/fa";
 
 interface LoginFormProps {
-  isAuthenticated: boolean;
+  isAuthenticated: boolean | null;
   loginError?: string | null; // Align this with the mapped state
 }
 

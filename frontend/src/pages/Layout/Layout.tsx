@@ -11,7 +11,7 @@ interface LayoutProps {
 }
 
 interface LoginFormProps {
-    isAuthenticated: boolean;
+    isAuthenticated: boolean | null;
 }
 
 export const Layout = ({

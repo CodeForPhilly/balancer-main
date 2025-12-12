@@ -7,7 +7,7 @@ import closeLogo from "../../assets/close.svg";
 import hamburgerLogo from "../../assets/hamburger.svg";
 
 interface LoginFormProps {
-    isAuthenticated: boolean;
+    isAuthenticated: boolean | null;
     handleForm: () => void;
 }
 

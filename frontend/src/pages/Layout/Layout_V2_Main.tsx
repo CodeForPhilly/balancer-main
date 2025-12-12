@@ -7,7 +7,7 @@ import Sidebar from "./Layout_V2_Sidebar";
 
 interface LayoutProps {
   children: ReactNode;
-  isAuthenticated: boolean;
+  isAuthenticated: boolean | null;
 }
 
 const Layout: React.FC<LayoutProps> = ({ children, isAuthenticated }) => {

@@ -1,7 +1,8 @@
-import { ReactNode } from 'react';
+import { ReactNode, useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../services/actions/types';
+import { AppDispatch, checkAuthenticated } from '../../services/actions/auth';
 import Spinner from '../LoadingSpinner/LoadingSpinner';
 
 interface ProtectedRouteProps {
@@ -10,8 +11,16 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const location = useLocation();
+  const dispatch = useDispatch<AppDispatch>();
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
-  
+
+  // Check authentication status when component mounts
+  useEffect(() => {
+    if (isAuthenticated === null) {
+      dispatch(checkAuthenticated());
+    }
+  }, [dispatch, isAuthenticated]);
+
   // Wait for auth check to complete (null means not checked yet)
   // TODO: Consider adding error handling for auth check failures
   if (isAuthenticated === null) {

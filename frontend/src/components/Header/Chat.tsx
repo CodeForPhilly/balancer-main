@@ -310,9 +310,9 @@ const Chat: React.FC<ChatDropDownProps> = ({ showChat, setShowChat }) => {
                     <div className="chat_bubble chat_bubble_header">
                       <h5>Hi there, I'm {CHATBOT_NAME}!</h5>
                       <p>
-                        You can ask me questions about your uploaded documents.
-                        I'll search through them to provide accurate, cited
-                        answers.
+                        You can ask me questions about bipolar medications. 
+                        I'll search through our database of verified medical 
+                        journal articles to provide accurate, cited answers.
                       </p>
                       <Link to="/data-sources" className="chat_link">
                         Learn more about my sources.

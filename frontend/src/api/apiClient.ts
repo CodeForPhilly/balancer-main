@@ -289,9 +289,9 @@ const sendAssistantMessage = async (
   previousResponseId?: string,
 ) => {
   try {
-    // The adminApi interceptor will automatically include your JWT token 
-    // if you're authenticated, and gracefully omit it if you're not
-    const response = await adminApi.post(`/v1/api/assistant`, {
+    // The adminApi interceptor doesn't gracefully omit the JWT token if you're not authenticated
+    const api = localStorage.getItem("access") ? adminApi : publicApi;
+    const response = await api.post(`/v1/api/assistant`, {
       message,
       previous_response_id: previousResponseId,
     });

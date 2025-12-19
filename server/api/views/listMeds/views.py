@@ -1,4 +1,5 @@
 from rest_framework import status
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -21,6 +22,8 @@ MED_EXCLUDE = {
 
 
 class GetMedication(APIView):
+    permission_classes = [AllowAny]
+
     def post(self, request):
         data = request.data
         state_query = data.get('state', '')
@@ -71,6 +74,8 @@ class GetMedication(APIView):
 
 
 class ListOrDetailMedication(APIView):
+    permission_classes = [AllowAny]
+
     def get(self, request):
         name_query = request.query_params.get('name', None)
         if name_query:

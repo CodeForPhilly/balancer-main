@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { RootState } from "../../services/actions/types";
 import NewPatientForm from "./NewPatientForm.tsx";
 import PatientHistory from "./PatientHistory.tsx";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -11,6 +13,7 @@ import Welcome from "../../components/Welcome/Welcome.tsx";
 import { useGlobalContext } from "../../contexts/GlobalContext.tsx";
 
 const PatientManager = () => {
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
   const [patientInfo, setPatientInfo] = useState<PatientInfo>({
     ID: "",
     Diagnosis: Diagnosis.Manic,
@@ -116,6 +119,7 @@ const PatientManager = () => {
           patientInfo={patientInfo}
           isPatientDeleted={isPatientDeleted}
           setPatientInfo={setPatientInfo}
+          isAuthenticated={isAuthenticated}
         />
         <NewPatientForm
           enterNewPatient={enterNewPatient}

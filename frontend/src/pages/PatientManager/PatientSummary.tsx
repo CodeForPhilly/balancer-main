@@ -16,6 +16,7 @@ interface PatientSummaryProps {
   patientInfo: PatientInfo;
   isPatientDeleted: boolean;
   setPatientInfo: React.Dispatch<React.SetStateAction<PatientInfo>>;
+  isAuthenticated: boolean | null;
 }
 
 type SourceItem = {
@@ -27,6 +28,7 @@ type SourceItem = {
   guid?: string | null;
   page?: number | null;
   link_url?: string | null;
+  upload_file_guid?: string | null;
 };
 type RiskData = {
   benefits: string[];
@@ -43,12 +45,29 @@ type MedicationWithSource = {
 const truncate = (s = "", n = 220) =>
   s.length > n ? s.slice(0, n).trim() + "…" : s;
 
+/**
+ * Extracts the GUID from a drugSummary URL query parameter
+ * Used as fallback when upload_file_guid is not provided by the API
+ * @param url - URL string like "/drugSummary?guid=xxx&page=1"
+ * @returns GUID string or null if not found
+ */
+const extractGuidFromUrl = (url: string): string | null => {
+  try {
+    const urlObj = new URL(url, window.location.origin);
+    return urlObj.searchParams.get('guid');
+  } catch {
+    return null;
+  }
+};
+
 const MedicationItem = ({
   medication,
   isClicked,
   riskData,
   loading,
   onTierClick,
+  isAuthenticated,
+  baseURL,
 }: {
   medication: string;
   source: string;
@@ -56,6 +75,8 @@ const MedicationItem = ({
   riskData: RiskData | null;
   loading: boolean;
   onTierClick: () => void;
+  isAuthenticated: boolean | null;
+  baseURL: string;
 }) => {
   if (medication === "None") {
     return (
@@ -141,16 +162,35 @@ const MedicationItem = ({
                       <div className="mt-1 text-sm font-medium text-gray-900 flex items-center justify-between">
                         <span>{s.title || "Untitled source"}</span>
 
-                        {s.link_url && (
-                          <a
-                            href={s.link_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
-                          >
-                            View PDF
-                          </a>
-                        )}
+                        {/*
+                          Conditional PDF Button:
+                          - Logged in: "View PDF" (blue) → Opens /drugSummary in new tab
+                          - Not logged in: "Download PDF" (green) → Direct download via /v1/api/uploadFile/<guid>
+                          - Fallback: Extracts GUID from link_url if upload_file_guid is missing
+                        */}
+                        {s.link_url && (() => {
+                          const guid = s.upload_file_guid || extractGuidFromUrl(s.link_url);
+                          if (!guid) return null;
+
+                          return isAuthenticated ? (
+                            <a
+                              href={s.link_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
+                            >
+                              View PDF
+                            </a>
+                          ) : (
+                            <a
+                              href={`${baseURL}/v1/api/uploadFile/${guid}`}
+                              download
+                              className="ml-2 px-2 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors"
+                            >
+                              Download PDF
+                            </a>
+                          );
+                        })()}
                       </div>
 
                       {s.publication && (
@@ -192,6 +232,8 @@ const MedicationTier = ({
   riskData,
   loading,
   onTierClick,
+  isAuthenticated,
+  baseURL,
 }: {
   title: string;
   tier: string;
@@ -200,6 +242,8 @@ const MedicationTier = ({
   riskData: RiskData | null;
   loading: boolean;
   onTierClick: (medication: MedicationWithSource) => void;
+  isAuthenticated: boolean | null;
+  baseURL: string;
 }) => (
   <>
     <dt className="flex ml-2 text-sm font-medium leading-6 text-gray-900">
@@ -216,6 +260,8 @@ const MedicationTier = ({
             riskData={riskData}
             loading={loading}
             onTierClick={() => onTierClick(medicationObj)}
+            isAuthenticated={isAuthenticated}
+            baseURL={baseURL}
           />
         ))}
       </ul>
@@ -232,7 +278,9 @@ const PatientSummary = ({
   setIsEditing,
   patientInfo,
   isPatientDeleted,
+  isAuthenticated = false,
 }: PatientSummaryProps) => {
+  const baseURL = import.meta.env.VITE_API_BASE_URL || '';
   const [loading, setLoading] = useState(false);
   const [riskData, setRiskData] = useState<RiskData | null>(null);
   const [clickedMedication, setClickedMedication] = useState<string | null>(
@@ -374,6 +422,8 @@ const PatientSummary = ({
               riskData={riskData}
               loading={loading}
               onTierClick={handleTierClick}
+              isAuthenticated={isAuthenticated}
+              baseURL={baseURL}
             />
             <div className="mt-6">
               <MedicationTier
@@ -384,6 +434,8 @@ const PatientSummary = ({
                 riskData={riskData}
                 loading={loading}
                 onTierClick={handleTierClick}
+                isAuthenticated={isAuthenticated}
+                baseURL={baseURL}
               />
             </div>
             <div className="mt-6">
@@ -395,6 +447,8 @@ const PatientSummary = ({
                 riskData={riskData}
                 loading={loading}
                 onTierClick={handleTierClick}
+                isAuthenticated={isAuthenticated}
+                baseURL={baseURL}
               />
             </div>
           </>

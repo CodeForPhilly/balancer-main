@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import Layout from "../Layout/Layout";
 
 interface ResetPasswordProps {
-  isAuthenticated: boolean;
+  isAuthenticated: boolean | null;
 }
 
 function ResetPassword(props: ResetPasswordProps) {

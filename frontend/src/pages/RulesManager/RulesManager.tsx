@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Layout from "../Layout/Layout";
 import Welcome from "../../components/Welcome/Welcome";
 import ErrorMessage from "../../components/ErrorMessage";
-import { api } from "../../api/apiClient";
+import { adminApi } from "../../api/apiClient";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
 interface Medication {
@@ -69,7 +69,7 @@ function RulesManager() {
     const fetchMedRules = async () => {
       try {
         const url = `${baseUrl}/v1/api/medRules`;
-        const { data } = await api.get<MedRulesResponse>(url);
+        const { data } = await adminApi.get<MedRulesResponse>(url);
 
         if (!data || !Array.isArray(data.results)) {
           throw new Error("Invalid response format");

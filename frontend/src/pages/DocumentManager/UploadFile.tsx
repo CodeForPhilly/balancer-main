@@ -28,8 +28,7 @@ const UploadFile: React.FC = () => {
         formData,
         {
           headers: {
-            "Content-Type": "multipart/form-data",
-            Authorization: `JWT ${localStorage.getItem("access")}`, // Assuming JWT is used for auth
+            "Content-Type": "multipart/form-data"
           },
         }
       );

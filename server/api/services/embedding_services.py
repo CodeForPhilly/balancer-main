@@ -2,6 +2,7 @@ import time
 import logging
 from statistics import median
 
+from django.db.models import Q
 from pgvector.django import L2Distance
 
 from .sentencetTransformer_model import TransformerModel
@@ -49,13 +50,26 @@ def get_closest_embeddings(
     db_query_start = time.time()
 
     # Django QuerySets are lazily evaluated
-    closest_embeddings_query = (
-        Embeddings.objects.filter(upload_file__uploaded_by=user)
-        .annotate(
-            distance=L2Distance("embedding_sentence_transformers", embedding_message)
+    if user.is_authenticated:
+        # User sees their own files + files uploaded by superusers
+        closest_embeddings_query = (
+            Embeddings.objects.filter(
+                Q(upload_file__uploaded_by=user) | Q(upload_file__uploaded_by__is_superuser=True)
+            )
+            .annotate(
+                distance=L2Distance("embedding_sentence_transformers", embedding_message)
+            )
+            .order_by("distance")
         )
-        .order_by("distance")
-    )
+    else:
+        # Unauthenticated users only see superuser-uploaded files
+        closest_embeddings_query = (
+            Embeddings.objects.filter(upload_file__uploaded_by__is_superuser=True)
+            .annotate(
+                distance=L2Distance("embedding_sentence_transformers", embedding_message)
+            )
+            .order_by("distance")
+        )
 
     # Filtering to a document GUID takes precedence over a document name
     if guid:

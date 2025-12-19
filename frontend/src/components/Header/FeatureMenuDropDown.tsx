@@ -4,13 +4,13 @@ export const FeatureMenuDropDown = () => {
   const location = useLocation();
   const currentPath = location.pathname;
   return (
-    <div className="h-50 absolute top-full mb-2 mt-2 flex  flex-row items-center rounded-lg border-2 bg-white font-inter text-sm sm:px-6 md:px-8 lg:px-8 xl:px-6 ">
-      <div className="mx-3 my-5 ">
+    <div className="h-50 absolute top-full mb-2 mt-2 flex flex-row items-center rounded-lg border-2 bg-white font-satoshi text-sm">
+      <div className="">
         <Link to="/AdminPortal">
           <ul className={currentPath === "/AdminPortal" ? "subheader-nav-item subheader-nav-item-selected" : "subheader-nav-item"}>
             <span className="font-bold">Manage files</span>
 
-            <div className="mt-1 font-satoshi text-sm text-gray-400">
+            <div className="font-normal mt-1 text-gray-600">
               Manage and chat with files
             </div>
           </ul>
@@ -19,7 +19,7 @@ export const FeatureMenuDropDown = () => {
           <ul className={currentPath === "/rulesmanager" ? "subheader-nav-item subheader-nav-item-selected" : "subheader-nav-item"}>
             <span className="font-bold">Manage rules</span>
 
-            <div className="mt-1 font-satoshi text-sm text-gray-400">
+            <div className="font-normal mt-1 text-gray-600">
               Manage list of rules
             </div>
           </ul>
@@ -28,7 +28,7 @@ export const FeatureMenuDropDown = () => {
           <ul className={currentPath === "/ManageMeds" ? "subheader-nav-item subheader-nav-item-selected" : "subheader-nav-item"}>
             <span className="font-bold">Manage meds</span>
 
-            <div className="mt-1 font-satoshi text-sm text-gray-400">
+            <div className="font-normal mt-1 text-gray-600">
               Manage list of meds
             </div>
           </ul>

@@ -1,5 +1,5 @@
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.generics import UpdateAPIView
@@ -15,16 +15,15 @@ from .title import generate_title
 
 
 class UploadFileView(APIView):
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]  # Public access
+        return [IsAuthenticated()]  # Auth required for other methods
 
     def get(self, request, format=None):
         print("UploadFileView, get list")
 
-        # Get the authenticated user
-        user = request.user
-
-        # Filter the files uploaded by the authenticated user
-        files = UploadFile.objects.filter(uploaded_by=user.id).defer(
-            'file').order_by('-date_of_upload')
+        files = UploadFile.objects.all().defer('file').order_by('-date_of_upload')
 
         serializer = UploadFileSerializer(files, many=True)
         return Response(serializer.data)
@@ -156,12 +155,11 @@ class UploadFileView(APIView):
 
 
 class RetrieveUploadFileView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get(self, request, guid, format=None):
         try:
-            file = UploadFile.objects.get(
-                guid=guid, uploaded_by=request.user.id)
+            file = UploadFile.objects.get(guid=guid)
             response = HttpResponse(file.file, content_type='application/pdf')
             # print(file.file[:100])
             response['Content-Disposition'] = f'attachment; filename="{file.file_name}"'

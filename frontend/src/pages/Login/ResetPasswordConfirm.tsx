@@ -10,7 +10,7 @@ import { useEffect, useState } from "react";
 import Layout from "../Layout/Layout";
 
 interface ResetPasswordConfirmProps {
-  isAuthenticated: boolean;
+  isAuthenticated: boolean | null;
 }
 
 const ResetPasswordConfirm: React.FC<ResetPasswordConfirmProps> = ({

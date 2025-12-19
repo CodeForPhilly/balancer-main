@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { api } from "../../api/apiClient";
+import { publicApi } from "../../api/apiClient";
 import Layout from "../Layout/Layout";
 import FileRow from "./FileRow";
 import Table from "../../components/Table/Table";
@@ -37,7 +37,7 @@ const ListOfFiles: React.FC<{ showTable?: boolean }> = ({
       try {
         const url = `${baseUrl}/v1/api/uploadFile`;
 
-        const { data } = await api.get(url);
+        const { data } = await publicApi.get(url);
 
         if (Array.isArray(data)) {
           setFiles(data);
@@ -63,7 +63,7 @@ const ListOfFiles: React.FC<{ showTable?: boolean }> = ({
   const handleDownload = async (guid: string, fileName: string) => {
     try {
       setDownloading(guid);
-      const { data } = await api.get(`/v1/api/uploadFile/${guid}`, { responseType: 'blob' });
+      const { data } = await publicApi.get(`/v1/api/uploadFile/${guid}`, { responseType: 'blob' });
 
       const url = window.URL.createObjectURL(new Blob([data]));
       const link = document.createElement("a");
@@ -84,7 +84,7 @@ const ListOfFiles: React.FC<{ showTable?: boolean }> = ({
   const handleOpen = async (guid: string) => {
     try {
       setOpening(guid);
-      const { data } = await api.get(`/v1/api/uploadFile/${guid}`, { responseType: 'arraybuffer' });
+      const { data } = await publicApi.get(`/v1/api/uploadFile/${guid}`, { responseType: 'arraybuffer' });
 
       const file = new Blob([data], { type: 'application/pdf' });
       const fileURL = window.URL.createObjectURL(file);

@@ -7,7 +7,7 @@ from typing import Callable
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 
@@ -111,7 +111,7 @@ def invoke_functions_from_response(
 
 @method_decorator(csrf_exempt, name="dispatch")
 class Assistant(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def post(self, request):
         try:

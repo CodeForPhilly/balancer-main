@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { AI_SETTINGS_ENDPOINTS } from "../../api/endpoints";
 
 // Define an interface for the setting items
 interface SettingItem {
@@ -36,10 +37,8 @@ const SettingsManager: React.FC = () => {
           },
         };
 
-        // Use an environment variable for the base URL or directly insert the URL if not available
-        const baseUrl =
-          import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
-        const url = `${baseUrl}/ai_settings/settings/`;
+        // Use centralized endpoint
+        const url = AI_SETTINGS_ENDPOINTS.SETTINGS;
         try {
           const response = await axios.get<SettingItem[]>(url, config);
           setSettings(response.data);

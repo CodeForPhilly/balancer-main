@@ -67,7 +67,6 @@ const MedicationItem = ({
   loading,
   onTierClick,
   isAuthenticated,
-  baseURL,
 }: {
   medication: string;
   source: string;
@@ -76,7 +75,6 @@ const MedicationItem = ({
   loading: boolean;
   onTierClick: () => void;
   isAuthenticated: boolean | null;
-  baseURL: string;
 }) => {
   if (medication === "None") {
     return (
@@ -183,7 +181,7 @@ const MedicationItem = ({
                             </a>
                           ) : (
                             <a
-                              href={`${baseURL}/v1/api/uploadFile/${guid}`}
+                              href={`/api/v1/api/uploadFile/${guid}`}
                               download
                               className="ml-2 px-2 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors"
                             >
@@ -233,7 +231,6 @@ const MedicationTier = ({
   loading,
   onTierClick,
   isAuthenticated,
-  baseURL,
 }: {
   title: string;
   tier: string;
@@ -243,7 +240,6 @@ const MedicationTier = ({
   loading: boolean;
   onTierClick: (medication: MedicationWithSource) => void;
   isAuthenticated: boolean | null;
-  baseURL: string;
 }) => (
   <>
     <dt className="flex ml-2 text-sm font-medium leading-6 text-gray-900">
@@ -261,7 +257,6 @@ const MedicationTier = ({
             loading={loading}
             onTierClick={() => onTierClick(medicationObj)}
             isAuthenticated={isAuthenticated}
-            baseURL={baseURL}
           />
         ))}
       </ul>
@@ -280,7 +275,7 @@ const PatientSummary = ({
   isPatientDeleted,
   isAuthenticated = false,
 }: PatientSummaryProps) => {
-  const baseURL = import.meta.env.VITE_API_BASE_URL || '';
+  // Using relative URLs - no baseURL needed
   const [loading, setLoading] = useState(false);
   const [riskData, setRiskData] = useState<RiskData | null>(null);
   const [clickedMedication, setClickedMedication] = useState<string | null>(
@@ -423,7 +418,6 @@ const PatientSummary = ({
               loading={loading}
               onTierClick={handleTierClick}
               isAuthenticated={isAuthenticated}
-              baseURL={baseURL}
             />
             <div className="mt-6">
               <MedicationTier
@@ -435,7 +429,6 @@ const PatientSummary = ({
                 loading={loading}
                 onTierClick={handleTierClick}
                 isAuthenticated={isAuthenticated}
-                baseURL={baseURL}
               />
             </div>
             <div className="mt-6">
@@ -448,7 +441,6 @@ const PatientSummary = ({
                 loading={loading}
                 onTierClick={handleTierClick}
                 isAuthenticated={isAuthenticated}
-                baseURL={baseURL}
               />
             </div>
           </>

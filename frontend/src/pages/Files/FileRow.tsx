@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { endpoints } from "../../api/endpoints";
 
 interface File {
   id: number;
@@ -42,8 +43,7 @@ const FileRow: React.FC<FileRowProps> = ({
   const handleSave = async () => {
     setLoading(true);
     try {
-      const baseUrl = import.meta.env.VITE_API_BASE_URL as string;
-      await fetch(`${baseUrl}/v1/api/editmetadata/${file.guid}`, {
+      await fetch(endpoints.editMetadata(file.guid), {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

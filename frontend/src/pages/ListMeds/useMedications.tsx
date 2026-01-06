@@ -11,12 +11,10 @@ export function useMedications() {
   const [medications, setMedications] = useState<MedData[]>([]);
   const [errors, setErrors] = useState<string[]>([]);
 
-  const baseUrl = import.meta.env.VITE_API_BASE_URL;
-
   useEffect(() => {
     const fetchMedications = async () => {
       try {
-        const url = `${baseUrl}/v1/api/get_full_list_med`;
+        const url = `/api/v1/api/get_full_list_med`;
 
         const { data } = await publicApi.get(url);
 
@@ -44,7 +42,7 @@ export function useMedications() {
     };
 
     fetchMedications();
-  }, [baseUrl]);
+  }, []);
 
   console.log(medications);
 

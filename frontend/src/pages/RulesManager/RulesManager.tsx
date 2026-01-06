@@ -63,12 +63,10 @@ function RulesManager() {
   const [isLoading, setIsLoading] = useState(true);
   const [expandedMeds, setExpandedMeds] = useState<Set<string>>(new Set());
 
-  const baseUrl = import.meta.env.VITE_API_BASE_URL;
-
   useEffect(() => {
     const fetchMedRules = async () => {
       try {
-        const url = `${baseUrl}/v1/api/medRules`;
+        const url = `/api/v1/api/medRules`;
         const { data } = await adminApi.get<MedRulesResponse>(url);
 
         if (!data || !Array.isArray(data.results)) {
@@ -86,7 +84,7 @@ function RulesManager() {
     };
 
     fetchMedRules();
-  }, [baseUrl]);
+  }, []);
 
   const toggleMedication = (ruleId: number, medName: string) => {
     const medKey = `${ruleId}-${medName}`;

@@ -152,8 +152,7 @@ const NewPatientForm = ({
     setIsLoading(true); // Start loading
 
     try {
-      const baseUrl = import.meta.env.VITE_API_BASE_URL;
-      const url = `${baseUrl}/v1/api/get_med_recommend`;
+      const url = `/api/v1/api/get_med_recommend`;
 
       const { data } = await publicApi.post(url, payload);
 

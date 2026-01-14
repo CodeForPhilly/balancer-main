@@ -21,8 +21,8 @@ def sanitize_input(user_input:str) -> str:
         
         # Escape special characters
         sanitized = re.sub(r'["\'\\]', '', sanitized)
-        
-        # Optionally, limit length to prevent buffer overflow attacks
+
+        # Limit length to prevent buffer overflow attacks
         max_length = 1000
         if len(sanitized) > max_length:
             sanitized = sanitized[:max_length]

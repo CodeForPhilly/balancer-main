@@ -294,7 +294,8 @@ const sendAssistantMessage = async (
   previousResponseId?: string,
 ) => {
   try {
-    const response = await publicApi.post(V1_API_ENDPOINTS.ASSISTANT, {
+    const api = localStorage.getItem("access") ? adminApi : publicApi;
+    const response = await api.post(V1_API_ENDPOINTS.ASSISTANT, {
       message,
       previous_response_id: previousResponseId,
     });

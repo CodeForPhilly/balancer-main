@@ -39,6 +39,16 @@ Tools used for development:
 Start the Postgres, Django REST, and React services by starting Docker Desktop and running `docker compose up --build` 
 
 #### Postgres
+
+The application supports connecting to PostgreSQL databases via:
+
+1. **CloudNativePG** - Kubernetes-managed PostgreSQL cluster (for production/sandbox)
+2. **AWS RDS** - External PostgreSQL database (AWS managed)
+3. **Local Docker Compose** - For local development
+
+See [Database Connection Documentation](./docs/DATABASE_CONNECTION.md) for detailed configuration.
+
+**Local Development:**
 - Download a sample of papers to upload from [https://balancertestsite.com](https://balancertestsite.com/) 
 - The email and password of `pgAdmin` are specified in `balancer-main/docker-compose.yml`
 - The first time you use `pgAdmin` after building the Docker containers you will need to register the server.

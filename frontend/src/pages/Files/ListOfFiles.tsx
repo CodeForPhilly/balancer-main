@@ -30,12 +30,10 @@ const ListOfFiles: React.FC<{ showTable?: boolean }> = ({
   const [downloading, setDownloading] = useState<string | null>(null);
   const [opening, setOpening] = useState<string | null>(null);
 
-  const baseUrl = import.meta.env.VITE_API_BASE_URL;
-
   useEffect(() => {
     const fetchFiles = async () => {
       try {
-        const url = `${baseUrl}/v1/api/uploadFile`;
+        const url = `/api/v1/api/uploadFile`;
 
         const { data } = await publicApi.get(url);
 
@@ -50,7 +48,7 @@ const ListOfFiles: React.FC<{ showTable?: boolean }> = ({
     };
 
     fetchFiles();
-  }, [baseUrl]);
+  }, []);
 
   const updateFileName = (guid: string, updatedFile: Partial<File>) => {
     setFiles((prevFiles) =>

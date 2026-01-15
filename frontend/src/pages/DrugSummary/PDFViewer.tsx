@@ -10,6 +10,7 @@ import {
 import { Document, Page, pdfjs } from "react-pdf";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { endpoints } from "../../api/endpoints";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
 import ZoomMenu from "./ZoomMenu";
@@ -50,11 +51,10 @@ const PDFViewer = () => {
   const params = new URLSearchParams(location.search);
   const guid = params.get("guid");
   const pageParam = params.get("page");
-  const baseURL = import.meta.env.VITE_API_BASE_URL as string | undefined;
 
   const pdfUrl = useMemo(() => {
-    return guid && baseURL ? `${baseURL}/v1/api/uploadFile/${guid}` : null;
-  }, [guid, baseURL]);
+    return guid ? endpoints.uploadFile(guid) : null;
+  }, [guid]);
 
   useEffect(() => setUiScalePct(Math.round(scale * 100)), [scale]);
 

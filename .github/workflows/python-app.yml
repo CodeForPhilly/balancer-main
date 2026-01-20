@@ -5,9 +5,9 @@ name: Python application
 
 on:
   push:
-    branches: [ "listOfMed" ]
+    branches: [ "develop" ]
   pull_request:
-    branches: [ "listOfMed" ]
+    branches: [ "develop" ]
 
 permissions:
   contents: read
@@ -27,3 +27,6 @@ jobs:
       run: pipx install ruff
     - name: Lint code with Ruff
       run: ruff check --output-format=github --target-version=py39
+    - name: Test with pytest
+      run: |  
+        pytest

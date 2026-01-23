@@ -28,7 +28,7 @@ The Balancer website is a Postgres, Django REST, and React project. The source c
 
 ### Setting up a development environment   
 
-Get the code using git by either forking or cloning `CodeForPhilly/balancer-main`
+Get the code using git by either [forking or cloning](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/getting-started/about-collaborative-development-models) `CodeForPhilly/balancer-main`
 
 Tools used to run Balancer:
 1. `OpenAI API`: Ask for an API key and add it to `config/env/env.dev`

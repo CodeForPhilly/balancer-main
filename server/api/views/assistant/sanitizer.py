@@ -18,7 +18,13 @@ def sanitize_input(user_input:str) -> str:
         
         # Remove any HTML tags
         sanitized = re.sub(r'<.*?>', '', sanitized)
-        
+
+        # Remove Phone Numbers
+        sanitized = re.sub(r'\+?\d[\d -]{8,}\d', '[Phone Number]', sanitized)
+
+        # Remove Email Addresses
+        sanitized = re.sub(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}', '[Email Address]', sanitized)
+
         # Escape special characters
         sanitized = re.sub(r'["\'\\]', '', sanitized)
 

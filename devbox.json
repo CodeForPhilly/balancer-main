@@ -15,7 +15,7 @@
     ],
     "scripts": {
       "create:cluster": [
-        "kind create cluster --name devbox --wait 60s --config ./deploy/kind-config.yaml",
+        "kind create cluster --name devbox --wait 60s --config ./deploy/kind-config.yml",
         "kubectl cluster-info"
       ],
       "deploy:balancer": [
@@ -24,8 +24,7 @@
       ],
       "install:prereqs": [
         "devbox run install:cert-manager",
-        "devbox run install:ingress-nginx",
-        "devbox run install:cnpg"
+        "devbox run install:ingress-nginx"
       ],
       "install:balancer": [
         "kubectl create namespace balancer || true",
@@ -33,11 +32,6 @@
         "echo 'Balancer deployed successfully!'",
         "echo 'You can access the balancer site at:'",
         "echo \"HTTPS: https://balancertestsite.com:$(kubectl get svc -n ingress-nginx -o json ingress-nginx-controller | jq .spec.ports[1].nodePort)\""
-      ],
-      "install:cnpg": [
-        "helm repo add cnpg https://cloudnative-pg.io/charts || true",
-        "helm repo update cnpg",
-        "helm upgrade --install cnpg cnpg/cloudnative-pg --namespace cnpg-system --create-namespace --wait"
       ],
       "install:cert-manager": [
         "helm repo add jetstack https://charts.jetstack.io || true",

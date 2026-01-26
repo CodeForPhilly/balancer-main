@@ -1,13 +1,16 @@
 # Balancer
 
-Balancer is a website of digital tools designed to help prescribers choose the most suitable medications
-for patients with bipolar disorder, helping them shorten their journey to stability and well-being
+Balancer is a website of research tools to help bipolar patients achieve stability faster
 
 ## Usage
 
-You can view the current build of the website here: [https://balancertestsite.com](https://balancertestsite.com/)
+You can view the current build of the website here: [https://balancerproject.org/](https://balancerproject.org/)
 
-## Contributing 
+## Contributing
+
+### Code for Philly Code of Conduct
+
+The Code for Philly Code of Conduct is [here](https://codeforphilly.org/pages/code_of_conduct/) 
 
 ### Join the Balancer community
 
@@ -17,17 +20,18 @@ Join the [Code for Philly Slack and introduce yourself](https://codeforphilly.or
 
 The project kanban board is [on GitHub here](https://github.com/orgs/CodeForPhilly/projects/2)
 
-### Code for Philly Code of Conduct
+### Architecture
 
-The Code for Philly Code of Conduct is [here](https://codeforphilly.org/pages/code_of_conduct/) 
+The Balancer website is a Postgres, Django REST, and React project. The source code layout is:
+
+![Architecture Drawing](Architecture.png)
 
 ### Setting up a development environment   
 
-Get the code using git by either forking or cloning `CodeForPhilly/balancer-main`
+Get the code using git by either [forking or cloning](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/getting-started/about-collaborative-development-models) `CodeForPhilly/balancer-main`
 
 Tools used to run Balancer:
 1. `OpenAI API`: Ask for an API key and add it to `config/env/env.dev`
-2. `Anthropic API`: Ask for an API key and add it to `config/env/env.dev`
 
 Tools used for development:
 1. `Docker`: Install Docker Desktop
@@ -103,12 +107,6 @@ devbox run deploy:balancer
 ```
 
 The website should be available in [https://balancertestsite.com:30219/](https://balancertestsite.com:30219/)
-
-## Architecture
-
-The Balancer website is a Postgres, Django REST, and React project. The source code layout is:
-
-![Architecture Drawing](Architecture.png)
 
 ## License 
 

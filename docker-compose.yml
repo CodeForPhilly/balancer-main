@@ -1,15 +1,9 @@
 services:
   db:
-    # Workaround for PostgreSQL crash with pgvector v0.6.1 on ARM64
-    # image: pgvector/pgvector:pg15
-    # volumes:
-    #   - postgres_data:/var/lib/postgresql/data/
-    #   - ./db/init-vector-extension.sql:/docker-entrypoint-initdb.d/init-vector-extension.sql
-    build:
-      context: ./db
-      dockerfile: Dockerfile
+    image: pgvector/pgvector:pg15
     volumes:
       - postgres_data:/var/lib/postgresql/data/
+      - ./db/init-vector-extension.sql:/docker-entrypoint-initdb.d/init-vector-extension.sql
     environment:
       - POSTGRES_USER=balancer
       - POSTGRES_PASSWORD=balancer
@@ -19,17 +13,12 @@ services:
     networks:
       app_net:
         ipv4_address: 192.168.0.2
-  # pgadmin:
-  #   container_name: pgadmin4
-  #   image: dpage/pgadmin4
-  #   environment:
-  #     PGADMIN_DEFAULT_EMAIL: balancer-noreply@codeforphilly.org
-  #     PGADMIN_DEFAULT_PASSWORD: balancer
-  #   ports:
-  #     - "5050:80"
-  #   networks:
-  #     app_net:
-  #       ipv4_address: 192.168.0.4
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U balancer -d balancer_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   backend:
     image: balancer-backend
     build: ./server
@@ -39,12 +28,20 @@ services:
     env_file:
       - ./config/env/dev.env
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     volumes:
       - ./server:/usr/src/server
     networks:
       app_net:
         ipv4_address: 192.168.0.3
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c 'import http.client;conn=http.client.HTTPConnection(\"localhost:8000\");conn.request(\"GET\",\"/admin/login/\");res=conn.getresponse();exit(0 if res.status in [200,301,302,401] else 1)'"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
   frontend:
     image: balancer-frontend
     build:
@@ -60,10 +57,17 @@ services:
       - "./frontend:/usr/src/app:delegated"
       - "/usr/src/app/node_modules/"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     networks:
       app_net:
         ipv4_address: 192.168.0.5
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 volumes:
   postgres_data:
 networks:

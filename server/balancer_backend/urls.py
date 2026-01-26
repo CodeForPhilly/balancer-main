@@ -51,8 +51,12 @@ urlpatterns += [
     path("api/", include(api_urlpatterns)),
 ]
 
+import os
+from django.conf import settings
+
 # Add a catch-all URL pattern for handling SPA (Single Page Application) routing
 # Serve 'index.html' for any unmatched URL (must come after /api/ routes)
-urlpatterns += [
-    re_path(r"^.*$", TemplateView.as_view(template_name="index.html")),
-]
+if os.path.exists(os.path.join(settings.BASE_DIR, "build", "index.html")):
+    urlpatterns += [
+        re_path(r"^(?!api|admin|static).*$", TemplateView.as_view(template_name="index.html")),
+    ]

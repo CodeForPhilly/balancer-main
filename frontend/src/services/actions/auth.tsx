@@ -20,6 +20,7 @@ import {
   FACEBOOK_AUTH_FAIL,
   LOGOUT,
 } from "./types";
+import { AUTH_ENDPOINTS } from "../../api/endpoints";
 
 import { ThunkAction } from "redux-thunk";
 import { RootState } from "../reducers";
@@ -75,9 +76,7 @@ export const checkAuthenticated = () => async (dispatch: AppDispatch) => {
     };
 
     const body = JSON.stringify({ token: localStorage.getItem("access") });
-    const baseUrl = import.meta.env.VITE_API_BASE_URL;
-    console.log(baseUrl);
-    const url = `${baseUrl}/auth/jwt/verify/`;
+    const url = AUTH_ENDPOINTS.JWT_VERIFY;
     try {
       const res = await axios.post(url, body, config);
 
@@ -113,9 +112,7 @@ export const load_user = (): ThunkType => async (dispatch: AppDispatch) => {
         Accept: "application/json",
       },
     };
-    const baseUrl = import.meta.env.VITE_API_BASE_URL;
-    console.log(baseUrl);
-    const url = `${baseUrl}/auth/users/me/`;
+    const url = AUTH_ENDPOINTS.USER_ME;
     try {
       const res = await axios.get(url, config);
 
@@ -145,9 +142,7 @@ export const login =
     };
 
     const body = JSON.stringify({ email, password });
-    const baseUrl = import.meta.env.VITE_API_BASE_URL;
-    console.log(baseUrl);
-    const url = `${baseUrl}/auth/jwt/create/`;
+    const url = AUTH_ENDPOINTS.JWT_CREATE;
     try {
       const res = await axios.post(url, body, config);
 
@@ -195,8 +190,7 @@ export const reset_password =
     };
     console.log("yes");
     const body = JSON.stringify({ email });
-    const baseUrl = import.meta.env.VITE_API_BASE_URL;
-    const url = `${baseUrl}/auth/users/reset_password/`;
+    const url = AUTH_ENDPOINTS.RESET_PASSWORD;
     try {
       await axios.post(url, body, config);
 
@@ -225,8 +219,7 @@ export const reset_password_confirm =
     };
 
     const body = JSON.stringify({ uid, token, new_password, re_new_password });
-    const baseUrl = import.meta.env.VITE_API_BASE_URL;
-    const url = `${baseUrl}/auth/users/reset_password_confirm/`;
+    const url = AUTH_ENDPOINTS.RESET_PASSWORD_CONFIRM;
     try {
       const response = await axios.post(url, body, config);
       dispatch({

@@ -22,9 +22,8 @@ const UploadFile: React.FC = () => {
     formData.append("file", file);
 
     try {
-      const baseUrl = import.meta.env.VITE_API_BASE_URL;
       const response = await axios.post(
-        `${baseUrl}/v1/api/uploadFile`,
+        `/api/v1/api/uploadFile`,
         formData,
         {
           headers: {

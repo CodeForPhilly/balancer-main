@@ -13,10 +13,12 @@ def sanitize_input(user_input:str) -> str:
         str: The sanitized input string.
     """
     try:
-        # Remove any script tags
-        sanitized = re.sub(r'<script.*?>.*?</script>', '', user_input, flags=re.IGNORECASE)
+        sanitized = user_input
         
-        # Remove any HTML tags
+        # Remove any style tags
+        sanitized = re.sub(r'<style.*?>.*?</style>', '', sanitized, flags=re.IGNORECASE)
+
+        # Remove any HTML/script tags
         sanitized = re.sub(r'<.*?>', '', sanitized)
 
         # Remove Phone Numbers
@@ -29,7 +31,7 @@ def sanitize_input(user_input:str) -> str:
         sanitized = re.sub(r'["\'\\]', '', sanitized)
 
         # Limit length to prevent buffer overflow attacks
-        max_length = 1000
+        max_length = 5000
         if len(sanitized) > max_length:
             sanitized = sanitized[:max_length]
         

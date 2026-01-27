@@ -94,15 +94,48 @@ WSGI_APPLICATION = "balancer_backend.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    "default": {
+# Detect connection type based on SQL_HOST
+# CloudNativePG: Kubernetes service names (e.g., "balancer-postgres-rw" or contains ".svc.cluster.local")
+# AWS RDS: External hostnames (e.g., "balancer-db.xxxxx.us-east-1.rds.amazonaws.com")
+SQL_HOST = os.environ.get("SQL_HOST", "localhost")
+is_cloudnativepg = (
+    ".svc.cluster.local" in SQL_HOST
+    or not ("." in SQL_HOST and len(SQL_HOST.split(".")) > 2)
+    or SQL_HOST.count(".") <= 1
+)
+
+# Build database configuration
+db_config = {
         "ENGINE": os.environ.get("SQL_ENGINE", "django.db.backends.sqlite3"),
         "NAME": os.environ.get("SQL_DATABASE", BASE_DIR / "db.sqlite3"),
         "USER": os.environ.get("SQL_USER", "user"),
         "PASSWORD": os.environ.get("SQL_PASSWORD", "password"),
-        "HOST": os.environ.get("SQL_HOST", "localhost"),
+    "HOST": SQL_HOST,
         "PORT": os.environ.get("SQL_PORT", "5432"),
     }
+
+# Configure SSL/TLS based on connection type
+# CloudNativePG within cluster typically doesn't require SSL
+# AWS RDS typically requires SSL
+if db_config["ENGINE"] == "django.db.backends.postgresql":
+    # Check if SSL is explicitly configured
+    ssl_mode = os.environ.get("SQL_SSL_MODE", None)
+    
+    if ssl_mode:
+        # Use explicit SSL configuration
+        db_config["OPTIONS"] = {
+            "sslmode": ssl_mode,
+        }
+    elif not is_cloudnativepg:
+        # For external databases (AWS RDS), default to require SSL
+        # This can be overridden by setting SQL_SSL_MODE
+        db_config["OPTIONS"] = {
+            "sslmode": "require",
+        }
+    # For CloudNativePG (within cluster), no SSL by default
+
+DATABASES = {
+    "default": db_config,
 }
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"

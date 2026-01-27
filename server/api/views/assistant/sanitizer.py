@@ -31,7 +31,7 @@ def sanitize_input(user_input:str) -> str:
         sanitized = re.sub(r'["\'\\]', '', sanitized)
 
         # Limit length to prevent buffer overflow attacks
-        max_length = 5000
+        max_length = 1000
         if len(sanitized) > max_length:
             sanitized = sanitized[:max_length]
         

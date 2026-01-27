@@ -3,6 +3,8 @@ name: "Containers: Publish"
 on:
   release:
     types: [published]
+  push:
+    branches: [develop]
 
 permissions:
   packages: write
@@ -12,7 +14,7 @@ jobs:
     name: Build and Push
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v4
 
       - name: Login to ghcr.io Docker registry
         uses: docker/login-action@v3
@@ -24,7 +26,13 @@ jobs:
       - name: Compute Docker container image addresses
         run: |
           DOCKER_REPOSITORY="ghcr.io/${GITHUB_REPOSITORY,,}"
-          DOCKER_TAG="${GITHUB_REF:11}"
+          
+          if [[ "${{ github.event_name }}" == "release" ]]; then
+            DOCKER_TAG="${GITHUB_REF:11}"
+          else
+            SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+            DOCKER_TAG="dev-${SHORT_SHA}"
+          fi
 
           echo "DOCKER_REPOSITORY=${DOCKER_REPOSITORY}" >> $GITHUB_ENV
           echo "DOCKER_TAG=${DOCKER_TAG}" >> $GITHUB_ENV
@@ -51,3 +59,12 @@ jobs:
 
       - name: "Push Docker container image app:v*"
         run: docker push "${DOCKER_REPOSITORY}/app:${DOCKER_TAG}"
+
+      - name: Save Docker Tag
+        run: echo "${DOCKER_TAG}" > docker_tag.txt
+
+      - name: Upload Docker Tag
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-tag
+          path: docker_tag.txt

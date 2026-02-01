@@ -1,0 +1,21 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: balancer
+
+resources:
+  - ../dev
+
+# Minimal secret for kind: SQLite so no PostgreSQL is required
+secretGenerator:
+  - name: balancer-config
+    literals:
+      - SECRET_KEY=devkey-for-kind-test
+      - DEBUG=1
+      - SQL_ENGINE=django.db.backends.sqlite3
+      - SQL_DATABASE=db.sqlite3
+      - OPENAI_API_KEY=dummy
+      - PINECONE_API_KEY=dummy
+      - LOGIN_REDIRECT_URL=
+generatorOptions:
+  disableNameSuffixHash: true

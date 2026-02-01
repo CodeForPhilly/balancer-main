@@ -7,7 +7,7 @@ import {
   endpoints,
 } from "./endpoints";
 
-// Use empty string for relative URLs - all API calls will be relative to current domain
+// Empty baseURL so API calls are relative to current origin; one image works for both sandbox and production.
 const baseURL = "";
 
 export const publicApi = axios.create({ baseURL });

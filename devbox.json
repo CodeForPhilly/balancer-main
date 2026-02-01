@@ -15,7 +15,7 @@
     ],
     "scripts": {
       "create:cluster": [
-        "kind create cluster --name devbox --wait 60s --config ./deploy/kind-config.yaml",
+        "kind create cluster --name devbox --wait 60s --config ./deploy/kind-config.yml",
         "kubectl cluster-info"
       ],
       "deploy:balancer": [

@@ -76,8 +76,8 @@ To run the application, you need to configure your environment variables.
     > **⚠️ SECURITY WARNING**: Never commit `config/env/dev.env` to version control. It is already ignored by `.gitignore`.
 
 2.  **Frontend Config**:
-    *   The frontend uses `frontend/.env` (or `.env.production` for builds).
-    *   Key variable: `VITE_API_BASE_URL` (Defaults to `http://localhost:8000` for local dev).
+    *   The frontend uses `frontend/.env` for local dev only (e.g. `VITE_API_BASE_URL=http://localhost:8000` for the Vite proxy).
+    *   Production builds use relative API URLs (no `.env.production` or API base URL needed); the same image works for sandbox and live.
 
 ---
 

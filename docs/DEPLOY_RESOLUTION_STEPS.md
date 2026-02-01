@@ -33,9 +33,9 @@ Deploy Downstream will open a PR in **CodeForPhilly/cfp-sandbox-cluster** to upd
 
 ## Step 4 – Live (production)
 
-Live deploys only on **release** (see `.github/workflows/deploy-downstream.yml`: `workflow_run.event == 'release'`).
+Live deploys automatically when a **release** is published (Containers: Publish runs, then Deploy: Downstream opens a PR to cfp-live-cluster). You can also **manually** open deploy PRs after merging to main:
 
-- **Action**: Create a release from `main` (or the intended tag) so **Deploy: Downstream** runs for live and opens a PR in **CodeForPhilly/cfp-live-cluster**. Merge that PR. Verify **https://balancerproject.org** and that API calls go to `https://balancerproject.org/api/...`.
+- **Action**: In **Actions → Deploy: Downstream → Run workflow**, choose **workflow_dispatch**, enter the image tag (e.g. `v1.2.0` or `dev-abc1234`), and set **target** to `live` (or `both` for sandbox + live). This opens the deploy PR(s) in the GitOps repos. Then create a release from `main` if you want the usual release flow, or just merge the opened deploy PR. Verify **https://balancerproject.org** and that API calls go to `https://balancerproject.org/api/...`.
 - **Ping**: @chris or release manager for creating the release and merging the live deploy PR.
 
 ---

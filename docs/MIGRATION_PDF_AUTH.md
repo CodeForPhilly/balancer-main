@@ -278,8 +278,7 @@ If issues occur:
 
 ## Environment Variables
 
-No new environment variables required. Uses existing:
-- `VITE_API_BASE_URL` - Frontend API base URL
+No new environment variables required. Production uses relative API URLs (no env needed). Local dev may use `VITE_API_BASE_URL` in `frontend/.env` for the Vite proxy.
 
 ## Known Issues / Limitations
 

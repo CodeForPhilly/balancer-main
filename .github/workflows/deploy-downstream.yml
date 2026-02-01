@@ -1,5 +1,9 @@
 name: "Deploy: Downstream Clusters"
 
+# CD: push to develop -> Containers: Publish -> this workflow -> PR to cfp-sandbox-cluster.
+# Live: publish release -> Containers: Publish -> this workflow -> PR to cfp-live-cluster.
+# Manual: Run workflow_dispatch with tag (and optional target) to open deploy PRs.
+# Requires BOT_GITHUB_TOKEN with write access to CodeForPhilly/cfp-sandbox-cluster and cfp-live-cluster.
 on:
   workflow_run:
     workflows: ["Containers: Publish"]
@@ -8,15 +12,29 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Image tag to deploy (e.g. 1.1.0)'
+        description: 'Image tag to deploy (e.g. 1.1.0 or dev-abc1234)'
         required: true
         default: 'latest'
+      target:
+        description: 'Which cluster(s) to open deploy PRs for'
+        required: false
+        default: 'both'
+        type: choice
+        options:
+          - both
+          - sandbox
+          - live
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: write
 
 jobs:
   update-sandbox:
     name: Update Sandbox Cluster
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'develop') }}
+    if: ${{ (github.event_name == 'workflow_dispatch' && (inputs.target == 'both' || inputs.target == 'sandbox')) || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'develop') }}
     outputs:
       tag: ${{ steps.get_tag.outputs.TAG }}
     steps:
@@ -65,7 +83,7 @@ jobs:
   update-live:
     name: Update Live Cluster
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'release') }}
+    if: ${{ (github.event_name == 'workflow_dispatch' && (inputs.target == 'both' || inputs.target == 'live')) || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'release') }}
     steps:
       - name: Checkout App
         uses: actions/checkout@v4

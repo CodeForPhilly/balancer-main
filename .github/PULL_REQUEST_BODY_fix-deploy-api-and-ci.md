@@ -11,6 +11,10 @@ Single PR that fixes deploy/API/CI for sandbox + live.
 
 **Not closed:** #451 (sanitizer) – unrelated; left open.
 
+**GitOps CD and manual deploy:** `Deploy: Downstream` now has explicit permissions and a `target` input for workflow_dispatch (`both` | `sandbox` | `live`). CD: push to `develop` → Containers: Publish → deploy PR to **cfp-sandbox-cluster**. Live: publish release → deploy PR to **cfp-live-cluster**. Manual: run **Deploy: Downstream** with a tag (and optional target) to open deploy PRs without waiting for develop/release. Jobs were failing due to missing permissions and token; BOT_GITHUB_TOKEN must have write access to both cluster repos (see docs/DEPLOY_RESOLUTION_STEPS.md).
+
+**Other:** SPA catch-all always registered (serve index.html at request time or 404). Removed `.env.production` and unused `VITE_API_BASE_URL` from frontend `.env`.
+
 ## Related
 
 - Closes #450

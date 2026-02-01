@@ -21,7 +21,7 @@ const ParseStringWithLinks: React.FC<ParseStringWithLinksProps> = ({
 
       const processedText = text.split(regex).map((part, index) => {
         if (index % 2 === 1) {
-          const guidMatch = part.match(/([a-f0-9-]{36})/);
+          const guidMatch = part.match(/([a-f0-9\-]{36})/);
           const pageNumberMatch = part.match(/Page\s*(?:Number:)?\s*(\d+)/i);
           const chunkNumberMatch = part.match(/Chunk\s*(\d+)/i);
 

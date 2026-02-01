@@ -1,13 +1,11 @@
-import os
-import importlib
-
-from django.conf import settings
 from django.contrib import admin  # Import Django's admin interface module
-from django.http import HttpResponseNotFound
+
 # Import functions for URL routing and including other URL configs
 from django.urls import path, include, re_path
+
 # Import TemplateView for rendering templates
 from django.views.generic import TemplateView
+import importlib  # Import the importlib module for dynamic module importing
 
 # Define a list of URL patterns for the application
 # Keep admin outside /api/ prefix
@@ -52,6 +50,10 @@ for url in urls:
 urlpatterns += [
     path("api/", include(api_urlpatterns)),
 ]
+
+import os
+from django.conf import settings
+from django.http import HttpResponseNotFound
 
 
 def spa_fallback(request):

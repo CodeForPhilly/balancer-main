@@ -1,0 +1,21 @@
+# Pre-commit hooks: run the same checks as CI, but only on staged (changed) files.
+# Install: pip install pre-commit && pre-commit install
+# Run manually: pre-commit run --all-files (lints all); pre-commit run (lints staged only)
+# See https://pre-commit.com/
+
+repos:
+  - repo: local
+    hooks:
+      - id: frontend-lint
+        name: Frontend lint (staged files only)
+        entry: bash -c 'cd frontend && FILES=(); for f in "$@"; do p="${f#frontend/}"; [[ -f "$p" ]] && FILES+=("$p"); done; [[ ${#FILES[@]} -eq 0 ]] && exit 0; npx eslint --ext .ts,.tsx --fix "${FILES[@]}"'
+        language: system
+        files: ^frontend/.*\.(tsx?|jsx?)$
+        pass_filenames: true
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.4
+    hooks:
+      - id: ruff
+        args: [--target-version=py39, --fix]
+        files: ^server/.*\.py$

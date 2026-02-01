@@ -470,6 +470,6 @@ function FeedbackForm({id}: FormProps) {
             </section>
         </>
     );
-};
+}
 
 export default FeedbackForm;

@@ -1,3 +1,4 @@
 config/env/*
 !config/env/*.example
 .idea/
+.DS_Store

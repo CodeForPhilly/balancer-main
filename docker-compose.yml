@@ -19,6 +19,20 @@ services:
       timeout: 5s
       retries: 5
 
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=balancer-noreply@codeforphilly.org
+      - PGADMIN_DEFAULT_PASSWORD=balancer
+    ports:
+      - "5050:80"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      app_net:
+        ipv4_address: 192.168.0.4
+
   backend:
     image: balancer-backend
     build: ./server

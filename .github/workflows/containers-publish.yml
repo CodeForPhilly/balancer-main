@@ -4,7 +4,7 @@ on:
   release:
     types: [published]
   push:
-    branches: [develop]
+    branches: [develop, main]
 
 permissions:
   packages: write
@@ -29,9 +29,14 @@ jobs:
           
           if [[ "${{ github.event_name }}" == "release" ]]; then
             DOCKER_TAG="${GITHUB_REF:11}"
-          else
+          elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            TIMESTAMP=$(date +%Y%m%d%H%M%S)
             SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
-            DOCKER_TAG="dev-${SHORT_SHA}"
+            DOCKER_TAG="main-${TIMESTAMP}-${SHORT_SHA}"
+          else
+            TIMESTAMP=$(date +%Y%m%d%H%M%S)
+            SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+            DOCKER_TAG="dev-${TIMESTAMP}-${SHORT_SHA}"
           fi
 
           echo "DOCKER_REPOSITORY=${DOCKER_REPOSITORY}" >> $GITHUB_ENV

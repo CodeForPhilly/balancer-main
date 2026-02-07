@@ -278,28 +278,6 @@ docker compose exec backend python manage.py test
 ### Frontend Tests
 No test framework currently configured. Consider adding Jest/Vitest for future testing.
 
-## Deployment
-
-### Local Kubernetes (using Devbox)
-```bash
-# Install Devbox first: https://www.jetify.com/devbox
-
-# Add balancertestsite.com to /etc/hosts
-sudo sh -c 'echo "127.0.0.1      balancertestsite.com" >> /etc/hosts'
-
-# Deploy to local k8s cluster
-devbox shell
-devbox create:cluster
-devbox run deploy:balancer
-
-# Access at https://balancertestsite.com:30219/
-```
-
-### Production
-- Manifests: `deploy/manifests/balancer/`
-- ConfigMap: `deploy/manifests/balancer/base/configmap.yml`
-- Secrets: `deploy/manifests/balancer/base/secret.template.yaml`
-
 ## Key Files Reference
 
 - `server/balancer_backend/settings.py` - Django configuration (auth, database, CORS)

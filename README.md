@@ -21,13 +21,17 @@ The project kanban board is [on GitHub here](https://github.com/orgs/CodeForPhil
 
 The Code for Philly Code of Conduct is [here](https://codeforphilly.org/pages/code_of_conduct/) 
 
-### Setting up a development environment   
+### Setting up a development environment
 
 Get the code using git by either forking or cloning `CodeForPhilly/balancer-main`
 
-Tools used to run Balancer:
-1. `OpenAI API`: Ask for an API key and add it to `config/env/env.dev`
-2. `Anthropic API`: Ask for an API key and add it to `config/env/env.dev`
+1. Copy the example environment file:
+   ```bash
+   cp config/env/dev.env.example config/env/dev.env
+   ```
+2. (Optional) Add your API keys to `config/env/dev.env`:
+   - `OpenAI API`
+   - `Anthropic API`
 
 Tools used for development:
 1. `Docker`: Install Docker Desktop
@@ -69,40 +73,6 @@ df = pd.read_sql(query, engine)
 
 #### Django REST
 - The email and password are set in `server/api/management/commands/createsu.py`
-
-## Local Kubernetes Deployment
-
-### Prereqs
-
-- Fill the configmap with the [env vars](./deploy/manifests/balancer/base/configmap.yml)
-- Install [Devbox](https://www.jetify.com/devbox)
-- Run the following script with admin privileges:
-
-```bash
-HOSTNAME="balancertestsite.com"
-LOCAL_IP="127.0.0.1"
-
-# Check if the correct line already exists
-if grep -q "^$LOCAL_IP[[:space:]]\+$HOSTNAME" /etc/hosts; then
-  echo "Entry for $HOSTNAME with IP $LOCAL_IP already exists in /etc/hosts"
-else
-  echo "Updating /etc/hosts for $HOSTNAME"
-  sudo sed -i "/[[:space:]]$HOSTNAME/d" /etc/hosts
-  echo "$LOCAL_IP      $HOSTNAME" | sudo tee -a /etc/hosts
-fi
-```
-
-### Steps to reproduce
-
-Inside root dir of balancer
-
-```bash
-devbox shell
-devbox create:cluster
-devbox run deploy:balancer
-```
-
-The website should be available in [https://balancertestsite.com:30219/](https://balancertestsite.com:30219/)
 
 ## Architecture
 

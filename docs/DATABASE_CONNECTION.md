@@ -74,6 +74,20 @@ SQL_PORT=5432
 SQL_SSL_MODE=require
 ```
 
+### Local Docker Compose Configuration
+
+When using Docker Compose for local development, the application connects to the `db` service container.
+
+**Example Configuration:**
+```bash
+SQL_ENGINE=django.db.backends.postgresql
+SQL_DATABASE=balancer_dev
+SQL_USER=balancer
+SQL_PASSWORD=balancer
+SQL_HOST=db
+SQL_PORT=5432
+```
+
 ## SSL Configuration
 
 ### CloudNativePG

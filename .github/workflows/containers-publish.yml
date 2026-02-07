@@ -26,17 +26,14 @@ jobs:
       - name: Compute Docker container image addresses
         run: |
           DOCKER_REPOSITORY="ghcr.io/${GITHUB_REPOSITORY,,}"
-          VERSION=$(cat VERSION)
           
           if [[ "${{ github.event_name }}" == "release" ]]; then
-            # Use the GitHub Release tag (removing 'v' prefix if present)
             TAG="${GITHUB_REF#refs/tags/}"
             DOCKER_TAG="${TAG#v}"
-          elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            # Stable version for main branch
-            DOCKER_TAG="${VERSION}"
           else
-            # Pre-release version for develop and other branches
+            git fetch --tags --force
+            BASE_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+            VERSION="${BASE_TAG#v}"
             TIMESTAMP=$(date +%Y%m%d%H%M%S)
             DOCKER_TAG="${VERSION}-dev.${TIMESTAMP}"
           fi

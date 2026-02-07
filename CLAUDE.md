@@ -210,7 +210,8 @@ Routes defined in `src/routes/routes.tsx`:
 
 ### Environment Configuration
 - **Development**: `config/env/dev.env` (used by Docker Compose)
-- **Frontend**: Production uses relative API URLs (no `.env.production`); local dev uses `frontend/.env` (e.g. `VITE_API_BASE_URL` for proxy).
+- **Frontend Production**: `frontend/.env.production`
+  - Contains `VITE_API_BASE_URL` for production API endpoint
 - **Never commit** actual API keys - use `.env.example` as template
 - Django `SECRET_KEY` should be a long random string in production (not "foo")
 

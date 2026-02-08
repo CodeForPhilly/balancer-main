@@ -21,6 +21,10 @@ RUN npm run build
 # Stage 2: Build Backend
 FROM python:3.11.4-slim-bullseye
 
+# Receive version argument from build command
+ARG VERSION
+ENV VERSION=${VERSION}
+
 # Set work directory
 WORKDIR /usr/src/app
 

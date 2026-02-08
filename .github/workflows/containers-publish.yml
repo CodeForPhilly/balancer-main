@@ -68,6 +68,7 @@ jobs:
               --file Dockerfile.prod \
               --tag "${DOCKER_REPOSITORY}/app:latest" \
               --tag "${DOCKER_REPOSITORY}/app:${DOCKER_TAG}" \
+              --build-arg VERSION="${DOCKER_TAG}" \
               .
 
       - name: "Push Docker container image app:latest"

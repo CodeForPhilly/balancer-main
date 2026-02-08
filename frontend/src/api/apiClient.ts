@@ -306,6 +306,17 @@ const sendAssistantMessage = async (
   }
 };
 
+export interface VersionResponse {
+  version: string;
+}
+
+const fetchVersion = async (): Promise<VersionResponse> => {
+  const response = await publicApi.get<VersionResponse>(
+    V1_API_ENDPOINTS.VERSION,
+  );
+  return response.data;
+};
+
 export {
   handleSubmitFeedback,
   handleSendDrugSummary,
@@ -320,4 +331,5 @@ export {
   handleSendDrugSummaryStreamLegacy,
   fetchRiskDataWithSources,
   sendAssistantMessage,
+  fetchVersion,
 };

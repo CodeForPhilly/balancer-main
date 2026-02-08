@@ -18,6 +18,7 @@ urlpatterns = [
 urls = [
     "conversations",
     "feedback",
+    "version",
     "listMeds",
     "risk",
     "uploadFile",

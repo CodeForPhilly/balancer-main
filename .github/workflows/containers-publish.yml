@@ -4,7 +4,7 @@ on:
   release:
     types: [published]
   push:
-    branches: [develop, main]
+    branches: [develop]
 
 permissions:
   packages: write
@@ -31,17 +31,6 @@ jobs:
           if [[ "${{ github.event_name }}" == "release" ]]; then
             TAG="${GITHUB_REF#refs/tags/}"
             DOCKER_TAG="${TAG#v}"
-          elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            # Attempt to extract version from merge commit or branch if available
-            # release-prepare usually creates branch release/vX.Y.Z or commit "Release vX.Y.Z"
-            PREPARED_VERSION=$(git log -1 --pretty=%B | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' | head -1 | sed 's/^v//')
-            
-            if [[ -n "$PREPARED_VERSION" ]]; then
-              DOCKER_TAG="$PREPARED_VERSION"
-            else
-              BASE_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
-              DOCKER_TAG="${BASE_TAG#v}"
-            fi
           else
             # Pre-release for develop
             BASE_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")

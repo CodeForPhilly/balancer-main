@@ -7,7 +7,7 @@ import {
   endpoints,
 } from "./endpoints";
 
-// Use empty string for relative URLs - all API calls will be relative to current domain
+// Empty baseURL so API calls are relative to current origin; one image works for both sandbox and production.
 const baseURL = "";
 
 export const publicApi = axios.create({ baseURL });
@@ -306,6 +306,17 @@ const sendAssistantMessage = async (
   }
 };
 
+export interface VersionResponse {
+  version: string;
+}
+
+const fetchVersion = async (): Promise<VersionResponse> => {
+  const response = await publicApi.get<VersionResponse>(
+    V1_API_ENDPOINTS.VERSION,
+  );
+  return response.data;
+};
+
 export {
   handleSubmitFeedback,
   handleSendDrugSummary,
@@ -320,4 +331,5 @@ export {
   handleSendDrugSummaryStreamLegacy,
   fetchRiskDataWithSources,
   sendAssistantMessage,
+  fetchVersion,
 };

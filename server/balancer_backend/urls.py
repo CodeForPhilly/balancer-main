@@ -18,6 +18,7 @@ urlpatterns = [
 urls = [
     "conversations",
     "feedback",
+    "version",
     "listMeds",
     "risk",
     "uploadFile",
@@ -51,8 +52,21 @@ urlpatterns += [
     path("api/", include(api_urlpatterns)),
 ]
 
-# Add a catch-all URL pattern for handling SPA (Single Page Application) routing
-# Serve 'index.html' for any unmatched URL (must come after /api/ routes)
+import os
+from django.conf import settings
+from django.http import HttpResponseNotFound
+
+
+def spa_fallback(request):
+    """Serve index.html for SPA routing when build is present; otherwise 404."""
+    index_path = os.path.join(settings.BASE_DIR, "build", "index.html")
+    if os.path.exists(index_path):
+        return TemplateView.as_view(template_name="index.html")(request)
+    return HttpResponseNotFound()
+
+
+# Always register SPA catch-all so production serves the frontend regardless of
+# URL config load order. At request time we serve index.html if build exists, else 404.
 urlpatterns += [
-    re_path(r"^.*$", TemplateView.as_view(template_name="index.html")),
+    re_path(r"^(?!api|admin|static).*$", spa_fallback),
 ]

@@ -1,5 +1,6 @@
 //import Welcome from "../../components/Welcome/Welcome.tsx";
 import Layout from "../Layout/Layout";
+import Version from "../../components/Version/Version";
 // import image from "./OIP.jpeg";
 import image from "./OIP2.png";
 
@@ -88,6 +89,10 @@ function About() {
               </button>
             </a>
           </div>
+          <Version
+            as="p"
+            className="text-gray-500 text-sm mt-4"
+          />
         </div>
       </div>
     </Layout>

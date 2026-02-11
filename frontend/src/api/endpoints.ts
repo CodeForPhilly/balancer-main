@@ -7,6 +7,9 @@
 
 const API_BASE = '/api';
 
+/** Base path for v1 API (avoids repeating /api/v1/api in every endpoint) */
+const V1_API_BASE = `${API_BASE}/v1/api`;
+
 /**
  * Authentication endpoints
  */
@@ -23,30 +26,33 @@ export const AUTH_ENDPOINTS = {
  */
 export const V1_API_ENDPOINTS = {
   // Feedback
-  FEEDBACK: `${API_BASE}/v1/api/feedback/`,
-  
+  FEEDBACK: `${V1_API_BASE}/feedback/`,
+
   // Embeddings
-  EMBEDDINGS_ASK: `${API_BASE}/v1/api/embeddings/ask_embeddings`,
-  RULE_EXTRACTION: `${API_BASE}/v1/api/rule_extraction_openai`,
-  
+  EMBEDDINGS_ASK: `${V1_API_BASE}/embeddings/ask_embeddings`,
+  RULE_EXTRACTION: `${V1_API_BASE}/rule_extraction_openai`,
+
   // Risk
-  RISK_WITH_SOURCES: `${API_BASE}/v1/api/riskWithSources`,
-  
+  RISK_WITH_SOURCES: `${V1_API_BASE}/riskWithSources`,
+
   // Assistant
-  ASSISTANT: `${API_BASE}/v1/api/assistant`,
-  
+  ASSISTANT: `${V1_API_BASE}/assistant`,
+
   // File Management
-  UPLOAD_FILE: `${API_BASE}/v1/api/uploadFile`,
-  EDIT_METADATA: `${API_BASE}/v1/api/editmetadata`,
-  
+  UPLOAD_FILE: `${V1_API_BASE}/uploadFile`,
+  EDIT_METADATA: `${V1_API_BASE}/editmetadata`,
+
   // Medications
-  GET_FULL_LIST_MED: `${API_BASE}/v1/api/get_full_list_med`,
-  GET_MED_RECOMMEND: `${API_BASE}/v1/api/get_med_recommend`,
-  ADD_MEDICATION: `${API_BASE}/v1/api/add_medication`,
-  DELETE_MED: `${API_BASE}/v1/api/delete_med`,
-  
+  GET_FULL_LIST_MED: `${V1_API_BASE}/get_full_list_med`,
+  GET_MED_RECOMMEND: `${V1_API_BASE}/get_med_recommend`,
+  ADD_MEDICATION: `${V1_API_BASE}/add_medication`,
+  DELETE_MED: `${V1_API_BASE}/delete_med`,
+
   // Medication Rules
-  MED_RULES: `${API_BASE}/v1/api/medRules`,
+  MED_RULES: `${V1_API_BASE}/medRules`,
+
+  // Version (build/deploy info)
+  VERSION: `${V1_API_BASE}/version`,
 } as const;
 
 /**

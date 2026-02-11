@@ -1,0 +1,42 @@
+name: balancer-prod
+version: "3.8"
+
+services:
+  db:
+    image: pgvector/pgvector:pg15
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data/
+      - ./db/init-vector-extension.sql:/docker-entrypoint-initdb.d/init-vector-extension.sql
+    environment:
+      - POSTGRES_USER=balancer
+      - POSTGRES_PASSWORD=balancer
+      - POSTGRES_DB=balancer_dev
+    networks:
+      - app_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U balancer -d balancer_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    image: balancer-app
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./config/env/prod.env
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app_net
+
+volumes:
+  postgres_data_prod:
+
+networks:
+  app_net:
+    driver: bridge

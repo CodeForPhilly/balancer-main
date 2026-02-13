@@ -21,6 +21,10 @@ RUN npm run build
 # Stage 2: Build Backend
 FROM python:3.11.4-slim-bullseye
 
+# Receive version argument from build command
+ARG VERSION
+ENV VERSION=${VERSION}
+
 # Set work directory
 WORKDIR /usr/src/app
 
@@ -32,9 +36,11 @@ ENV PYTHONUNBUFFERED=1
 RUN apt-get update && apt-get install -y netcat && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
-RUN pip install --upgrade pip
+RUN pip install --upgrade pip --no-cache-dir
 COPY server/requirements.txt .
-RUN pip install -r requirements.txt
+# Install CPU-only torch to save space (avoids ~4GB of CUDA libs)
+RUN pip install torch --index-url https://download.pytorch.org/whl/cpu --no-cache-dir
+RUN pip install -r requirements.txt --no-cache-dir
 
 # Copy backend application code
 COPY server/ .

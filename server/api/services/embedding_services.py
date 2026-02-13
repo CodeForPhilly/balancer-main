@@ -60,7 +60,7 @@ def build_query(user, embedding_vector, document_name=None, guid=None, num_resul
     return queryset[:num_results]
 
 
-def format_results(queryset):
+def evaluate_query(queryset):
     """
     Evaluate a QuerySet and return a list of result dicts.
 
@@ -89,7 +89,7 @@ def format_results(queryset):
     ]
 
 
-def log_search_usage(
+def log_usage(
     results, message_data, user, guid, document_name, num_results, encoding_time, db_query_time
 ):
     """
@@ -190,10 +190,10 @@ def get_closest_embeddings(
 
     db_query_start = time.time()
     queryset = build_query(user, embedding_vector, document_name, guid, num_results)
-    results = format_results(queryset)
+    results = evaluate_query(queryset)
     db_query_time = time.time() - db_query_start
 
-    log_search_usage(
+    log_usage(
         results, message_data, user, guid, document_name, num_results, encoding_time, db_query_time
     )
 

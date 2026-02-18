@@ -62,7 +62,7 @@ function Footer() {
           >
             Leave feedback
           </Link>
-          <a href="https://www.flipcause.com/secure/cause_pdetails/MjMyMTIw"
+          <a href="https://github.com/CodeForPhilly/balancer-main"
             target="_blank"
             className="flex justify-center text-black hover:border-blue-600 hover:text-blue-600 hover:no-underline"
           >

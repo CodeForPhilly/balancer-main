@@ -165,7 +165,7 @@ const Header: React.FC<LoginFormProps> = ({ isAuthenticated, isSuperuser }) => {
               Leave Feedback
             </Link>
             <a
-              href="https://www.flipcause.com/secure/cause_pdetails/MjMyMTIw"
+              href="https://github.com/CodeForPhilly/balancer-main"
               target="_blank"
               className="header-nav-item"
             >

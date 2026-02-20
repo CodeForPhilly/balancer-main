@@ -12,6 +12,9 @@ from ...models.model_embeddings import Embeddings
 import fitz
 from django.db import transaction
 from .title import generate_title
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class UploadFileView(APIView):
@@ -124,6 +127,7 @@ class UploadFileView(APIView):
             )
         except Exception as e:
             # Handle potential errors
+            logger.exception("File upload failed for '%s': %s", uploaded_file.name, e)
             return Response({"message": f"Error processing file and embeddings: {str(e)}"},
                             status=status.HTTP_400_BAD_REQUEST)
 

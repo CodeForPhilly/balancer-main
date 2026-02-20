@@ -58,4 +58,5 @@ def summarize_pdf(pdf: fitz.Document) -> str:
     prompt = "Please provide a title for this document. The title should be less than 256 characters and will be displayed on a webpage."
     response = openAIServices.openAI(
         first_page_content, prompt, model='gpt-4o', temp=0.0)
-    return response.choices[0].message.content
+    title = response.choices[0].message.content.strip().strip('"').strip("'")
+    return title[:255]

@@ -67,3 +67,33 @@ class TestGenerateTitle(unittest.TestCase):
         title.generate_title(doc)
 
         self.assertTrue(mock_openAI.called)
+
+    @patch("api.services.openai_services.openAIServices.openAI")
+    def test_strips_quotes_from_openai_title(self, mock_openAI):
+        doc = MagicMock()
+        doc.metadata = {"title": None}
+        doc.get_text.return_value = []
+
+        mock_response = MagicMock()
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.content = '"Updated CANMAT/ISBD Guidelines for Treating Mixed Features in Bipolar Disorder"'
+        mock_openAI.return_value = mock_response
+
+        result = title.generate_title(doc)
+
+        self.assertEqual(result, "Updated CANMAT/ISBD Guidelines for Treating Mixed Features in Bipolar Disorder")
+
+    @patch("api.services.openai_services.openAIServices.openAI")
+    def test_truncates_long_openai_title(self, mock_openAI):
+        doc = MagicMock()
+        doc.metadata = {"title": None}
+        doc.get_text.return_value = []
+
+        mock_response = MagicMock()
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.content = "A" * 300
+        mock_openAI.return_value = mock_response
+
+        result = title.generate_title(doc)
+
+        self.assertLessEqual(len(result), 255)

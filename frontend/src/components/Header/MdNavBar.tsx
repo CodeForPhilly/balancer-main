@@ -124,7 +124,7 @@ const MdNavBar = (props: LoginFormProps) => {
                           target="_blank"
                           className="mr-9 text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
                         >
-                          Donate
+                          Support Development
                         </a>
                     </li>
                     {isAuthenticated &&

@@ -169,7 +169,7 @@ const Header: React.FC<LoginFormProps> = ({ isAuthenticated, isSuperuser }) => {
               target="_blank"
               className="header-nav-item"
             >
-              Donate
+              Support Development
             </a>
             {isAuthenticated && isSuperuser && (
               <div

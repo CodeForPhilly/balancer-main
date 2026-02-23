@@ -79,7 +79,7 @@ function About() {
           <div className="mb-20 mt-5 flex flex-row flex-wrap justify-center gap-4">
             <a href="https://github.com/CodeForPhilly/balancer-main" target="_blank">
               <button className="btnBlue transition-transform focus:outline-none focus:ring focus:ring-blue-200">
-                Donate
+                Support Development
               </button>
             </a>
 

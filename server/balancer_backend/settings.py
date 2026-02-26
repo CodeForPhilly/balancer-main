@@ -204,6 +204,10 @@ SPECTACULAR_SETTINGS = {
     'DESCRIPTION': 'API for the Balancer medication decision support tool',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
+    'SECURITY': [{'jwtAuth': []}],
+    'SWAGGER_UI_SETTINGS': {
+        'persistAuthorization': True,
+    },
 }
 
 SIMPLE_JWT = {

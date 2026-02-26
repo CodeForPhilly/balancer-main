@@ -6,6 +6,9 @@ from django.urls import path, include, re_path
 # Import TemplateView for rendering templates
 from django.views.generic import TemplateView
 import importlib  # Import the importlib module for dynamic module importing
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
+
+
 
 # Define a list of URL patterns for the application
 # Keep admin outside /api/ prefix
@@ -50,6 +53,9 @@ for url in urls:
 # Wrap all API routes under /api/ prefix
 urlpatterns += [
     path("api/", include(api_urlpatterns)),
+    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
+    path("api/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
 ]
 
 import os

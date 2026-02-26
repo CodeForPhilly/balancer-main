@@ -61,7 +61,7 @@ const ListOfFiles: React.FC<{ showTable?: boolean }> = ({
   const handleDownload = async (guid: string, fileName: string) => {
     try {
       setDownloading(guid);
-      const { data } = await publicApi.get(`/v1/api/uploadFile/${guid}`, { responseType: 'blob' });
+      const { data } = await publicApi.get(`/api/v1/api/uploadFile/${guid}`, { responseType: 'blob' });
 
       const url = window.URL.createObjectURL(new Blob([data]));
       const link = document.createElement("a");

@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from drf_spectacular.utils import extend_schema_field
 from ...models.model_medRule import MedRule, MedRuleSource
 from ..listMeds.serializers import MedicationSerializer
 from ...models.model_embeddings import Embeddings
@@ -30,6 +31,7 @@ class MedRuleSerializer(serializers.ModelSerializer):
             "medication_sources",
         ]
 
+    @extend_schema_field(MedicationWithSourcesSerializer(many=True))
     def get_medication_sources(self, obj):
         medrule_sources = MedRuleSource.objects.filter(medrule=obj).select_related(
             "medication", "embedding"

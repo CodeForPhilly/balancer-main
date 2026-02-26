@@ -82,7 +82,7 @@ const ListOfFiles: React.FC<{ showTable?: boolean }> = ({
   const handleOpen = async (guid: string) => {
     try {
       setOpening(guid);
-      const { data } = await publicApi.get(`/v1/api/uploadFile/${guid}`, { responseType: 'arraybuffer' });
+      const { data } = await publicApi.get(`/api/v1/api/uploadFile/${guid}`, { responseType: 'arraybuffer' });
 
       const file = new Blob([data], { type: 'application/pdf' });
       const fileURL = window.URL.createObjectURL(file);

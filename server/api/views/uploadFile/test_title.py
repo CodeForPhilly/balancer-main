@@ -53,7 +53,7 @@ class TestGenerateTitle(unittest.TestCase):
         expected_title = "Advances in Mood Disorder Pharmacotherapy: Evaluating New Antipsychotics and Mood Stabilizers for Bipolar Disorder and Schizophrenia"
         self.assertEqual(expected_title, title.generate_title(doc))
 
-    @patch("api.services.openai_services.openAIServices.openAI")
+    @patch("api.views.uploadFile.title.openAIServices.openAI")
     def test_falls_back_to_chatgpt_if_no_title_found(self, mock_openAI):
         doc = MagicMock()
         doc.metadata = {"title": None}
@@ -68,7 +68,7 @@ class TestGenerateTitle(unittest.TestCase):
 
         self.assertTrue(mock_openAI.called)
 
-    @patch("api.services.openai_services.openAIServices.openAI")
+    @patch("api.views.uploadFile.title.openAIServices.openAI")
     def test_strips_quotes_from_openai_title(self, mock_openAI):
         doc = MagicMock()
         doc.metadata = {"title": None}
@@ -83,7 +83,7 @@ class TestGenerateTitle(unittest.TestCase):
 
         self.assertEqual(result, "Updated CANMAT/ISBD Guidelines for Treating Mixed Features in Bipolar Disorder")
 
-    @patch("api.services.openai_services.openAIServices.openAI")
+    @patch("api.views.uploadFile.title.openAIServices.openAI")
     def test_truncates_long_openai_title(self, mock_openAI):
         doc = MagicMock()
         doc.metadata = {"title": None}

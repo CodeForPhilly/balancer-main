@@ -96,4 +96,5 @@ class TestGenerateTitle(unittest.TestCase):
 
         result = title.generate_title(doc)
 
+        # Ensure the title is truncated to fit the UploadFile model's title field (max_length=255), since OpenAI responses may exceed this limit
         self.assertLessEqual(len(result), 255)

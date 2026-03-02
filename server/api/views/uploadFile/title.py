@@ -59,4 +59,5 @@ def summarize_pdf(pdf: fitz.Document) -> str:
     response = openAIServices.openAI(
         first_page_content, prompt, model='gpt-4o', temp=0.0)
     title = response.choices[0].message.content.strip().strip('"').strip("'")
+    # Truncate to fit UploadFile model's max_length=255 title field as a final safeguard
     return title[:255]

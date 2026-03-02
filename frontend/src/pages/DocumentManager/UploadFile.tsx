@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import axios from "axios";
+import { adminApi } from "../../api/apiClient";
 import TypingAnimation from "../../components/Header/components/TypingAnimation.tsx";
 import Layout from "../Layout/Layout.tsx";
 
@@ -22,14 +22,9 @@ const UploadFile: React.FC = () => {
     formData.append("file", file);
 
     try {
-      const response = await axios.post(
+      const response = await adminApi.post(
         `/api/v1/api/uploadFile`,
         formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data"
-          },
-        }
       );
       console.log("File uploaded successfully", response.data);
     } catch (error) {

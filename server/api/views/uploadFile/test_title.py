@@ -57,7 +57,7 @@ class TestGenerateTitle(unittest.TestCase):
     def test_falls_back_to_chatgpt_if_no_title_found(self, mock_openAI):
         doc = MagicMock()
         doc.metadata = {"title": None}
-        doc.get_text.return_value = []
+        doc[0].get_text.return_value = []
 
         mock_response = MagicMock()
         mock_response.choices = [MagicMock()]
@@ -72,7 +72,7 @@ class TestGenerateTitle(unittest.TestCase):
     def test_strips_quotes_from_openai_title(self, mock_openAI):
         doc = MagicMock()
         doc.metadata = {"title": None}
-        doc.get_text.return_value = []
+        doc[0].get_text.return_value = []
 
         mock_response = MagicMock()
         mock_response.choices = [MagicMock()]
@@ -87,7 +87,7 @@ class TestGenerateTitle(unittest.TestCase):
     def test_truncates_long_openai_title(self, mock_openAI):
         doc = MagicMock()
         doc.metadata = {"title": None}
-        doc.get_text.return_value = []
+        doc[0].get_text.return_value = []
 
         mock_response = MagicMock()
         mock_response.choices = [MagicMock()]

@@ -6,9 +6,9 @@ from api.services.openai_services import openAIServices
 
 
 # regular expression to match common research white paper titles. Created by Chat-gpt
-# requires at least 3 words, no dates, no version numbers.
+# requires at least 3 words, no version numbers.
 title_regex = re.compile(
-    r'^(?=(?:\b\w+\b[\s:,\-\(\)]*){3,})(?!.*\b(?:19|20)\d{2}\b)(?!.*\bv\d+\b)[A-Za-z0-9][\w\s:,\-\(\)]*[A-Za-z\)]$', re.IGNORECASE)
+    r"^(?=(?:\b\w+\b[^A-Za-z0-9]*){3,})(?!.*\bv\d+\b)[A-Za-z0-9].+[A-Za-z\)?!]$", re.IGNORECASE)
 
 
 def generate_title(pdf: fitz.Document) -> str | None:

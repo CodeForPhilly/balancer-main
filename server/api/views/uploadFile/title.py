@@ -15,33 +15,78 @@ def generate_title(pdf: fitz.Document) -> str | None:
     document_metadata_title = pdf.metadata["title"]
     if document_metadata_title is not None and document_metadata_title != "":
         if title_regex.match(document_metadata_title):
-            print("suitable title was found in metadata")
             return document_metadata_title.strip()
-        else:
-            print("metadata title did not match regex")
 
-    print("Looking for title in first page text")
-    first_page = pdf[0]
-    first_page_blocks = first_page.get_text("blocks")
-    text_blocks = [
-        block[4].strip().replace("\n", " ")
-        for block in first_page_blocks
-        if block[6] == 0  # only include text blocks.
-    ]
+    font_title = extract_title_by_font_size(pdf)
+    if font_title:
+        return font_title
 
-    # For some reason, extracted PDF text has extra spaces. Collapse them here.
-    regex = r"\s{2,}"
-    text_blocks = [re.sub(regex, " ", text) for text in text_blocks]
-
-    if len(text_blocks) != 0:
-        for text in text_blocks:
-            if title_regex.match(text):
-                return text
-
-    print(
-        "no suitable title found in first page text. Using GPT-4 to summarize the PDF")
     gpt_title = summarize_pdf(pdf)
     return gpt_title or None
+
+
+def extract_title_by_font_size(pdf: fitz.Document, max_pages: int = 3) -> str | None:
+    """
+    Extract the title by finding the largest font size across the first few pages
+    and collecting contiguous runs of text at that size.
+    """
+    pages_to_scan = min(max_pages, len(pdf))
+
+    # First pass: collect all spans with their font size, and find the max font size.
+    all_spans = []
+    max_font_size = 0.0
+
+    for page_idx in range(pages_to_scan):
+        page_dict = pdf[page_idx].get_text("dict")
+        for block in page_dict["blocks"]:
+            if block.get("type") != 0:
+                continue
+            for line in block["lines"]:
+                for span in line["spans"]:
+                    text = span["text"].strip()
+                    size = span["size"]
+                    if len(text) < 2 or size < 6.0:
+                        continue
+                    all_spans.append({"text": text, "size": size})
+                    if size > max_font_size:
+                        max_font_size = size
+
+    if max_font_size == 0.0:
+        return None
+
+    # Second pass: gather contiguous runs of spans at the max font size.
+    # Runs continue across block boundaries so multi-block titles (e.g.,
+    # "BIPOLAR DISORDER IN PRIMARY CARE:" in one block and "DIAGNOSIS AND
+    # MANAGEMENT" in the next) are joined into a single candidate.
+    # A run only ends when a non-max-size span interrupts it.
+    candidates = []
+    current_run = []
+
+    for span in all_spans:
+        if span["size"] == max_font_size:
+            current_run.append(span["text"])
+        else:
+            if current_run:
+                candidates.append(" ".join(current_run))
+                current_run = []
+
+    if current_run:
+        candidates.append(" ".join(current_run))
+
+    # Collapse extra whitespace, validate against title regex, and pick the longest match.
+    # Longest wins because real titles are typically longer than section headers
+    # (e.g., "About the Author") that may share the same max font size.
+    best = None
+    for candidate in candidates:
+        cleaned = re.sub(r"\s{2,}", " ", candidate).strip()
+        if title_regex.match(cleaned):
+            if best is None or len(cleaned) > len(best):
+                best = cleaned
+
+    if best:
+        return best[:255]
+
+    return None
 
 
 def summarize_pdf(pdf: fitz.Document) -> str:

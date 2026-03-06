@@ -61,9 +61,10 @@ class TestGenerateTitle(unittest.TestCase):
 
         mock_openAI.return_value = "A Study Regarding The Efficacy of Drugs"
 
-        title.generate_title(doc)
+        result = title.generate_title(doc)
 
         self.assertTrue(mock_openAI.called)
+        self.assertEqual(result, "A Study Regarding The Efficacy of Drugs")
 
     @patch("api.views.uploadFile.title.openAIServices.openAI")
     def test_strips_quotes_from_openai_title(self, mock_openAI):

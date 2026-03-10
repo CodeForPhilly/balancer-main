@@ -5,7 +5,7 @@ for patients with bipolar disorder, helping them shorten their journey to stabil
 
 ## Usage
 
-You can view the current build of the website here: [https://balancertestsite.com](https://balancertestsite.com/)
+You can view the current build of the website here: [https://balancerproject.org/](https://balancerproject.org/)
 
 ## Contributing 
 
@@ -53,7 +53,7 @@ The application supports connecting to PostgreSQL databases via:
 See [Database Connection Documentation](./docs/DATABASE_CONNECTION.md) for detailed configuration.
 
 **Local Development:**
-- Download a sample of papers to upload from [https://balancertestsite.com](https://balancertestsite.com/) 
+- Download a sample of papers to upload from [https://balancerproject.org/](https://balancerproject.org/) 
 - The email and password of `pgAdmin` are specified in `balancer-main/docker-compose.yml`
 - The first time you use `pgAdmin` after building the Docker containers you will need to register the server.
     - The `Host name/address` is the Postgres server service name in the Docker Compose file

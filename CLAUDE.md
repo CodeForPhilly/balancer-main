@@ -147,6 +147,16 @@ Each module contains:
 - Auth endpoints via Djoser: `/auth/`
 - JWT token lifetime: 60 minutes (access), 1 day (refresh)
 
+#### API Documentation
+- Auto-generated using **drf-spectacular** (OpenAPI 3.0)
+- **Swagger UI**: `http://localhost:8000/api/docs/` — interactive API explorer
+- **ReDoc**: `http://localhost:8000/api/redoc/` — readable reference docs
+- **Raw schema**: `http://localhost:8000/api/schema/`
+- Configuration in `SPECTACULAR_SETTINGS` in `settings.py`
+- Views use `@extend_schema` decorators and `serializer_class` attributes for schema generation
+- JWT auth is configured in the schema — use `JWT <token>` (not `Bearer`) in Swagger UI's Authorize dialog
+- To document a new endpoint: add `serializer_class` to the view if it has one, or add `@extend_schema` with `inline_serializer` for views returning raw dicts
+
 #### Key Data Models
 - **Medication** (`api.views.listMeds.models`) - Medication catalog with benefits/risks
 - **MedRule** (`api.models.model_medRule`) - Include/Exclude rules for medications based on patient history

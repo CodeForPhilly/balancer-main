@@ -59,14 +59,12 @@ class TestGenerateTitle(unittest.TestCase):
         doc.metadata = {"title": None}
         doc[0].get_text.return_value = []
 
-        mock_response = MagicMock()
-        mock_response.choices = [MagicMock()]
-        mock_response.choices[0].message.content = "A Study Regarding The Efficacy of Drugs"
-        mock_openAI.return_value = mock_response
+        mock_openAI.return_value = "A Study Regarding The Efficacy of Drugs"
 
-        title.generate_title(doc)
+        result = title.generate_title(doc)
 
         self.assertTrue(mock_openAI.called)
+        self.assertEqual(result, "A Study Regarding The Efficacy of Drugs")
 
     @patch("api.views.uploadFile.title.openAIServices.openAI")
     def test_strips_quotes_from_openai_title(self, mock_openAI):
@@ -74,10 +72,7 @@ class TestGenerateTitle(unittest.TestCase):
         doc.metadata = {"title": None}
         doc[0].get_text.return_value = []
 
-        mock_response = MagicMock()
-        mock_response.choices = [MagicMock()]
-        mock_response.choices[0].message.content = '"Updated CANMAT/ISBD Guidelines for Treating Mixed Features in Bipolar Disorder"'
-        mock_openAI.return_value = mock_response
+        mock_openAI.return_value = '"Updated CANMAT/ISBD Guidelines for Treating Mixed Features in Bipolar Disorder"'
 
         result = title.generate_title(doc)
 
@@ -89,10 +84,7 @@ class TestGenerateTitle(unittest.TestCase):
         doc.metadata = {"title": None}
         doc[0].get_text.return_value = []
 
-        mock_response = MagicMock()
-        mock_response.choices = [MagicMock()]
-        mock_response.choices[0].message.content = "A" * 300
-        mock_openAI.return_value = mock_response
+        mock_openAI.return_value = "A" * 300
 
         result = title.generate_title(doc)
 

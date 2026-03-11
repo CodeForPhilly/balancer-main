@@ -53,11 +53,11 @@ class TestGenerateTitle(unittest.TestCase):
         expected_title = "Advances in Mood Disorder Pharmacotherapy: Evaluating New Antipsychotics and Mood Stabilizers for Bipolar Disorder and Schizophrenia"
         self.assertEqual(expected_title, title.generate_title(doc))
 
-    @patch("api.services.openai_services.openAIServices.openAI")
+    @patch("api.views.uploadFile.title.openAIServices.openAI")
     def test_falls_back_to_chatgpt_if_no_title_found(self, mock_openAI):
         doc = MagicMock()
         doc.metadata = {"title": None}
-        doc.get_text.return_value = []
+        doc[0].get_text.return_value = []
 
         mock_response = MagicMock()
         mock_response.choices = [MagicMock()]
@@ -67,3 +67,34 @@ class TestGenerateTitle(unittest.TestCase):
         title.generate_title(doc)
 
         self.assertTrue(mock_openAI.called)
+
+    @patch("api.views.uploadFile.title.openAIServices.openAI")
+    def test_strips_quotes_from_openai_title(self, mock_openAI):
+        doc = MagicMock()
+        doc.metadata = {"title": None}
+        doc[0].get_text.return_value = []
+
+        mock_response = MagicMock()
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.content = '"Updated CANMAT/ISBD Guidelines for Treating Mixed Features in Bipolar Disorder"'
+        mock_openAI.return_value = mock_response
+
+        result = title.generate_title(doc)
+
+        self.assertEqual(result, "Updated CANMAT/ISBD Guidelines for Treating Mixed Features in Bipolar Disorder")
+
+    @patch("api.views.uploadFile.title.openAIServices.openAI")
+    def test_truncates_long_openai_title(self, mock_openAI):
+        doc = MagicMock()
+        doc.metadata = {"title": None}
+        doc[0].get_text.return_value = []
+
+        mock_response = MagicMock()
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.content = "A" * 300
+        mock_openAI.return_value = mock_response
+
+        result = title.generate_title(doc)
+
+        # Ensure the title is truncated to fit the UploadFile model's title field (max_length=255), since OpenAI responses may exceed this limit
+        self.assertLessEqual(len(result), 255)

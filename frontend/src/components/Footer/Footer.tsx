@@ -2,6 +2,7 @@
 
 import { useState, useRef, KeyboardEvent } from "react";
 import { Link } from "react-router-dom";
+import Version from "../Version/Version";
 import "../../App.css"; // Import the common Tailwind CSS styles
 
 function Footer() {
@@ -61,11 +62,11 @@ function Footer() {
           >
             Leave feedback
           </Link>
-          <a href="https://www.flipcause.com/secure/cause_pdetails/MjMyMTIw"
+          <a href="https://github.com/CodeForPhilly/balancer-main"
             target="_blank"
-            className="flex justify-center text-black hover:border-blue-600 hover:text-blue-600 hover:no-underline"
+            className="flex justify-center text-center text-black hover:border-blue-600 hover:text-blue-600 hover:no-underline"
           >
-            Donate
+            Support Development
           </a>
           <Link
             to="/help"
@@ -108,7 +109,10 @@ function Footer() {
           </div>
         </div>
         <div className="flex justify-center rounded px-4 py-2 ">
-          <p>© 2025 Balancer. All rights reserved. V1 2-04-2025</p>
+          <p>
+            © 2025 Balancer. All rights reserved.
+            <Version prefix=" Version " fallback=" —" />
+          </p>
         </div>
         <div className="flex justify-center rounded px-4 py-2 ">
           <p className="text-gray-600 text-sm font-light italic">

@@ -5,7 +5,7 @@ for patients with bipolar disorder, helping them shorten their journey to stabil
 
 ## Usage
 
-You can view the current build of the website here: [https://balancertestsite.com](https://balancertestsite.com/)
+You can view the current build of the website here: [https://balancerproject.org/](https://balancerproject.org/)
 
 ## Contributing 
 
@@ -21,13 +21,17 @@ The project kanban board is [on GitHub here](https://github.com/orgs/CodeForPhil
 
 The Code for Philly Code of Conduct is [here](https://codeforphilly.org/pages/code_of_conduct/) 
 
-### Setting up a development environment   
+### Setting up a development environment
 
 Get the code using git by either forking or cloning `CodeForPhilly/balancer-main`
 
-Tools used to run Balancer:
-1. `OpenAI API`: Ask for an API key and add it to `config/env/env.dev`
-2. `Anthropic API`: Ask for an API key and add it to `config/env/env.dev`
+1. Copy the example environment file:
+   ```bash
+   cp config/env/dev.env.example config/env/dev.env
+   ```
+2. (Optional) Add your API keys to `config/env/dev.env`:
+   - `OpenAI API`
+   - `Anthropic API`
 
 Tools used for development:
 1. `Docker`: Install Docker Desktop
@@ -49,7 +53,7 @@ The application supports connecting to PostgreSQL databases via:
 See [Database Connection Documentation](./docs/DATABASE_CONNECTION.md) for detailed configuration.
 
 **Local Development:**
-- Download a sample of papers to upload from [https://balancertestsite.com](https://balancertestsite.com/) 
+- Download a sample of papers to upload from [https://balancerproject.org/](https://balancerproject.org/) 
 - The email and password of `pgAdmin` are specified in `balancer-main/docker-compose.yml`
 - The first time you use `pgAdmin` after building the Docker containers you will need to register the server.
     - The `Host name/address` is the Postgres server service name in the Docker Compose file
@@ -75,39 +79,22 @@ df = pd.read_sql(query, engine)
 docker compose exec backend pytest api/ -v
 ```
 
-## Local Kubernetes Deployment
+## API Documentation
 
-### Prereqs
+Interactive API docs are auto-generated using [drf-spectacular](https://drf-spectacular.readthedocs.io/) and available at:
 
-- Fill the configmap with the [env vars](./deploy/manifests/balancer/base/configmap.yml)
-- Install [Devbox](https://www.jetify.com/devbox)
-- Run the following script with admin privileges:
+- **Swagger UI**: [http://localhost:8000/api/docs/](http://localhost:8000/api/docs/) — interactive explorer with "Try it out" functionality
+- **ReDoc**: [http://localhost:8000/api/redoc/](http://localhost:8000/api/redoc/) — clean, readable reference docs
+- **Raw schema**: [http://localhost:8000/api/schema/](http://localhost:8000/api/schema/) — OpenAPI 3.0 JSON/YAML
 
-```bash
-HOSTNAME="balancertestsite.com"
-LOCAL_IP="127.0.0.1"
+### Testing authenticated endpoints
 
-# Check if the correct line already exists
-if grep -q "^$LOCAL_IP[[:space:]]\+$HOSTNAME" /etc/hosts; then
-  echo "Entry for $HOSTNAME with IP $LOCAL_IP already exists in /etc/hosts"
-else
-  echo "Updating /etc/hosts for $HOSTNAME"
-  sudo sed -i "/[[:space:]]$HOSTNAME/d" /etc/hosts
-  echo "$LOCAL_IP      $HOSTNAME" | sudo tee -a /etc/hosts
-fi
-```
+Most endpoints require JWT authentication. To test them in Swagger UI:
 
-### Steps to reproduce
-
-Inside root dir of balancer
-
-```bash
-devbox shell
-devbox create:cluster
-devbox run deploy:balancer
-```
-
-The website should be available in [https://balancertestsite.com:30219/](https://balancertestsite.com:30219/)
+1. **Get a token**: Find the `POST /auth/jwt/create/` endpoint in Swagger UI, click **Try it out**, enter an authorized `email` and `password`, and click **Execute**. Copy the `access` token from the response.
+2. **Authorize**: Click the **Authorize** button (lock icon) at the top of the page. Enter `JWT <your-access-token>` in the value field. The prefix must be `JWT`, not `Bearer`.
+3. **Test endpoints**: All subsequent requests will include your token. Use **Try it out** on any protected endpoint.
+4. **Token refresh**: Access tokens expire after 60 minutes. Use `POST /auth/jwt/refresh/` with your `refresh` token, or repeat step 1.
 
 ## Architecture
 

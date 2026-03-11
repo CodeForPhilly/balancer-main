@@ -1,7 +1,8 @@
-from rest_framework import status
+from rest_framework import status, serializers as drf_serializers
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from drf_spectacular.utils import extend_schema, inline_serializer
 
 from .models import Diagnosis, Medication, Suggestion
 from .serializers import MedicationSerializer
@@ -24,6 +25,33 @@ MED_EXCLUDE = {
 class GetMedication(APIView):
     permission_classes = [AllowAny]
 
+    @extend_schema(
+        request=inline_serializer(
+            name='GetMedicationRequest',
+            fields={
+                'state': drf_serializers.CharField(help_text='Diagnosis state, e.g. "depressed", "manic"'),
+                'suicideHistory': drf_serializers.BooleanField(default=False),
+                'kidneyHistory': drf_serializers.BooleanField(default=False),
+                'liverHistory': drf_serializers.BooleanField(default=False),
+                'bloodPressureHistory': drf_serializers.BooleanField(default=False),
+                'weightGainConcern': drf_serializers.BooleanField(default=False),
+                'priorMedications': drf_serializers.CharField(required=False, default='', help_text='Comma-separated medication names'),
+            }
+        ),
+        responses={
+            200: inline_serializer(
+                name='GetMedicationResponse',
+                fields={
+                    'first': drf_serializers.ListField(child=drf_serializers.DictField()),
+                    'second': drf_serializers.ListField(child=drf_serializers.DictField()),
+                    'third': drf_serializers.ListField(child=drf_serializers.DictField()),
+                }
+            ),
+            404: inline_serializer(name='GetMedicationNotFound', fields={
+                'error': drf_serializers.CharField(),
+            }),
+        }
+    )
     def post(self, request):
         data = request.data
         state_query = data.get('state', '')
@@ -75,6 +103,7 @@ class GetMedication(APIView):
 
 class ListOrDetailMedication(APIView):
     permission_classes = [AllowAny]
+    serializer_class = MedicationSerializer
 
     def get(self, request):
         name_query = request.query_params.get('name', None)
@@ -98,6 +127,7 @@ class AddMedication(APIView):
     """
     API endpoint to add a medication to the database with its risks and benefits.
     """
+    serializer_class = MedicationSerializer
 
     def post(self, request):
         data = request.data
@@ -129,6 +159,22 @@ class DeleteMedication(APIView):
     API endpoint to delete medication if medication in database.
     """
 
+    @extend_schema(
+        request=inline_serializer(name='DeleteMedicationRequest', fields={
+            'name': drf_serializers.CharField(),
+        }),
+        responses={
+            200: inline_serializer(name='DeleteMedicationSuccess', fields={
+                'success': drf_serializers.CharField(),
+            }),
+            400: inline_serializer(name='DeleteMedicationBadRequest', fields={
+                'error': drf_serializers.CharField(),
+            }),
+            404: inline_serializer(name='DeleteMedicationNotFound', fields={
+                'error': drf_serializers.CharField(),
+            }),
+        }
+    )
     def delete(self, request):
         data = request.data
         name = data.get('name', '').strip()

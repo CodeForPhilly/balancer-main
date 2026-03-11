@@ -9,6 +9,7 @@ from .serializers import FeedbackSerializer
 
 class FeedbackView(APIView):
     permission_classes = [AllowAny]
+    serializer_class = FeedbackSerializer
 
     def post(self, request, *args, **kwargs):
         serializer = FeedbackSerializer(data=request.data)

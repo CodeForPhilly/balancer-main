@@ -1,5 +1,6 @@
 //import Welcome from "../../components/Welcome/Welcome.tsx";
 import Layout from "../Layout/Layout";
+import Version from "../../components/Version/Version";
 // import image from "./OIP.jpeg";
 import image from "./OIP2.png";
 
@@ -76,9 +77,9 @@ function About() {
             </div>
           </div>
           <div className="mb-20 mt-5 flex flex-row flex-wrap justify-center gap-4">
-            <a href="https://www.flipcause.com/secure/cause_pdetails/MjMyMTIw" target="_blank">
+            <a href="https://github.com/CodeForPhilly/balancer-main" target="_blank">
               <button className="btnBlue transition-transform focus:outline-none focus:ring focus:ring-blue-200">
-                Donate
+                Support Development
               </button>
             </a>
 
@@ -88,6 +89,10 @@ function About() {
               </button>
             </a>
           </div>
+          <Version
+            as="p"
+            className="text-gray-500 text-sm mt-4"
+          />
         </div>
       </div>
     </Layout>

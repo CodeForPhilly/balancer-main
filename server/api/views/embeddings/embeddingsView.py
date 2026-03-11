@@ -1,8 +1,9 @@
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, serializers as drf_serializers
 from django.http import StreamingHttpResponse
+from drf_spectacular.utils import extend_schema, inline_serializer, OpenApiParameter
 from ...services.embedding_services import get_closest_embeddings
 from ...services.conversions_services import convert_uuids
 from ...services.openai_services import openAIServices
@@ -15,6 +16,26 @@ import json
 class AskEmbeddingsAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(name='guid', type=str, location=OpenApiParameter.QUERY, required=False, description='Optional file GUID to filter embeddings'),
+            OpenApiParameter(name='stream', type=bool, location=OpenApiParameter.QUERY, required=False, description='Enable streaming response'),
+        ],
+        request=inline_serializer(name='AskEmbeddingsRequest', fields={
+            'message': drf_serializers.CharField(help_text='Question to ask against embedded documents'),
+        }),
+        responses={
+            200: inline_serializer(name='AskEmbeddingsResponse', fields={
+                'question': drf_serializers.CharField(),
+                'llm_response': drf_serializers.CharField(),
+                'embeddings_info': drf_serializers.CharField(),
+                'sent_to_llm': drf_serializers.CharField(),
+            }),
+            400: inline_serializer(name='AskEmbeddingsBadRequest', fields={
+                'error': drf_serializers.CharField(),
+            }),
+        }
+    )
     def post(self, request, *args, **kwargs):
         try:
             user = request.user

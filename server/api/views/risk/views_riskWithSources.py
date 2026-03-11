@@ -1,7 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, serializers as drf_serializers
 from rest_framework.permissions import AllowAny
+from drf_spectacular.utils import extend_schema, inline_serializer
 from api.views.listMeds.models import Medication
 from api.models.model_medRule import MedRule, MedRuleSource
 import openai
@@ -11,6 +12,28 @@ import os
 class RiskWithSourcesView(APIView):
     permission_classes = [AllowAny]
 
+    @extend_schema(
+        request=inline_serializer(name='RiskWithSourcesRequest', fields={
+            'drug': drf_serializers.CharField(help_text='Medication name'),
+            'source': drf_serializers.CharField(required=False, help_text='One of: include, diagnosis, diagnosis_depressed, diagnosis_manic, diagnosis_hypomanic, diagnosis_euthymic'),
+        }),
+        responses={
+            200: inline_serializer(name='RiskWithSourcesResponse', fields={
+                'benefits': drf_serializers.ListField(child=drf_serializers.CharField()),
+                'risks': drf_serializers.ListField(child=drf_serializers.CharField()),
+                'sources': drf_serializers.ListField(child=drf_serializers.DictField()),
+                'medrules_found': drf_serializers.IntegerField(required=False),
+                'source_type': drf_serializers.CharField(required=False),
+                'note': drf_serializers.CharField(required=False),
+            }),
+            400: inline_serializer(name='RiskWithSourcesBadRequest', fields={
+                'error': drf_serializers.CharField(),
+            }),
+            404: inline_serializer(name='RiskWithSourcesNotFound', fields={
+                'error': drf_serializers.CharField(),
+            }),
+        }
+    )
     def post(self, request):
         openai.api_key = os.environ.get("OPENAI_API_KEY")
 

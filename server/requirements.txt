@@ -21,3 +21,4 @@ pytesseract
 anthropic
 pytest
 pytest-django
+drf-spectacular

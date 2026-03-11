@@ -3,6 +3,7 @@ import re
 import fitz
 
 from api.services.openai_services import openAIServices
+from api.services.prompt_services import UPLOAD_FILE_TITLE_PROMPT
 
 
 # regular expression to match common research white paper titles. Created by Chat-gpt
@@ -55,9 +56,8 @@ def summarize_pdf(pdf: fitz.Document) -> str:
         raise Exception("Failed to read the first page of the PDF file")
 
     # UploadFile model title is limited to 255 chars.
-    prompt = "Please provide a title for this document. The title should be less than 256 characters and will be displayed on a webpage."
     response = openAIServices.openAI(
-        first_page_content, prompt, model='gpt-4o', temp=0.0)
+        first_page_content, UPLOAD_FILE_TITLE_PROMPT, model='gpt-4o', temp=0.0)
     title = response.choices[0].message.content.strip().strip('"').strip("'")
     # Truncate to fit UploadFile model's max_length=255 title field as a final safeguard
     return title[:255]

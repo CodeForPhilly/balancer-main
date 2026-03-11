@@ -2,6 +2,7 @@ from django.db import connection
 from typing import Dict, Any, Callable, List
 from dataclasses import dataclass
 from .database import ask_database, get_database_info
+from ..prompt_services import TOOL_SQL_QUERY_DESCRIPTION, TOOL_SQL_QUERY_PARAM_DESCRIPTION_TEMPLATE
 
 database_schema_dict = get_database_info(connection)
 database_schema_string = "\n".join(
@@ -36,27 +37,13 @@ TOOL_FUNCTIONS = [
     ToolFunction(
         name="ask_database",
         func=ask_database,
-        description="""
-        Use this function to answer user questions about medication in the Balancer database.
-        The Balancer medication database stores medications by their official medical (generic) names, not brand names.
-        Therefore:
-        - Brand names should be converted to their official medical names before querying.
-        - Queries should be case-insensitive to handle any variation in how medication names are stored (e.g., "Lurasidone", "lurasidone").
-        Input should be a fully formed SQL query.
-        Important guidelines:
-        - Always use case-insensitive matching in queries by converting both the database column and the input to lowercase.
-        For example, in SQL:
-        - PostgreSQL: `LOWER(name) = LOWER('lurasidone')`
-        """,
+        description=TOOL_SQL_QUERY_DESCRIPTION,
         parameters={
             "query": {
                 "type": "string",
-                "description": f"""
-                SQL query extracting info to answer the user's question.
-                SQL should be written using this database schema:
-                {database_schema_string}
-                The query should be returned in plain text, not in JSON.
-                """
+                "description": TOOL_SQL_QUERY_PARAM_DESCRIPTION_TEMPLATE.format(
+                    database_schema_string=database_schema_string
+                )
             }
         }
     ),

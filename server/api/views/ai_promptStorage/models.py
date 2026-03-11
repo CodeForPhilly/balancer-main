@@ -10,6 +10,21 @@ PROMPT_AREAS = (
 
 
 class AI_PromptStorage(models.Model):
+    """
+    Database-backed storage for AI prompt overrides.
+
+    Currently unused at runtime — prompts are managed as code constants in
+    api.services.prompt_services. This model is intended to support runtime
+    prompt editing (without a code deploy) when that becomes a requirement.
+
+    Intended future use: a get_prompt() function in prompt_services.py queries
+    this table first (filtered by Area and IsActive=True) and falls back to the
+    code constant if no active record is found.
+
+    NOTE: Before activating runtime use, the store_prompt endpoint needs its
+    permission_classes restored (currently commented out in views.py).
+    """
+
     guid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     PromptText = models.TextField()
     IsActive = models.BooleanField(default=True)

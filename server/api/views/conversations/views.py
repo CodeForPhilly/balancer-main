@@ -16,6 +16,13 @@ from django.views.decorators.csrf import csrf_exempt
 from .models import Conversation, Message
 from .serializers import ConversationSerializer
 from ...services.tools.tools import tools, execute_tool
+from ...services.prompt_services import (
+    CONVERSATIONS_SYSTEM_PROMPT,
+    CONVERSATIONS_PAGE_CONTEXT_TEMPLATE,
+    CONVERSATIONS_TITLE_SYSTEM_PROMPT,
+    CONVERSATIONS_TITLE_USER_TEMPLATE,
+    CONVERSATIONS_LEGACY_SYSTEM_TEMPLATE,
+)
 from drf_spectacular.utils import extend_schema, inline_serializer
 from rest_framework import serializers as drf_serializers
 
@@ -49,7 +56,7 @@ def extract_text(request: str) -> JsonResponse:
         messages=[
             {
                 "role": "system",
-                "content": "Give a brief description of this medicine: %s" % tokens,
+                "content": CONVERSATIONS_LEGACY_SYSTEM_TEMPLATE.format(medicine=tokens),
             }
         ],
         max_tokens=500,
@@ -171,11 +178,11 @@ class ConversationViewSet(viewsets.ModelViewSet):
         client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
         messages = [{
             "role": "system",
-            "content": "You are a knowledgeable assistant. Balancer is a powerful tool for selecting bipolar medication for patients. We are open-source and available for free use. Your primary role is to assist licensed clinical professionals with information related to Balancer and bipolar medication selection. If applicable, use the supplied tools to assist the professional."
+            "content": CONVERSATIONS_SYSTEM_PROMPT
         }]
 
         if page_context:
-            context_message = f"If applicable, please use the following content to ask questions. If not applicable, please answer to the best of your ability: {page_context}"
+            context_message = CONVERSATIONS_PAGE_CONTEXT_TEMPLATE.format(page_context=page_context)
             messages.append({"role": "system", "content": context_message})
         for msg in conversation.messages.all():
             role = "user" if msg.is_user else "assistant"
@@ -240,13 +247,13 @@ class ConversationViewSet(viewsets.ModelViewSet):
     def generate_title(self, conversation):
         messages = conversation.messages.all()[:2]
         context = "\n".join([msg.content for msg in messages])
-        prompt = f"Based on the following conversation, generate a short, descriptive title (max 6 words):\n\n{context}"
+        prompt = CONVERSATIONS_TITLE_USER_TEMPLATE.format(context=context)
 
         client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "You are a helpful assistant that generates short, descriptive titles."},
+                {"role": "system", "content": CONVERSATIONS_TITLE_SYSTEM_PROMPT},
                 {"role": "user", "content": prompt}
             ]
         )

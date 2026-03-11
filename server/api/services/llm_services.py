@@ -8,6 +8,7 @@ import logging
 from abc import ABC, abstractmethod
 
 from openai import AsyncOpenAI
+from .prompt_services import LLM_EXTRACTION_INSTRUCTIONS
 
 
 class BaseModelHandler(ABC):
@@ -70,57 +71,7 @@ class GPT41NanoHandler(BaseModelHandler):
     # Long context performance can degrade as more items are required to be retrieved,
     # or perform complex reasoning that requires knowledge of the state of the entire context
 
-    #
-
-    INSTRUCTIONS = """
-        
-    # Role and Objective
-    
-    - You are a seasoned physician or medical professional who is developing a bipolar disorder treatment algorithim
-
-    - You are extracting bipolar medication decision points from a research paper that is chunked into multiple parts each labeled with an ID
-
-    # Instructions
-
-    - Identify decision points for bipolar medications
-
-    - For each decision point you find, return a JSON object using the following format:
-
-        {
-            "criterion": "<condition or concern>",
-            "decision": "INCLUDE" or "EXCLUDE",
-            "medications": ["<medication 1>", "<medication 2>", ...],
-            "reason": "<short explanation for why this criterion applies>",
-            "sources": ["<ID-X>"]
-        }
-
-
-    - Only extract bipolar medication decision points that are explicitly stated or strongly implied in the context and never rely on your own knowledge
-
-    # Output Format
-
-    - Return the extracted bipolar medication decision points as a JSON array and if no decision points are found in the context return an empty array
-
-    # Example
-
-    [
-        {
-            "criterion": "History of suicide attempts",
-            "decision": "INCLUDE",
-            "medications": ["Lithium"],
-            "reason": "Lithium is the only medication on the market that has been proven to reduce suicidality in patients with bipolar disorder",
-            "sources": ["ID-0"]
-        },
-        {
-            "criterion": "Weight gain concerns",
-            "decision": "EXCLUDE",
-            "medications": ["Quetiapine", "Aripiprazole", "Olanzapine", "Risperidone"],
-            "reason": "Seroquel, Risperdal, Abilify, and Zyprexa are known for causing weight gain",
-            "sources": ["ID-0", "ID-1", "ID-2"]
-        }
-    ]
-
-    """
+    INSTRUCTIONS = LLM_EXTRACTION_INSTRUCTIONS
 
     def __init__(self) -> None:
         self.client = AsyncOpenAI(api_key=os.environ.get("OPENAI_API_KEY"))

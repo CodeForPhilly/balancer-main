@@ -7,6 +7,10 @@ from api.views.listMeds.models import Medication
 from api.models.model_medRule import MedRule, MedRuleSource
 import openai
 import os
+from api.services.prompt_services import (
+    RISK_BENEFITS_RISKS_TEMPLATE,
+    RISK_DIAGNOSIS_BENEFITS_RISKS_TEMPLATE,
+)
 
 
 class RiskWithSourcesView(APIView):
@@ -82,12 +86,7 @@ class RiskWithSourcesView(APIView):
             })
 
         except Medication.DoesNotExist:
-            prompt = (
-                f"You are to provide a concise list of 5 key benefits and 5 key risks "
-                f"for the medication suggested when taking it for Bipolar. Each point should be short, "
-                f"clear and be kept under 10 words. Begin the benefits section with !!!benefits!!! and "
-                f"the risks section with !!!risk!!!. Please provide this information for the medication: {drug}."
-            )
+            prompt = RISK_BENEFITS_RISKS_TEMPLATE.format(drug=drug)
 
             try:
                 ai_response = openai.ChatCompletion.create(
@@ -453,13 +452,7 @@ class RiskWithSourcesView(APIView):
 
     def _get_ai_response_for_diagnosis(self, drug):
         """Get AI response with diagnosis-specific context"""
-        prompt = (
-            f"You are providing medication information from a diagnosis/clinical perspective. "
-            f"Provide a concise list of 5 key benefits and 5 key risks for the medication {drug} "
-            f"when prescribed for Bipolar disorder, focusing on clinical evidence and diagnostic considerations. "
-            f"Each point should be short, clear and be kept under 10 words. "
-            f"Begin the benefits section with !!!benefits!!! and the risks section with !!!risk!!!."
-        )
+        prompt = RISK_DIAGNOSIS_BENEFITS_RISKS_TEMPLATE.format(drug=drug)
 
         try:
             ai_response = openai.ChatCompletion.create(

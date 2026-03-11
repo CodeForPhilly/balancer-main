@@ -10,6 +10,8 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+from drf_spectacular.utils import extend_schema, inline_serializer
+from rest_framework import serializers as drf_serializers
 
 from openai import OpenAI
 
@@ -113,6 +115,21 @@ def invoke_functions_from_response(
 class Assistant(APIView):
     permission_classes = [AllowAny]
 
+    @extend_schema(
+        request=inline_serializer(name='AssistantRequest', fields={
+            'message': drf_serializers.CharField(help_text='User message to send to the assistant'),
+            'previous_response_id': drf_serializers.CharField(required=False, allow_null=True, help_text='ID of previous response for conversation continuity'),
+        }),
+        responses={
+            200: inline_serializer(name='AssistantResponse', fields={
+                'response_output_text': drf_serializers.CharField(),
+                'final_response_id': drf_serializers.CharField(),
+            }),
+            500: inline_serializer(name='AssistantError', fields={
+                'error': drf_serializers.CharField(),
+            }),
+        }
+    )
     def post(self, request):
         try:
             user = request.user

@@ -74,6 +74,23 @@ df = pd.read_sql(query, engine)
 #### Django REST
 - The email and password are set in `server/api/management/commands/createsu.py`
 
+## API Documentation
+
+Interactive API docs are auto-generated using [drf-spectacular](https://drf-spectacular.readthedocs.io/) and available at:
+
+- **Swagger UI**: [http://localhost:8000/api/docs/](http://localhost:8000/api/docs/) — interactive explorer with "Try it out" functionality
+- **ReDoc**: [http://localhost:8000/api/redoc/](http://localhost:8000/api/redoc/) — clean, readable reference docs
+- **Raw schema**: [http://localhost:8000/api/schema/](http://localhost:8000/api/schema/) — OpenAPI 3.0 JSON/YAML
+
+### Testing authenticated endpoints
+
+Most endpoints require JWT authentication. To test them in Swagger UI:
+
+1. **Get a token**: Find the `POST /auth/jwt/create/` endpoint in Swagger UI, click **Try it out**, enter an authorized `email` and `password`, and click **Execute**. Copy the `access` token from the response.
+2. **Authorize**: Click the **Authorize** button (lock icon) at the top of the page. Enter `JWT <your-access-token>` in the value field. The prefix must be `JWT`, not `Bearer`.
+3. **Test endpoints**: All subsequent requests will include your token. Use **Try it out** on any protected endpoint.
+4. **Token refresh**: Access tokens expire after 60 minutes. Use `POST /auth/jwt/refresh/` with your `refresh` token, or repeat step 1.
+
 ## Architecture
 
 The Balancer website is a Postgres, Django REST, and React project. The source code layout is:

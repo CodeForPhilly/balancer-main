@@ -16,6 +16,8 @@ from django.views.decorators.csrf import csrf_exempt
 from .models import Conversation, Message
 from .serializers import ConversationSerializer
 from ...services.tools.tools import tools, execute_tool
+from drf_spectacular.utils import extend_schema, inline_serializer
+from rest_framework import serializers as drf_serializers
 
 
 @csrf_exempt
@@ -95,6 +97,21 @@ class ConversationViewSet(viewsets.ModelViewSet):
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+    @extend_schema(
+        request=inline_serializer(name='ContinueConversationRequest', fields={
+            'message': drf_serializers.CharField(help_text='User message to continue the conversation'),
+            'page_context': drf_serializers.CharField(required=False, help_text='Optional page context'),
+        }),
+        responses={
+            200: inline_serializer(name='ContinueConversationResponse', fields={
+                'response': drf_serializers.CharField(),
+                'title': drf_serializers.CharField(),
+            }),
+            400: inline_serializer(name='ContinueConversationBadRequest', fields={
+                'error': drf_serializers.CharField(),
+            }),
+        }
+    )
     @action(detail=True, methods=['post'])
     def continue_conversation(self, request, pk=None):
         conversation = self.get_object()
@@ -123,6 +140,20 @@ class ConversationViewSet(viewsets.ModelViewSet):
 
         return Response({"response": chatgpt_response, "title": conversation.title})
 
+    @extend_schema(
+        request=inline_serializer(name='UpdateTitleRequest', fields={
+            'title': drf_serializers.CharField(help_text='New conversation title'),
+        }),
+        responses={
+            200: inline_serializer(name='UpdateTitleResponse', fields={
+                'status': drf_serializers.CharField(),
+                'title': drf_serializers.CharField(),
+            }),
+            400: inline_serializer(name='UpdateTitleBadRequest', fields={
+                'error': drf_serializers.CharField(),
+            }),
+        }
+    )
     @action(detail=True, methods=['patch'])
     def update_title(self, request, pk=None):
         conversation = self.get_object()

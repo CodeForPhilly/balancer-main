@@ -29,6 +29,6 @@ jobs:
       run: ruff check --output-format=github --target-version=py39
     - name: Install test dependencies
       run: pip install -r server/requirements.txt
-      # Discover and run all files matching test_*.py or *_test.py under server/
+      # Pytest won’t automatically discover config files in subdirectories
     - name: Run tests
-      run: pytest server/ -v
+      run: pytest -c server/pytest.ini server/ -v

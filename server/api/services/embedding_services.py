@@ -2,6 +2,7 @@ import time
 import logging
 from statistics import median
 
+# filter() only does ADD logic
 from django.db.models import Q
 from pgvector.django import L2Distance
 

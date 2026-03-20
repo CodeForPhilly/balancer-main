@@ -38,14 +38,13 @@ def test_build_query_authenticated_uses_or_filter(mock_objects):
 @patch("api.services.embedding_services.Embeddings.objects")
 def test_build_query_unauthenticated_uses_superuser_only_filter(mock_objects):
     # An unauthenticated user may only see files uploaded by superusers.
-    # The OR branch for the user's own files must NOT be present.
+    # The source uses a plain kwarg here (not a positional Q object), so the
+    # value lives in call_args.kwargs, not call_args.args.
     user = MagicMock(is_authenticated=False)
 
     build_query(user, EMBEDDING_VECTOR)
 
-    expected_q = Q(upload_file__uploaded_by__is_superuser=True)
-    actual_q = mock_objects.filter.call_args.args[0]
-    assert actual_q == expected_q
+    assert mock_objects.filter.call_args.kwargs == {"upload_file__uploaded_by__is_superuser": True}
     
 # Test application of annotate and order_by
 
@@ -86,16 +85,18 @@ def test_build_query_no_document_filter_when_both_none(mock_objects):
 @patch("api.services.embedding_services.Embeddings.objects")
 def test_build_query_guid_takes_precedence_over_document_name(mock_objects):
     # When both guid and document_name are provided, the guid branch runs and
-    # the document_name branch is skipped entirely (only two filter calls total).
+    # the document_name branch is skipped entirely.
     user = MagicMock(is_authenticated=True)
 
     build_query(user, EMBEDDING_VECTOR, guid="abc-123", document_name="study.pdf")
 
-    # Two calls: auth filter + guid filter. No third call for document_name.
-    assert mock_objects.filter.call_count == 2
+    # The auth filter fires on mock_objects.filter (call_count == 1).
+    # The document filter fires on the chained ordered_qs.filter — a different
+    # mock object — so mock_objects.filter.call_count stays at 1.
+    assert mock_objects.filter.call_count == 1
 
-    # The second filter must use upload_file__guid, not name.
-    # We follow the mock chain to the queryset that .annotate().order_by() returned.
+    # The document filter must use upload_file__guid, not name, and must be
+    # called exactly once (confirming document_name branch was skipped).
     ordered_qs = mock_objects.filter.return_value.annotate.return_value.order_by.return_value
     ordered_qs.filter.assert_called_once_with(upload_file__guid="abc-123")
 

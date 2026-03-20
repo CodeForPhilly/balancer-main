@@ -1,19 +1,20 @@
 from unittest.mock import MagicMock, patch
 
 from django.db.models import Q
+from pgvector.django import L2Distance
 
-from api.services.embedding_services import build_query, evaluate_query, log_usage
+from api.services.embedding_services import (
+    build_query,
+    evaluate_query,
+    get_closest_embeddings,
+    log_usage,
+)
 
 # ---------------------------------------------------------------------------
 # build_query tests
-#
-# build_query only constructs a lazy Django QuerySet — it never evaluates it
-# (no iteration, .get(), .exists(), etc.), so no database is needed.
-#
-# We patch Embeddings.objects so every chained ORM call (.filter, .annotate,
-# .order_by, __getitem__) returns a MagicMock instead of hitting the DB.
-# All assertions inspect which methods were called with which arguments.
 # ---------------------------------------------------------------------------
+
+# All assertions inspect which methods and arguments were called on Embeddings.objects
 
 # Only forwarded to L2Distance
 EMBEDDING_VECTOR = [0.1, 0.2, 0.3]  
@@ -48,12 +49,6 @@ def test_build_query_unauthenticated_uses_superuser_only_filter(mock_objects):
     
 # Test application of annotate and order_by
 
-# TODO: Strengthen test_build_query_annotates_and_orders_by_distance to also
-#       assert the *arguments* to annotate — specifically that it receives
-#       distance=L2Distance("embedding_sentence_transformers", EMBEDDING_VECTOR).
-#       Currently only the call count is checked, so a wrong field name or a
-#       dropped vector would go undetected.
-
 @patch("api.services.embedding_services.Embeddings.objects")
 def test_build_query_annotates_and_orders_by_distance(mock_objects):
     # Regardless of other arguments, annotate(distance=L2Distance(...)) and
@@ -66,6 +61,12 @@ def test_build_query_annotates_and_orders_by_distance(mock_objects):
     filtered_qs = mock_objects.filter.return_value
     filtered_qs.annotate.assert_called_once()
     filtered_qs.annotate.return_value.order_by.assert_called_once_with("distance")
+
+    # L2Distance is a Django Func subclass, which implements __eq__ by comparing
+    # class and source expressions — so we can assert the exact field name and
+    # vector without patching L2Distance itself.
+    actual_distance_expr = filtered_qs.annotate.call_args.kwargs["distance"]
+    assert actual_distance_expr == L2Distance("embedding_sentence_transformers", EMBEDDING_VECTOR)
 
 # Test guid-over-document precedence logic
 
@@ -165,7 +166,10 @@ def test_build_query_returns_unevaluated_queryset(mock_objects):
 # evaluate_query tests
 # ---------------------------------------------------------------------------
 
-# TODO: Add test for empty queryset — evaluate_query([]) should return [].
+def test_evaluate_query_empty_queryset():
+    # An empty iterable should return an empty list, not raise an exception.
+    assert evaluate_query([]) == []
+
 
 def test_evaluate_query_maps_fields():
     # Verify that each Embeddings model attribute is mapped to the correct
@@ -193,8 +197,8 @@ def test_evaluate_query_maps_fields():
 
 
 def test_evaluate_query_none_upload_file():
-    # When upload_file is None (e.g. the FK was deleted), file_id must be None
-    # rather than raising an AttributeError on None.guid.
+    # When upload_file is None, file_id must be None rather than raising
+    # an AttributeError on None.guid.
     obj = MagicMock()
     obj.name = "doc.pdf"
     obj.text = "some text"
@@ -211,17 +215,71 @@ def test_evaluate_query_none_upload_file():
 # log_usage tests
 # ---------------------------------------------------------------------------
 
-# TODO: Add test for empty results list — log_usage([]) hits the else branch and
-#       should call SemanticSearchUsage.objects.create with num_results_returned=0
-#       and max_distance=None, median_distance=None, min_distance=None.
+@patch("api.services.embedding_services.SemanticSearchUsage.objects.create")
+def test_log_usage_empty_results(mock_create):
+    # Empty results hits the else branch. The record should still be created
+    # with num_results_returned=0 and all distance fields set to None.
+    user = MagicMock(is_authenticated=True)
 
-# TODO: Add test for unauthenticated user — user.is_authenticated=False should
-#       result in user=None being stored in the SemanticSearchUsage record.
+    log_usage(
+        [],
+        message_data="test query",
+        user=user,
+        guid=None,
+        document_name=None,
+        num_results=10,
+        encoding_time=0.1,
+        db_query_time=0.2,
+    )
 
-# TODO: Add test for user=None — passing None directly as the user argument
-#       should also store user=None (the expression `user if (user and
-#       user.is_authenticated) else None` handles both cases, but only the
-#       authenticated path is currently exercised).
+    mock_create.assert_called_once()
+    kwargs = mock_create.call_args.kwargs
+    assert kwargs["num_results_returned"] == 0
+    assert kwargs["max_distance"] is None
+    assert kwargs["median_distance"] is None
+    assert kwargs["min_distance"] is None
+
+
+@patch("api.services.embedding_services.SemanticSearchUsage.objects.create")
+def test_log_usage_unauthenticated_user_stored_as_none(mock_create):
+    # An unauthenticated user should be stored as None in the DB record, not as
+    # the user object itself, so the FK constraint is not violated.
+    user = MagicMock(is_authenticated=False)
+
+    log_usage(
+        [{"distance": 1.0}],
+        message_data="test query",
+        user=user,
+        guid=None,
+        document_name=None,
+        num_results=10,
+        encoding_time=0.1,
+        db_query_time=0.2,
+    )
+
+    kwargs = mock_create.call_args.kwargs
+    assert kwargs["user"] is None
+
+
+@patch("api.services.embedding_services.SemanticSearchUsage.objects.create")
+def test_log_usage_none_user_stored_as_none(mock_create):
+    # Passing user=None directly (e.g. from an anonymous request) should also
+    # store None — the expression `user if (user and user.is_authenticated)`
+    # short-circuits on the falsy None before accessing .is_authenticated.
+    log_usage(
+        [{"distance": 1.0}],
+        message_data="test query",
+        user=None,
+        guid=None,
+        document_name=None,
+        num_results=10,
+        encoding_time=0.1,
+        db_query_time=0.2,
+    )
+
+    kwargs = mock_create.call_args.kwargs
+    assert kwargs["user"] is None
+
 
 @patch("api.services.embedding_services.SemanticSearchUsage.objects.create")
 def test_log_usage_computes_distance_stats(mock_create):
@@ -276,8 +334,37 @@ def test_log_usage_swallows_exceptions(mock_create):
 # get_closest_embeddings tests
 # ---------------------------------------------------------------------------
 
-# TODO: Add smoke test for get_closest_embeddings verifying the wiring between
-#       its three steps: encode → build_query → evaluate_query → log_usage.
-#       Patch TransformerModel.get_instance, build_query, evaluate_query, and
-#       log_usage. Assert that evaluate_query receives the queryset returned by
-#       build_query, and that the function returns evaluate_query's result.
+@patch("api.services.embedding_services.log_usage")
+@patch("api.services.embedding_services.evaluate_query")
+@patch("api.services.embedding_services.build_query")
+@patch("api.services.embedding_services.TransformerModel")
+def test_get_closest_embeddings_wiring(mock_transformer, mock_build, mock_evaluate, mock_log):
+    # Smoke test verifying that get_closest_embeddings correctly wires together
+    # encode → build_query → evaluate_query → log_usage and returns the results.
+    user = MagicMock(is_authenticated=True)
+
+    # Simulate the model encoding the message to a vector.
+    fake_vector = [0.1, 0.2, 0.3]
+    mock_transformer.get_instance.return_value.model.encode.return_value = fake_vector
+
+    # build_query returns a queryset; evaluate_query turns it into a results list.
+    fake_queryset = MagicMock()
+    mock_build.return_value = fake_queryset
+    fake_results = [{"name": "doc.pdf", "distance": 0.5}]
+    mock_evaluate.return_value = fake_results
+
+    result = get_closest_embeddings(user, "some query", document_name="doc.pdf", guid=None, num_results=5)
+
+    # The encoded vector must be forwarded to build_query.
+    mock_build.assert_called_once_with(user, fake_vector, "doc.pdf", None, 5)
+
+    # evaluate_query must receive the queryset that build_query returned.
+    mock_evaluate.assert_called_once_with(fake_queryset)
+
+    # log_usage must be called with the results and original parameters.
+    mock_log.assert_called_once()
+    log_kwargs = mock_log.call_args.args
+    assert log_kwargs[0] is fake_results
+
+    # The function must return evaluate_query's result unchanged.
+    assert result is fake_results

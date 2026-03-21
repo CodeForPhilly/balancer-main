@@ -7,7 +7,7 @@ spec:
     - name: main-gateway
       namespace: envoy-gateway-system
   hostnames:
-    - sandbox.balancerproject.org
+    - HOSTNAME_PLACEHOLDER
   rules:
     - matches:
         - path:

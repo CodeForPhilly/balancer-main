@@ -12,15 +12,9 @@ images:
 
 patches:
   - target:
-      kind: Ingress
+      kind: HTTPRoute
       name: balancer
     patch: |-
-      - op: add
-        path: /metadata/annotations/cert-manager.io~1cluster-issuer
-        value: letsencrypt-staging
       - op: replace
-        path: /spec/tls/0/hosts/0
-        value: localhost
-      - op: replace
-        path: /spec/rules/0/host
+        path: /spec/hostnames/0
         value: localhost

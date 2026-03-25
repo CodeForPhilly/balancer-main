@@ -58,9 +58,9 @@ urlpatterns += [
     path("api/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
 ]
 
-import os # noqa: E402
-from django.conf import settings # noqa: E402
-from django.http import HttpResponseNotFound # noqa: E402
+import os
+from django.conf import settings
+from django.http import HttpResponseNotFound
 
 
 def spa_fallback(request):

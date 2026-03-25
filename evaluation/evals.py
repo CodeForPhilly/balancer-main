@@ -21,18 +21,18 @@ import os
 # Ensure the parent directory is in the path to import ModelFactory
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-import argparse  # noqa: E402
-import logging  # noqa: E402
-import asyncio  # noqa: E402
-import time  # noqa: E402
+import argparse
+import logging
+import asyncio
+import time
 
-import pandas as pd  # noqa: E402
+import pandas as pd
 
 # lighteval depends on `sentencepiece` and it only has prebuilt wheels for Python 3.11 or below
-from lighteval.tasks.requests import Doc  # noqa: E402
-from lighteval.metrics.metrics_sample import Extractiveness  # noqa: E402
+from lighteval.tasks.requests import Doc
+from lighteval.metrics.metrics_sample import Extractiveness
 
-from server.api.services.llm_services import ModelFactory  # noqa: E402
+from server.api.services.llm_services import ModelFactory
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"

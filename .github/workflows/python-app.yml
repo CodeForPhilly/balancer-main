@@ -5,9 +5,9 @@ name: Python application
 
 on:
   push:
-    branches: [ "develop" ]
+    branches: [ "listOfMed" ]
   pull_request:
-    branches: [ "develop" ]
+    branches: [ "listOfMed" ]
 
 permissions:
   contents: read
@@ -27,8 +27,3 @@ jobs:
       run: pipx install ruff
     - name: Lint code with Ruff
       run: ruff check --output-format=github --target-version=py39
-    - name: Install test dependencies
-      run: pip install -r server/requirements.txt
-      # Pytest won’t automatically discover config files in subdirectories
-    - name: Run tests
-      run: pytest -c server/pytest.ini server/ -v

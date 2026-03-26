@@ -10,6 +10,11 @@ from api.services.embedding_services import (
     log_usage,
 )
 
+# Each function is tested one responsibility at a time. One test for the whole
+# function collapses all responsibilities into a single assertion block — when
+# it fails you know something is broken but not which responsibility. You have
+# to debug to find out.
+
 # ---------------------------------------------------------------------------
 # build_query tests
 #

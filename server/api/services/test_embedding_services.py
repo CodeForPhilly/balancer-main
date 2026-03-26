@@ -12,9 +12,13 @@ from api.services.embedding_services import (
 
 # ---------------------------------------------------------------------------
 # build_query tests
+#
+# build_query is responsible for access control, annotate/order, document filter
+# and slicing and only constructs a lazy Django QuerySet without evaluating it
+#
+# We can test build_query by patching Embeddings.objects and inspecting which
+# methods and arguments were called on Embeddings.objects
 # ---------------------------------------------------------------------------
-
-# All assertions inspect which methods and arguments were called on Embeddings.objects
 
 # Only forwarded to L2Distance
 EMBEDDING_VECTOR = [0.1, 0.2, 0.3]  
@@ -165,6 +169,13 @@ def test_build_query_returns_unevaluated_queryset(mock_objects):
 
 # ---------------------------------------------------------------------------
 # evaluate_query tests
+#
+# evaluate_query is responsible for iterating the queryset and mapping each
+# Embeddings object's attributes to a result dict, including the rename
+# page_num -> page_number and the None-safe file_id lookup
+#
+# We can test evaluate_query by passing plain MagicMock objects directly as
+# the iterable and asserting on the shape and values of the returned list
 # ---------------------------------------------------------------------------
 
 def test_evaluate_query_empty_queryset():
@@ -214,6 +225,13 @@ def test_evaluate_query_none_upload_file():
 
 # ---------------------------------------------------------------------------
 # log_usage tests
+#
+# log_usage is responsible for computing distance stats, storing the correct
+# user (None for unauthenticated), handling empty results, and swallowing
+# exceptions so search is never interrupted
+#
+# We can test log_usage by patching SemanticSearchUsage.objects.create and
+# inspecting the keyword arguments it was called with
 # ---------------------------------------------------------------------------
 
 @patch("api.services.embedding_services.SemanticSearchUsage.objects.create")
@@ -333,6 +351,12 @@ def test_log_usage_swallows_exceptions(mock_create):
 
 # ---------------------------------------------------------------------------
 # get_closest_embeddings tests
+#
+# get_closest_embeddings is responsible for wiring together encode,
+# build_query, evaluate_query, and log_usage and returning the results
+#
+# We can test get_closest_embeddings by patching all four collaborators and
+# asserting that each is called with the correct arguments in the correct order
 # ---------------------------------------------------------------------------
 
 @patch("api.services.embedding_services.log_usage")

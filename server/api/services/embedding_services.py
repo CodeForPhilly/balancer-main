@@ -2,7 +2,7 @@ import time
 import logging
 from statistics import median
 
-# Django filter() only does ADD logic
+# Use Q objects to express OR conditions in Django queries
 from django.db.models import Q
 from pgvector.django import L2Distance
 
@@ -146,8 +146,8 @@ def log_usage(
                 median_distance=None,
                 min_distance=None,
             )
-    except Exception as e:
-        logger.error(f"Failed to create semantic search usage database record: {e}")
+    except Exception:
+        logger.exception("Failed to create semantic search usage database record")
 
 
 def get_closest_embeddings(

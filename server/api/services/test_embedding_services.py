@@ -26,7 +26,7 @@ from api.services.embedding_services import (
 # ---------------------------------------------------------------------------
 
 # Only forwarded to L2Distance
-EMBEDDING_VECTOR = [0.1, 0.2, 0.3]  
+EMBEDDING_VECTOR = [0.1, 0.2, 0.3]
 
 # Test authenticated/unauthenticated user access control
 

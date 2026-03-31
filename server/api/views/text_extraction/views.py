@@ -3,7 +3,7 @@ import json
 import re
 
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
+from api.permissions import IsSuperUser
 from rest_framework.response import Response
 from rest_framework import status
 from django.utils.decorators import method_decorator
@@ -97,7 +97,7 @@ def anthropic_citations(client: anthropic.Client, user_prompt: str, content_chun
 @method_decorator(csrf_exempt, name='dispatch')
 class RuleExtractionAPIView(APIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsSuperUser]
 
     @extend_schema(
         parameters=[
@@ -155,7 +155,7 @@ def openai_extraction(content_chunks, user_prompt):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class RuleExtractionAPIOpenAIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsSuperUser]
 
     @extend_schema(
         parameters=[

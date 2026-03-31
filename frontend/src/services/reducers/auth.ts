@@ -68,12 +68,15 @@ const initialState: StateType = {
 
 export default function authReducer(state = initialState, action: ActionType): StateType {
     switch(action.type) {
-        case AUTHENTICATED_SUCCESS:
+        case AUTHENTICATED_SUCCESS: {
+            const token = localStorage.getItem('access');
+            const decoded: TokenClaims = token ? jwtDecode(token) : { is_superuser: false };
             return {
                 ...state,
                 isAuthenticated: true,
-                isSuperuser: true
+                isSuperuser: decoded.is_superuser
             }
+        }
         case LOGIN_SUCCESS:
         case GOOGLE_AUTH_SUCCESS:
         case FACEBOOK_AUTH_SUCCESS:{

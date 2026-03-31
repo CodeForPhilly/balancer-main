@@ -7,7 +7,7 @@ class ApiConfig(AppConfig):
 
     def ready(self):
         
-        try: 
+        try:
             import os
             import sys
     
@@ -34,4 +34,8 @@ class ApiConfig(AppConfig):
             from .services.sentencetTransformer_model import TransformerModel
             TransformerModel.get_instance()
         except Exception:
+            # TransformerModel._instance stays None on failure, so the first actual request 
+            # that calls get_instance() will attempt to load the model again.
+            import logging
+            logger = logging.getLogger(__name__)
             logger.exception("Failed to preload the embedding model at startup")

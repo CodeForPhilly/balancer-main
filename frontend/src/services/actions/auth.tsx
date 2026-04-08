@@ -233,64 +233,58 @@ export const reset_password_confirm =
     }
   };
 
-// export const signup =
-//   (first_name, last_name, email, password, re_password) =>
-//   async (dispatch: Dispatch<ActionType>) => {
-//     const config = {
-//       headers: {
-//         "Content-Type": "application/json",
-//       },
-//     };
+export const signup =
+  (first_name: string, last_name: string, email: string, password: string, re_password: string): ThunkType =>
+  async (dispatch: AppDispatch) => {
+    const config = {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    };
 
-//     const body = JSON.stringify({
-//       first_name,
-//       last_name,
-//       email,
-//       password,
-//       re_password,
-//     });
+    const body = JSON.stringify({ first_name, last_name, email, password, re_password });
 
-//     try {
-//       const res = await axios.post(
-//         `${process.env.REACT_APP_API_URL}/auth/users/`,
-//         body,
-//         config
-//       );
+    try {
+      const res = await axios.post(AUTH_ENDPOINTS.USERS_CREATE, body, config);
+      dispatch({
+        type: SIGNUP_SUCCESS,
+        payload: res.data,
+      });
+    } catch (err) {
+      let errorMessage = "Registration failed";
+      if (isAxiosError(err) && err.response) {
+        const messages = Object.values(err.response.data as Record<string, string[]>).flat();
+        if (messages.length > 0) errorMessage = messages.join(" ");
+      }
+      dispatch({
+        type: SIGNUP_FAIL,
+        payload: errorMessage,
+      });
+      throw err;
+    }
+  };
 
-//       dispatch({
-//         type: SIGNUP_SUCCESS,
-//         payload: res.data,
-//       });
-//     } catch (err) {
-//       dispatch({
-//         type: SIGNUP_FAIL,
-//       });
-//     }
-//   };
+export const verify =
+  (uid: string, token: string): ThunkType =>
+  async (dispatch: AppDispatch) => {
+    const config = {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    };
 
-// export const verify =
-//   (uid, token) => async (dispatch: Dispatch<ActionType>) => {
-//     const config = {
-//       headers: {
-//         "Content-Type": "application/json",
-//       },
-//     };
+    const body = JSON.stringify({ uid, token });
 
-//     const body = JSON.stringify({ uid, token });
-
-//     try {
-//       await axios.post(
-//         `${process.env.REACT_APP_API_URL}/auth/users/activation/`,
-//         body,
-//         config
-//       );
-
-//       dispatch({
-//         type: ACTIVATION_SUCCESS,
-//       });
-//     } catch (err) {
-//       dispatch({
-//         type: ACTIVATION_FAIL,
-//       });
-//     }
-//   };
+    try {
+      await axios.post(AUTH_ENDPOINTS.USERS_ACTIVATION, body, config);
+      dispatch({
+        type: ACTIVATION_SUCCESS,
+        payload: "",
+      });
+    } catch (err) {
+      dispatch({
+        type: ACTIVATION_FAIL,
+      });
+      throw err;
+    }
+  };

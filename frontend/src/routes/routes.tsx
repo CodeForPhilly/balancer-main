@@ -20,6 +20,7 @@ import RulesManager from "../pages/RulesManager/RulesManager.tsx";
 import ManageMeds from "../pages/ManageMeds/ManageMeds.tsx";
 import ProtectedRoute from "../components/ProtectedRoute/ProtectedRoute.tsx";
 import AdminRoute from "../components/ProtectedRoute/AdminRoute.tsx";
+import Activate from "../pages/Activate/Activate.tsx";
 
 const routes = [
   {
@@ -48,6 +49,10 @@ const routes = [
   {
     path: "register",
     element: <RegistrationForm />,
+  },
+  {
+    path: "activate/:uid/:token",
+    element: <Activate />,
   },
   {
     path: "login",

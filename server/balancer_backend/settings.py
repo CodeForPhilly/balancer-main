@@ -221,6 +221,12 @@ SIMPLE_JWT = {
     "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
 }
 
+# Domain used by Djoser to build activation and password reset links in emails.
+# Should point to the frontend, not the backend, since the frontend handles these routes.
+# Override in production via environment variable.
+DOMAIN = os.environ.get("FRONTEND_DOMAIN", "localhost:3000")
+SITE_NAME = "Balancer"
+
 DJOSER = {
     "LOGIN_FIELD": "email",
     "USER_CREATE_PASSWORD_RETYPE": True,

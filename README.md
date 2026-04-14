@@ -6,6 +6,7 @@ for patients with bipolar disorder, helping them shorten their journey to stabil
 ## Usage
 
 You can view the current build of the website here: [https://balancerproject.org/](https://balancerproject.org/)
+
 You can view the website in a sandbox here: [https://sandbox.balancerproject.org/](https://sandbox.balancerproject.org/)
 
 ## Contributing 

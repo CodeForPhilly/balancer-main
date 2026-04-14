@@ -73,6 +73,11 @@ df = pd.read_sql(query, engine)
 
 #### Django REST
 - The email and password are set in `server/api/management/commands/createsu.py`
+- Backend tests can be run using `pytest` by running the below command inside the running backend container:
+
+```
+docker compose exec backend pytest api/ -v
+```
 
 ## API Documentation
 

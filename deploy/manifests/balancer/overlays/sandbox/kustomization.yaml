@@ -1,0 +1,26 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: balancer
+
+resources:
+  - ../../base
+
+patches:
+  - target:
+      kind: Deployment
+      name: balancer
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/env
+        value:
+          - name: SQL_HOST
+            value: codeforphilly-cluster-rw.cloudnative-pg.svc.cluster.local
+          - name: SQL_PORT
+            value: "5432"
+          - name: SQL_DATABASE
+            value: balancer
+          - name: SQL_USER
+            value: balancer
+          - name: SQL_ENGINE
+            value: django.db.backends.postgresql

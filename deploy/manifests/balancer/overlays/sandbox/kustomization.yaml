@@ -5,6 +5,7 @@ namespace: balancer
 
 resources:
   - ../../base
+  - configmap.yaml
 
 patches:
   - target:
@@ -12,20 +13,15 @@ patches:
       name: balancer
     patch: |-
       - op: add
+        path: /spec/template/spec/containers/0/envFrom/-
+        value:
+          configMapRef:
+            name: balancer-db-config
+      - op: add
         path: /spec/template/spec/containers/0/env
         value:
-          - name: SQL_HOST
-            value: codeforphilly-cluster-rw.cloudnative-pg.svc.cluster.local
-          - name: SQL_PORT
-            value: "5432"
-          - name: SQL_DATABASE
-            value: balancer
-          - name: SQL_USER
-            value: balancer
           - name: SQL_PASSWORD
             valueFrom:
               secretKeyRef:
                 name: balancer-db-credentials
                 key: password
-          - name: SQL_ENGINE
-            value: django.db.backends.postgresql

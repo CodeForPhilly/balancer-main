@@ -4,10 +4,9 @@ metadata:
   name: balancer
 spec:
   parentRefs:
-    - name: main-gateway
-      namespace: envoy-gateway-system
-  hostnames:
-    - HOSTNAME_PLACEHOLDER
+    - name: balancer-listeners
+      kind: ListenerSet
+      group: gateway.networking.k8s.io
   rules:
     - matches:
         - path:

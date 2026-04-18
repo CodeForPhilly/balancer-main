@@ -4,5 +4,8 @@ kind: Kustomization
 resources:
   - ../../base
 
-patches:
-  - path: configmap.yaml
+configMapGenerator:
+  - name: balancer-config
+    behavior: merge
+    envs:
+      - balancer.env

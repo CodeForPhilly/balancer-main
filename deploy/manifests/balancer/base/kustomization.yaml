@@ -9,3 +9,5 @@ resources:
 
 configMapGenerator:
   - name: balancer-config
+    envs:
+      - balancer.env

@@ -12,9 +12,19 @@ images:
 
 patches:
   - target:
+      kind: ListenerSet
+      name: balancer-listeners
+    patch: |-
+      - op: replace
+        path: /spec/listeners/0/hostname
+        value: sandbox.balancerproject.org
+      - op: replace
+        path: /spec/listeners/1/hostname
+        value: sandbox.balancerproject.org
+  - target:
       kind: HTTPRoute
       name: balancer
     patch: |-
-      - op: replace
-        path: /spec/hostnames/0
-        value: sandbox.balancerproject.org
+      - op: add
+        path: /spec/hostnames
+        value: ["sandbox.balancerproject.org"]

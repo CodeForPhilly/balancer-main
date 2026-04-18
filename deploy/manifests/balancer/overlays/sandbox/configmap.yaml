@@ -3,4 +3,4 @@ kind: ConfigMap
 metadata:
   name: balancer-config
 data:
-  CORS_ALLOWED_ORIGINS: "https://sandbox.balancertestsite.com"
+  CORS_ALLOWED_ORIGINS: "https://sandbox.balancerproject.org"

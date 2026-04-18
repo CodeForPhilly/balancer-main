@@ -22,5 +22,10 @@ patches:
             value: balancer
           - name: SQL_USER
             value: balancer
+          - name: SQL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: balancer-db-credentials
+                key: password
           - name: SQL_ENGINE
             value: django.db.backends.postgresql

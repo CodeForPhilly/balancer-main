@@ -1,8 +1,4 @@
-import os
-import json
 import logging
-import time
-from typing import Callable
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -13,45 +9,9 @@ from django.views.decorators.csrf import csrf_exempt
 from drf_spectacular.utils import extend_schema, inline_serializer
 from rest_framework import serializers as drf_serializers
 
-from openai import OpenAI
+from .assistant_services import run_assistant
 
-from ...services.embedding_services import get_closest_embeddings
-from ...services.conversions_services import convert_uuids
-
-# Configure logging
 logger = logging.getLogger(__name__)
-
-
-# TODO: OpenAI API Dashboard has total duration and cost metrics  
-# GPT_5_NANO_PRICING_DOLLARS_PER_MILLION_TOKENS = {"input": 0.05, "output": 0.40}
-
-# def calculate_cost_metrics(token_usage: dict, pricing: dict) -> dict:
-#     """
-#     Calculate cost metrics based on token usage and pricing
-
-#     Args:
-#         token_usage: Dictionary containing input_tokens and output_tokens
-#         pricing: Dictionary containing input and output pricing per million tokens
-
-#     Returns:
-#         Dictionary containing input_cost, output_cost, and total_cost in USD
-#     """
-#     TOKENS_PER_MILLION = 1_000_000
-
-#     # Pricing is in dollars per million tokens
-#     input_cost_dollars = (pricing["input"] / TOKENS_PER_MILLION) * token_usage.get(
-#         "input_tokens", 0
-#     )
-#     output_cost_dollars = (pricing["output"] / TOKENS_PER_MILLION) * token_usage.get(
-#         "output_tokens", 0
-#     )
-#     total_cost_dollars = input_cost_dollars + output_cost_dollars
-
-#     return {
-#         "input_cost": input_cost_dollars,
-#         "output_cost": output_cost_dollars,
-#         "total_cost": total_cost_dollars,
-#     }
 
 
 @method_decorator(csrf_exempt, name="dispatch")
@@ -80,8 +40,11 @@ class Assistant(APIView):
             message = request.data.get("message", None)
             previous_response_id = request.data.get("previous_response_id", None)
             
-            = run_assistant()
-
+            final_response_output_text, final_response_id = run_assistant(
+                message=message,
+                user=user,
+                previous_response_id=previous_response_id,
+            )
 
             return Response(
                 {

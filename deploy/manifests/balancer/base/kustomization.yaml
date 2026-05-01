@@ -6,3 +6,13 @@ resources:
   - deployment.yaml
   - service.yaml
   - ingress.yaml
+  - database.yaml
+
+patches:
+  - target:
+      kind: Database
+      name: balancer
+    patch: |-
+      - op: replace
+        path: /metadata/namespace
+        value: cloudnative-pg

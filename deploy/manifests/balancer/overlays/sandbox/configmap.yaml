@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: balancer-db-config
 data:
-  SQL_HOST: codeforphilly-cluster-rw.cloudnative-pg.svc.cluster.local
+  SQL_HOST: shared-cluster-rw.cloudnative-pg.svc.cluster.local
   SQL_PORT: "5432"
   SQL_DATABASE: balancer
   SQL_USER: balancer

@@ -10,6 +10,12 @@ images:
   - name: ghcr.io/codeforphilly/balancer-main/app
     newTag: latest
 
+configMapGenerator:
+  - name: balancer-config
+    behavior: merge
+    envs:
+      - balancer.env
+
 patches:
   - target:
       kind: ListenerSet

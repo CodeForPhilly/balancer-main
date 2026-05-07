@@ -5,6 +5,7 @@ namespace: balancer
 
 resources:
   - ../../base
+  - configmap.yaml
 
 images:
   - name: ghcr.io/codeforphilly/balancer-main/app
@@ -41,3 +42,20 @@ patches:
       - op: add
         path: /spec/hostnames
         value: ["sandbox.balancerproject.org"]
+  - target:
+      kind: Deployment
+      name: balancer
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/envFrom/-
+        value:
+          configMapRef:
+            name: balancer-db-config
+      - op: add
+        path: /spec/template/spec/containers/0/env
+        value:
+          - name: SQL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: balancer-db-credentials
+                key: password

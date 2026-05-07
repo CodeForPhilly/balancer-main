@@ -5,4 +5,5 @@ resources:
   - namespace.yaml
   - deployment.yaml
   - service.yaml
-  - ingress.yaml
+  - gateway-listeners.yaml
+  - httproute.yaml

@@ -13,12 +13,3 @@ configMapGenerator:
   - name: balancer-config
     envs:
       - balancer.env
-
-patches:
-  - target:
-      kind: Database
-      name: balancer
-    patch: |-
-      - op: replace
-        path: /metadata/namespace
-        value: cloudnative-pg

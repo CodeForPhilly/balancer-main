@@ -3,3 +3,4 @@ kind: Kustomization
 
 resources:
   - database.yaml
+  - balancer-db-credentials-sealed.yaml

@@ -23,7 +23,7 @@ labels:
     pairs:
       environment: production
       app.kubernetes.io/instance: balancer-production
-      app.kubernetes.io/version: v1.1.5
+      app.kubernetes.io/version: "1.1.5"
 
 patches:
   - target:

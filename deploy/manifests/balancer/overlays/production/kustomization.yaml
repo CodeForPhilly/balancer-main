@@ -8,7 +8,7 @@ resources:
 
 images:
   - name: ghcr.io/codeforphilly/balancer-main/app
-    newTag: v1.0.2
+    newTag: v1.1.5
 
 configMapGenerator:
   - name: balancer-config
@@ -23,7 +23,7 @@ labels:
     pairs:
       environment: production
       app.kubernetes.io/instance: balancer-production
-      app.kubernetes.io/version: v1.0.2
+      app.kubernetes.io/version: v1.1.5
 
 patches:
   - target:

@@ -8,19 +8,28 @@ resources:
 
 images:
   - name: ghcr.io/codeforphilly/balancer-main/app
-    newTag: latest
+    newTag: v1.0.2
 
 configMapGenerator:
   - name: balancer-config
     behavior: merge
+    literals:
+      - HOSTNAME=balancerproject.org
     envs:
       - balancer.env
+
+labels:
+  - includeSelectors: true
+    pairs:
+      environment: production
+      app.kubernetes.io/instance: balancer-production
+      app.kubernetes.io/version: v1.0.2
 
 patches:
   - target:
       kind: ListenerSet
       name: balancer-listeners
-    patch: |-
+    patch: |
       - op: replace
         path: /spec/listeners/0/hostname
         value: balancerproject.org
@@ -30,8 +39,7 @@ patches:
   - target:
       kind: HTTPRoute
       name: balancer
-    patch: |-
-      - op: add
-        path: /spec/hostnames
-        value: ["balancerproject.org"]
-  
+    patch: |
+      - op: replace
+        path: /spec/hostnames/0
+        value: balancerproject.org

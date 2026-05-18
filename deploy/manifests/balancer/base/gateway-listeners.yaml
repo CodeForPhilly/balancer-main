@@ -4,6 +4,7 @@ metadata:
   name: balancer-listeners
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
+    hostname: HOSTNAME_PLACEHOLDER
 spec:
   parentRef:
     name: main-gateway

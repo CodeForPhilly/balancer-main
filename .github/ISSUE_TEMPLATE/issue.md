@@ -1,3 +1,12 @@
+---
+name: Issue template
+about: Help push the project forward
+title: ''
+labels: ''
+assignees: ''
+
+---
+
 ## Title
 <!-- Title: [Type]: Short description of the problem or goal  -->
 

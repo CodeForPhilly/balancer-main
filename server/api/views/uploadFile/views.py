@@ -1,5 +1,6 @@
 from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny
+from api.permissions import IsSuperUser
 from rest_framework.response import Response
 from rest_framework import status, serializers as drf_serializers
 from rest_framework.generics import UpdateAPIView
@@ -24,7 +25,7 @@ class UploadFileView(APIView):
     def get_permissions(self):
         if self.request.method == 'GET':
             return [AllowAny()]  # Public access
-        return [IsAuthenticated()]  # Auth required for other methods
+        return [IsSuperUser()]  # Superuser required for write methods
 
     def get(self, request, format=None):
         print("UploadFileView, get list")
@@ -217,7 +218,7 @@ class RetrieveUploadFileView(APIView):
 
 
 class EditFileMetadataView(UpdateAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsSuperUser]
     serializer_class = UploadFileSerializer
     lookup_field = 'guid'
 

@@ -1,5 +1,6 @@
 from rest_framework import status, serializers as drf_serializers
 from rest_framework.permissions import AllowAny
+from api.permissions import IsSuperUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from drf_spectacular.utils import extend_schema, inline_serializer
@@ -127,6 +128,7 @@ class AddMedication(APIView):
     """
     API endpoint to add a medication to the database with its risks and benefits.
     """
+    permission_classes = [IsSuperUser]
     serializer_class = MedicationSerializer
 
     def post(self, request):
@@ -158,6 +160,7 @@ class DeleteMedication(APIView):
     """
     API endpoint to delete medication if medication in database.
     """
+    permission_classes = [IsSuperUser]
 
     @extend_schema(
         request=inline_serializer(name='DeleteMedicationRequest', fields={

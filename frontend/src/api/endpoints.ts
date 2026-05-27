@@ -22,6 +22,7 @@ export const AUTH_ENDPOINTS = {
   USERS_CREATE: `${API_BASE}/auth/users/`,
   USERS_ACTIVATION: `${API_BASE}/auth/users/activation/`,
   USERS_RESEND_ACTIVATION: `${API_BASE}/auth/users/resend_activation/`,
+  JWT_REFRESH: `${API_BASE}/auth/jwt/refresh/`,
 } as const;
 
 /**

@@ -67,7 +67,10 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "balancer_backend.urls"
 
+# CORS configuration
 CORS_ALLOWED_ORIGINS = os.environ.get("CORS_ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+# Ensure no empty strings if input was empty or trailing comma
+CORS_ALLOWED_ORIGINS = [origin.strip() for origin in CORS_ALLOWED_ORIGINS if origin.strip()]
 
 TEMPLATES = [
     {

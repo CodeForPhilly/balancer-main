@@ -310,7 +310,7 @@ const NewPatientForm = ({
           >
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold text-gray-600 cursor-pointer header_logo font-satoshi hover:text-blue-600 ">
-                Click To Enter New Patient
+                Enter New Patient
               </h2>
 
               <div

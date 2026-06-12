@@ -1,6 +1,6 @@
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from api.permissions import IsSuperUser
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema
 from .models import AI_Settings
@@ -9,7 +9,7 @@ from .serializers import AISettingsSerializer
 
 @extend_schema(request=AISettingsSerializer, responses={200: AISettingsSerializer(many=True), 201: AISettingsSerializer})
 @api_view(['GET', 'POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsSuperUser])
 def settings_view(request):
     if request.method == 'GET':
         settings = AI_Settings.objects.all()

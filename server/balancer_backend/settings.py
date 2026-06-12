@@ -67,7 +67,10 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "balancer_backend.urls"
 
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS configuration
+CORS_ALLOWED_ORIGINS = os.environ.get("CORS_ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+# Ensure no empty strings if input was empty or trailing comma
+CORS_ALLOWED_ORIGINS = [origin.strip() for origin in CORS_ALLOWED_ORIGINS if origin.strip()]
 
 TEMPLATES = [
     {
@@ -139,12 +142,15 @@ DATABASES = {
     "default": db_config,
 }
 
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp.gmail.com"
-EMAIL_PORT = 587
-EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
-EMAIL_USE_TLS = True
+if DEBUG:
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+else:
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+    EMAIL_HOST = "smtp.gmail.com"
+    EMAIL_PORT = 587
+    EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
+    EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+    EMAIL_USE_TLS = True
 
 
 # Password validation
@@ -217,6 +223,12 @@ SIMPLE_JWT = {
     "TOKEN_OBTAIN_SERIALIZER": "api.models.TokenObtainPairSerializer.MyTokenObtainPairSerializer",
     "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
 }
+
+# Domain used by Djoser to build activation and password reset links in emails.
+# Should point to the frontend, not the backend, since the frontend handles these routes.
+# Override in production via environment variable.
+DOMAIN = os.environ.get("FRONTEND_DOMAIN", "localhost:3000")
+SITE_NAME = "Balancer"
 
 DJOSER = {
     "LOGIN_FIELD": "email",

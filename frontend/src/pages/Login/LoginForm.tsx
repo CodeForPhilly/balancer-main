@@ -6,7 +6,6 @@ import { RootState } from "../../services/actions/types";
 import { useState, useEffect } from "react";
 import ErrorMessage from "../../components/ErrorMessage";
 import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
-import { FaExclamationTriangle } from "react-icons/fa";
 
 interface LoginFormProps {
   isAuthenticated: boolean | null;
@@ -60,19 +59,9 @@ function LoginForm({ isAuthenticated, loginError }: LoginFormProps) {
           className="mb-4 rounded-md  bg-white px-3 pb-12 pt-6 shadow-md ring-1 md:px-12"
         >
           <div className="flex flex-col items-center justify-center">
-            {/* {errorMessage && <div className="text-red-500">{errorMessage}</div>} */}
             <h2 className="blue_gradient mb-6 font-satoshi text-3xl font-bold text-gray-600">
-              Welcome
+              Log in
             </h2>
-
-            <blockquote className="p-4 mb-4 border-s-4 border-yellow-500 bg-amber-50 flex gap-5 items-center">
-                <div className="mb-2 text-yellow-500">
-                  <FaExclamationTriangle size={24} />
-                </div>
-                <div>
-                  <p className="text-gray-800">This login is for Code for Philly administrators. Providers can use all site features without logging in. <Link to="/" className="underline hover:text-blue-600 hover:no-underline" style={{ 'whiteSpace': 'nowrap' }}>Return to Homepage</Link></p>
-                </div>
-            </blockquote>
           </div>
           <ErrorMessage errors={errors} />
           <div className="mb-4 mt-5">
@@ -113,18 +102,17 @@ function LoginForm({ isAuthenticated, loginError }: LoginFormProps) {
               Sign In
             </button>
           </div>
+          <div className="mt-4 flex justify-between text-sm">
+            <Link to="/register" className="text-blue-600 hover:underline">
+              Don't have an account? Sign up
+            </Link>
+            <Link to="/resetPassword" className="text-blue-600 hover:underline">
+              Forgot password?
+            </Link>
+          </div>
         </form>
       </section>
-      { loading &&  <LoadingSpinner /> }
-
-      {/* <p>
-        Don't have an account?{" "}
-        <Link to="/register" className="font-bold hover:text-blue-600">
-          {" "}
-          Register here
-        </Link>
-        .
-      </p> */}
+      { loading && <LoadingSpinner /> }
     </>
   );
 }

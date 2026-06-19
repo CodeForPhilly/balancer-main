@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import MagicMock, patch
 
-from . import title
+from api.views.uploadFile import title
 
 
 def make_page_dict(blocks):

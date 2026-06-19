@@ -26,10 +26,15 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "balancer_backend.settings")
 import django
 django.setup()
 
+# TODO: pandas is only used in main(), but importing it at module top means
+# importing this module (e.g. from test_eval_assistant.py) fails if pandas is
+# not installed in the test environment. Move this import into main() to make
+# run_one importable without pandas.
 import pandas as pd
 from django.contrib.auth import get_user_model
 
 from api.views.assistant.assistant_services import run_assistant
+# TODO: remove unused import or use INSTRUCTIONS to record an instructions_hash column
 from api.views.assistant.assistant_prompts import INSTRUCTIONS
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
@@ -40,6 +45,7 @@ logger = logging.getLogger(__name__)
 # Read model and INSTRUCTIONS from the source file
 # INSTRUCTIONS is imported from assistant_prompts.py
 # MODEL is read from assistant_services.py MODEL_DEFAULTS
+# TODO: import a shared MODEL_NAME constant from assistant_services instead of hardcoding
 MODEL = "gpt-5-nano"
 
 # Set of representative questions to evaluate the assistant

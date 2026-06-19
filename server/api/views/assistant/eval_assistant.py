@@ -9,7 +9,8 @@
 # ///
 
 # uv script (or plain Python) to generate results to CSV, run from the terminal
-# Run from inside the container: docker compose exec backend python eval_assistant.py
+# Run from inside the container (working dir is /usr/src/server):
+#   docker compose exec backend python api/views/assistant/eval_assistant.py
 # 
 
 
@@ -20,6 +21,12 @@ import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # Django setup must come before any imports that touch the ORM
+# NOTE: from api/views/assistant/, "../../../../" resolves four levels up to
+# /usr/src (not /usr/src/server, where balancer_backend lives). So this insert
+# alone does not put the settings package on sys.path — running the script
+# relies on the container already having /usr/src/server on PYTHONPATH. Sanity-
+# check this the first time the eval is run for real; the path depth may need
+# adjusting (e.g. "../../../").
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../")))
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "balancer_backend.settings")
 

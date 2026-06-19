@@ -26,11 +26,6 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "balancer_backend.settings")
 import django
 django.setup()
 
-# TODO: pandas is only used in main(), but importing it at module top means
-# importing this module (e.g. from test_eval_assistant.py) fails if pandas is
-# not installed in the test environment. Move this import into main() to make
-# run_one importable without pandas.
-import pandas as pd
 from django.contrib.auth import get_user_model
 
 from api.views.assistant.assistant_services import run_assistant
@@ -131,6 +126,11 @@ def main():
         }
         for future in as_completed(futures):
             results.append(future.result())
+
+    # Import pandas here, not at module top, so that importing this module (e.g.
+    # run_one from test_eval_assistant.py) does not require pandas. It is only
+    # needed for the CSV output below, when this script is run directly.
+    import pandas as pd
 
     df = pd.DataFrame(results)
 

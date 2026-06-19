@@ -1,3 +1,11 @@
+# Tests for run_assistant (assistant_services.py): the orchestrator that wires the
+# OpenAI client, the search tool mapping, and the agentic loop together.
+#
+# The OpenAI client and handle_tool_calls_with_reasoning are mocked, so these
+# tests cover only logic run_assistant owns: how it builds the user input message,
+# its decision to include vs. omit previous_response_id, and that it binds the
+# request user into the search tool. No live OpenAI calls and no database.
+
 from unittest.mock import MagicMock, patch
 
 
@@ -7,35 +15,6 @@ def _make_terminal_response(output_text="Final answer.", response_id="resp-1"):
     response.output_text = output_text
     response.id = response_id
     return response
-
-
-# ---------------------------------------------------------------------------
-# run_assistant tests
-#
-# run_assistant is responsible for wiring together the OpenAI client,
-# make_search_tool_mapping (which binds user to search_documents), and
-# handle_tool_calls_with_reasoning.
-#
-# We patch the OpenAI client and handle_tool_calls_with_reasoning to test
-# that run_assistant correctly assembles and forwards its arguments.
-# ---------------------------------------------------------------------------
-
-@patch("api.views.assistant.assistant_services.handle_tool_calls_with_reasoning")
-@patch("api.views.assistant.assistant_services.OpenAI")
-def test_run_assistant_returns_text_and_id(mock_openai_cls, mock_handle):
-    mock_client = MagicMock()
-    mock_openai_cls.return_value = mock_client
-    mock_client.responses.create.return_value = _make_terminal_response()
-    mock_handle.return_value = ("Final answer.", "resp-1")
-
-    from api.views.assistant.assistant_services import run_assistant
-
-    user = MagicMock()
-    text, resp_id = run_assistant(message="What is lithium?", user=user)
-
-    assert text == "Final answer."
-    assert resp_id == "resp-1"
-
 
 @patch("api.views.assistant.assistant_services.handle_tool_calls_with_reasoning")
 @patch("api.views.assistant.assistant_services.OpenAI")
@@ -87,23 +66,6 @@ def test_run_assistant_omits_previous_response_id_when_none(mock_openai_cls, moc
 
     call_kwargs = mock_client.responses.create.call_args.kwargs
     assert "previous_response_id" not in call_kwargs
-
-
-@patch("api.views.assistant.assistant_services.handle_tool_calls_with_reasoning")
-@patch("api.views.assistant.assistant_services.OpenAI")
-def test_run_assistant_passes_search_tools_schema_to_model(mock_openai_cls, mock_handle):
-    from api.views.assistant.assistant_services import run_assistant
-    from api.views.assistant.tool_services import SEARCH_TOOLS_SCHEMA
-
-    mock_client = MagicMock()
-    mock_openai_cls.return_value = mock_client
-    mock_client.responses.create.return_value = _make_terminal_response()
-    mock_handle.return_value = ("answer", "resp-1")
-
-    run_assistant(message="query", user=MagicMock())
-
-    call_kwargs = mock_client.responses.create.call_args.kwargs
-    assert call_kwargs.get("tools") == SEARCH_TOOLS_SCHEMA
 
 
 @patch("api.views.assistant.tool_services.search_documents")

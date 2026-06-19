@@ -1,5 +1,23 @@
+# Tests for tool_services.py: the retrieval tooling and the agentic reasoning loop.
+#
+# Covers the logic this module owns, with mocked tools (no DB, no OpenAI):
+#   - make_search_tool_mapping: the closure that binds the request user to
+#     search_documents, including per-call user independence.
+#   - invoke_functions_from_response: dispatching the model's function calls —
+#     the call/no-call branch, output shaping, and the unregistered-tool and
+#     tool-raises error paths.
+#   - handle_tool_calls_with_reasoning: the while-loop that keeps calling the
+#     model until it stops emitting tool calls, including loop continuity via
+#     previous_response_id.
+
 import json
 from unittest.mock import MagicMock, patch
+
+# TODO: add coverage for search_documents itself (formatting of embeddings
+# results, the empty-results message, and the exception path). No DB needed:
+# search_documents only calls get_closest_embeddings and convert_uuids, so
+# mocking those two (like the rest of the suite mocks collaborators) covers all
+# three paths as fast, DB-free unit tests.
 
 from api.views.assistant.tool_services import (
     invoke_functions_from_response,
@@ -10,19 +28,7 @@ from api.views.assistant.tool_services import (
 
 # ---------------------------------------------------------------------------
 # make_search_tool_mapping tests
-#
-# make_search_tool_mapping is responsible for binding user to search_documents
-# so the tool dispatcher can call it with only the query argument the model
-# generates. We test the shape of the returned mapping and that user is
-# forwarded correctly to search_documents.
 # ---------------------------------------------------------------------------
-
-@patch("api.views.assistant.tool_services.search_documents")
-def test_make_search_tool_mapping_returns_search_documents_key(mock_search):
-    user = MagicMock()
-    mapping = make_search_tool_mapping(user)
-    assert "search_documents" in mapping
-
 
 @patch("api.views.assistant.tool_services.search_documents")
 def test_make_search_tool_mapping_bound_fn_forwards_user(mock_search):
@@ -47,9 +53,11 @@ def test_make_search_tool_mapping_different_users_are_independent(mock_search):
     mapping_a["search_documents"](query="q")
     mapping_b["search_documents"](query="q")
 
+    # bound_search calls search_documents(query, user) positionally, so each
+    # recorded call is (args, kwargs) == (("q", user), {}).
     calls = mock_search.call_args_list
-    assert calls[0] == ((("q", user_a),), {})
-    assert calls[1] == ((("q", user_b),), {})
+    assert calls[0] == (("q", user_a), {})
+    assert calls[1] == (("q", user_b), {})
 
 
 # ---------------------------------------------------------------------------

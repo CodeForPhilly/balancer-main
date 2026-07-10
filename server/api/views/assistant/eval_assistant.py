@@ -33,11 +33,9 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "balancer_backend.settings")
 import django
 django.setup()
 
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model  # noqa: E402
 
-from api.views.assistant.assistant_services import run_assistant
-# TODO: remove unused import or use INSTRUCTIONS to record an instructions_hash column
-from api.views.assistant.assistant_prompts import INSTRUCTIONS
+from api.views.assistant.assistant_services import run_assistant  # noqa: E402
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)

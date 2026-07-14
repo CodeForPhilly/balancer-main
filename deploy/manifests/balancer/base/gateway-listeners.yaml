@@ -3,7 +3,7 @@ kind: ListenerSet
 metadata:
   name: balancer-listeners
   annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-prod
+    cert-manager.io/cluster-issuer: letsencrypt-prod-gateway
     hostname: HOSTNAME_PLACEHOLDER
 spec:
   parentRef:

@@ -22,3 +22,6 @@ configMapGenerator:
   - name: balancer-config
     envs:
       - balancer.env
+
+generatorOptions:
+  disableNameSuffixHash: true

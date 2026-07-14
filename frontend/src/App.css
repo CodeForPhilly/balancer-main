@@ -221,7 +221,11 @@ Tooltip. Please see Tooltip.tsx under components folder
 */
 
 .tooltip-container {
-    @apply cursor-pointer;
+    @apply cursor-pointer border-0 bg-transparent p-0 text-inherit;
+}
+
+.tooltip-container:focus-visible {
+    @apply rounded-sm outline outline-2 outline-offset-2 outline-indigo-600;
 }
 
 .tooltip {
@@ -273,4 +277,3 @@ Error message. Please see ErrorMessages.tsx under components folder
     font-weight: bold;
 
 }
-

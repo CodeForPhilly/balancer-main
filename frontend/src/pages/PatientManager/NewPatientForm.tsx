@@ -441,7 +441,7 @@ const NewPatientForm = ({
                   <dd className="text-sm text-gray-900 md:col-span-2 md:mt-0 md:pl-24">
                     <div className="flex items-center pr-16 gap-x-3">
                       <input
-                        id="suicide"
+                        id="suicide-yes"
                         name="suicide"
                         type="radio"
                         checked={newPatientInfo.Suicide === "Yes"}
@@ -450,22 +450,23 @@ const NewPatientForm = ({
                         className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-600"
                       />
                       <label
-                        htmlFor="push-everything"
+                        htmlFor="suicide-yes"
                         className="block text-sm font-medium leading-6 text-gray-900"
                       >
                         Yes
                       </label>
 
                       <input
-                        id="suicide"
+                        id="suicide-no"
                         name="suicide"
                         type="radio"
+                        value="No"
                         checked={newPatientInfo.Suicide === "No"}
                         onChange={(e) => handleRadioChange(e, "Suicide")}
                         className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-600"
                       />
                       <label
-                        htmlFor="push-email"
+                        htmlFor="suicide-no"
                         className="block text-sm font-medium leading-6 text-gray-900"
                       >
                         No
@@ -485,7 +486,7 @@ const NewPatientForm = ({
                   <dd className="text-sm text-gray-900 md:col-span-2 md:mt-0 md:pl-24">
                     <div className="flex items-center pr-16 gap-x-3">
                       <input
-                        id="Kidney"
+                        id="kidney-yes"
                         name="Kidney"
                         type="radio"
                         value="Yes"
@@ -494,14 +495,14 @@ const NewPatientForm = ({
                         className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-600"
                       />
                       <label
-                        htmlFor="push-everything"
+                        htmlFor="kidney-yes"
                         className="block text-sm font-medium leading-6 text-gray-900"
                       >
                         Yes
                       </label>
 
                       <input
-                        id="Kidney"
+                        id="kidney-no"
                         name="Kidney"
                         type="radio"
                         value="No"
@@ -510,7 +511,7 @@ const NewPatientForm = ({
                         className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-600"
                       />
                       <label
-                        htmlFor="push-email"
+                        htmlFor="kidney-no"
                         className="block text-sm font-medium leading-6 text-gray-900"
                       >
                         No
@@ -530,7 +531,7 @@ const NewPatientForm = ({
                   <dd className="text-sm text-gray-900 md:col-span-2 md:mt-0 md:pl-24">
                     <div className="flex items-center pr-16 gap-x-3">
                       <input
-                        id="Liver"
+                        id="liver-yes"
                         name="Liver"
                         type="radio"
                         value="Yes"
@@ -539,14 +540,14 @@ const NewPatientForm = ({
                         className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-600"
                       />
                       <label
-                        htmlFor="push-everything"
+                        htmlFor="liver-yes"
                         className="block text-sm font-medium leading-6 text-gray-900"
                       >
                         Yes
                       </label>
 
                       <input
-                        id="Liver"
+                        id="liver-no"
                         name="Liver"
                         type="radio"
                         value="No"
@@ -555,7 +556,7 @@ const NewPatientForm = ({
                         className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-600"
                       />
                       <label
-                        htmlFor="push-email"
+                        htmlFor="liver-no"
                         className="block text-sm font-medium leading-6 text-gray-900"
                       >
                         No
@@ -566,9 +567,8 @@ const NewPatientForm = ({
 
                 <fieldset className="justify-between mt-6 md:mt-0 md:grid md:grid-cols-3 md:gap-4 md:px-4 md:py-6">
                   <dt className="flex text-sm font-semibold leading-6 text-gray-900">
+                    History or risk of low blood pressure, or concern for falls
                     <Tooltip text="Second-generation antipsychotics can cause low blood pressure upon standing, putting the patient at risk of passing out and hitting their head, so they will not be included in suggested medication list for patients with a risk or history of low blood pressure.">
-                      History or risk of low blood pressure, or concern for
-                      falls
                       <span className="ml-1 material-symbols-outlined">
                         info
                       </span>
@@ -578,7 +578,7 @@ const NewPatientForm = ({
                   <dd className="text-sm text-gray-900 md:col-span-2 md:mt-0 md:pl-24">
                     <div className="flex items-center pr-16 gap-x-3">
                       <input
-                        id="blood_pressure"
+                        id="blood-pressure-yes"
                         name="blood_pressure"
                         type="radio"
                         value="Yes"
@@ -587,14 +587,14 @@ const NewPatientForm = ({
                         className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-600"
                       />
                       <label
-                        htmlFor="blood_pressure"
+                        htmlFor="blood-pressure-yes"
                         className="block text-sm font-medium leading-6 text-gray-900"
                       >
                         Yes
                       </label>
 
                       <input
-                        id="blood_pressure"
+                        id="blood-pressure-no"
                         name="blood_pressure"
                         type="radio"
                         value="No"
@@ -603,7 +603,7 @@ const NewPatientForm = ({
                         className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-600"
                       />
                       <label
-                        htmlFor="blood_pressure"
+                        htmlFor="blood-pressure-no"
                         className="block text-sm font-medium leading-6 text-gray-900"
                       >
                         No
@@ -624,7 +624,7 @@ const NewPatientForm = ({
                   <dd className="text-sm text-gray-900 md:col-span-2 md:mt-0 md:pl-24">
                     <div className="flex items-center pr-16 gap-x-3">
                       <input
-                        id="weight_gain"
+                        id="weight-gain-yes"
                         name="weight_gain"
                         type="radio"
                         checked={newPatientInfo.weight_gain === "Yes"}
@@ -633,14 +633,14 @@ const NewPatientForm = ({
                         className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-600"
                       />
                       <label
-                        htmlFor="weight_gain"
+                        htmlFor="weight-gain-yes"
                         className="block text-sm font-medium leading-6 text-gray-900"
                       >
                         Yes
                       </label>
 
                       <input
-                        id="weight_gain"
+                        id="weight-gain-no"
                         name="weight_gain"
                         type="radio"
                         value="No"
@@ -649,7 +649,7 @@ const NewPatientForm = ({
                         className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-600"
                       />
                       <label
-                        htmlFor="weight_gain"
+                        htmlFor="weight-gain-no"
                         className="block text-sm font-medium leading-6 text-gray-900"
                       >
                         No

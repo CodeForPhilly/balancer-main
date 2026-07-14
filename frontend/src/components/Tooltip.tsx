@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useId, useState } from "react";
 
 interface TooltipProps {
   text: string; // You can adjust the type based on your actual use case
@@ -6,16 +6,36 @@ interface TooltipProps {
 }
 
 const Tooltip: React.FC<TooltipProps> = ({ text, children }) => {
-  const [isVisiable, setIsVisiable] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+  const tooltipId = useId();
+
   return (
-    <div
+    <span
+      role="button"
+      tabIndex={0}
       className="tooltip-container"
-      onMouseEnter={() => setIsVisiable(true)}
-      onMouseLeave={() => setIsVisiable(false)}
+      aria-label="More information"
+      aria-describedby={isVisible ? tooltipId : undefined}
+      onFocus={() => setIsVisible(true)}
+      onBlur={() => setIsVisible(false)}
+      onMouseEnter={() => setIsVisible(true)}
+      onMouseLeave={() => setIsVisible(false)}
+      onKeyDown={(event) => {
+        if (event.key === "Escape") {
+          setIsVisible(false);
+        } else if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          setIsVisible(true);
+        }
+      }}
     >
       {children}
-      {isVisiable && <div className="tooltip">{text}</div>}
-    </div>
+      {isVisible && (
+        <span id={tooltipId} role="tooltip" className="tooltip">
+          {text}
+        </span>
+      )}
+    </span>
   );
 };
 

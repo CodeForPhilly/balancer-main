@@ -44,6 +44,13 @@ patches:
         path: /spec/hostnames/0
         value: sandbox.balancerproject.org
   - target:
+      kind: HTTPRoute
+      name: balancer-http-redirect
+    patch: |
+      - op: replace
+        path: /spec/hostnames/0
+        value: sandbox.balancerproject.org
+  - target:
       kind: Deployment
       name: balancer
     patch: |

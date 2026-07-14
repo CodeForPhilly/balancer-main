@@ -25,31 +25,9 @@ labels:
       environment: sandbox
       app.kubernetes.io/instance: balancer-sandbox
 
+# No routing patches — the cluster's Gateway carries the hostname and TLS, and
+# the HTTPRoute inherits it. See ../../README.md.
 patches:
-  - target:
-      kind: ListenerSet
-      name: balancer-listeners
-    patch: |
-      - op: replace
-        path: /spec/listeners/0/hostname
-        value: sandbox.balancerproject.org
-      - op: replace
-        path: /spec/listeners/1/hostname
-        value: sandbox.balancerproject.org
-  - target:
-      kind: HTTPRoute
-      name: balancer
-    patch: |
-      - op: replace
-        path: /spec/hostnames/0
-        value: sandbox.balancerproject.org
-  - target:
-      kind: HTTPRoute
-      name: balancer-http-redirect
-    patch: |
-      - op: replace
-        path: /spec/hostnames/0
-        value: sandbox.balancerproject.org
   - target:
       kind: Deployment
       name: balancer

@@ -1,10 +1,12 @@
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from drf_spectacular.utils import extend_schema
 from .models import AI_PromptStorage
 from .serializers import AI_PromptStorageSerializer
 
 
+@extend_schema(request=AI_PromptStorageSerializer, responses={201: AI_PromptStorageSerializer})
 @api_view(['POST'])
 # @permission_classes([IsAuthenticated])
 def store_prompt(request):
@@ -21,6 +23,7 @@ def store_prompt(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@extend_schema(responses={200: AI_PromptStorageSerializer(many=True)})
 @api_view(['GET'])
 def get_all_prompts(request):
     """

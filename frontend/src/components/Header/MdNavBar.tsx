@@ -120,22 +120,32 @@ const MdNavBar = (props: LoginFormProps) => {
                         </Link>
                     </li>
                     <li className="border-b border-gray-300 p-4">
-                        <a href="https://www.flipcause.com/secure/cause_pdetails/MjMyMTIw"
+                        <a href="https://github.com/CodeForPhilly/balancer-main"
                           target="_blank"
                           className="mr-9 text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
                         >
-                          Donate
+                          Support Development
                         </a>
                     </li>
-                    {isAuthenticated &&
+                    {isAuthenticated ? (
                       <li className="border-b border-gray-300 p-4">
                         <Link
-                              to="/logout"
-                              className="mr-9 text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
-                          >Sign Out
+                          to="/logout"
+                          className="mr-9 text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
+                        >
+                          Sign Out
                         </Link>
                       </li>
-                    }
+                    ) : (
+                      <li className="border-b border-gray-300 p-4">
+                        <Link
+                          to="/login"
+                          className="mr-9 text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
+                        >
+                          Log In
+                        </Link>
+                      </li>
+                    )}
                 </ul>
             </div>
             <Chat showChat={showChat} setShowChat={setShowChat}/>

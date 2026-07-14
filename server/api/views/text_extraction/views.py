@@ -3,12 +3,14 @@ import json
 import re
 
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
+from api.permissions import IsSuperUser
 from rest_framework.response import Response
 from rest_framework import status
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 import anthropic
+from drf_spectacular.utils import extend_schema, inline_serializer, OpenApiParameter
+from rest_framework import serializers as drf_serializers
 
 from ...services.openai_services import openAIServices
 from api.models.model_embeddings import Embeddings
@@ -95,8 +97,22 @@ def anthropic_citations(client: anthropic.Client, user_prompt: str, content_chun
 @method_decorator(csrf_exempt, name='dispatch')
 class RuleExtractionAPIView(APIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsSuperUser]
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(name='guid', type=str, location=OpenApiParameter.QUERY, required=True, description='File GUID to extract rules from'),
+        ],
+        responses={
+            200: inline_serializer(name='RuleExtractionResponse', fields={
+                'texts': drf_serializers.CharField(),
+                'cited_texts': drf_serializers.CharField(),
+            }),
+            500: inline_serializer(name='RuleExtractionError', fields={
+                'error': drf_serializers.CharField(),
+            }),
+        }
+    )
     def get(self, request):
         try:
 
@@ -139,8 +155,21 @@ def openai_extraction(content_chunks, user_prompt):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class RuleExtractionAPIOpenAIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsSuperUser]
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(name='guid', type=str, location=OpenApiParameter.QUERY, required=True, description='File GUID to extract rules from'),
+        ],
+        responses={
+            200: inline_serializer(name='RuleExtractionOpenAIResponse', fields={
+                'rules': drf_serializers.ListField(child=drf_serializers.DictField()),
+            }),
+            500: inline_serializer(name='RuleExtractionOpenAIError', fields={
+                'error': drf_serializers.CharField(),
+            }),
+        }
+    )
     def get(self, request):
         try:
             user_prompt = """

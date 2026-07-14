@@ -1,8 +1,10 @@
 from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny
+from api.permissions import IsSuperUser
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, serializers as drf_serializers
 from rest_framework.generics import UpdateAPIView
+from drf_spectacular.utils import extend_schema, inline_serializer, OpenApiResponse
 import pdfplumber
 from .models import UploadFile  # Import your UploadFile model
 from .serializers import UploadFileSerializer
@@ -12,13 +14,18 @@ from ...models.model_embeddings import Embeddings
 import fitz
 from django.db import transaction
 from .title import generate_title
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class UploadFileView(APIView):
+    serializer_class = UploadFileSerializer
+
     def get_permissions(self):
         if self.request.method == 'GET':
             return [AllowAny()]  # Public access
-        return [IsAuthenticated()]  # Auth required for other methods
+        return [IsSuperUser()]  # Superuser required for write methods
 
     def get(self, request, format=None):
         print("UploadFileView, get list")
@@ -28,6 +35,23 @@ class UploadFileView(APIView):
         serializer = UploadFileSerializer(files, many=True)
         return Response(serializer.data)
 
+    @extend_schema(
+        request={'multipart/form-data': inline_serializer(
+            name='UploadFileRequest',
+            fields={
+                'file': drf_serializers.FileField(help_text='PDF file to upload'),
+            }
+        )},
+        responses={
+            201: inline_serializer(name='UploadFileSuccess', fields={
+                'message': drf_serializers.CharField(),
+                'file_id': drf_serializers.IntegerField(),
+            }),
+            400: inline_serializer(name='UploadFileBadRequest', fields={
+                'message': drf_serializers.CharField(),
+            }),
+        }
+    )
     def post(self, request, format=None):
         print(request.auth)
         print(f"UploadFileView post called. Path: {request.path}")
@@ -124,9 +148,26 @@ class UploadFileView(APIView):
             )
         except Exception as e:
             # Handle potential errors
+            logger.exception("File upload failed for '%s': %s", uploaded_file.name, e)
             return Response({"message": f"Error processing file and embeddings: {str(e)}"},
                             status=status.HTTP_400_BAD_REQUEST)
 
+    @extend_schema(
+        request=inline_serializer(name='DeleteFileRequest', fields={
+            'guid': drf_serializers.CharField(help_text='GUID of file to delete'),
+        }),
+        responses={
+            200: inline_serializer(name='DeleteFileSuccess', fields={
+                'message': drf_serializers.CharField(),
+            }),
+            403: inline_serializer(name='DeleteFileForbidden', fields={
+                'message': drf_serializers.CharField(),
+            }),
+            404: inline_serializer(name='DeleteFileNotFound', fields={
+                'message': drf_serializers.CharField(),
+            }),
+        }
+    )
     def delete(self, request, format=None):
         guid = request.data.get('guid')
         if not guid:
@@ -157,6 +198,14 @@ class UploadFileView(APIView):
 class RetrieveUploadFileView(APIView):
     permission_classes = [AllowAny]
 
+    @extend_schema(
+        responses={
+            (200, 'application/pdf'): OpenApiResponse(description='PDF file binary content'),
+            404: inline_serializer(name='RetrieveFileNotFound', fields={
+                'message': drf_serializers.CharField(),
+            }),
+        }
+    )
     def get(self, request, guid, format=None):
         try:
             file = UploadFile.objects.get(guid=guid)
@@ -169,7 +218,7 @@ class RetrieveUploadFileView(APIView):
 
 
 class EditFileMetadataView(UpdateAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsSuperUser]
     serializer_class = UploadFileSerializer
     lookup_field = 'guid'
 

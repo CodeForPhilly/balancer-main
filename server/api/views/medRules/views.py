@@ -1,9 +1,10 @@
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, serializers as drf_serializers
+from api.permissions import IsSuperUser
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+from drf_spectacular.utils import extend_schema, inline_serializer
 from ...models.model_medRule import MedRule
 from .serializers import MedRuleSerializer  # You'll need to create this
 from ..listMeds.models import Medication
@@ -12,7 +13,8 @@ from ...models.model_embeddings import Embeddings
 
 @method_decorator(csrf_exempt, name='dispatch')
 class MedRules(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsSuperUser]
+    serializer_class = MedRuleSerializer
 
     def get(self, request, format=None):
         # Get all med rules
@@ -29,6 +31,27 @@ class MedRules(APIView):
 
         return Response(data, status=status.HTTP_200_OK)
     
+    @extend_schema(
+        request=inline_serializer(name='MedRuleCreateRequest', fields={
+            'rule_type': drf_serializers.CharField(help_text='INCLUDE or EXCLUDE'),
+            'history_type': drf_serializers.CharField(help_text='e.g. DIAGNOSIS_DEPRESSED, DIAGNOSIS_MANIC'),
+            'reason': drf_serializers.CharField(),
+            'label': drf_serializers.CharField(),
+            'explanation': drf_serializers.CharField(),
+            'medication_names': drf_serializers.ListField(child=drf_serializers.CharField()),
+            'chunk_ids': drf_serializers.ListField(child=drf_serializers.IntegerField()),
+            'file_guid': drf_serializers.CharField(),
+        }),
+        responses={
+            201: MedRuleSerializer,
+            400: inline_serializer(name='MedRuleCreateBadRequest', fields={
+                'error': drf_serializers.CharField(),
+            }),
+            404: inline_serializer(name='MedRuleCreateNotFound', fields={
+                'error': drf_serializers.CharField(),
+            }),
+        }
+    )
     def post(self, request):
 
         data = request.data

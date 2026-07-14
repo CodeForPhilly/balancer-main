@@ -5,4 +5,23 @@ resources:
   - namespace.yaml
   - deployment.yaml
   - service.yaml
-  - ingress.yaml
+  - gateway-listeners.yaml
+  - httproute.yaml
+
+labels:
+  - pairs:
+      app.kubernetes.io/name: balancer
+      app.kubernetes.io/part-of: balancer
+      app.kubernetes.io/managed-by: kustomize
+      app.kubernetes.io/component: web
+
+images:
+  - name: ghcr.io/codeforphilly/balancer-main/app
+
+configMapGenerator:
+  - name: balancer-config
+    envs:
+      - balancer.env
+
+generatorOptions:
+  disableNameSuffixHash: true

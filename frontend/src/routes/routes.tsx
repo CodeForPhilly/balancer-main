@@ -19,6 +19,8 @@ import ListofFiles from "../pages/Files/ListOfFiles.tsx";
 import RulesManager from "../pages/RulesManager/RulesManager.tsx";
 import ManageMeds from "../pages/ManageMeds/ManageMeds.tsx";
 import ProtectedRoute from "../components/ProtectedRoute/ProtectedRoute.tsx";
+import AdminRoute from "../components/ProtectedRoute/AdminRoute.tsx";
+import Activate from "../pages/Activate/Activate.tsx";
 
 const routes = [
   {
@@ -28,17 +30,17 @@ const routes = [
   },
   {
     path: "listoffiles",
-    element: <ProtectedRoute><ListofFiles /></ProtectedRoute>,
+    element: <AdminRoute><ListofFiles /></AdminRoute>,
     errorElement: <RouteError />,
   },
   {
     path: "rulesmanager",
-    element: <ProtectedRoute><RulesManager /></ProtectedRoute>,
+    element: <AdminRoute><RulesManager /></AdminRoute>,
     errorElement: <RouteError />,
   },
   {
     path: "uploadfile",
-    element: <ProtectedRoute><UploadFile /></ProtectedRoute>,
+    element: <AdminRoute><UploadFile /></AdminRoute>,
   },
   {
     path: "drugSummary",
@@ -47,6 +49,10 @@ const routes = [
   {
     path: "register",
     element: <RegistrationForm />,
+  },
+  {
+    path: "activate/:uid/:token",
+    element: <Activate />,
   },
   {
     path: "login",
@@ -86,11 +92,11 @@ const routes = [
   },
   {
     path: "adminportal",
-    element: <ProtectedRoute><AdminPortal /></ProtectedRoute>,
+    element: <AdminRoute><AdminPortal /></AdminRoute>,
   },
   {
     path: "Settings",
-    element: <ProtectedRoute><Settings /></ProtectedRoute>,
+    element: <AdminRoute><Settings /></AdminRoute>,
   },
   {
     path: "medications",
@@ -98,7 +104,7 @@ const routes = [
   },
   {
     path: "managemeds",
-    element: <ProtectedRoute><ManageMeds /></ProtectedRoute>,
+    element: <AdminRoute><ManageMeds /></AdminRoute>,
   },
 ];
 

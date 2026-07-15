@@ -46,6 +46,11 @@ SEARCH_TOOLS_SCHEMA = [
 # that combine all tool schemas and mappings so assistant_services.py never needs
 # to change when a new tool is added — only tool_services.py does.
 
+#TODO: Add existing tools from server/api/views/conversations/views.py
+
+#TODO: Add keyword tool if it doesn't overlap with semantic search because too 
+#many overlapping tools can return conflicting answers 
+
 def make_search_tool_mapping(user) -> dict[str, Callable]:
     # make_search_tool_mapping binds user to search_documents at call time.
     # user is a request-time value the model cannot generate, so it must be

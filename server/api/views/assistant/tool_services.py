@@ -1,20 +1,67 @@
-import json
-import logging
 from typing import Callable
 
-from ...services.embedding_services import get_closest_embeddings
-from ...services.conversions_services import convert_uuids
+# make_search_tool_mapping (below) calls search_documents, which now lives in its own
+# module after the refactor — import it directly from there.
+from .search_tool import search_documents
+# Reuse the existing ask_database implementation from services/tools rather than
+# reimplementing it here — it already enforces the SELECT-only and ALLOWED_TABLES
+# guards. It takes no request-time secret (no `user`), so it is safe to import at
+# module top level; database.py does no DB work at import time.
+#
+# IMPORT-TIME DB ACCESS: we import the ask_database *function* here (cheap, no DB),
+# NOT database_schema_string from services/tools/tools.py. That module runs
+# get_database_info(connection) at *its* import time to build the schema string, so
+# importing it at module top level would fire a DB query just to import this file
+# (breaking manage.py commands / any context where the DB isn't ready).
+# _build_ask_database_schema() therefore defers that import to call time instead.
+from ...services.tools.database import ask_database
 
-logger = logging.getLogger(__name__)
+# TODO: Add keyword tool if it doesn't overlap with semantic search 
+# because too many overlapping tools can return conflicting answers 
 
-TOOL_DESCRIPTION = """
+# get_tools_schema / make_tool_mapping are the aggregation seam: assistant_services.py
+# reads these two functions instead of naming individual tools. That way a new tool is
+# added by editing ONLY this file (append its schema below, register its callable in the
+# mapping) — assistant_services.py never has to change again.
+def get_tools_schema() -> list[dict]:
+    """Return every tool schema the assistant exposes to the model.
+
+    assistant_services.py reads this instead of naming individual schemas, so adding a
+    tool means appending here — not editing assistant_services.py.
+    """
+    # OVERLAP RISK: this exposes a semantic document-search tool AND a SQL
+    # medication-lookup tool at the same time. For a question both could plausibly
+    # answer, the model chooses which to call, and they can return conflicting
+    # answers. If that becomes a problem, sharpen each tool's description to carve
+    # out when to prefer which (unstructured docs/citations vs. structured
+    # medication facts) rather than adding yet more overlapping tools — see the
+    # keyword-tool TODO at the top of this module.
+    return SEARCH_TOOLS_SCHEMA + [_build_ask_database_schema()]
+
+
+def make_tool_mapping(user) -> dict[str, Callable]:
+    """Return the full name->callable mapping for every tool.
+
+    ask_database needs no request-time binding (it queries the shared medication table,
+    not per-user data), so it is registered directly. search_documents is bound to the
+    user via make_search_tool_mapping. Reuses ask_database from services/tools.
+    """
+    return {
+        **make_search_tool_mapping(user),
+        "ask_database": ask_database,
+    }
+
+
+
+
+SEARCH_TOOL_DESCRIPTION = """
 Search the user's uploaded documents for information relevant to answering their question.
 Call this function when you need to find specific information from the user's documents
 to provide an accurate, citation-backed response. Always search before answering questions
 about document content.
 """
 
-TOOL_PROPERTY_DESCRIPTION = """
+SEARCH_TOOL_PROPERTY_DESCRIPTION = """
 A specific search query to find relevant information in the user's documents.
 Use keywords, phrases, or questions related to what the user is asking about.
 Be specific rather than generic - use terms that would appear in the relevant documents.
@@ -27,13 +74,13 @@ SEARCH_TOOLS_SCHEMA = [
     {
         "type": "function",
         "name": "search_documents",
-        "description": TOOL_DESCRIPTION,
+        "description": SEARCH_TOOL_DESCRIPTION,
         "parameters": {
             "type": "object",
             "properties": {
                 "query": {
                     "type": "string",
-                    "description": TOOL_PROPERTY_DESCRIPTION,
+                    "description": SEARCH_TOOL_PROPERTY_DESCRIPTION,
                 }
             },
             "required": ["query"],
@@ -41,15 +88,6 @@ SEARCH_TOOLS_SCHEMA = [
     }
 ]
 
-
-# TODO: Add get_tools_schema() and make_tool_mapping(user) aggregation functions
-# that combine all tool schemas and mappings so assistant_services.py never needs
-# to change when a new tool is added — only tool_services.py does.
-
-#TODO: Add existing tools from server/api/views/conversations/views.py
-
-#TODO: Add keyword tool if it doesn't overlap with semantic search because too 
-#many overlapping tools can return conflicting answers 
 
 def make_search_tool_mapping(user) -> dict[str, Callable]:
     # make_search_tool_mapping binds user to search_documents at call time.
@@ -73,147 +111,49 @@ def make_search_tool_mapping(user) -> dict[str, Callable]:
     return {"search_documents": bound_search}
 
 
-def search_documents(query: str, user) -> str:
+ASK_DATABASE_TOOL_DESCRIPTION = """
+Use this tool to answer questions about the medications in the Balancer database.
+Medications are stored by their official generic names, not brand names, so convert
+brand names to generic names first and match case-insensitively
+(e.g. LOWER(name) = LOWER('lurasidone')). The input must be a single, fully-formed
+SQL SELECT query.
+"""
+
+
+def _build_ask_database_schema() -> dict:
+    """Build the ask_database tool schema in the flattened Responses-API shape.
+
+    The table/column names the model may query are injected from the live database
+    schema (reused from services/tools). The import is deferred to call time so that
+    merely importing this module never triggers a database query.
     """
-    Search through user's uploaded documents using semantic similarity.
+    # Deferred (function-local) import on purpose: services/tools/tools.py builds
+    # database_schema_string by querying the DB at *its* import time. Importing it
+    # here at call time keeps that query out of this module's import, so loading the
+    # assistant (e.g. during manage.py commands or when the DB isn't ready) never
+    # triggers it. We reuse the prebuilt string instead of rebuilding the schema.
+    from ...services.tools.tools import database_schema_string
 
-    This function performs vector similarity search against the user's document corpus
-    and returns formatted results with context information for the LLM to use.
-
-    Parameters
-    ----------
-    query : str
-        The search query string
-    user : User
-        The authenticated user whose documents to search
-
-    Returns
-    -------
-    str
-        Formatted search results containing document excerpts with metadata
-
-    Raises
-    ------
-    Exception
-        If embedding search fails
-    """
-
-    try:
-        embeddings_results = get_closest_embeddings(
-            user=user, message_data=query.strip()
-        )
-        embeddings_results = convert_uuids(embeddings_results)
-
-        if not embeddings_results:
-            return "No relevant documents found for your query. Please try different search terms or upload documents first."
-
-        # Format results with clear structure and metadata
-        prompt_texts = [
-            f"[Document {i + 1} - File: {obj['file_id']}, Name: {obj['name']}, Page: {obj['page_number']}, Chunk: {obj['chunk_number']}, Similarity: {1 - obj['distance']:.3f}]\n{obj['text']}\n[End Document {i + 1}]"
-            for i, obj in enumerate(embeddings_results)
-        ]
-
-        return "\n\n".join(prompt_texts)
-
-    except Exception as e:
-        return f"Error searching documents: {str(e)}. Please try again if the issue persists."
-
-
-def invoke_functions_from_response(
-    response, tool_mapping: dict[str, Callable]
-) -> list[dict]:
-    """Extract all function calls from the response, look up the corresponding tool function(s) and execute them.
-    (This would be a good place to handle asynchroneous tool calls, or ones that take a while to execute.)
-    This returns a list of messages to be added to the conversation history.
-
-    Parameters
-    ----------
-    response : OpenAI Response
-        The response object from OpenAI containing output items that may include function calls
-    tool_mapping : dict[str, Callable]
-        A dictionary mapping function names (as strings) to their corresponding Python functions.
-        Keys should match the function names defined in the tools schema.
-
-    Returns
-    -------
-    list[dict]
-        List of function call output messages formatted for the OpenAI conversation.
-        Each message contains:
-        - type: "function_call_output"
-        - call_id: The unique identifier for the function call
-        - output: The result returned by the executed function (string or error message)
-    """
-    
-    # Open AI Cookbook: Handling Function Calls with Reasoning Models
-    # https://cookbook.openai.com/examples/reasoning_function_calls
-    
-    intermediate_messages = []
-    for response_item in response.output:
-        if response_item.type == "function_call":
-            target_tool = tool_mapping.get(response_item.name)
-            if target_tool:
-                try:
-                    arguments = json.loads(response_item.arguments)
-                    logger.info(
-                        f"Invoking tool: {response_item.name} with arguments: {arguments}"
-                    )
-                    tool_output = target_tool(**arguments)
-                    logger.info(f"Tool {response_item.name} completed successfully")
-                except Exception as e:
-                    msg = f"Error executing function call: {response_item.name}: {e}"
-                    tool_output = msg
-                    logger.error(msg, exc_info=True)
-            else:
-                msg = f"ERROR - No tool registered for function call: {response_item.name}"
-                tool_output = msg
-                logger.error(msg)
-            intermediate_messages.append(
-                {
-                    "type": "function_call_output",
-                    "call_id": response_item.call_id,
-                    "output": tool_output,
+    # Flattened Responses-API shape: name/description/parameters live at the top level.
+    # This is intentionally NOT the nested {"function": {...}} shape that
+    # services/tools/tools.py's create_tool_dict produces for the Chat Completions API —
+    # which is also why create_tool_dict could not be reused here.
+    return {
+        "type": "function",
+        "name": "ask_database",
+        "description": ASK_DATABASE_TOOL_DESCRIPTION,
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": (
+                        "A plain-text SQL SELECT query answering the user's question, "
+                        "written against this schema:\n"
+                        f"{database_schema_string}"
+                    ),
                 }
-            )
-        elif response_item.type == "reasoning":
-            logger.info(f"Reasoning step: {response_item.summary}")
-    return intermediate_messages
-
-def handle_tool_calls_with_reasoning(
-    response, client, model_defaults: dict, tool_mapping: dict[str, Callable]
-) -> tuple[str, str]:
-    """Run the agentic loop until the model stops emitting function calls.
-
-    Parameters
-    ----------
-    response : OpenAI Response
-        The initial response from the model.
-    client : OpenAI
-        The OpenAI client instance.
-    model_defaults : dict
-        Keyword arguments forwarded to every client.responses.create call.
-    tool_mapping : dict[str, Callable]
-        Maps function names to their implementations.
-
-    Returns
-    -------
-    tuple[str, str]
-        (final_response_output_text, final_response_id)
-    """
-    # Open AI Cookbook: Handling Function Calls with Reasoning Models
-    # https://cookbook.openai.com/examples/reasoning_function_calls
-    while True:
-        # Mapping of the tool names we tell the model about and the functions that implement them
-        function_responses = invoke_functions_from_response(response, tool_mapping)
-        if len(function_responses) == 0: # We're done reasoning
-            logger.info("Reasoning completed")
-            final_response_output_text = response.output_text
-            final_response_id = response.id
-            logger.info(f"Final response: {final_response_output_text}")
-            return final_response_output_text, final_response_id
-        else:
-            logger.info("More reasoning required, continuing...")
-            response = client.responses.create(
-                input=function_responses,
-                previous_response_id=response.id,
-                **model_defaults,
-            )
+            },
+            "required": ["query"],
+        },
+    }

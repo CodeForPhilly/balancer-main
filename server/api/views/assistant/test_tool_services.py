@@ -19,11 +19,11 @@ from unittest.mock import MagicMock, patch
 # mocking those two (like the rest of the suite mocks collaborators) covers all
 # three paths as fast, DB-free unit tests.
 
-from api.views.assistant.tool_services import (
+from api.views.assistant.agentic_loop import (
     invoke_functions_from_response,
     handle_tool_calls_with_reasoning,
-    make_search_tool_mapping,
 )
+from api.views.assistant.tool_services import make_search_tool_mapping
 
 
 # ---------------------------------------------------------------------------

@@ -1,159 +1,122 @@
+from dataclasses import dataclass
 from typing import Callable
 
-# make_search_tool_mapping (below) calls search_documents, which now lives in its own
-# module after the refactor — import it directly from there.
+# search_documents lives in its own module; imported here so SEARCH_TOOL.run can call
+# it (and so tests can patch api.views.assistant.tool_services.search_documents).
 from .search_tool import search_documents
 # Reuse the existing ask_database implementation from services/tools rather than
 # reimplementing it here — it already enforces the SELECT-only and ALLOWED_TABLES
-# guards. It takes no request-time secret (no `user`), so it is safe to import at
-# module top level; database.py does no DB work at import time.
-#
-# IMPORT-TIME DB ACCESS: we import the ask_database *function* here (cheap, no DB),
-# NOT database_schema_string from services/tools/tools.py. That module runs
-# get_database_info(connection) at *its* import time to build the schema string, so
-# importing it at module top level would fire a DB query just to import this file
-# (breaking manage.py commands / any context where the DB isn't ready).
-# _build_ask_database_schema() therefore defers that import to call time instead.
+# guards, and does no DB work at import time.
 from ...services.tools.database import ask_database
+# The Medication model is the source of truth for the queryable columns; we read them
+# from its metadata (below) instead of introspecting the live database.
+from ..listMeds.models import Medication
 
-# TODO: Add keyword tool if it doesn't overlap with semantic search 
-# because too many overlapping tools can return conflicting answers 
 
-# get_tools_schema / make_tool_mapping are the aggregation seam: assistant_services.py
-# reads these two functions instead of naming individual tools. That way a new tool is
-# added by editing ONLY this file (append its schema below, register its callable in the
-# mapping) — assistant_services.py never has to change again.
-def get_tools_schema() -> list[dict]:
-    """Return every tool schema the assistant exposes to the model.
+@dataclass(frozen=True)
+class Tool:
+    """One assistant tool: the schema the model sees (data) and the function we run
+    (behavior), bundled together under a single name.
 
-    assistant_services.py reads this instead of naming individual schemas, so adding a
-    tool means appending here — not editing assistant_services.py.
+    Bundling name/description/parameters/run in one object means each tool is
+    registered in exactly one place — the TOOLS list at the bottom of this module —
+    so the schema sent to the model and the callable actually invoked can never drift
+    apart. Adding a tool is appending one Tool to TOOLS; nothing else changes.
     """
-    # OVERLAP RISK: this exposes a semantic document-search tool AND a SQL
-    # medication-lookup tool at the same time. For a question both could plausibly
-    # answer, the model chooses which to call, and they can return conflicting
-    # answers. If that becomes a problem, sharpen each tool's description to carve
-    # out when to prefer which (unstructured docs/citations vs. structured
-    # medication facts) rather than adding yet more overlapping tools — see the
-    # keyword-tool TODO at the top of this module.
-    return SEARCH_TOOLS_SCHEMA + [_build_ask_database_schema()]
+
+    name: str
+    description: str
+    parameters: dict
+    # run(user, **arguments) -> str. Every tool takes the request `user` so the dispatch
+    # loop can call them uniformly; a tool that doesn't need it simply ignores it.
+    run: Callable
+
+    def schema(self) -> dict:
+        # Flattened Responses-API shape: name/description/parameters at the top level.
+        # This is intentionally NOT the nested {"function": {...}} shape that the Chat
+        # Completions API (and services/tools/tools.py's create_tool_dict) uses.
+        return {
+            "type": "function",
+            "name": self.name,
+            "description": self.description,
+            "parameters": self.parameters,
+        }
 
 
-def make_tool_mapping(user) -> dict[str, Callable]:
-    """Return the full name->callable mapping for every tool.
+def _medication_schema_string() -> str:
+    """Describe the queryable medication table for the ask_database tool's prompt.
 
-    ask_database needs no request-time binding (it queries the shared medication table,
-    not per-user data), so it is registered directly. search_documents is bound to the
-    user via make_search_tool_mapping. Reuses ask_database from services/tools.
+    The column list is read from the Medication model's metadata (``Model._meta``),
+    which Django populates from the class definition at import — so this needs no
+    database connection. That is why building the ask_database Tool below never
+    triggers a query (unlike introspecting information_schema over a live connection).
     """
-    return {
-        **make_search_tool_mapping(user),
-        "ask_database": ask_database,
-    }
+    meta = Medication._meta
+    columns = ", ".join(field.column for field in meta.concrete_fields)
+    return f"Table: {meta.db_table}\nColumns: {columns}"
 
 
-
-
-SEARCH_TOOL_DESCRIPTION = """
+SEARCH_TOOL = Tool(
+    name="search_documents",
+    description="""
 Search the user's uploaded documents for information relevant to answering their question.
 Call this function when you need to find specific information from the user's documents
 to provide an accurate, citation-backed response. Always search before answering questions
 about document content.
-"""
-
-SEARCH_TOOL_PROPERTY_DESCRIPTION = """
+""",
+    parameters={
+        "type": "object",
+        "properties": {
+            "query": {
+                "type": "string",
+                "description": """
 A specific search query to find relevant information in the user's documents.
 Use keywords, phrases, or questions related to what the user is asking about.
 Be specific rather than generic - use terms that would appear in the relevant documents.
-"""
-
-# SEARCH_TOOLS_SCHEMA defines the search_documents tool for the OpenAI API.
-# The model reads this schema to know what tools are available and what
-# arguments to generate — it can only generate arguments declared here.
-SEARCH_TOOLS_SCHEMA = [
-    {
-        "type": "function",
-        "name": "search_documents",
-        "description": SEARCH_TOOL_DESCRIPTION,
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "query": {
-                    "type": "string",
-                    "description": SEARCH_TOOL_PROPERTY_DESCRIPTION,
-                }
-            },
-            "required": ["query"],
+""",
+            }
         },
-    }
-]
+        "required": ["query"],
+    },
+    # search_documents needs the request user for document access control.
+    run=lambda user, query: search_documents(query, user),
+)
 
 
-def make_search_tool_mapping(user) -> dict[str, Callable]:
-    # make_search_tool_mapping binds user to search_documents at call time.
-    # user is a request-time value the model cannot generate, so it must be
-    # captured here and kept out of the schema.
-    """Return a tool mapping with search_documents bound to the given user.
-
-    Parameters
-    ----------
-    user : User
-        The Django user object used for document access control.
-
-    Returns
-    -------
-    dict[str, Callable]
-        Tool mapping ready to pass to invoke_functions_from_response.
-    """
-    def bound_search(query: str) -> str:
-        return search_documents(query, user)
-
-    return {"search_documents": bound_search}
-
-
-ASK_DATABASE_TOOL_DESCRIPTION = """
+ASK_DATABASE_TOOL = Tool(
+    name="ask_database",
+    description="""
 Use this tool to answer questions about the medications in the Balancer database.
 Medications are stored by their official generic names, not brand names, so convert
 brand names to generic names first and match case-insensitively
 (e.g. LOWER(name) = LOWER('lurasidone')). The input must be a single, fully-formed
 SQL SELECT query.
-"""
-
-
-def _build_ask_database_schema() -> dict:
-    """Build the ask_database tool schema in the flattened Responses-API shape.
-
-    The table/column names the model may query are injected from the live database
-    schema (reused from services/tools). The import is deferred to call time so that
-    merely importing this module never triggers a database query.
-    """
-    # Deferred (function-local) import on purpose: services/tools/tools.py builds
-    # database_schema_string by querying the DB at *its* import time. Importing it
-    # here at call time keeps that query out of this module's import, so loading the
-    # assistant (e.g. during manage.py commands or when the DB isn't ready) never
-    # triggers it. We reuse the prebuilt string instead of rebuilding the schema.
-    from ...services.tools.tools import database_schema_string
-
-    # Flattened Responses-API shape: name/description/parameters live at the top level.
-    # This is intentionally NOT the nested {"function": {...}} shape that
-    # services/tools/tools.py's create_tool_dict produces for the Chat Completions API —
-    # which is also why create_tool_dict could not be reused here.
-    return {
-        "type": "function",
-        "name": "ask_database",
-        "description": ASK_DATABASE_TOOL_DESCRIPTION,
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "query": {
-                    "type": "string",
-                    "description": (
-                        "A plain-text SQL SELECT query answering the user's question, "
-                        "written against this schema:\n"
-                        f"{database_schema_string}"
-                    ),
-                }
-            },
-            "required": ["query"],
+""",
+    parameters={
+        "type": "object",
+        "properties": {
+            "query": {
+                "type": "string",
+                "description": (
+                    "A plain-text SQL SELECT query answering the user's question, "
+                    "written against this schema:\n"
+                    f"{_medication_schema_string()}"
+                ),
+            }
         },
-    }
+        "required": ["query"],
+    },
+    # ask_database queries the shared medication table, so it ignores the request user.
+    run=lambda user, query: ask_database(query),
+)
+
+
+# Single source of truth for the assistant's tools. assistant_services builds the
+# schema list the model sees with [tool.schema() for tool in TOOLS]; the agentic loop
+# indexes this by name to dispatch calls. Register a new tool by appending it here.
+#
+# OVERLAP RISK: this exposes a semantic document-search tool AND a SQL medication-lookup
+# tool at once. For a question both could answer, the model chooses which to call and
+# they can conflict. If that becomes a problem, sharpen each tool's description to carve
+# out when to prefer which rather than adding more overlapping tools.
+TOOLS = [SEARCH_TOOL, ASK_DATABASE_TOOL]

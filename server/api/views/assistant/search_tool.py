@@ -1,5 +1,5 @@
-from ...services.embedding_services import get_closest_embeddings
-from ...services.conversions_services import convert_uuids
+from api.services.embedding_services import get_closest_embeddings
+from api.services.conversions_services import convert_uuids
 
 
 def search_documents(query: str, user) -> str:

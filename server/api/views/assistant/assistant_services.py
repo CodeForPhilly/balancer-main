@@ -3,9 +3,9 @@ import logging
 
 from openai import OpenAI
 
-from .assistant_prompts import INSTRUCTIONS
-from .tool_services import TOOLS
-from .agentic_loop import handle_tool_calls_with_reasoning
+from api.views.assistant.assistant_prompts import INSTRUCTIONS
+from api.views.assistant.tool_services import TOOLS
+from api.views.assistant.agentic_loop import handle_tool_calls_with_reasoning
 
 logger = logging.getLogger(__name__)
 

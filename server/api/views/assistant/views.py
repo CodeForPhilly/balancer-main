@@ -9,7 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from drf_spectacular.utils import extend_schema, inline_serializer
 from rest_framework import serializers as drf_serializers
 
-from .assistant_services import run_assistant
+from api.views.assistant.assistant_services import run_assistant
 
 logger = logging.getLogger(__name__)
 

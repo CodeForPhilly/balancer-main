@@ -1,16 +1,22 @@
 from dataclasses import dataclass
 from typing import Callable
 
-# search_documents lives in its own module; imported here so SEARCH_TOOL.run can call
-# it (and so tests can patch api.views.assistant.tool_services.search_documents).
-from .search_tool import search_documents
+# search_documents is defined in search_tool.py; this `from ... import` binds a local
+# name, api.views.assistant.tool_services.search_documents, that SEARCH_TOOL.run looks
+# up at call time. Tests patch that local name — the use site here, NOT the definition
+# site (search_tool.search_documents) — because mock.patch must rebind the reference the
+# code actually resolves. Keep this as a bare-name import: rewriting SEARCH_TOOL.run to
+# call search_tool.search_documents(...) would move the patch target and break the tests.
+from api.views.assistant.search_tool import search_documents
 # Reuse the existing ask_database implementation from services/tools rather than
 # reimplementing it here — it already enforces the SELECT-only and ALLOWED_TABLES
-# guards, and does no DB work at import time.
-from ...services.tools.database import ask_database
+# guards, and does no DB work at import time. Same use-site patching applies: tests patch
+# api.views.assistant.tool_services.ask_database (the name bound here), not the definition
+# in api.services.tools.database.
+from api.services.tools.database import ask_database
 # The Medication model is the source of truth for the queryable columns; we read them
 # from its metadata (below) instead of introspecting the live database.
-from ..listMeds.models import Medication
+from api.views.listMeds.models import Medication
 
 
 @dataclass(frozen=True)
@@ -43,18 +49,6 @@ class Tool:
         }
 
 
-def _medication_schema_string() -> str:
-    """Describe the queryable medication table for the ask_database tool's prompt.
-
-    The column list is read from the Medication model's metadata (``Model._meta``),
-    which Django populates from the class definition at import — so this needs no
-    database connection. That is why building the ask_database Tool below never
-    triggers a query (unlike introspecting information_schema over a live connection).
-    """
-    meta = Medication._meta
-    columns = ", ".join(field.column for field in meta.concrete_fields)
-    return f"Table: {meta.db_table}\nColumns: {columns}"
-
 
 SEARCH_TOOL = Tool(
     name="search_documents",
@@ -82,6 +76,18 @@ Be specific rather than generic - use terms that would appear in the relevant do
     run=lambda user, query: search_documents(query, user),
 )
 
+
+def _medication_schema_string() -> str:
+    """Describe the queryable medication table for the ask_database tool's prompt.
+
+    The column list is read from the Medication model's metadata (``Model._meta``),
+    which Django populates from the class definition at import — so this needs no
+    database connection. That is why building the ask_database Tool below never
+    triggers a query (unlike introspecting information_schema over a live connection).
+    """
+    meta = Medication._meta
+    columns = ", ".join(field.column for field in meta.concrete_fields)
+    return f"Table: {meta.db_table}\nColumns: {columns}"
 
 ASK_DATABASE_TOOL = Tool(
     name="ask_database",

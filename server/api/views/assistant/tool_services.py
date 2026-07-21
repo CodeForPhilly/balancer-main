@@ -14,9 +14,6 @@ from api.views.assistant.search_tool import search_documents
 # api.views.assistant.tool_services.ask_database (the name bound here), not the definition
 # in api.services.tools.database.
 from api.services.tools.database import ask_database
-# The Medication model is the source of truth for the queryable columns; we read them
-# from its metadata (below) instead of introspecting the live database.
-from api.views.listMeds.models import Medication
 
 
 @dataclass(frozen=True)
@@ -28,6 +25,20 @@ class Tool:
     registered in exactly one place — the TOOLS list at the bottom of this module —
     so the schema sent to the model and the callable actually invoked can never drift
     apart. Adding a tool is appending one Tool to TOOLS; nothing else changes.
+
+    Behavior is stored as the `run` field (composition) rather than a method on a
+    subclass because our tools differ only in *which* function runs — same schema()
+    machinery, same fields, just a different callable. They are instances of one
+    concept, not distinct kinds of thing.
+
+    TODO: Flip to `Tool(ABC)` + one subclass per tool (with `run` as a method) if a
+    tool ever needs more than a swapped-in function — specifically when it:
+      - carries per-type state/setup (a client, connection, cache, validated config);
+      - overrides more than run (e.g. a custom schema() shape, or extra methods like
+        validate_arguments / cost_estimate);
+      - needs a per-type run signature or an @abstractmethod-enforced contract so a
+        tool with no behavior fails at class-definition time, not at call time.
+    Until then the callable field is lighter and keeps registration drift-proof.
     """
 
     name: str
@@ -77,17 +88,19 @@ Be specific rather than generic - use terms that would appear in the relevant do
 )
 
 
-def _medication_schema_string() -> str:
-    """Describe the queryable medication table for the ask_database tool's prompt.
-
-    The column list is read from the Medication model's metadata (``Model._meta``),
-    which Django populates from the class definition at import — so this needs no
-    database connection. That is why building the ask_database Tool below never
-    triggers a query (unlike introspecting information_schema over a live connection).
-    """
-    meta = Medication._meta
-    columns = ", ".join(field.column for field in meta.concrete_fields)
-    return f"Table: {meta.db_table}\nColumns: {columns}"
+# The schema string describing the queryable medication table for ask_database's prompt.
+#
+# Kept in sync by hand with api.views.listMeds.models.Medication: if you add/rename a
+# column there, update this string so ask_database's prompt matches the real table.
+#
+# Hand-writing the column list (rather than deriving it from Django's Model._meta) is a
+# deliberate trade-off. _meta.concrete_fields would auto-sync with the model and needs no
+# DB connection, but it dumps *every* column indiscriminately. A hand-written list lets us
+# curate what the LLM sees — e.g. omit `id`, which the model never needs to filter on — and
+# it drops the app-registry dependency (_meta requires the app registry loaded, so importing
+# this module during app startup could raise AppRegistryNotReady). The cost is the manual
+# update above, cheap for a table this small and stable.
+_MEDICATION_SCHEMA_STRING = "Table: api_medication\nColumns: name, benefits, risks"
 
 ASK_DATABASE_TOOL = Tool(
     name="ask_database",
@@ -106,7 +119,7 @@ SQL SELECT query.
                 "description": (
                     "A plain-text SQL SELECT query answering the user's question, "
                     "written against this schema:\n"
-                    f"{_medication_schema_string()}"
+                    f"{_MEDICATION_SCHEMA_STRING}"
                 ),
             }
         },

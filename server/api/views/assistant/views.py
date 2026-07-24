@@ -46,16 +46,18 @@ class Assistant(APIView):
             message = request.data.get("message", None)
             previous_response_id = request.data.get("previous_response_id", None)
             
-            final_response_output_text, final_response_id = run_assistant(
+            result = run_assistant(
                 message=message,
                 user=user,
                 previous_response_id=previous_response_id,
             )
 
+            # run_assistant now returns an AssistantResult; the JSON body is unchanged.
+            # tool_calls are captured for eval/observability and intentionally not exposed here.
             return Response(
                 {
-                    "response_output_text": final_response_output_text,
-                    "final_response_id": final_response_id,
+                    "response_output_text": result.output_text,
+                    "final_response_id": result.response_id,
                 },
                 status=status.HTTP_200_OK,
             )

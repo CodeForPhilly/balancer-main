@@ -16,8 +16,11 @@
 
 import os
 import sys
+import json
 import logging
 import datetime
+from dataclasses import asdict
+from time import perf_counter
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # Django setup must come before any imports that touch the ORM
@@ -36,6 +39,7 @@ django.setup()
 from django.contrib.auth import get_user_model
 
 from api.views.assistant.assistant_services import run_assistant
+from api.views.assistant.agentic_loop import ToolCallStatus
 # TODO: remove unused import or use INSTRUCTIONS to record an instructions_hash column
 from api.views.assistant.assistant_prompts import INSTRUCTIONS
 
@@ -92,22 +96,47 @@ def run_one(question: str, user, branch: str) -> dict:
           per request — adds overhead to every web request for no benefit
         - Cleaner call site in eval_assistant.py but wrong trade-off given WSGI
     """
+    # Time the full run_assistant call here rather than inside it: run_one already
+    # owns the whole call, so wall-clock duration needs no plumbing through the
+    # production code path (see AssistantResult — duration is not carried).
+    start = perf_counter()
     try:
-        response_text, response_id = run_assistant(message=question, user=user)
+        result = run_assistant(message=question, user=user)
+        duration_s = perf_counter() - start
+        tool_error_count = sum(
+            1 for c in result.tool_calls if c.status is not ToolCallStatus.OK
+        )
         return {
             "branch": branch,
             "model": MODEL,
             "question": question,
-            "response_output_text": response_text,
+            "response_output_text": result.output_text,
+            "response_id": result.response_id,
+            # Flat summaries for at-a-glance scanning; the swallowed-failure hole this
+            # closes shows up as tool_error_count > 0 while error is None.
+            "tools_called": "|".join(c.name for c in result.tool_calls),
+            "tool_call_count": len(result.tool_calls),
+            "tool_error_count": tool_error_count,
+            # Full per-call detail — status, the model's arguments (query), output/error —
+            # for analysis that the flat columns can't hold.
+            "tool_calls_json": json.dumps([asdict(c) for c in result.tool_calls]),
+            "duration_s": duration_s,
             "error": None,
         }
     except Exception as e:
+        duration_s = perf_counter() - start
         logger.error(f"Error evaluating question '{question}': {e}")
         return {
             "branch": branch,
             "model": MODEL,
             "question": question,
             "response_output_text": None,
+            "response_id": None,
+            "tools_called": "",
+            "tool_call_count": 0,
+            "tool_error_count": 0,
+            "tool_calls_json": None,
+            "duration_s": duration_s,
             "error": str(e),
         }
 

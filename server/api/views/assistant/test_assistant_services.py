@@ -8,6 +8,8 @@
 
 from unittest.mock import MagicMock, patch
 
+from api.views.assistant.agentic_loop import AssistantResult
+
 
 def _make_terminal_response(output_text="Final answer.", response_id="resp-1"):
     response = MagicMock()
@@ -16,13 +18,17 @@ def _make_terminal_response(output_text="Final answer.", response_id="resp-1"):
     response.id = response_id
     return response
 
+
+def _make_result(output_text="answer", response_id="resp-1"):
+    return AssistantResult(output_text=output_text, response_id=response_id, tool_calls=[])
+
 @patch("api.views.assistant.assistant_services.handle_tool_calls_with_reasoning")
 @patch("api.views.assistant.assistant_services.OpenAI")
 def test_run_assistant_sends_message_as_user_input(mock_openai_cls, mock_handle):
     mock_client = MagicMock()
     mock_openai_cls.return_value = mock_client
     mock_client.responses.create.return_value = _make_terminal_response()
-    mock_handle.return_value = ("answer", "resp-1")
+    mock_handle.return_value = _make_result()
 
     from api.views.assistant.assistant_services import run_assistant
 
@@ -42,7 +48,7 @@ def test_run_assistant_passes_previous_response_id(mock_openai_cls, mock_handle)
     mock_client = MagicMock()
     mock_openai_cls.return_value = mock_client
     mock_client.responses.create.return_value = _make_terminal_response()
-    mock_handle.return_value = ("answer", "resp-2")
+    mock_handle.return_value = _make_result(response_id="resp-2")
 
     from api.views.assistant.assistant_services import run_assistant
 
@@ -58,7 +64,7 @@ def test_run_assistant_omits_previous_response_id_when_none(mock_openai_cls, moc
     mock_client = MagicMock()
     mock_openai_cls.return_value = mock_client
     mock_client.responses.create.return_value = _make_terminal_response()
-    mock_handle.return_value = ("answer", "resp-1")
+    mock_handle.return_value = _make_result()
 
     from api.views.assistant.assistant_services import run_assistant
 
@@ -74,7 +80,7 @@ def test_run_assistant_forwards_tools_and_user_to_loop(mock_openai_cls, mock_han
     mock_client = MagicMock()
     mock_openai_cls.return_value = mock_client
     mock_client.responses.create.return_value = _make_terminal_response()
-    mock_handle.return_value = ("answer", "resp-1")
+    mock_handle.return_value = _make_result()
 
     from api.views.assistant.assistant_services import run_assistant
     from api.views.assistant.tool_services import TOOLS

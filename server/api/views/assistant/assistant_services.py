@@ -5,7 +5,10 @@ from openai import OpenAI
 
 from api.views.assistant.assistant_prompts import INSTRUCTIONS
 from api.views.assistant.tool_services import TOOLS
-from api.views.assistant.agentic_loop import handle_tool_calls_with_reasoning
+from api.views.assistant.agentic_loop import (
+    handle_tool_calls_with_reasoning,
+    AssistantResult,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +17,7 @@ def run_assistant(
     message: str,
     user,
     previous_response_id: str | None = None,
-) -> tuple[str, str]:
+) -> AssistantResult:
     """Wire together the OpenAI client, retrieval, and the agentic reasoning loop.
 
     Parameters
@@ -28,12 +31,10 @@ def run_assistant(
 
     Returns
     -------
-    tuple[str, str]
-        (final_response_output_text, final_response_id)
+    AssistantResult
+        The final response text and id, plus the ToolCall records made during the run.
+        Built by the loop and passed straight through — this function does not repack it.
     """
-    # TODO: Track total duration, cost metrics, and tool_calls_made count
-    # and return them from run_assistant for use in eval_assistant.py CSV output
-
     client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
     MODEL_DEFAULTS = {

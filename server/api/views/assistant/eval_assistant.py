@@ -38,21 +38,45 @@ django.setup()
 
 from django.contrib.auth import get_user_model
 
-from api.views.assistant.assistant_services import run_assistant
+from api.views.assistant.assistant_services import run_assistant, MODEL_NAME
 from api.views.assistant.agentic_loop import ToolCallStatus
-# TODO: remove unused import or use INSTRUCTIONS to record an instructions_hash column
+# TODO: write INSTRUCTIONS to a sidecar file alongside the CSV in main(), named
+# results/{branch}-{timestamp}.prompt.txt so the pairing cannot come apart:
+#     f.write(f"branch: {branch}\nmodel: {MODEL_NAME}\n\n{INSTRUCTIONS}")
+# Two alternatives were considered and rejected: a full-text CSV column repeats
+# ~2.1KB of multi-line prose in every row and buries a cross-branch CSV diff in
+# prompt noise; logging it at run time leaves nothing behind in results/, which is
+# exactly the failure this is meant to prevent (a CSV whose prompt is unrecoverable
+# months later). Add an instructions_hash column *as well* only if runs are ever
+# concatenated into one DataFrame, where a groupby-able key beats diffing sidecars.
+# Until that lands, INSTRUCTIONS is imported but deliberately unused.
 from api.views.assistant.assistant_prompts import INSTRUCTIONS
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
-# Read model and INSTRUCTIONS from the source file or add a lightweight config endpoint to the backend
+# Model and INSTRUCTIONS both come from their source of truth rather than being
+# restated here: MODEL_NAME from assistant_services.py (imported above, and used for
+# the CSV's model column), INSTRUCTIONS from assistant_prompts.py (see sidecar TODO).
 
-# Read model and INSTRUCTIONS from the source file
-# INSTRUCTIONS is imported from assistant_prompts.py
-# MODEL is read from assistant_services.py MODEL_DEFAULTS
-# TODO: import a shared MODEL_NAME constant from assistant_services instead of hardcoding
-MODEL = "gpt-5-nano"
+# TODO: add a scoring layer. This is the biggest remaining gap, and it needs a design
+# pass rather than a patch. As it stands this file is a *generation* harness, not an
+# eval: QUESTIONS below carries no ground truth, so the CSV records what the
+# assistant said and — since the tool-call columns landed — which tools it chose, but
+# nothing about whether the answer was right. Open questions for that pass:
+#   - Ground truth per question: expected medications/claims, expected source
+#     documents (which citations the answer should rest on), or both.
+#   - Grading method: deterministic assertions (does the answer cite doc X, name drug
+#     Y) vs LLM-as-judge for faithfulness. Likely both — assertions for retrieval
+#     correctness, judge for answer quality.
+#   - Citation accuracy is the cheapest real signal available: INSTRUCTIONS mandates
+#     the [Name {name}, Page {page_number}] format, so citations can be parsed out of
+#     response_output_text and checked against what search_documents actually
+#     returned — already captured in the tool_calls_json column. That catches
+#     fabricated citations, the failure mode that matters most clinically.
+#   - Where scoring runs: as a separate pass over an already-written CSV, not inside
+#     run_one, so scoring can be revised and re-run without paying for generation
+#     again.
 
 # Set of representative questions to evaluate the assistant
 QUESTIONS = [
@@ -108,7 +132,7 @@ def run_one(question: str, user, branch: str) -> dict:
         )
         return {
             "branch": branch,
-            "model": MODEL,
+            "model": MODEL_NAME,
             "question": question,
             "response_output_text": result.output_text,
             "response_id": result.response_id,
@@ -128,7 +152,7 @@ def run_one(question: str, user, branch: str) -> dict:
         logger.error(f"Error evaluating question '{question}': {e}")
         return {
             "branch": branch,
-            "model": MODEL,
+            "model": MODEL_NAME,
             "question": question,
             "response_output_text": None,
             "response_id": None,
@@ -149,11 +173,11 @@ def main():
     if not user:
         raise RuntimeError("No superuser found. Create one with manage.py createsuperuser.")
 
-    logger.info(f"Starting evaluation: branch={branch}, model={MODEL}, questions={len(QUESTIONS)}")
+    logger.info(f"Starting evaluation: branch={branch}, model={MODEL_NAME}, questions={len(QUESTIONS)}")
 
     # ThreadPoolExecutor runs questions concurrently — see run_one docstring
     # for trade-off discussion vs asyncio.gather + await run_assistant.
-    # max_workers=5 stays safely under OpenAI rate limits for gpt-5-nano.
+    # max_workers=5 stays safely under OpenAI rate limits for MODEL_NAME.
     results = []
     with ThreadPoolExecutor(max_workers=5) as pool:
         futures = {

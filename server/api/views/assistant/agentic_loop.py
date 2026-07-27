@@ -44,10 +44,46 @@ class AssistantResult:
     response (for multi-turn continuity), and the ordered ToolCall records for every
     tool invocation across all loop iterations.
 
-    Deliberately deferred (add later as defaulted fields, no call-site churn):
-    token/cost usage (from response.usage) and turn count. Answer-quality scoring —
-    ground truth, citation accuracy, LLM-as-judge — is a separate layer above this
-    one, not a field here.
+    TODO: capture token usage and turn count — the other axis, alongside tool
+    selection, for comparing strategies. The design is settled but unbuilt:
+      - Six defaulted int fields: input_tokens, cached_tokens, output_tokens,
+        reasoning_tokens, total_tokens, turn_count. All three existing construction
+        sites pass keywords, so adding them is inert — this is exactly the property
+        the dataclass was chosen for over a widened tuple.
+      - Accumulate at the top of the while body in handle_tool_calls_with_reasoning,
+        before invoke_functions_from_response. That counts the initial response
+        (created in run_assistant and passed in) and every continuation exactly once,
+        including the terminal turn before the return. turn_count is then simply the
+        number of responses.create calls the run made.
+      - Read through a helper that walks response.usage defensively rather than
+        type-checking only the leaf: reasoning_tokens lives at
+        usage.output_tokens_details.reasoning_tokens and cached_tokens at
+        usage.input_tokens_details.cached_tokens, so a None usage raises
+        AttributeError before any leaf check runs. The helper must also reject
+        non-ints — the loop tests build responses as bare MagicMocks, and MagicMock
+        implements __add__/__radd__, so mock values would accumulate silently into
+        the CSV rather than failing loudly.
+      - cached_tokens is not optional: every turn resends context via
+        previous_response_id, so a large share of input_tokens bills at the cached
+        rate. Without the split, a cost figure derived later from input_tokens
+        overstates spend and cannot be corrected from the CSV afterwards.
+      - Dollar cost stays out of this dataclass: it needs a price table keyed by
+        model *and* date, which goes stale and then lies. Derive it in pandas from
+        the token columns plus the CSV's model column. If a table is ever wanted, the
+        house pattern is PRICING_DOLLARS_PER_MILLION_TOKENS in
+        api/services/llm_services.py — which has no reasoning or cached tier yet.
+
+    Known hole that work would widen: if client.responses.create raises mid-loop the
+    exception propagates out and every ToolCall collected so far is lost with it —
+    the eval row reads tool_call_count 0 despite real calls having run, and would
+    likewise read total_tokens 0 despite tokens having been billed. Closing it means
+    deciding what this dataclass describes: a successful run, or whatever actually
+    happened (a partial result returned with an error field, or carried on the
+    exception).
+
+    Answer-quality scoring — ground truth, citation accuracy, LLM-as-judge — is a
+    separate layer above this one, not a field here; see the scoring TODO in
+    eval_assistant.py.
     """
 
     output_text: str

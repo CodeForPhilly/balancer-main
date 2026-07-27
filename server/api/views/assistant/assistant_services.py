@@ -12,6 +12,12 @@ from api.views.assistant.agentic_loop import (
 
 logger = logging.getLogger(__name__)
 
+# The single source of truth for which model the assistant runs on. Module-level so
+# eval_assistant.py can import it and label its CSV with the model that actually ran,
+# rather than repeating the string and silently mislabelling results the first time
+# this changes.
+MODEL_NAME = "gpt-5-nano"  # 400,000 token context window
+
 
 def run_assistant(
     message: str,
@@ -39,7 +45,7 @@ def run_assistant(
 
     MODEL_DEFAULTS = {
         "instructions": INSTRUCTIONS,
-        "model": "gpt-5-nano",  # 400,000 token context window
+        "model": MODEL_NAME,
         # A summary of the reasoning performed by the model. This can be useful for debugging and understanding the model's reasoning process.
         "reasoning": {"effort": "low", "summary": None},
         # The model only ever sees each tool's schema (name/description/parameters),

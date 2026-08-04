@@ -1,21 +1,21 @@
-#!/usr/bin/env -S uv run --script
-# /// script
-# requires-python = "==3.11.11"
-# dependencies = [
-#   "pandas==2.2.3",
-#   "openai",
-#   "django",
-# ]
-# ///
-
-# uv script (or plain Python) to generate results to CSV, run from the terminal
-# Run from inside the container (working dir is /usr/src/server):
+# Generates eval results to CSV. Run from inside the container:
 #   docker compose exec backend python api/views/assistant/eval_assistant.py
-# 
-
+#
+# Needs OPENAI_API_KEY (from config/env/dev.env), a superuser, and embedded
+# documents for that user. Writes to results/ next to this file, which the
+# ./server bind mount surfaces on the host.
+#
+# This is NOT a standalone script and cannot be run with `uv run --script` or from
+# the host: django.setup() below loads INSTALLED_APPS, pulling in psycopg2, pgvector,
+# DRF, djoser and sentence_transformers — the backend image's full requirements.txt.
+# A PEP 723 dependency header would have to duplicate that list to stay correct, and
+# the host cannot resolve SQL_HOST=db off the docker network anyway. It previously
+# carried such a header declaring only pandas/openai/django; that has been removed
+# rather than repaired.
 
 import os
 import sys
+import csv
 import json
 import logging
 import datetime
@@ -23,14 +23,13 @@ from dataclasses import asdict
 from time import perf_counter
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-# Django setup must come before any imports that touch the ORM
-# NOTE: from api/views/assistant/, "../../../../" resolves four levels up to
-# /usr/src (not /usr/src/server, where balancer_backend lives). So this insert
-# alone does not put the settings package on sys.path — running the script
-# relies on the container already having /usr/src/server on PYTHONPATH. Sanity-
-# check this the first time the eval is run for real; the path depth may need
-# adjusting (e.g. "../../../").
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../")))
+# Django setup must come before any imports that touch the ORM.
+# Three levels up from api/views/assistant/ is /usr/src/server, where the
+# balancer_backend settings package lives. This insert is doing real work: running
+# a script file puts the *script's* directory on sys.path[0], not the working
+# directory, and the image sets no PYTHONPATH — so without it django.setup() below
+# raises ModuleNotFoundError on balancer_backend.settings.
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../")))
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "balancer_backend.settings")
 
 import django
@@ -40,6 +39,9 @@ from django.contrib.auth import get_user_model  # noqa: E402
 
 from api.views.assistant.assistant_services import run_assistant, MODEL_NAME # noqa: E402
 from api.views.assistant.agentic_loop import ToolCallStatus
+# Imported to warm the embedding model in main() before the worker pool starts —
+# see the call site for why this process needs it and the web path does not.
+from api.services.sentencetTransformer_model import TransformerModel  # noqa: E402
 # TODO: write INSTRUCTIONS to a sidecar file alongside the CSV in main(), named
 # results/{branch}-{timestamp}.prompt.txt so the pairing cannot come apart:
 #     f.write(f"branch: {branch}\nmodel: {MODEL_NAME}\n\n{INSTRUCTIONS}")
@@ -77,6 +79,27 @@ logger = logging.getLogger(__name__)
 #   - Where scoring runs: as a separate pass over an already-written CSV, not inside
 #     run_one, so scoring can be revised and re-run without paying for generation
 #     again.
+
+# The CSV's columns, in order. This is the single source of truth for column order:
+# csv.DictWriter emits keys in this order regardless of the order the row dicts in
+# run_one happen to list them, so the two row literals no longer have to be kept in
+# lockstep (they used to, because as_completed returns rows nondeterministically and
+# a DataFrame took its column order from whichever row landed first). DictWriter also
+# raises on a key it doesn't know, so adding a column to a row literal and forgetting
+# it here fails loudly instead of silently dropping the column.
+FIELDNAMES = [
+    "branch",
+    "model",
+    "question",
+    "response_output_text",
+    "response_id",
+    "tools_called",
+    "tool_call_count",
+    "tool_error_count",
+    "tool_calls_json",
+    "duration_s",
+    "error",
+]
 
 # Set of representative questions to evaluate the assistant
 QUESTIONS = [
@@ -175,6 +198,51 @@ def main():
 
     logger.info(f"Starting evaluation: branch={branch}, model={MODEL_NAME}, questions={len(QUESTIONS)}")
 
+    # Load the embedding model before starting any workers. This line is load-bearing
+    # for two separate reasons.
+    #
+    # 1. It removes concurrency at the moment of loading, which is the only thing
+    #    keeping this eval off a live race in TransformerModel (see the TODO below).
+    #    get_instance() runs here on the main thread, before any worker exists, so
+    #    the singleton is fully built by the time anything can contend for it. The
+    #    web path is unaffected because api/apps.py preloads the model in ready() —
+    #    but only when sys.argv[1:2] == ['runserver'], which running this file as a
+    #    script does not match. So this process starts cold, and without this line
+    #    all five workers reach a cold TransformerModel at once. That is not
+    #    hypothetical: the first real eval run (results/521-research-agent-tools-
+    #    20260804T181410.csv) had 3 of 9 document searches fail with
+    #    "'TransformerModel' object has no attribute 'model'", each reported as a
+    #    successful call because search_documents catches the exception and returns
+    #    it as a string.
+    #
+    # 2. It fixes duration_s. Loading costs ~700ms of Hugging Face metadata requests
+    #    plus weight loading. Left to the workers, that cost lands inside whichever
+    #    run_assistant call triggers it, so that question's duration_s is inflated by
+    #    work that has nothing to do with the question — and the column stops being
+    #    comparable across rows. Warming here moves the cost outside every
+    #    measurement, which matters because duration_s exists precisely to compare
+    #    questions and branches.
+    #
+    # TODO: fix the TransformerModel singleton itself
+    # (api/services/sentencetTransformer_model.py) — this warm-up only hides the
+    # defect at one call site. __new__ assigns cls._instance *before* setting
+    # .model, so any thread arriving in that ~700ms window gets a non-None but
+    # half-built object back. Two independent fixes:
+    #   - Publish last: build the object fully, assign cls._instance only afterwards.
+    #     This one is needed even single-threaded. If SentenceTransformer() raises,
+    #     the bare object has already been assigned, leaving a permanently poisoned
+    #     singleton that every later call returns without .model. api/apps.py:37
+    #     comments that "_instance stays None on failure, so the first actual request
+    #     will attempt to load the model again" — which is not true today.
+    #   - Guard the load with a threading.Lock (double-checked) so two cold callers
+    #     don't both load it.
+    # Until that lands, anything that reaches get_instance() from a worker thread
+    # before this warm-up runs — a new concurrent entry point, or a reordering of
+    # main() — silently re-exposes the race. Note the fix is production code shared
+    # with the web path and uploadFile/views.py:129, not eval-only, so it may belong
+    # in its own commit rather than this branch.
+    TransformerModel.get_instance()
+
     # ThreadPoolExecutor runs questions concurrently — see run_one docstring
     # for trade-off discussion vs asyncio.gather + await run_assistant.
     # max_workers=5 stays safely under OpenAI rate limits for MODEL_NAME.
@@ -187,18 +255,21 @@ def main():
         for future in as_completed(futures):
             results.append(future.result())
 
-    # Import pandas here, not at module top, so that importing this module (e.g.
-    # run_one from test_eval_assistant.py) does not require pandas. It is only
-    # needed for the CSV output below, when this script is run directly.
-    import pandas as pd
-
-    df = pd.DataFrame(results)
-
     results_dir = os.path.join(os.path.dirname(__file__), "results")
     os.makedirs(results_dir, exist_ok=True)
     timestamp = datetime.datetime.utcnow().strftime("%Y%m%dT%H%M%S")
     output_path = os.path.join(results_dir, f"{branch}-{timestamp}.csv")
-    df.to_csv(output_path, index=False)
+
+    # stdlib csv rather than pandas: this is one write of a handful of dict rows, and
+    # DictWriter quotes the embedded commas and newlines in response_output_text and
+    # tool_calls_json correctly. pandas was never in the backend image's
+    # requirements.txt, so the old pd.DataFrame(...).to_csv() would have raised
+    # ModuleNotFoundError here — after every question had already been generated and
+    # billed. newline="" is required on the file object; csv does its own line endings.
+    with open(output_path, "w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=FIELDNAMES)
+        writer.writeheader()
+        writer.writerows(results)
 
     logger.info(f"Results saved to {output_path}")
 

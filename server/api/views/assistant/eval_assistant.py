@@ -36,9 +36,9 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "balancer_backend.settings")
 import django
 django.setup()
 
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model  # noqa: E402
 
-from api.views.assistant.assistant_services import run_assistant, MODEL_NAME
+from api.views.assistant.assistant_services import run_assistant, MODEL_NAME # noqa: E402
 from api.views.assistant.agentic_loop import ToolCallStatus
 # TODO: write INSTRUCTIONS to a sidecar file alongside the CSV in main(), named
 # results/{branch}-{timestamp}.prompt.txt so the pairing cannot come apart:

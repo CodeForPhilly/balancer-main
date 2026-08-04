@@ -13,11 +13,13 @@
 import json
 from unittest.mock import MagicMock, patch
 
-# TODO: add coverage for search_documents itself (formatting of embeddings
-# results, the empty-results message, and the exception path). No DB needed:
-# search_documents only calls get_closest_embeddings and convert_uuids, so
-# mocking those two (like the rest of the suite mocks collaborators) covers all
-# three paths as fast, DB-free unit tests.
+import pytest
+
+# TODO: add coverage for search_documents' formatting of embeddings results — the
+# [Document N - File: ..., Similarity: ...] shape and the multi-result join. No DB
+# needed: search_documents only calls get_closest_embeddings and convert_uuids, so
+# mocking those two (like the rest of the suite mocks collaborators) is enough. The
+# empty-results and exception paths are covered below.
 
 from api.views.assistant.agentic_loop import (
     invoke_functions_from_response,
@@ -26,6 +28,7 @@ from api.views.assistant.agentic_loop import (
     ToolCall,
     ToolCallStatus,
 )
+from api.views.assistant.search_tool import search_documents
 from api.views.assistant.tool_services import Tool, SEARCH_TOOL, ASK_DATABASE_TOOL, TOOLS
 
 
@@ -65,6 +68,54 @@ def test_tool_schema_is_flattened_shape():
 def test_tools_registry_contains_both_tools():
     names = {tool.name for tool in TOOLS}
     assert names == {"search_documents", "ask_database"}
+
+
+# ---------------------------------------------------------------------------
+# search_documents error/empty contract
+#
+# These two lock in the distinction the tool's status reporting depends on: a
+# retrieval that *fails* must raise (so the loop records FAILED), while a retrieval
+# that legitimately *matches nothing* must return normally (so it stays OK). Both
+# used to return a string, which made the two indistinguishable downstream.
+# ---------------------------------------------------------------------------
+
+@patch("api.views.assistant.search_tool.get_closest_embeddings")
+def test_search_documents_raises_instead_of_returning_the_error(mock_get):
+    mock_get.side_effect = RuntimeError("embedding backend down")
+
+    # Must propagate. Swallowing it here would report a failed retrieval as a
+    # successful tool call and leave ToolCallStatus.FAILED unreachable for this tool.
+    with pytest.raises(RuntimeError, match="embedding backend down"):
+        search_documents("lithium", user=MagicMock())
+
+
+@patch("api.views.assistant.search_tool.convert_uuids", return_value=[])
+@patch("api.views.assistant.search_tool.get_closest_embeddings", return_value=[])
+def test_search_documents_returns_message_when_nothing_matches(mock_get, mock_convert):
+    result = search_documents("lithium", user=MagicMock())
+
+    # No match is an outcome, not an error — returns normally so the call records OK.
+    assert "No relevant documents found" in result
+
+
+def test_failed_status_is_reachable_through_a_raising_search_tool():
+    """End-to-end of the above: a raising search_documents reaches the eval as FAILED.
+
+    The unit above proves search_documents raises; this proves the loop turns that
+    into the record the eval reads (status FAILED and a populated error), which is
+    the whole point of not swallowing it.
+    """
+    tool = _fake_tool(
+        "search_documents", MagicMock(side_effect=RuntimeError("embedding backend down"))
+    )
+    item = _make_function_call_item("search_documents", {"query": "lithium"}, "call-6")
+
+    _, calls = invoke_functions_from_response(
+        _make_response([item]), tools=[tool], user=MagicMock()
+    )
+
+    assert calls[0].status is ToolCallStatus.FAILED
+    assert "embedding backend down" in calls[0].error
 
 
 # ---------------------------------------------------------------------------

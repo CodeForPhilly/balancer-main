@@ -19,32 +19,38 @@ def search_documents(query: str, user) -> str:
     Returns
     -------
     str
-        Formatted search results containing document excerpts with metadata
+        Formatted search results containing document excerpts with metadata, or a
+        message saying nothing matched. Matching nothing is a legitimate outcome,
+        not a failure, so it returns normally and the call is recorded as OK.
 
     Raises
     ------
     Exception
-        If embedding search fails
+        If the embedding search fails. Deliberately not caught here.
+        invoke_functions_from_response (agentic_loop.py) already catches it, records
+        the call as ToolCallStatus.FAILED with the error, and still feeds the message
+        back to the model so it can retry or say it could not retrieve anything —
+        so letting it propagate loses nothing the model was getting before, and the
+        failure becomes visible to the eval.
+
+        This used to catch everything and return the error as its result string.
+        A returned string is indistinguishable from a successful retrieval, so the
+        call was recorded OK, tool_error_count stayed 0, and ToolCallStatus.FAILED
+        was unreachable for the only tool the model actually calls.
     """
 
-    try:
-        embeddings_results = get_closest_embeddings(
-            user=user, message_data=query.strip()
-        )
-        embeddings_results = convert_uuids(embeddings_results)
+    embeddings_results = get_closest_embeddings(
+        user=user, message_data=query.strip()
+    )
+    embeddings_results = convert_uuids(embeddings_results)
 
-        if not embeddings_results:
-            return "No relevant documents found for your query. Please try different search terms or upload documents first."
+    if not embeddings_results:
+        return "No relevant documents found for your query. Please try different search terms or upload documents first."
 
-        # Format results with clear structure and metadata
-        prompt_texts = [
-            f"[Document {i + 1} - File: {obj['file_id']}, Name: {obj['name']}, Page: {obj['page_number']}, Chunk: {obj['chunk_number']}, Similarity: {1 - obj['distance']:.3f}]\n{obj['text']}\n[End Document {i + 1}]"
-            for i, obj in enumerate(embeddings_results)
-        ]
+    # Format results with clear structure and metadata
+    prompt_texts = [
+        f"[Document {i + 1} - File: {obj['file_id']}, Name: {obj['name']}, Page: {obj['page_number']}, Chunk: {obj['chunk_number']}, Similarity: {1 - obj['distance']:.3f}]\n{obj['text']}\n[End Document {i + 1}]"
+        for i, obj in enumerate(embeddings_results)
+    ]
 
-        return "\n\n".join(prompt_texts)
-
-    except Exception as e:
-        return f"Error searching documents: {str(e)}. Please try again if the issue persists."
-
-        
+    return "\n\n".join(prompt_texts)

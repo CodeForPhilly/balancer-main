@@ -211,9 +211,16 @@ def main():
     #    all five workers reach a cold TransformerModel at once. That is not
     #    hypothetical: the first real eval run (results/521-research-agent-tools-
     #    20260804T181410.csv) had 3 of 9 document searches fail with
-    #    "'TransformerModel' object has no attribute 'model'", each reported as a
-    #    successful call because search_documents catches the exception and returns
-    #    it as a string.
+    #    "'TransformerModel' object has no attribute 'model'".
+    #
+    #    Those three failures were invisible in that CSV — every row still read
+    #    tool_error_count 0 — because search_documents caught the exception and
+    #    returned it as a string, which is indistinguishable from a retrieval that
+    #    worked. That concealment is fixed separately (search_tool.py now lets it
+    #    raise, so the loop records ToolCallStatus.FAILED), and the two fixes are
+    #    complements rather than alternatives: this warm-up removes the trigger,
+    #    search_tool.py removes the concealment. A future failure here would now be
+    #    loud rather than silent, but it would still be a failure.
     #
     # 2. It fixes duration_s. Loading costs ~700ms of Hugging Face metadata requests
     #    plus weight loading. Left to the workers, that cost lands inside whichever

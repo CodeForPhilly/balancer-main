@@ -460,6 +460,7 @@ const NewPatientForm = ({
                         id="suicide"
                         name="suicide"
                         type="radio"
+                        value="No"
                         checked={newPatientInfo.Suicide === "No"}
                         onChange={(e) => handleRadioChange(e, "Suicide")}
                         className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-600"

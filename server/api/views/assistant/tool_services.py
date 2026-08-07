@@ -10,9 +10,11 @@ from typing import Callable
 from api.views.assistant.search_tool import search_documents
 # Reuse the existing ask_database implementation from services/tools rather than
 # reimplementing it here — it already enforces the SELECT-only and ALLOWED_TABLES
-# guards, and does no DB work at import time. Same use-site patching applies: tests patch
-# api.views.assistant.tool_services.ask_database (the name bound here), not the definition
-# in api.services.tools.database.
+# guards, and does no DB work at import time. No test patches this one today, but the
+# same use-site rule would apply if one did: the patch target is
+# api.views.assistant.tool_services.ask_database (the name bound here), not the
+# definition in api.services.tools.database. Keep it a bare-name import so that
+# stays true.
 from api.services.tools.database import ask_database
 
 

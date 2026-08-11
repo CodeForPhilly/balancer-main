@@ -49,7 +49,7 @@ def search_documents(query: str, user) -> str:
 
     # Format results with clear structure and metadata
     #
-    # TODO: drop `File: {obj['file_id']}` from this line — one of the two citation defects
+    # Drop `File: {obj['file_id']}` from this line — one of the two citation defects
     # blocking any citation-accuracy scoring. This hands the model both a UUID and a human
     # document name and does not say which is the citable one, so it sometimes picks the
     # UUID: the 20260807 eval produced

@@ -38,11 +38,11 @@ django.setup()
 from django.contrib.auth import get_user_model  # noqa: E402
 
 from api.views.assistant.assistant_services import run_assistant, MODEL_NAME # noqa: E402
-from api.views.assistant.agentic_loop import ToolCallStatus
+from api.views.assistant.assistant_types import ToolCallStatus
 # Imported to warm the embedding model in main() before the worker pool starts —
 # see the call site for why this process needs it and the web path does not.
 from api.services.sentencetTransformer_model import TransformerModel  # noqa: E402
-# TODO: write INSTRUCTIONS to a sidecar file alongside the CSV in main(), named
+# Write INSTRUCTIONS to a sidecar file alongside the CSV in main(), named
 # results/{branch}-{timestamp}.prompt.txt so the pairing cannot come apart:
 #     f.write(f"branch: {branch}\nmodel: {MODEL_NAME}\n\n{INSTRUCTIONS}")
 # Two alternatives were considered and rejected: a full-text CSV column repeats
@@ -61,7 +61,7 @@ logger = logging.getLogger(__name__)
 # restated here: MODEL_NAME from assistant_services.py (imported above, and used for
 # the CSV's model column), INSTRUCTIONS from assistant_prompts.py (see sidecar TODO).
 
-# TODO: add a scoring layer. This is the biggest remaining gap, and it needs a design
+# Add a scoring layer. This is the biggest remaining gap, and it needs a design
 # pass rather than a patch. As it stands this file is a *generation* harness, not an
 # eval: QUESTIONS below carries no ground truth, so the CSV records what the
 # assistant said and — since the tool-call columns landed — which tools it chose, but
@@ -110,7 +110,7 @@ FIELDNAMES = [
 
 # Set of representative questions to evaluate the assistant
 #
-# TODO: two of these came back as corpus-gap disclaimers ("I can't find this in my
+# Two of these came back as corpus-gap disclaimers ("I can't find this in my
 # sources") in the clean 20260807 run — lithium/kidney and valproate-vs-lithium — and both
 # need confirming before anyone concludes the corpus is missing that content. Lithium/
 # kidney gave the *same* disclaimer on 20260804, when retrieval had in fact crashed
@@ -258,7 +258,7 @@ def main():
     #    measurement, which matters because duration_s exists precisely to compare
     #    questions and branches.
     #
-    # TODO: fix the TransformerModel singleton itself
+    # Fix the TransformerModel singleton itself
     # (api/services/sentencetTransformer_model.py) — this warm-up only hides the
     # defect at one call site. __new__ assigns cls._instance *before* setting
     # .model, so any thread arriving in that ~700ms window gets a non-None but

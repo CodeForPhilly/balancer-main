@@ -41,15 +41,18 @@ import pytest
 # the field is there because the model reads it, and a change-detector objection doesn't
 # apply to output whose exact text is the contract with the model.
 
-from api.views.assistant.agentic_loop import (
-    invoke_functions_from_response,
-    handle_tool_calls_with_reasoning,
+from api.views.assistant.assistant_types import (
     AssistantResult,
+    Tool,
     ToolCall,
     ToolCallStatus,
 )
+from api.views.assistant.agentic_loop import (
+    invoke_functions_from_response,
+    handle_tool_calls_with_reasoning,
+)
 from api.views.assistant.search_tool import search_documents
-from api.views.assistant.tool_services import Tool, SEARCH_TOOL
+from api.views.assistant.tool_services import SEARCH_TOOL
 
 
 # ---------------------------------------------------------------------------

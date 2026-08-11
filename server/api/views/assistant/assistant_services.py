@@ -5,64 +5,35 @@ from openai import OpenAI
 
 from api.views.assistant.assistant_prompts import INSTRUCTIONS
 from api.views.assistant.tool_services import TOOLS
-from api.views.assistant.agentic_loop import (
-    handle_tool_calls_with_reasoning,
-    AssistantResult,
-)
+from api.views.assistant.assistant_types import AssistantResult
+from api.views.assistant.agentic_loop import handle_tool_calls_with_reasoning
 
 logger = logging.getLogger(__name__)
 
-# The single source of truth for which model the assistant runs on. Module-level so
-# eval_assistant.py can import it and label its CSV with the model that actually ran,
-# rather than repeating the string and silently mislabelling results the first time
-# this changes.
-MODEL_NAME = "gpt-5-nano"  # 400,000 token context window
+# Module-level so eval_assistant.py can import it and label its CSV with the model that actually ran
+MODEL_NAME = "gpt-5-nano"
 
 
 def run_assistant(
-    message: str,
     user,
+    message: str,
     previous_response_id: str | None = None,
 ) -> AssistantResult:
-    """Wire together the OpenAI client, retrieval, and the agentic reasoning loop.
-
-    Parameters
-    ----------
-    message : str
-        The user's input message.
-    user : User
-        The Django user object used for document access control in search_documents.
-    previous_response_id : str | None
-        ID of a prior response for multi-turn conversation continuity.
-
-    Returns
-    -------
-    AssistantResult
-        The final response text and id, plus the ToolCall records made during the run.
-        Built by the loop and passed straight through — this function does not repack it.
+    """
+    TODO: Read server/api/views/assistant  and fill in the docstring
     """
     client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
     MODEL_DEFAULTS = {
         "instructions": INSTRUCTIONS,
         "model": MODEL_NAME,
-        # A summary of the reasoning performed by the model. This can be useful for debugging and understanding the model's reasoning process.
+        # TODO: Note how the summary can be used for debugging  and understanding the model's reasoning process.
         "reasoning": {"effort": "low", "summary": None},
-        # The model only ever sees each tool's schema (name/description/parameters),
-        # derived from the single TOOLS list in tool_services.py. The request `user` is
-        # not part of the schema — it is bound into each call later, at dispatch time.
         "tools": [tool.schema() for tool in TOOLS],
     }
 
-    if not previous_response_id:
-        response = client.responses.create(
-            input=[
-                {"type": "message", "role": "user", "content": str(message)}
-            ],
-            **MODEL_DEFAULTS,
-        )
-    else:
-        response = client.responses.create(
+    if previous_response_id:
+        initial_response = client.responses.create(
             input=[
                 {"type": "message", "role": "user", "content": str(message)}
             ],
@@ -70,6 +41,16 @@ def run_assistant(
             **MODEL_DEFAULTS,
         )
 
-    # Pass TOOLS and user through to the loop, which indexes tools by name and binds
-    # user into each tool call at dispatch time.
-    return handle_tool_calls_with_reasoning(response, client, MODEL_DEFAULTS, TOOLS, user)
+        # TODO: Explain the reason user is not part of the schema and is bound into each call at dispatch time
+        return handle_tool_calls_with_reasoning(response, client, MODEL_DEFAULTS, TOOLS, user)
+        
+
+    initial_response = client.responses.create(
+        input=[
+            {"type": "message", "role": "user", "content": str(message)}
+        ],
+        **MODEL_DEFAULTS,
+    )
+
+    # TODO: Explain the reason user is not part of the schema and is bound into each call at dispatch time
+    return handle_tool_calls_with_reasoning(initial_response, client, MODEL_DEFAULTS, TOOLS, user)

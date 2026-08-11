@@ -10,7 +10,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from api.views.assistant.agentic_loop import AssistantResult, ToolCall, ToolCallStatus
+from api.views.assistant.assistant_types import AssistantResult, ToolCall, ToolCallStatus
 from api.views.assistant.eval_assistant import FIELDNAMES, run_one
 
 # TODO: add coverage for main()'s CSV output.

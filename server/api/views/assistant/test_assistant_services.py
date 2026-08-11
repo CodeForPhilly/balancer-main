@@ -24,7 +24,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from api.views.assistant.agentic_loop import AssistantResult
+from api.views.assistant.assistant_types import AssistantResult
 
 # Distinguishes "the kwarg was omitted" from "the kwarg was passed as None", which is
 # the entire point of the test below. It cannot use dict.get()'s usual None default:

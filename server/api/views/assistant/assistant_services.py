@@ -42,8 +42,7 @@ def run_assistant(
         )
 
         # TODO: Explain the reason user is not part of the schema and is bound into each call at dispatch time
-        return handle_tool_calls_with_reasoning(response, client, MODEL_DEFAULTS, TOOLS, user)
-        
+        return handle_tool_calls_with_reasoning(initial_response, client, MODEL_DEFAULTS, TOOLS, user)
 
     initial_response = client.responses.create(
         input=[

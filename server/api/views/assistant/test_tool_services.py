@@ -34,6 +34,12 @@ import pytest
 # needed: search_documents only calls get_closest_embeddings and convert_uuids, so
 # mocking those two (like the rest of the suite mocks collaborators) is enough. The
 # empty-results and exception paths are covered below.
+#
+# Sequence this after the file_id removal queued in search_tool.py, not before: that
+# format string is about to lose its `File: {file_id}` field, so a test written against
+# today's shape would be red on arrival. Pinning the format is worth doing either way —
+# the field is there because the model reads it, and a change-detector objection doesn't
+# apply to output whose exact text is the contract with the model.
 
 from api.views.assistant.agentic_loop import (
     invoke_functions_from_response,

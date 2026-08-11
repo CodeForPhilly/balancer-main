@@ -104,6 +104,26 @@ Be specific rather than generic - use terms that would appear in the relevant do
 # update above, cheap for a table this small and stable.
 _MEDICATION_SCHEMA_STRING = "Table: api_medication\nColumns: name, benefits, risks"
 
+# TODO: sharpen this description — it is the highest-value change on this branch, and
+# there are now two eval runs of evidence behind it. Across 14 tool calls over those two
+# runs the model selected ask_database exactly 0 times. Decisively, for "What medications
+# are recommended for bipolar depression?" it generated a semantic search query rather
+# than SELECT name, benefits, risks FROM api_medication, despite that being a literal
+# match for this table.
+#
+# The descriptions explain the split. SEARCH_TOOL's ends with a standing order ("Always
+# search before answering questions about document content"); this one opens with a scope
+# sentence and then spends its remaining length on SQL mechanics (brand→generic,
+# LOWER() matching). One commands, the other documents syntax — so the model reads only
+# the first as an instruction about *when* to call.
+#
+# The fix is ordering, not length: lead with when to prefer this over semantic search
+# (exact medication attributes, enumerating the catalog, any question answerable from
+# name/benefits/risks) and move the SQL mechanics down into the `query` parameter
+# description, where they belong — that text is read when writing the argument, not when
+# choosing the tool. Consider a matching "prefer ask_database for ..." clause in
+# SEARCH_TOOL so the carve-out is stated from both sides. Re-run the eval afterwards:
+# selection count is the measurement, and it is already baselined at 0.
 ASK_DATABASE_TOOL = Tool(
     name="ask_database",
     description="""
@@ -136,8 +156,9 @@ SQL SELECT query.
 # schema list the model sees with [tool.schema() for tool in TOOLS]; the agentic loop
 # indexes this by name to dispatch calls. Register a new tool by appending it here.
 #
-# OVERLAP RISK: this exposes a semantic document-search tool AND a SQL medication-lookup
-# tool at once. For a question both could answer, the model chooses which to call and
-# they can conflict. If that becomes a problem, sharpen each tool's description to carve
-# out when to prefer which rather than adding more overlapping tools.
+# OVERLAP RISK — no longer hypothetical: this exposes a semantic document-search tool AND
+# a SQL medication-lookup tool at once, and for a question both could answer the model has
+# resolved it entirely in favour of search_documents (0 ask_database selections in 14 tool
+# calls across two eval runs). The lever is sharper descriptions carving out when to prefer
+# which — see the TODO above ASK_DATABASE_TOOL — not a third overlapping tool.
 TOOLS = [SEARCH_TOOL, ASK_DATABASE_TOOL]

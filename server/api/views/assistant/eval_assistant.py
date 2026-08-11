@@ -76,6 +76,13 @@ logger = logging.getLogger(__name__)
 #     response_output_text and checked against what search_documents actually
 #     returned — already captured in the tool_calls_json column. That catches
 #     fabricated citations, the failure mode that matters most clinically.
+#     BLOCKED until two citation defects land, both observed in the 20260807 run and
+#     both queued at their own call sites: the model emits the template's braces
+#     literally (see the TODO above INSTRUCTIONS in assistant_prompts.py) and sometimes
+#     cites a UUID as the document name (see the TODO in search_tool.py). Until then
+#     the format the parser would target does not actually hold, so a parser built now
+#     would measure prompt drift rather than citation accuracy — fix them first, then
+#     re-run, then write the parser against what comes out.
 #   - Where scoring runs: as a separate pass over an already-written CSV, not inside
 #     run_one, so scoring can be revised and re-run without paying for generation
 #     again.
@@ -102,6 +109,16 @@ FIELDNAMES = [
 ]
 
 # Set of representative questions to evaluate the assistant
+#
+# TODO: two of these came back as corpus-gap disclaimers ("I can't find this in my
+# sources") in the clean 20260807 run — lithium/kidney and valproate-vs-lithium — and both
+# need confirming before anyone concludes the corpus is missing that content. Lithium/
+# kidney gave the *same* disclaimer on 20260804, when retrieval had in fact crashed
+# ('TransformerModel' object has no attribute 'model'), so that bug misattributed itself
+# to the data; the disclaimer is not evidence of a gap on its own. Retrieval succeeded
+# this time, so read tool_calls_json for those two rows: ~8.8KB of retrieved lithium
+# content sitting behind a can't-find answer is an answer-quality finding (the model not
+# using what it was handed), not a reason to add documents.
 QUESTIONS = [
     "What medications are recommended for bipolar depression?",
     "What are the risks of lithium for patients with kidney disease?",
@@ -166,6 +183,17 @@ def run_one(question: str, user, branch: str) -> dict:
             "tool_error_count": tool_error_count,
             # Full per-call detail — status, the model's arguments (query), output/error —
             # for analysis that the flat columns can't hold.
+            #
+            # TODO: this cell is the CSV's bulk — ToolCall.output holds the tool's entire
+            # return, so one search_documents call embeds a full retrieved chunk set
+            # (~8.8KB observed) into a single field, and the 5-row 20260804 file came to
+            # 79KB. If it needs trimming, truncate `output` *here*, in this serializer,
+            # not in ToolCall: the loop must keep the full text because it is what gets
+            # fed back to the model, and truncating upstream would change behavior rather
+            # than just the artifact. Weigh it against the open questions above, both of
+            # which are answered by reading this column — a truncation that drops the
+            # retrieved content also destroys the evidence for citation accuracy and for
+            # the disclaimer check on QUESTIONS.
             "tool_calls_json": json.dumps([asdict(c) for c in result.tool_calls]),
             "duration_s": duration_s,
             "error": None,
@@ -262,6 +290,15 @@ def main():
         for future in as_completed(futures):
             results.append(future.result())
 
+    # TODO: decide whether this directory is tracked. It is currently neither committed
+    # nor in .gitignore, so every run leaves untracked files that show up in git status
+    # and are one `git clean` from gone. It already holds two CSVs that are worth keeping
+    # as before/after evidence — 20260804 (the TransformerModel race: 9 tool calls for 5
+    # questions, 3 of them 118-char errors) and 20260807 (the clean baseline: 5 for 5, no
+    # retries) — and the eval's whole value is comparing runs across branches, which
+    # argues for committing them. Against: they carry full response text and retrieved
+    # document content, they grow ~80KB per run, and they are regenerable at the cost of
+    # an API call. Either way the ambiguous state should not persist.
     results_dir = os.path.join(os.path.dirname(__file__), "results")
     os.makedirs(results_dir, exist_ok=True)
     timestamp = datetime.datetime.utcnow().strftime("%Y%m%dT%H%M%S")

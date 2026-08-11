@@ -48,6 +48,17 @@ def search_documents(query: str, user) -> str:
         return "No relevant documents found for your query. Please try different search terms or upload documents first."
 
     # Format results with clear structure and metadata
+    #
+    # TODO: drop `File: {obj['file_id']}` from this line — one of the two citation defects
+    # blocking any citation-accuracy scoring. This hands the model both a UUID and a human
+    # document name and does not say which is the citable one, so it sometimes picks the
+    # UUID: the 20260807 eval produced
+    # "[Name 4cdd4a7e-0c26-4b80-b685-e731e8670725], Page 3, Chunk 12".
+    # The model never needs file_id — nothing downstream resolves it and INSTRUCTIONS asks
+    # for {name} — so removing the field removes the ambiguity outright. The sibling defect
+    # is in the citation template itself; see the TODO above INSTRUCTIONS in
+    # assistant_prompts.py. Both must land before citation accuracy is parseable, which is
+    # what the scoring TODO in eval_assistant.py rests on.
     prompt_texts = [
         f"[Document {i + 1} - File: {obj['file_id']}, Name: {obj['name']}, Page: {obj['page_number']}, Chunk: {obj['chunk_number']}, Similarity: {1 - obj['distance']:.3f}]\n{obj['text']}\n[End Document {i + 1}]"
         for i, obj in enumerate(embeddings_results)

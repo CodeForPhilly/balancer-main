@@ -148,7 +148,7 @@ def run_one(question: str, user, branch: str) -> dict:
         - Runtime: bottlenecked by OpenAI rate limits, not thread overhead
     - asyncio.gather + await run_assistant (alternative):
         - run_assistant becomes async — requires async def post in views.py,
-          AsyncOpenAI client, and async handle_tool_calls_with_reasoning
+          AsyncOpenAI client, and async run_agentic_loop
         - Django DB unsafe if get_closest_embeddings is called directly in an async
           context without wrapping: get_closest_embeddings is a sync function that
           hits the ORM, so calling it on the event loop thread blocks all other
@@ -162,7 +162,7 @@ def run_one(question: str, user, branch: str) -> dict:
     """
     # Time the full run_assistant call here rather than inside it: run_one already
     # owns the whole call, so wall-clock duration needs no plumbing through the
-    # production code path (see AssistantResult — duration is not carried).
+    # production code path (see AgentResult — duration is not carried).
     start = perf_counter()
     try:
         result = run_assistant(message=question, user=user)
@@ -184,11 +184,11 @@ def run_one(question: str, user, branch: str) -> dict:
             # Full per-call detail — status, the model's arguments (query), output/error —
             # for analysis that the flat columns can't hold.
             #
-            # TODO: this cell is the CSV's bulk — ToolCall.output holds the tool's entire
+            # TODO: this cell is the CSV's bulk — ToolCallExecution.output holds the entire
             # return, so one search_documents call embeds a full retrieved chunk set
             # (~8.8KB observed) into a single field, and the 5-row 20260804 file came to
             # 79KB. If it needs trimming, truncate `output` *here*, in this serializer,
-            # not in ToolCall: the loop must keep the full text because it is what gets
+            # not in ToolCallExecution: the loop must keep the full text because it gets
             # fed back to the model, and truncating upstream would change behavior rather
             # than just the artifact. Weigh it against the open questions above, both of
             # which are answered by reading this column — a truncation that drops the

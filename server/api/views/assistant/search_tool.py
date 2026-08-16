@@ -27,7 +27,7 @@ def search_documents(query: str, user) -> str:
     ------
     Exception
         If the embedding search fails. Deliberately not caught here.
-        invoke_functions_from_response (agentic_loop.py) already catches it, records
+        _execute_function_call (agentic_loop.py) already catches it, records
         the call as ToolCallStatus.FAILED with the error, and still feeds the message
         back to the model so it can retry or say it could not retrieve anything —
         so letting it propagate loses nothing the model was getting before, and the

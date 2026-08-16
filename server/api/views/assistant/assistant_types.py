@@ -5,8 +5,8 @@ the dispatch and loop logic wrapped around them. Two groups:
 
   - Tool — the definition side. One assistant tool: the schema the model sees and the
     function we run. Instances are registered in tool_services.py's TOOLS list.
-  - ToolCallStatus / ToolCall / AssistantResult — the record side. Built by the agentic
-    loop as a run proceeds, and read by eval_assistant.py to fill the result CSV.
+  - ToolCallStatus / ToolCallExecution / AgentResult — the record side. Built by the
+    agentic loop as a run proceeds, and read by eval_assistant.py to fill the result CSV.
 
 This module imports nothing from the package, so it cannot take part in an import
 cycle however many modules come to need a type from it.
@@ -75,7 +75,7 @@ class ToolCallStatus(str, Enum):
 
 
 @dataclass(frozen=True)
-class ToolCall:
+class ToolCallExecution:
     """A record of one tool call the model made — a complete unit for eval:
     which tool, with what query (`arguments`), and what came back (`output`) or
     broke (`error`).
@@ -94,10 +94,10 @@ class ToolCall:
 
 
 @dataclass(frozen=True)
-class AssistantResult:
+class AgentResult:
     """What a full agentic run produced: the model's final text, the id of the final
-    response (for multi-turn continuity), and the ordered ToolCall records for every
-    tool invocation across all loop iterations.
+    response (for multi-turn continuity), and the ordered ToolCallExecution records for
+    every tool invocation across all loop iterations.
 
     TODO: capture token usage and turn count — the other axis, alongside tool
     selection, for comparing strategies. The design is settled but unbuilt:
@@ -105,8 +105,8 @@ class AssistantResult:
         reasoning_tokens, total_tokens, turn_count. All three existing construction
         sites pass keywords, so adding them is inert — this is exactly the property
         the dataclass was chosen for over a widened tuple.
-      - Accumulate at the top of the while body in handle_tool_calls_with_reasoning
-        (agentic_loop.py), before invoke_functions_from_response. That counts the
+      - Accumulate at the top of the while body in run_agentic_loop
+        (agentic_loop.py), before handle_tool_calls. That counts the
         initial response (created in run_assistant and passed in) and every
         continuation exactly once, including the terminal turn before the return.
         turn_count is then simply the number of responses.create calls the run made.
@@ -129,7 +129,7 @@ class AssistantResult:
         api/services/llm_services.py — which has no reasoning or cached tier yet.
 
     Known hole that work would widen: if client.responses.create raises mid-loop the
-    exception propagates out and every ToolCall collected so far is lost with it —
+    exception propagates out and every ToolCallExecution collected so far is lost —
     the eval row reads tool_call_count 0 despite real calls having run, and would
     likewise read total_tokens 0 despite tokens having been billed. Closing it means
     deciding what this dataclass describes: a successful run, or whatever actually
@@ -143,4 +143,4 @@ class AssistantResult:
 
     output_text: str
     response_id: str
-    tool_calls: list[ToolCall]
+    tool_calls: list[ToolCallExecution]

@@ -1,7 +1,7 @@
 # Tests for run_assistant (assistant_services.py): the orchestrator that wires the
 # OpenAI client, the tool schemas, and the agentic loop together.
 #
-# The OpenAI client and handle_tool_calls_with_reasoning are mocked, so what remains
+# The OpenAI client and run_agentic_loop are mocked, so what remains
 # to test is the one decision run_assistant actually makes: whether to include
 # previous_response_id in the call at all. Everything else it does is forwarding — a
 # hardcoded message dict, TOOLS and user passed straight through to the loop — and
@@ -24,7 +24,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from api.views.assistant.assistant_types import AssistantResult
+from api.views.assistant.assistant_types import AgentResult
 
 # Distinguishes "the kwarg was omitted" from "the kwarg was passed as None", which is
 # the entire point of the test below. It cannot use dict.get()'s usual None default:
@@ -43,7 +43,7 @@ def _make_terminal_response(output_text="Final answer.", response_id="resp-1"):
 
 
 def _make_result(output_text="answer", response_id="resp-1"):
-    return AssistantResult(output_text=output_text, response_id=response_id, tool_calls=[])
+    return AgentResult(output_text=output_text, response_id=response_id, tool_calls=[])
 
 
 @pytest.mark.parametrize(
@@ -53,10 +53,10 @@ def _make_result(output_text="answer", response_id="resp-1"):
         pytest.param(None, ABSENT, id="omitted-entirely-when-none"),
     ],
 )
-@patch("api.views.assistant.assistant_services.handle_tool_calls_with_reasoning")
+@patch("api.views.assistant.assistant_services.run_agentic_loop")
 @patch("api.views.assistant.assistant_services.OpenAI")
 def test_run_assistant_includes_previous_response_id_only_when_set(
-    mock_openai_cls, mock_handle, previous_response_id, expected
+    mock_openai_cls, mock_loop, previous_response_id, expected
 ):
     """run_assistant's `if not previous_response_id` branch, both ways.
 
@@ -70,7 +70,7 @@ def test_run_assistant_includes_previous_response_id_only_when_set(
     mock_client = MagicMock()
     mock_openai_cls.return_value = mock_client
     mock_client.responses.create.return_value = _make_terminal_response()
-    mock_handle.return_value = _make_result()
+    mock_loop.return_value = _make_result()
 
     from api.views.assistant.assistant_services import run_assistant
 

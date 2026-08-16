@@ -3,14 +3,18 @@
 #
 # run_assistant is mocked, so this covers the logic run_one owns — the try/except
 # that turns a raising question into an error row instead of aborting the batch, the
-# tool columns derived from AssistantResult.tool_calls, and the invariant that both
+# tool columns derived from AgentResult.tool_calls, and the invariant that both
 # paths emit every CSV column.
 
 from unittest.mock import MagicMock, patch
 
 import pytest
 
-from api.views.assistant.assistant_types import AssistantResult, ToolCall, ToolCallStatus
+from api.views.assistant.assistant_types import (
+    AgentResult,
+    ToolCallExecution,
+    ToolCallStatus,
+)
 from api.views.assistant.eval_assistant import FIELDNAMES, run_one
 
 # TODO: add coverage for main()'s CSV output.
@@ -18,17 +22,17 @@ from api.views.assistant.eval_assistant import FIELDNAMES, run_one
 # The two run_assistant outcomes, as patch() kwargs so the same pair can drive both
 # the per-path tests and the shared column invariant without restating either setup.
 _SUCCEEDS = {
-    "return_value": AssistantResult(
+    "return_value": AgentResult(
         output_text="answer",
         response_id="resp-1",
         tool_calls=[
-            ToolCall(
+            ToolCallExecution(
                 name="search_documents",
                 status=ToolCallStatus.OK,
                 arguments={"query": "lithium"},
                 output="docs",
             ),
-            ToolCall(
+            ToolCallExecution(
                 name="ask_database",
                 status=ToolCallStatus.FAILED,
                 arguments={"query": "SELECT"},

@@ -36,13 +36,8 @@ class Assistant(APIView):
     def post(self, request):
         try:
             user = request.user
-    
-            # TODO: validate message and return a 400 when it is omitted or blank.
-            # @extend_schema documents message as required, but that schema is not
-            # enforced at runtime, so a missing/empty message reaches run_assistant
-            # and becomes the literal string "None" (str(None)) in the model input —
-            # producing confusing model behavior. Add a 400 to the responses schema
-            # when implementing.
+
+            # TODO: Missing/empty message reaches run_assistant and becomes the literal string "None" (str(None)) in the model input
             message = request.data.get("message", None)
             previous_response_id = request.data.get("previous_response_id", None)
             

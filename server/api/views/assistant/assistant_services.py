@@ -19,27 +19,13 @@ def run_assistant(
     message: str,
     previous_response_id: str | None = None,
 ) -> AgentResult:
-    """
-    TODO: Read server/api/views/assistant  and fill in the docstring
-    """
 
-    # TODO: Track cost metrics in eval_assistant.py
     client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
     MODEL_DEFAULTS = {
         "instructions": INSTRUCTIONS,
         "model": MODEL_NAME,
-        # TODO: flip "summary" back to "auto" once this org is confirmed verified with
-        # OpenAI. Reverted from "auto" because reasoning summaries on the gpt-5 family
-        # can be gated behind organization verification: an unverified org gets a 400
-        # from every responses.create, so the assistant would fail closed for every
-        # user on the first turn rather than degrade. One real call against the
-        # configured key settles it — this is not something to find out in production.
-        #
-        # While this stays None, reasoning items carry no summary, which makes
-        # agentic_loop.py's `logger.info(f"Reasoning step: {response_item.summary}")`
-        # inert. That log line and this key are one change, not two — flipping this
-        # without checking that line just prints None on every reasoning item.
+        # TODO: Flip "summary" to "auto" once this org is confirmed verified with OpenAI
         "reasoning": {"effort": "low", "summary": None},
         "tools": [tool.schema() for tool in TOOLS],
     }
@@ -53,7 +39,7 @@ def run_assistant(
             **MODEL_DEFAULTS,
         )
 
-        # TODO: Explain the reason user is not part of the schema and is bound into each call at dispatch time
+        # search_documents needs the request user for document access control
         return run_agentic_loop(initial_response, client, MODEL_DEFAULTS, TOOLS, user)
 
     initial_response = client.responses.create(
@@ -63,5 +49,5 @@ def run_assistant(
         **MODEL_DEFAULTS,
     )
 
-    # TODO: Explain the reason user is not part of the schema and is bound into each call at dispatch time
+    # search_documents needs the request user for document access control
     return run_agentic_loop(initial_response, client, MODEL_DEFAULTS, TOOLS, user)

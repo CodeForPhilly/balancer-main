@@ -27,16 +27,7 @@ def search_documents(query: str, user) -> str:
     ------
     Exception
         If the embedding search fails. Deliberately not caught here.
-        _execute_function_call (agentic_loop.py) already catches it, records
-        the call as ToolCallStatus.FAILED with the error, and still feeds the message
-        back to the model so it can retry or say it could not retrieve anything —
-        so letting it propagate loses nothing the model was getting before, and the
-        failure becomes visible to the eval.
-
-        This used to catch everything and return the error as its result string.
-        A returned string is indistinguishable from a successful retrieval, so the
-        call was recorded OK, tool_error_count stayed 0, and ToolCallStatus.FAILED
-        was unreachable for the only tool the model actually calls.
+   
     """
 
     embeddings_results = get_closest_embeddings(
@@ -48,17 +39,6 @@ def search_documents(query: str, user) -> str:
         return "No relevant documents found for your query. Please try different search terms or upload documents first."
 
     # Format results with clear structure and metadata
-    #
-    # Drop `File: {obj['file_id']}` from this line — one of the two citation defects
-    # blocking any citation-accuracy scoring. This hands the model both a UUID and a human
-    # document name and does not say which is the citable one, so it sometimes picks the
-    # UUID: the 20260807 eval produced
-    # "[Name 4cdd4a7e-0c26-4b80-b685-e731e8670725], Page 3, Chunk 12".
-    # The model never needs file_id — nothing downstream resolves it and INSTRUCTIONS asks
-    # for {name} — so removing the field removes the ambiguity outright. The sibling defect
-    # is in the citation template itself; see the TODO above INSTRUCTIONS in
-    # assistant_prompts.py. Both must land before citation accuracy is parseable, which is
-    # what the scoring TODO in eval_assistant.py rests on.
     prompt_texts = [
         f"[Document {i + 1} - File: {obj['file_id']}, Name: {obj['name']}, Page: {obj['page_number']}, Chunk: {obj['chunk_number']}, Similarity: {1 - obj['distance']:.3f}]\n{obj['text']}\n[End Document {i + 1}]"
         for i, obj in enumerate(embeddings_results)

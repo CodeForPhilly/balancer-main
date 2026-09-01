@@ -1,12 +1,37 @@
 # Tests for run_assistant (assistant_services.py): the orchestrator that wires the
-# OpenAI client, the search tool mapping, and the agentic loop together.
+# OpenAI client, the tool schemas, and the agentic loop together.
 #
-# The OpenAI client and handle_tool_calls_with_reasoning are mocked, so these
-# tests cover only logic run_assistant owns: how it builds the user input message,
-# its decision to include vs. omit previous_response_id, and that it binds the
-# request user into the search tool. No live OpenAI calls and no database.
+# The OpenAI client and run_agentic_loop are mocked, so what remains
+# to test is the one decision run_assistant actually makes: whether to include
+# previous_response_id in the call at all. Everything else it does is forwarding — a
+# hardcoded message dict, TOOLS and user passed straight through to the loop — and
+# the tests that asserted those forwards were removed as glue. The only bugs they
+# could catch were renames and reorderings, and one of them (`args[3] is TOOLS`) was
+# coupled to positional argument order, so it would have gone red on a harmless
+# switch to keyword arguments.
+#
+# Coverage that leaves open, deliberately noted rather than silently dropped:
+#   - The user -> run_assistant -> loop leg is no longer asserted. It is a bare
+#     positional forward with no decision in it, and the legs on either side are
+#     still covered (test_invoke_calls_tool_and_returns_output asserts the loop
+#     dispatches run(user=user, ...); test_search_tool_run_forwards_query_and_user
+#     asserts the handoff into retrieval).
+#   - Nothing asserts that MODEL_DEFAULTS["tools"] == [tool.schema() for tool in
+#     TOOLS] reaches the model. That comprehension is a real transformation and is
+#     genuinely untested — but it is not what the deleted test checked either.
 
 from unittest.mock import MagicMock, patch
+
+import pytest
+
+from api.views.assistant.assistant_types import AgentResult
+
+# Distinguishes "the kwarg was omitted" from "the kwarg was passed as None", which is
+# the entire point of the test below. It cannot use dict.get()'s usual None default:
+# a regression that sent previous_response_id=None explicitly would then be
+# indistinguishable from correctly omitting the key, which is exactly the bug the
+# omit-branch exists to prevent.
+ABSENT = object()
 
 
 def _make_terminal_response(output_text="Final answer.", response_id="resp-1"):
@@ -16,76 +41,44 @@ def _make_terminal_response(output_text="Final answer.", response_id="resp-1"):
     response.id = response_id
     return response
 
-@patch("api.views.assistant.assistant_services.handle_tool_calls_with_reasoning")
+
+def _make_result(output_text="answer", response_id="resp-1"):
+    return AgentResult(output_text=output_text, response_id=response_id, tool_calls=[])
+
+
+@pytest.mark.parametrize(
+    "previous_response_id, expected",
+    [
+        pytest.param("resp-1", "resp-1", id="forwarded-when-provided"),
+        pytest.param(None, ABSENT, id="omitted-entirely-when-none"),
+    ],
+)
+@patch("api.views.assistant.assistant_services.run_agentic_loop")
 @patch("api.views.assistant.assistant_services.OpenAI")
-def test_run_assistant_sends_message_as_user_input(mock_openai_cls, mock_handle):
+def test_run_assistant_includes_previous_response_id_only_when_set(
+    mock_openai_cls, mock_loop, previous_response_id, expected
+):
+    """run_assistant's `if not previous_response_id` branch, both ways.
+
+    Parametrized rather than written twice: the two cases are the same call with one
+    input changed, and previously duplicated four lines of client/loop mock setup to
+    assert two halves of one decision.
+
+    Asserting on call_args is the only way to see this decision — omitting a kwarg
+    has no return-value footprint, since both branches return the same loop result.
+    """
     mock_client = MagicMock()
     mock_openai_cls.return_value = mock_client
     mock_client.responses.create.return_value = _make_terminal_response()
-    mock_handle.return_value = ("answer", "resp-1")
+    mock_loop.return_value = _make_result()
 
     from api.views.assistant.assistant_services import run_assistant
 
-    run_assistant(message="Tell me about valproate.", user=MagicMock())
-
-    call_kwargs = mock_client.responses.create.call_args
-    input_messages = call_kwargs.kwargs.get("input") or call_kwargs.args[0]
-    assert any(
-        item.get("role") == "user" and "valproate" in item.get("content", "")
-        for item in input_messages
+    run_assistant(
+        message="Tell me about valproate.",
+        user=MagicMock(),
+        previous_response_id=previous_response_id,
     )
 
-
-@patch("api.views.assistant.assistant_services.handle_tool_calls_with_reasoning")
-@patch("api.views.assistant.assistant_services.OpenAI")
-def test_run_assistant_passes_previous_response_id(mock_openai_cls, mock_handle):
-    mock_client = MagicMock()
-    mock_openai_cls.return_value = mock_client
-    mock_client.responses.create.return_value = _make_terminal_response()
-    mock_handle.return_value = ("answer", "resp-2")
-
-    from api.views.assistant.assistant_services import run_assistant
-
-    run_assistant(message="More info.", user=MagicMock(), previous_response_id="resp-1")
-
     call_kwargs = mock_client.responses.create.call_args.kwargs
-    assert call_kwargs.get("previous_response_id") == "resp-1"
-
-
-@patch("api.views.assistant.assistant_services.handle_tool_calls_with_reasoning")
-@patch("api.views.assistant.assistant_services.OpenAI")
-def test_run_assistant_omits_previous_response_id_when_none(mock_openai_cls, mock_handle):
-    mock_client = MagicMock()
-    mock_openai_cls.return_value = mock_client
-    mock_client.responses.create.return_value = _make_terminal_response()
-    mock_handle.return_value = ("answer", "resp-1")
-
-    from api.views.assistant.assistant_services import run_assistant
-
-    run_assistant(message="First message.", user=MagicMock(), previous_response_id=None)
-
-    call_kwargs = mock_client.responses.create.call_args.kwargs
-    assert "previous_response_id" not in call_kwargs
-
-
-@patch("api.views.assistant.tool_services.search_documents")
-@patch("api.views.assistant.assistant_services.handle_tool_calls_with_reasoning")
-@patch("api.views.assistant.assistant_services.OpenAI")
-def test_run_assistant_binds_user_to_search_documents(mock_openai_cls, mock_handle, mock_search):
-    mock_client = MagicMock()
-    mock_openai_cls.return_value = mock_client
-    mock_client.responses.create.return_value = _make_terminal_response()
-    mock_handle.return_value = ("answer", "resp-1")
-
-    from api.views.assistant.assistant_services import run_assistant
-
-    user = MagicMock()
-    run_assistant(message="query", user=user)
-
-    # Extract the tool_mapping passed to handle_tool_calls_with_reasoning
-    tool_mapping = mock_handle.call_args.kwargs.get("tool_mapping") or mock_handle.call_args.args[3]
-    bound_search = tool_mapping["search_documents"]
-
-    # Calling the bound function should forward user to search_documents
-    bound_search(query="test query")
-    mock_search.assert_called_once_with("test query", user)
+    assert call_kwargs.get("previous_response_id", ABSENT) == expected

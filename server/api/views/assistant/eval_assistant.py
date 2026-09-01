@@ -1,33 +1,23 @@
-#!/usr/bin/env -S uv run --script
-# /// script
-# requires-python = "==3.11.11"
-# dependencies = [
-#   "pandas==2.2.3",
-#   "openai",
-#   "django",
-# ]
-# ///
-
-# uv script (or plain Python) to generate results to CSV, run from the terminal
-# Run from inside the container (working dir is /usr/src/server):
-#   docker compose exec backend python api/views/assistant/eval_assistant.py
-# 
-
+# Generates eval results to CSV. Run from inside the container:
+# docker compose exec backend python api/views/assistant/eval_assistant.py
+# Writes to results/ next to this file, which the ./server bind mount surfaces on the host.
 
 import os
 import sys
+import csv
+import json
 import logging
 import datetime
+from dataclasses import asdict
+from time import perf_counter
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-# Django setup must come before any imports that touch the ORM
-# NOTE: from api/views/assistant/, "../../../../" resolves four levels up to
-# /usr/src (not /usr/src/server, where balancer_backend lives). So this insert
-# alone does not put the settings package on sys.path — running the script
-# relies on the container already having /usr/src/server on PYTHONPATH. Sanity-
-# check this the first time the eval is run for real; the path depth may need
-# adjusting (e.g. "../../../").
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../")))
+# Django setup must come before any imports that touch the ORM.
+# Three levels up from api/views/assistant/ is /usr/src/server, where the balancer_backend settings package lives.
+# Running a script file puts the *script's* directory on sys.path[0], not the working
+# directory, and the image sets no PYTHONPATH — so without it django.setup() below
+# raises ModuleNotFoundError on balancer_backend.settings.
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../")))
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "balancer_backend.settings")
 
 import django
@@ -35,20 +25,33 @@ django.setup()
 
 from django.contrib.auth import get_user_model  # noqa: E402
 
-from api.views.assistant.assistant_services import run_assistant  # noqa: E402
+from api.views.assistant.assistant_services import run_assistant, MODEL_NAME # noqa: E402
+from api.views.assistant.assistant_types import ToolCallStatus
+# Imported to warm the embedding model in main() before the worker pool starts —
+# see the call site for why this process needs it and the web path does not.
+from api.services.sentencetTransformer_model import TransformerModel  # noqa: E402
+
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
-# Read model and INSTRUCTIONS from the source file or add a lightweight config endpoint to the backend
-
-# Read model and INSTRUCTIONS from the source file
-# INSTRUCTIONS is imported from assistant_prompts.py
-# MODEL is read from assistant_services.py MODEL_DEFAULTS
-# TODO: import a shared MODEL_NAME constant from assistant_services instead of hardcoding
-MODEL = "gpt-5-nano"
+FIELDNAMES = [
+    "branch",
+    "model",
+    "question",
+    "response_output_text",
+    "response_id",
+    "tools_called",
+    "tool_call_count",
+    "tool_error_count",
+    "tool_calls_json",
+    # TODO: add turn_count, the five token columns, and turns_json here and to *both* run_one row literals
+    "duration_s",
+    "error",
+]
 
 # Set of representative questions to evaluate the assistant
+
 QUESTIONS = [
     "What medications are recommended for bipolar depression?",
     "What are the risks of lithium for patients with kidney disease?",
@@ -61,51 +64,52 @@ QUESTIONS = [
 def run_one(question: str, user, branch: str) -> dict:
     """Run the assistant for a single question and return a result row.
 
-    Uses ThreadPoolExecutor (not asyncio.gather + await run_assistant) for concurrency.
+    Uses ThreadPoolExecutor for concurrency.
 
-    Concurrency approach comparison:
-    - ThreadPoolExecutor (this implementation):
-        - run_assistant stays sync — views.py and the WSGI web app are unaffected
-        - Each question runs in a thread pool worker, blocking on OpenAI + DB I/O
-        - Django DB safe when run via `docker compose exec backend python eval_assistant.py`:
-          this is a synchronous Django process context. Each ThreadPoolExecutor worker
-          is a real OS thread with its own threading.local() storage, so each thread
-          gets its own DB connection created lazily on first use. There is no shared
-          event loop thread, so connections cannot clash or bleed between questions.
-          The connection isolation concern only arises in ASGI contexts where multiple
-          coroutines share one thread and therefore one threading.local() connection —
-          which is not the case here.
-        - Runtime: bottlenecked by OpenAI rate limits, not thread overhead
-    - asyncio.gather + await run_assistant (alternative):
-        - run_assistant becomes async — requires async def post in views.py,
-          AsyncOpenAI client, and async handle_tool_calls_with_reasoning
-        - Django DB unsafe if get_closest_embeddings is called directly in an async
-          context without wrapping: get_closest_embeddings is a sync function that
-          hits the ORM, so calling it on the event loop thread blocks all other
-          coroutines until the DB responds. The fix is sync_to_async(get_closest_embeddings),
-          which runs it in a dedicated worker thread with its own threading.local()
-          connection. Bare await does not work at all — Django ORM querysets are not
-          awaitables and raise TypeError immediately.
-        - Under WSGI (manage.py runserver), async views run in a new event loop
-          per request — adds overhead to every web request for no benefit
-        - Cleaner call site in eval_assistant.py but wrong trade-off given WSGI
     """
+    # Time the full run_assistant call here rather than inside it: run_one already
+    # owns the whole call, so wall-clock duration needs no plumbing through the
+    # production code path (see AgentResult — duration is not carried).
+    start = perf_counter()
     try:
-        response_text, response_id = run_assistant(message=question, user=user)
+        result = run_assistant(message=question, user=user)
+        duration_s = perf_counter() - start
+        tool_error_count = sum(
+            1 for c in result.tool_calls if c.status is not ToolCallStatus.OK
+        )
         return {
             "branch": branch,
-            "model": MODEL,
+            "model": MODEL_NAME,
             "question": question,
-            "response_output_text": response_text,
+            "response_output_text": result.output_text,
+            "response_id": result.response_id,
+            # Flat summaries for at-a-glance scanning; the swallowed-failure hole this
+            # closes shows up as tool_error_count > 0 while error is None.
+            "tools_called": "|".join(c.name for c in result.tool_calls),
+            "tool_call_count": len(result.tool_calls),
+            "tool_error_count": tool_error_count,
+            # Full per-call detail — status, the model's arguments (query), output/error — 
+            # for analysis that the flat columns can't hold.
+            "tool_calls_json": json.dumps([asdict(c) for c in result.tool_calls]),
+            # TODO: turn_count = len(result.turns), token totals = sums over result.turns, turns_json = the asdict list
+            "duration_s": duration_s,
             "error": None,
         }
     except Exception as e:
+        duration_s = perf_counter() - start
         logger.error(f"Error evaluating question '{question}': {e}")
         return {
             "branch": branch,
-            "model": MODEL,
+            "model": MODEL_NAME,
             "question": question,
             "response_output_text": None,
+            "response_id": None,
+            "tools_called": "",
+            "tool_call_count": 0,
+            "tool_error_count": 0,
+            "tool_calls_json": None,
+            # TODO: turn_count 0, token totals 0, turns_json None — inherits tool_call_count's known lie (mid-loop failure hole)
+            "duration_s": duration_s,
             "error": str(e),
         }
 
@@ -118,11 +122,13 @@ def main():
     if not user:
         raise RuntimeError("No superuser found. Create one with manage.py createsuperuser.")
 
-    logger.info(f"Starting evaluation: branch={branch}, model={MODEL}, questions={len(QUESTIONS)}")
+    logger.info(f"Starting evaluation: branch={branch}, model={MODEL_NAME}, questions={len(QUESTIONS)}")
 
-    # ThreadPoolExecutor runs questions concurrently — see run_one docstring
-    # for trade-off discussion vs asyncio.gather + await run_assistant.
-    # max_workers=5 stays safely under OpenAI rate limits for gpt-5-nano.
+    # Load the embedding model before starting any workers
+    TransformerModel.get_instance()
+
+    # ThreadPoolExecutor runs questions concurrently
+    # max_workers=5 stays safely under OpenAI rate limits for MODEL_NAME.
     results = []
     with ThreadPoolExecutor(max_workers=5) as pool:
         futures = {
@@ -132,18 +138,17 @@ def main():
         for future in as_completed(futures):
             results.append(future.result())
 
-    # Import pandas here, not at module top, so that importing this module (e.g.
-    # run_one from test_eval_assistant.py) does not require pandas. It is only
-    # needed for the CSV output below, when this script is run directly.
-    import pandas as pd
-
-    df = pd.DataFrame(results)
 
     results_dir = os.path.join(os.path.dirname(__file__), "results")
     os.makedirs(results_dir, exist_ok=True)
     timestamp = datetime.datetime.utcnow().strftime("%Y%m%dT%H%M%S")
     output_path = os.path.join(results_dir, f"{branch}-{timestamp}.csv")
-    df.to_csv(output_path, index=False)
+
+    # pandas was never in the backend image's requirements.txt
+    with open(output_path, "w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=FIELDNAMES)
+        writer.writeheader()
+        writer.writerows(results)
 
     logger.info(f"Results saved to {output_path}")
 

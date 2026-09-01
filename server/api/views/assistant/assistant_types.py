@@ -56,6 +56,7 @@ class ToolCallExecution:
     error: str | None = None        
 
 
+# TODO: TurnUsage frozen dataclass — response_id + input/cached_input/output/reasoning_output/total tokens for one responses.create call
 @dataclass(frozen=True)
 class AgentResult:
     """
@@ -67,5 +68,6 @@ class AgentResult:
     output_text: str
     # The id of the final response (for multi-turn continuity)
     response_id: str
-    # The ordered ToolCallExecutionrecords for every tool invocation across all loop iterations
+    # The ordered ToolCallExecution records for every tool invocation across all loop iterations
     tool_calls: list[ToolCallExecution]
+    # TODO: turns: list[TurnUsage] — one per loop iteration; the eval derives turn_count = len() and the token totals = sums

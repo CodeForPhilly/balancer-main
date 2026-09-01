@@ -45,6 +45,7 @@ FIELDNAMES = [
     "tool_call_count",
     "tool_error_count",
     "tool_calls_json",
+    # TODO: add turn_count, the five token columns, and turns_json here and to *both* run_one row literals
     "duration_s",
     "error",
 ]
@@ -90,6 +91,7 @@ def run_one(question: str, user, branch: str) -> dict:
             # Full per-call detail — status, the model's arguments (query), output/error — 
             # for analysis that the flat columns can't hold.
             "tool_calls_json": json.dumps([asdict(c) for c in result.tool_calls]),
+            # TODO: turn_count = len(result.turns), token totals = sums over result.turns, turns_json = the asdict list
             "duration_s": duration_s,
             "error": None,
         }
@@ -106,6 +108,7 @@ def run_one(question: str, user, branch: str) -> dict:
             "tool_call_count": 0,
             "tool_error_count": 0,
             "tool_calls_json": None,
+            # TODO: turn_count 0, token totals 0, turns_json None — inherits tool_call_count's known lie (mid-loop failure hole)
             "duration_s": duration_s,
             "error": str(e),
         }

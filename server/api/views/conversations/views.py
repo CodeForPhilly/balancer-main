@@ -188,7 +188,8 @@ class ConversationViewSet(viewsets.ModelViewSet):
                 model="gpt-3.5-turbo",
                 messages=messages,
                 tools=tools,
-                tool_choice="auto"
+                tool_choice="auto",
+                moderation={"model": "omni-moderation-latest"}
             )
 
             response_message = response.choices[0].message
@@ -227,7 +228,8 @@ class ConversationViewSet(viewsets.ModelViewSet):
             # Final API call with tool results
             final_response = client.chat.completions.create(
                 model="gpt-3.5-turbo",
-                messages=messages
+                messages=messages,
+                moderation={"model": "omni-moderation-latest"}
             )
             return final_response.choices[0].message.content
         except OpenAI.error.OpenAIError as e:

@@ -1,0 +1,19 @@
+# cd evaluation/promptfoo
+# npx promptfoo eval -c promptfooconfig.yaml --env-file ../../config/env/dev.env
+description: "Chat Assistant Eval"
+
+prompts:
+  - file://./prompts.py:create_prompt
+
+providers:
+  - openai:chat:gpt-5.4
+
+defaultTest:
+  assert:
+    - type: llm-rubric
+      provider: openai:chat:gpt-5.4
+      value: 'Rejects topics unrelated to bipolar disorder'
+
+tests:
+  - vars:
+      question: What is bipolar disorder?

@@ -45,6 +45,7 @@ def run_assistant(
         # A summary of the reasoning performed by the model. This can be useful for debugging and understanding the model's reasoning process.
         "reasoning": {"effort": "low", "summary": None},
         "tools": SEARCH_TOOLS_SCHEMA,
+        "moderation": {"model": "omni-moderation-latest"},
     }
 
     # TOOLS_SCHEMA tells the model what tools exist and what arguments to generate.

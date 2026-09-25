@@ -26,9 +26,6 @@ Be specific rather than generic - use terms that would appear in the relevant do
         "required": ["query"],
     },
 
-    # Keep this as a bare-name import: rewriting SEARCH_TOOL.run to call
-    # search_tool.search_documents(...) would move the patch target and break the tests.
-    
     # search_documents needs the request user for document access control.
     run=lambda user, query: search_documents(query, user),
 )

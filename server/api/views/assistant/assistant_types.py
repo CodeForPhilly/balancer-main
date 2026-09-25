@@ -56,27 +56,22 @@ class ToolCallExecution:
     error: str | None = None        
 
 @dataclass(frozen=True)
-class TurnUsage:
+class TokenUsage:
     """
     Token usage for one responses.create call
 
-    Every count is int | None, where None means *unknown* — response.usage was absent
-    or an unrecognized shape. Not 0, which also means "used no tokens": fake zeros drag
-    down averages and make a run that failed after being billed look free.
+    Every count is int | None, where None means unknown because response.usage
+    was missing, and 0 means no tokens were used
 
-    There is no total_tokens field. It is input_tokens + output_tokens, so a stored
-    copy is a sixth number that can disagree with the ones determining it.
+    There is no total_tokens field: it is input_tokens + output_tokens
     """
 
-    # Cross-references this turn against OpenAI's logs
-    response_id: str
     input_tokens: int | None
-    # A subset of input_tokens, not an addend — the prefix stops a later cost
-    # calculation from double-counting. Every turn resends the context via
-    # previous_response_id, which is what makes this the interesting number.
+    # A subset of input_tokens
+    # Every iteration resends the context via previous_response_id
     cached_input_tokens: int | None
     output_tokens: int | None
-    # A subset of output_tokens, not an addend
+    # A subset of output_tokens
     reasoning_output_tokens: int | None
 
 @dataclass(frozen=True)
@@ -92,7 +87,6 @@ class AgentResult:
     response_id: str
     # The ordered ToolCallExecution records for every tool invocation across all loop iterations
     tool_calls: list[ToolCallExecution]
-    # One per loop iteration. Required rather than defaulted: a silent [] would report
-    # turn_count 0 for a run that had turns. The eval derives turn_count = len(turns)
-    # and the token totals = sums over them, so the two cannot drift apart.
-    turns: list[TurnUsage]
+    # One per loop iteration.
+    # The eval sums these into its total_*_tokens columns
+    token_usages: list[TokenUsage]

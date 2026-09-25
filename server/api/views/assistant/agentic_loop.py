@@ -5,7 +5,7 @@ from api.views.assistant.assistant_types import (
     AgentResult,
     ToolCallExecution,
     ToolCallStatus,
-    TurnUsage,
+    TokenUsage,
 )
 
 logger = logging.getLogger(__name__)
@@ -18,18 +18,17 @@ def run_agentic_loop(
     # Every tool call the agentic loop made before exiting
     agentic_loop_tool_call_executions= []
     # Token usage for every responses.create call, one entry per iteration
-    agentic_loop_turns: list[TurnUsage] = []
+    agentic_loop_token_usage: list[TokenUsage] = []
 
     while True:
-        # At the top of the body, so the initial response and the terminal turn are each counted exactly once
-
-        # _turn_usage never raises: it runs on the web request path, so an unrecognized usage shape must not fail a user's request.
-        agentic_loop_turns.append(_turn_usage(response))
+        # At the top of the body, so the initial response and the terminal iteration are each counted exactly once
+        # get_token_usage never raises: it runs on the web request path, so an unrecognized usage shape must not fail a user's request.
+        agentic_loop_token_usage.append(get_token_usage(response))
 
         # user is threaded through so tools that need it get it at dispatch time
         tool_output_schemas, tool_call_executions = handle_tool_calls(response, tools, user)
 
-        # TODO: Decide whether to add turn: int to ToolCallExecution — without it, the flat tool_calls can't be split back into turns
+        # TODO: Decide whether to add iteration: int to ToolCallExecution — without it, the flat tool_calls can't be split back into iterations
         # .extend splices every iteration's list of tools into one list
         agentic_loop_tool_call_executions.extend(tool_call_executions)
 
@@ -39,62 +38,31 @@ def run_agentic_loop(
                 output_text=response.output_text,
                 response_id=response.id,
                 tool_calls=agentic_loop_tool_call_executions,
-                turns=agentic_loop_turns,
+                token_usages=agentic_loop_token_usage,
             )
 
-        #TODO: Add error handling to collect partial AgentResult tool calls
+        #TODO: Add error handling to collect partial AgentResult tool calls and token usage
         response = client.responses.create(
             input=tool_output_schemas,
             previous_response_id=response.id,
             **model_defaults,
         )
 
-
-def _int_or_none(obj, field: str) -> int | None:
-    """Read one integer leaf, or None when it is missing or not an int.
-
-    bool is excluded deliberately: it is an int subclass, so True would otherwise be
-    recorded as a token count of 1.
-    """
-    value = getattr(obj, field, None)
-    if isinstance(value, bool) or not isinstance(value, int):
-        return None
-    return value
-
-
-def _turn_usage(response) -> TurnUsage:
-    """Token usage for one response, never raising.
-
-    This runs on the web request path as well as in the eval, so an unrecognized usage
-    shape must not fail a user's request.
-
-    getattr's default guards the *traversal*, not only the leaves: when usage is
-    missing, usage.output_tokens_details would raise before any leaf check ran.
-    getattr(None, ...) returns None instead, collapsing the whole chain.
-
-    The isinstance guard is what lets the tests fail. MagicMock implements
-    __add__/__radd__, so a mocked usage would otherwise accumulate into the CSV as mock
-    objects with the suite green.
-    """
-
-    #  getattr's default guards the traversal rather than only the leaves,
-    # since usage.output_tokens_details would raise before any leaf check when usage is missing
-
-    # That guard makes silent blanks the hazard, so the field names are pinned by a
-    # test building a real ResponseUsage - the only input in the suite not
-    # constructed from names we chose, and so the only one where a misspelling can
-    # fail rather than quietly blanking a column. Verified against openai 2.29.0.
+def get_token_usage(response) -> TokenUsage:
+    """Token usage for one response"""
     
+    # Guard the whole chain when usage is missing because this also runs on the web request path
+    # Field names from openai ResponseUsage and tested since a typo would leave a column blank
+
     usage = getattr(response, "usage", None)
     input_details = getattr(usage, "input_tokens_details", None)
     output_details = getattr(usage, "output_tokens_details", None)
 
-    return TurnUsage(
-        response_id=response.id,
-        input_tokens=_int_or_none(usage, "input_tokens"),
-        cached_input_tokens=_int_or_none(input_details, "cached_tokens"),
-        output_tokens=_int_or_none(usage, "output_tokens"),
-        reasoning_output_tokens=_int_or_none(output_details, "reasoning_tokens"),
+    return TokenUsage(
+        input_tokens=getattr(usage, "input_tokens", None),
+        cached_input_tokens=getattr(input_details, "cached_tokens", None),
+        output_tokens=getattr(usage, "output_tokens", None),
+        reasoning_output_tokens=getattr(output_details, "reasoning_tokens", None),
     )
 
 

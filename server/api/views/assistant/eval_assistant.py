@@ -1,5 +1,5 @@
 # Generates eval results to CSV. Run from inside the container:
-# docker compose exec backend python api/views/assistant/eval_assistant.py
+# docker compose exec -e EVAL_BRANCH=<branch> backend python api/views/assistant/eval_assistant.py
 # Writes to results/ next to this file, which the ./server bind mount surfaces on the host.
 
 import os
@@ -37,25 +37,19 @@ logger = logging.getLogger(__name__)
 
 FIELDNAMES = [
     "branch",
-    "model",
     "question",
-    "response_output_text",
-    "response_id",
-    "tools_called",
-    "tool_call_count",
-    "tool_error_count",
-    "tool_calls_json",
-    # Token counts are None (a blank cell) when unknown: response.usage was missing or
-    # unrecognized, or the run raised. There is no total_tokens column — it is
-    # input_tokens + output_tokens, derivable wherever these are read.
-    "turn_count",
-    "input_tokens",
-    "cached_input_tokens",
-    "output_tokens",
-    "reasoning_output_tokens",
-    "turns_json",
-    "duration_s",
     "error",
+    "response_output_text",
+    "duration_s",
+    # No total_tokens column: it is total_input_tokens + total_output_tokens
+    "total_input_tokens",
+    "total_cached_input_tokens",
+    "total_output_tokens",
+    "total_reasoning_output_tokens",
+    "total_tool_calls",
+    "total_tool_errors",
+    "tool_calls_json",
+    "token_usages_json",
 ]
 
 # Set of representative questions to evaluate the assistant
@@ -69,17 +63,14 @@ QUESTIONS = [
 ]
 
 
-def _total(turns: list, field: str) -> int | None:
-    """Sum one token field across a run's turns, or None if any turn's count is unknown.
+def _total(iterations: list, field: str) -> int | None:
+    """Sum one token field across a turn's iterations, or None if any iteration's count is unknown
 
-    Summed here rather than accumulated in the loop, so that len(turns) and the totals
-    cannot drift apart — the same reason tool_call_count is derived below rather than
-    stored.
+    Summed here rather than accumulated in the agentic loop
 
-    One unknown turn makes the whole total unknown. A sum over only the known turns
-    would reach the CSV as another real-looking number that isn't real.
+    A sum over only the known iterations would reach the CSV as a total count that is incomplete
     """
-    values = [getattr(turn, field) for turn in turns]
+    values = [getattr(iteration, field) for iteration in iterations]
     if any(value is None for value in values):
         return None
     return sum(values)
@@ -92,65 +83,53 @@ def run_one(question: str, user, branch: str) -> dict:
 
     """
     # Time the full run_assistant call here rather than inside it: run_one already
-    # owns the whole call, so wall-clock duration needs no plumbing through the
-    # production code path (see AgentResult — duration is not carried).
+    # owns the whole call, so wall-clock duration needs no plumbing through the production code path
     start = perf_counter()
     try:
         result = run_assistant(message=question, user=user)
         duration_s = perf_counter() - start
-        tool_error_count = sum(
-            1 for c in result.tool_calls if c.status is not ToolCallStatus.OK
-        )
         return {
             "branch": branch,
-            "model": MODEL_NAME,
             "question": question,
-            "response_output_text": result.output_text,
-            "response_id": result.response_id,
-            # Flat summaries for at-a-glance scanning; the swallowed-failure hole this
-            # closes shows up as tool_error_count > 0 while error is None.
-            "tools_called": "|".join(c.name for c in result.tool_calls),
-            "tool_call_count": len(result.tool_calls),
-            "tool_error_count": tool_error_count,
-            # Full per-call detail — status, the model's arguments (query), output/error — 
-            # for analysis that the flat columns can't hold.
-            "tool_calls_json": json.dumps([asdict(c) for c in result.tool_calls]),
-            "turn_count": len(result.turns),
-            "input_tokens": _total(result.turns, "input_tokens"),
-            "cached_input_tokens": _total(result.turns, "cached_input_tokens"),
-            "output_tokens": _total(result.turns, "output_tokens"),
-            "reasoning_output_tokens": _total(result.turns, "reasoning_output_tokens"),
-            # Per-turn detail the flat totals can't hold: which turn caching engaged on,
-            # and each turn's response_id for cross-referencing OpenAI's logs.
-            "turns_json": json.dumps([asdict(t) for t in result.turns]),
-            "duration_s": duration_s,
+            # error is filled only when the whole turn failed and the except branch wrote the row
             "error": None,
+            "response_output_text": result.output_text,
+            "duration_s": duration_s,
+            "total_input_tokens": _total(result.token_usages, "input_tokens"),
+            "total_cached_input_tokens": _total(result.token_usages, "cached_input_tokens"),
+            "total_output_tokens": _total(result.token_usages, "output_tokens"),
+            "total_reasoning_output_tokens": _total(result.token_usages, "reasoning_output_tokens"),
+            # Flat summaries for scanning. total_tool_errors > 0 with error None means a tool
+            # failed inside the loop but the run still returned an answer.
+            "total_tool_calls": len(result.tool_calls),
+            # total_tool_errors counts tool calls whose status isn't OK (FAILED or UNREGISTERED). 
+            # Those failures don't raise. The loop catches the exception, records it, and sends 
+            # "Error executing function call: …" back to the model. 
+            # The model then usually retries or writes a confident answer anyway
+            "total_tool_errors": sum(1 for c in result.tool_calls if c.status is not ToolCallStatus.OK),
+            # Per turn tool call details — status, the model's arguments (query), output/error
+            "tool_calls_json": json.dumps([asdict(c) for c in result.tool_calls]),
+            # Per iteration token usage detail the flat totals can't hold: which iteration caching engaged on
+            "token_usages_json": json.dumps([asdict(t) for t in result.token_usages]),
         }
     except Exception as e:
         duration_s = perf_counter() - start
         logger.error(f"Error evaluating question '{question}': {e}")
         return {
             "branch": branch,
-            "model": MODEL_NAME,
             "question": question,
-            "response_output_text": None,
-            "response_id": None,
-            # Every one of these is None rather than "" or 0. Tool calls and turns may
-            # have run before the raise, so their counts are *unknown*, not empty — a 0
-            # would read as a run that made no calls and used no tokens, and would drag
-            # down any average computed over the column.
-            "tools_called": None,
-            "tool_call_count": None,
-            "tool_error_count": None,
-            "tool_calls_json": None,
-            "turn_count": None,
-            "input_tokens": None,
-            "cached_input_tokens": None,
-            "output_tokens": None,
-            "reasoning_output_tokens": None,
-            "turns_json": None,
-            "duration_s": duration_s,
             "error": str(e),
+            "response_output_text": None,
+            "duration_s": duration_s,
+            # Tool calls and token usage before the error raised are not collected
+            "total_input_tokens": None,
+            "total_cached_input_tokens": None,
+            "total_output_tokens": None,
+            "total_reasoning_output_tokens": None,
+            "total_tool_calls": None,
+            "total_tool_errors": None,
+            "tool_calls_json": None,
+            "token_usages_json": None,
         }
 
 
@@ -165,7 +144,8 @@ def main():
     logger.info(f"Starting evaluation: branch={branch}, model={MODEL_NAME}, questions={len(QUESTIONS)}")
 
     # Load the embedding model before starting any workers
-    # TODO: Fix TransformerModel in its own commit — __new__ publishes _instance before .model loads, so concurrent callers get a half-built object
+    # TODO: Fix TransformerModel in its own commit — __new__ publishes _instance 
+    # before .model loads, so concurrent callers get a half-built object
     TransformerModel.get_instance()
 
     # ThreadPoolExecutor runs questions concurrently

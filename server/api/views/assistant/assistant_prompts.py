@@ -8,8 +8,8 @@
 # accuracy is the cheapest real signal available, and a parser written before these two
 # fixes would measure prompt drift rather than accuracy.
 
-# TODO: Mention ask_database — the prompt names only search_documents and says to "ALWAYS use" 
-# it first, steering the model away from ask_database
+# TODO: When ask_database is registered again, mention it here — the prompt names only
+# search_documents and says to "ALWAYS use" it first, steering the model away from ask_database
 INSTRUCTIONS = """
 You are an AI assistant that helps users find and understand information about bipolar disorder 
 from your internal library of bipolar disorder research sources using semantic search.

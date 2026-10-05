@@ -10,7 +10,7 @@ from api.views.assistant.agentic_loop import run_agentic_loop
 
 logger = logging.getLogger(__name__)
 
-# Module-level so eval_assistant.py can import it and label its CSV with the model that actually ran
+# Module-level so eval_assistant.py can import it and log which model the run used
 MODEL_NAME = "gpt-5-nano"
 
 

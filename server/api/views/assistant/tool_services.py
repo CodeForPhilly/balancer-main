@@ -32,7 +32,7 @@ Be specific rather than generic - use terms that would appear in the relevant do
 
 # The schema string describing the queryable medication table for ask_database's prompt.
 # Kept in sync by hand with api.views.listMeds.models.Medication rather than deriving it from 
-# Django's Model._meta becuase the table is small and stable
+# Django's Model._meta because the table is small and stable
 
 _MEDICATION_SCHEMA_STRING = "Table: api_medication\nColumns: name, benefits, risks"
 
@@ -62,10 +62,9 @@ SQL SELECT query.
         "required": ["query"],
     },
 
-    # Reuse the existing ask_database implementation from services/tools rather than
-    # reimplementing it here — it already enforces the SELECT-only and ALLOWED_TABLES
-    # guards, and does no DB work at import time.
-
+    # Reuses ask_database from services/tools. Its guards are substring checks, so they
+    # can be bypassed (UNION, a second statement), and it returns errors as strings, so
+    # a failed query would be recorded as OK. See the note at TOOLS.
 
     # ask_database queries the shared medication table, so it ignores the request user.
     run=lambda user, query: ask_database(query),
@@ -76,4 +75,8 @@ SQL SELECT query.
 # schema list the model sees with [tool.schema() for tool in TOOLS]; the agentic loop
 # indexes this by name to dispatch calls. Register a new tool by appending it here.
 
-TOOLS = [SEARCH_TOOL, ASK_DATABASE_TOOL]
+# ASK_DATABASE_TOOL is deliberately not registered: the endpoint is public (AllowAny), and
+# ask_database can't safely run model-written SQL. Re-register it once it allows only a
+# single statement, validates every table it reads, runs under a read-only database role,
+# and raises on failure.
+TOOLS = [SEARCH_TOOL]

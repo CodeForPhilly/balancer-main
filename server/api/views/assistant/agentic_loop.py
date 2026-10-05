@@ -20,15 +20,23 @@ def run_agentic_loop(
     # Token usage for every responses.create call, one entry per iteration
     agentic_loop_token_usage: list[TokenUsage] = []
 
+    # TODO: Cap the number of iterations — a model that keeps calling tools never exits, hanging the request and adding OpenAI cost
     while True:
         # At the top of the body, so the initial response and the terminal iteration are each counted exactly once
         # get_token_usage never raises: it runs on the web request path, so an unrecognized usage shape must not fail a user's request.
         agentic_loop_token_usage.append(get_token_usage(response))
 
+        # TODO: Add a schema function to ToolCallExecution
         # user is threaded through so tools that need it get it at dispatch time
         tool_output_schemas, tool_call_executions = handle_tool_calls(response, tools, user)
 
-        # TODO: Decide whether to add iteration: int to ToolCallExecution — without it, the flat tool_calls can't be split back into iterations
+        # TODO: Rewrite to .append every iteration's list of tools or decide whether 
+        # to add iteration integer to ToolCallExecution to split the flat tool_calls into iterations
+
+        # TODO: Add a data type to contain each iteration's parameters, response id, 
+        # token usage, and  tool calls  or output text from the client response  and a function 
+        # for the output text and corresponding response id 
+
         # .extend splices every iteration's list of tools into one list
         agentic_loop_tool_call_executions.extend(tool_call_executions)
 
@@ -41,7 +49,8 @@ def run_agentic_loop(
                 token_usages=agentic_loop_token_usage,
             )
 
-        #TODO: Add error handling to collect partial AgentResult tool calls and token usage
+        # TODO: Add error handling to collect partial AgentResult tool calls and token usage —
+        # decide first whether AgentResult describes only successful runs or whatever happened
         response = client.responses.create(
             input=tool_output_schemas,
             previous_response_id=response.id,
@@ -52,7 +61,8 @@ def get_token_usage(response) -> TokenUsage:
     """Token usage for one response"""
     
     # Guard the whole chain when usage is missing because this also runs on the web request path
-    # Field names from openai ResponseUsage and tested since a typo would leave a column blank
+    # Field names from openai ResponseUsage, checked against 2.29.0. requirements.txt doesn't pin openai,
+    # and nothing here checks types, so an SDK upgrade could blank or change these silently
 
     usage = getattr(response, "usage", None)
     input_details = getattr(usage, "input_tokens_details", None)

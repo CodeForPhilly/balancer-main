@@ -165,6 +165,9 @@ def main():
     timestamp = datetime.datetime.utcnow().strftime("%Y%m%dT%H%M%S")
     output_path = os.path.join(results_dir, f"{branch}-{timestamp}.csv")
 
+    # TODO: Write the system prompt next to the CSV ({branch}-{timestamp}.prompt.txt) so runs
+    # from before and after a prompt change can be told apart
+
     # pandas was never in the backend image's requirements.txt
     with open(output_path, "w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=FIELDNAMES)

@@ -1,3 +1,15 @@
+
+# TODO: Replace the {name}/{page_number} citation template with a filled-in example, 
+# e.g. [Name advancespharmaco.pdf, Page 9], and require exactly one page per citation.
+# Note both known importers pass their string through verbatim (no .format() reads the braces)
+# The only thing interpreting the braces is the model
+# This and the UUID in search_tool.py block the eval's citation scoring
+# Citations are unparseable until both land, which blocks the eval's scoring layer: citation
+# accuracy is the cheapest real signal available, and a parser written before these two
+# fixes would measure prompt drift rather than accuracy.
+
+# TODO: When ask_database is registered again, mention it here — the prompt names only
+# search_documents and says to "ALWAYS use" it first, steering the model away from ask_database
 INSTRUCTIONS = """
 You are an AI assistant that helps users find and understand information about bipolar disorder 
 from your internal library of bipolar disorder research sources using semantic search.

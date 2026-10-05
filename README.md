@@ -42,6 +42,12 @@ Tools used for development:
 
 Start the Postgres, Django REST, and React services by starting Docker Desktop and running `docker compose up --build` 
 
+Local development servers:
+
+- **Frontend (React dev server):** http://localhost:3000 — when developing locally, open the React app at this address. 
+- **Backend / API (Django):** http://localhost:8000
+  - *Note:* if you open http://localhost:8000 in a browser you will see  a minimal single-page fallback for the frontend, which is non-functional for development. To view the working frontend during development, use http://localhost:3000.
+
 #### Postgres
 
 The application supports connecting to PostgreSQL databases via:

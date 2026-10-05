@@ -89,10 +89,10 @@ const MdNavBar = (props: LoginFormProps) => {
                     </li>
                     <li className="border-b border-gray-300 p-4">
                         <Link
-                            to="/login"
+                            to="/"
                             className="mr-9 text-black hover:border-b-2 hover:border-blue-600 hover:text-black hover:no-underline"
                         >
-                            Medical Suggester
+                            Medication Suggester
                         </Link>
                     </li>
                     <li className="border-b border-gray-300 p-4">

@@ -9,7 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from drf_spectacular.utils import extend_schema, inline_serializer
 from rest_framework import serializers as drf_serializers
 
-from .assistant_services import run_assistant
+from api.views.assistant.assistant_services import run_assistant
 
 logger = logging.getLogger(__name__)
 
@@ -36,26 +36,21 @@ class Assistant(APIView):
     def post(self, request):
         try:
             user = request.user
-    
-            # TODO: validate message and return a 400 when it is omitted or blank.
-            # @extend_schema documents message as required, but that schema is not
-            # enforced at runtime, so a missing/empty message reaches run_assistant
-            # and becomes the literal string "None" (str(None)) in the model input —
-            # producing confusing model behavior. Add a 400 to the responses schema
-            # when implementing.
+
+            # TODO: Missing/empty message reaches run_assistant and becomes the literal string "None" (str(None)) in the model input
             message = request.data.get("message", None)
             previous_response_id = request.data.get("previous_response_id", None)
             
-            final_response_output_text, final_response_id = run_assistant(
-                message=message,
+            result = run_assistant(
                 user=user,
+                message=message,
                 previous_response_id=previous_response_id,
             )
 
             return Response(
                 {
-                    "response_output_text": final_response_output_text,
-                    "final_response_id": final_response_id,
+                    "response_output_text": result.output_text,
+                    "final_response_id": result.response_id,
                 },
                 status=status.HTTP_200_OK,
             )
